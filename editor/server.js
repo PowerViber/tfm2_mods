@@ -194,7 +194,7 @@ if (fs.existsSync(scienceVfxDir)) {
 }
 STATIC['/science-editor.js'] = 'science-editor.js';
 // Ranked-body review reads this checkout's actual package, never installed saves.
-for(const f of ['ranked-body-review.html','ranked-body-review.js','ranked-body-runtime.js','ranked-body-assets.json'])STATIC['/'+f]=f;
+for(const f of ['ranked-body-review.html','ranked-body-review.js','ranked-body-runtime.js','ranked-body-assets.json','ranked-lab.html'])STATIC['/'+f]=f;
 for(const [key,id] of Object.entries({vesper:'tfm2_custom_vesper',isliid:'tfm2_isliid_emperor',coder:'tfm2_custom_coder',magnus:'tfm2_custom_magnus'}))STATIC['/rank-art-body-'+key+'.png']='../mods/tfm2_custom/champions/'+id+'#sheet.png';
 STATIC['/rules/ranked-body-art.json']='../rules/ranked-body-art.json';
 const rankReviewRoot=path.join(HERE,'../docs/ranked-body-redesign');

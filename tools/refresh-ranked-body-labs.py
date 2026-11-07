@@ -9,7 +9,7 @@ for name in data:
  for folder in ['champions','vfx']:
   p=ROOT/'mods/tfm2_custom'/folder/(name+'#anim.fanim')
   if p.exists():data[name]=read(p)['anims'];break
-write(path,data)
+path.write_text(json.dumps(data,separators=(',',':'),ensure_ascii=False)+'\n',encoding='utf8')
 path=ROOT/'editor/vesper-art-preview.json';data=read(path)
 for tag,entry in data['assets'].items():
  p=ROOT/'mods/tfm2_custom/vfx'/(entry['sheet']+'#anim.fanim')

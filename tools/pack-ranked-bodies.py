@@ -104,12 +104,14 @@ def main(integrate=False):
             'integrated':integrate,'characters':{},'nativeRankLayers':'visible-base-fallback'}
     for c in manifest['characters']:
         key=c['key'];old=baseline['characters'][key]['body'];meta=old['anims']
-        first=OUT/'sources/proof'/f'{key}-idle-run-attack.png'
-        rest=OUT/'sources/complete'/f'{key}-skills-hit-dead.png'
+        first,rest=[ROOT/s['file']for s in c['animationSources']]
+        for source in c['animationSources']:
+            assert digest(ROOT/source['file'])==source['sha256'],'Frozen animation source changed'
+        for pose,seconds in c['animationContract'].items():
+            assert seconds==[f['duration']for f in meta[pose]['frames']],'Animation contract changed'
         rows=grid(first,3)+grid(rest,5)
         scales=[c['visibleHeight']/statistics.median(b[3]-b[1] for _,b in rows[0]),
                 c['visibleHeight']/statistics.median(b[3]-b[1] for _,b in rows[3])]
-        base_h=old['anims']['idle']['frames'][0]['data']['h']
         offset=c['feet'][1]-c['frame'][1]/2
         images={};all_drawings={};source_counts={}
         for p,row in zip(POSES,rows):

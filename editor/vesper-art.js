@@ -89,9 +89,9 @@
     label(c, 'Awakening', 860, 172);
     for (let m = 0; m < 8; m++) blit(`mod${m}_t${Math.min(3, s.tier)}`, 290 + m * 40, 362, 0.55);
     const shown = 47 - missing.length;
-    $('#artStatus').textContent = renderer.sprites()
+    $('#artStatus').textContent = 'Base-body fallback; ranked animation gate. ' + (renderer.sprites()
       ? (missing.length ? `${renderer.sprites()} runtime animations loaded · not drawn yet: ${[...new Set(missing)].slice(0, 6).join(', ')}${missing.length > 6 ? '…' : ''}` : `${renderer.sprites()} runtime animations loaded · every layer of this rank is drawn (${shown}+ layers on screen).`)
-      : 'Loading sprites…';
+      : 'Loading sprites…');
     requestAnimationFrame(draw);
   }
   function init() {

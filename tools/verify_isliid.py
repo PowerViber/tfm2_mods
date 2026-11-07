@@ -25,7 +25,7 @@ assert data["skill"]["casting_type"] == data["skill2"]["casting_type"] == "Posit
 for local in (MOD,) if LOCAL_ONLY else (MOD, INSTALLED):
     assert (local / "champion" / f"{CHAMP}.data_champion").read_bytes() == (MOD / "champion" / f"{CHAMP}.data_champion").read_bytes()
     body = Image.open(local / "champions" / f"{CHAMP}#sheet.png")
-    if data.get('passive',{}).get('params',{}).get('rank_art_v2') == 1 and local == MOD:
+    if data.get('passive',{}).get('params',{}).get('rank_art_v2') == 1:
         proof=json.loads((ROOT/'docs/ranked-body-redesign/base-animation-results.json').read_text(encoding='utf8'))['characters']['isliid']
         assert list(body.size)==proof['sheet'],(local,body.size)
         assert hashlib.sha256((local/'champions'/f'{CHAMP}#sheet.png').read_bytes()).hexdigest()==proof['pngSha256']
@@ -33,7 +33,7 @@ for local in (MOD,) if LOCAL_ONLY else (MOD, INSTALLED):
     else:
         assert body.size == (288, 448), (local, body.size)
     motions = json.loads((local / "champions" / f"{CHAMP}#anim.fanim").read_text(encoding="utf-8"))["anims"]
-    if data.get('passive',{}).get('params',{}).get('rank_art_v2') == 1 and local == MOD:
+    if data.get('passive',{}).get('params',{}).get('rank_art_v2') == 1:
         assert hashlib.sha256((local/'champions'/f'{CHAMP}#anim.fanim').read_bytes()).hexdigest()==proof['animationSha256']
         baseline=json.loads((ROOT/'docs/ranked-body-redesign/baseline-contract.json').read_text(encoding='utf8'))['characters']['isliid']['body']['anims']
         for pose,anim in motions.items():

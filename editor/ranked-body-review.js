@@ -40,7 +40,7 @@
     let im, frame, path, duration = 0, frames = [], pose = $('pose').value;
     if (proposed) {
       const p = selected();
-      $('missing').textContent = p ? 'Single-pose appearance concept. Full animation is not yet authored.' : 'This appearance is reserved, but its concept is not one of the three approval samples.';
+      $('missing').textContent = p ? 'Approved single-pose reference. Full base animations are under Current package; other ranked animations remain gated.' : 'This appearance is reserved, but its concept is not one of the three approval samples.';
       if (!p) { $('facts').textContent = c.name + ' · ' + c.looks[Number($('look').value)] + '\nApproval pending; no substitute shown.'; return; }
       path = p.files[$('facing').value]; im = await image(path); frame = {x: 0, y: 0, w: im.width, h: im.height};
     } else {

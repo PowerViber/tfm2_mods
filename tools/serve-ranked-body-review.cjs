@@ -7,6 +7,9 @@ const server=http.createServer((req,res)=>{
   if(!['GET','HEAD'].includes(req.method)){res.writeHead(405,{'Allow':'GET, HEAD'});return res.end();}
   let pathname;try{pathname=decodeURIComponent(new URL(req.url,'http://localhost').pathname)}catch{res.writeHead(400);return res.end();}
   if(pathname==='/')pathname='/editor/ranked-body-review.html';
+  if(['/editor/vesper.html','/editor/magnus.html','/editor/ranked-lab.html'].includes(pathname)){
+    const target=new URL(req.url,'http://localhost');res.writeHead(302,{'Location':'http://localhost:7298/'+pathname.split('/').pop()+target.search});return res.end();
+  }
   const file=path.resolve(root,'.'+pathname),relative=path.relative(root,file);
   if(relative.startsWith('..'+path.sep)||path.isAbsolute(relative)||relative==='..'||relative.split(path.sep).includes('.git')){res.writeHead(403);return res.end();}
   fs.readFile(file,(err,body)=>{if(err){res.writeHead(404);return res.end('Not found');}res.writeHead(200,{'Content-Type':types[path.extname(file)]||'application/octet-stream','Cache-Control':'no-store'});res.end(req.method==='HEAD'?undefined:body);});

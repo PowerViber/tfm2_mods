@@ -97,8 +97,9 @@ def split_concepts(char: dict, generated: Path) -> list[dict]:
 
 def comparison(char: dict, concepts: list[dict], body: dict, stock: Image.Image) -> None:
     # Matched scale: existing body is never resized to make proposals look larger.
-    images = [('Current', read_frame(body)), ('Knight', stock)]
-    images += [(p['name'], Image.open(ROOT / p['files']['right']).convert('RGBA')) for p in concepts]
+    before=Image.open(OUT/'references'/(char['id']+'-current.png')).convert('RGBA')
+    images = [('Before', before), ('Knight', stock), ('Candidate base',read_frame(body))]
+    images += [(p['name'], Image.open(ROOT / p['files']['right']).convert('RGBA')) for p in concepts[1:]]
     canvas = Image.new('RGB', (1000, 360), '#14232c')
     d = ImageDraw.Draw(canvas)
     font_path = Path('C:/Windows/Fonts/segoeui.ttf')

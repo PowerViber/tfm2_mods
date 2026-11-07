@@ -1,0 +1,11 @@
+{
+  "scope": "Isolated package fixture, not actual-game acceptance",
+  "isolatedAppData": true,
+  "liveGameLogExamined": false,
+  "exitCode": 0,
+  "filesCompared": 859,
+  "differentOrMissing": [],
+  "nativeDllSha256": "1e74f3f5c9128f8dd20cd1e6b95734246681c83590082b105107a3c15a047916",
+  "installationPerformed": false,
+  "careerMigrationPerformed": false
+}

@@ -1,0 +1,16 @@
+{
+  "baseline": "de10d3f7de9a8d471c4bab407f6f61ddb47907f9",
+  "nativeTestsPassed": 1027,
+  "nativeTestsFailed": 0,
+  "nativeTestsIgnored": 13,
+  "existingNativeTestWarnings": 4,
+  "vesperMathVectors": 40,
+  "vesperSimulationVectors": 938,
+  "coderRuns": 558,
+  "isliidVisualReferences": 5307,
+  "frameFacingPixelChecks": 426,
+  "nativeRankMode": "visible-base-fallback",
+  "rankAnimationsComplete": false,
+  "actualGameAcceptance": "pending",
+  "magnusNativeEditorFrames": 9819
+}

@@ -2,7 +2,7 @@
   "version": 2,
   "revision": "rank-art-2.0-base-fallback-1",
   "status": "base-integrated-rank-animation-gated",
-  "baseline": "1dec6d890c523af10e9cbe7879db50e8ece81e2c",
+  "baseline": "de10d3f7de9a8d471c4bab407f6f61ddb47907f9",
   "optIn": {
     "parameter": "rank_art_v2",
     "value": 1,
@@ -56,7 +56,113 @@
         "Worldbreaker #3",
         "Worldbreaker #2"
       ],
-      "lab": "vesper.html"
+      "lab": "vesper.html",
+      "animationSources": [
+        {
+          "file": "docs/ranked-body-redesign/sources/proof/vesper-idle-run-attack.png",
+          "poses": [
+            "idle",
+            "run",
+            "attack"
+          ],
+          "columns": 8,
+          "sha256": "811c78111f63206eff89d24d7c0b86bbb6880579d9493e6291e09083ed4f82c5"
+        },
+        {
+          "file": "docs/ranked-body-redesign/sources/complete/vesper-skills-hit-dead.png",
+          "poses": [
+            "skill1",
+            "skill2",
+            "ult",
+            "hit",
+            "dead"
+          ],
+          "columns": 8,
+          "sha256": "f61cc9004a468130917acf520505fe8ceeffc40d4f45992b2d27337238967ebd"
+        }
+      ],
+      "animationContract": {
+        "idle": [
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1
+        ],
+        "run": [
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1
+        ],
+        "attack": [
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1
+        ],
+        "skill1": [
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1
+        ],
+        "skill2": [
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1
+        ],
+        "ult": [
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1
+        ],
+        "hit": [
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1
+        ],
+        "dead": [
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1
+        ]
+      }
     },
     {
       "key": "isliid",
@@ -90,7 +196,82 @@
         "Imperial #2–10",
         "Imperial #1"
       ],
-      "lab": "index.html#isliid"
+      "lab": "ranked-lab.html?champ=isliid",
+      "animationSources": [
+        {
+          "file": "docs/ranked-body-redesign/sources/proof/isliid-idle-run-attack.png",
+          "poses": [
+            "idle",
+            "run",
+            "attack"
+          ],
+          "columns": 8,
+          "sha256": "2488970fbb6d5645ec93e324ac43808f09efb0bbb1df5c69d33aac923daca8d5"
+        },
+        {
+          "file": "docs/ranked-body-redesign/sources/complete/isliid-skills-hit-dead.png",
+          "poses": [
+            "skill1",
+            "skill2",
+            "ult",
+            "hit",
+            "dead"
+          ],
+          "columns": 8,
+          "sha256": "4957df9aeafe1b3f2e60f8318cf04e89511e96996c7108d6234e1e9e328b5e9c"
+        }
+      ],
+      "animationContract": {
+        "idle": [
+          0.2,
+          0.2,
+          0.2,
+          0.2
+        ],
+        "run": [
+          0.09,
+          0.09,
+          0.09,
+          0.09,
+          0.09,
+          0.09
+        ],
+        "attack": [
+          0.08,
+          0.08,
+          0.08,
+          0.08
+        ],
+        "skill1": [
+          0.09,
+          0.09,
+          0.09,
+          0.09
+        ],
+        "skill2": [
+          0.09,
+          0.09,
+          0.09,
+          0.09
+        ],
+        "ult": [
+          0.11,
+          0.11,
+          0.11,
+          0.11
+        ],
+        "hit": [
+          0.14
+        ],
+        "dead": [
+          0.11,
+          0.11,
+          0.11,
+          0.11,
+          0.11,
+          0.11
+        ]
+      }
     },
     {
       "key": "coder",
@@ -124,7 +305,101 @@
         "Root #2–10",
         "Zero-Day #1"
       ],
-      "lab": "index.html#coder"
+      "lab": "ranked-lab.html?champ=coder",
+      "animationSources": [
+        {
+          "file": "docs/ranked-body-redesign/sources/proof/coder-idle-run-attack.png",
+          "poses": [
+            "idle",
+            "run",
+            "attack"
+          ],
+          "columns": 8,
+          "sha256": "3d1a309ae4b330dc265bd58e9e6a34fa5a470753b205d09578e6873682fbdac1"
+        },
+        {
+          "file": "docs/ranked-body-redesign/sources/complete/coder-skills-hit-dead.png",
+          "poses": [
+            "skill1",
+            "skill2",
+            "ult",
+            "hit",
+            "dead"
+          ],
+          "columns": 8,
+          "sha256": "c6174bcdf030cfe036ccbab55a1ea3db8335f4341242063ac605e1bca71a229d"
+        }
+      ],
+      "animationContract": {
+        "idle": [
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1
+        ],
+        "run": [
+          0.07,
+          0.07,
+          0.07,
+          0.07,
+          0.07,
+          0.07,
+          0.07,
+          0.07
+        ],
+        "attack": [
+          0.05,
+          0.05,
+          0.05,
+          0.05,
+          0.05,
+          0.05
+        ],
+        "skill1": [
+          0.05,
+          0.05,
+          0.05,
+          0.05,
+          0.05,
+          0.05,
+          0.05,
+          0.05
+        ],
+        "skill2": [
+          0.06,
+          0.06,
+          0.06,
+          0.06,
+          0.06,
+          0.06
+        ],
+        "ult": [
+          0.06,
+          0.06,
+          0.06,
+          0.06,
+          0.06,
+          0.06,
+          0.06,
+          0.06
+        ],
+        "hit": [
+          0.08,
+          0.08
+        ],
+        "dead": [
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1
+        ]
+      }
     },
     {
       "key": "magnus",
@@ -160,7 +435,113 @@
         "#2 · Interlocked Position",
         "#1 · Impossible Calculation"
       ],
-      "lab": "magnus.html"
+      "lab": "magnus.html",
+      "animationSources": [
+        {
+          "file": "docs/ranked-body-redesign/sources/proof/magnus-idle-run-attack.png",
+          "poses": [
+            "idle",
+            "run",
+            "attack"
+          ],
+          "columns": 8,
+          "sha256": "1161e039605d2b4cf0560cf5bca0f519702ae1177ee6fc544813963675f35908"
+        },
+        {
+          "file": "docs/ranked-body-redesign/sources/complete/magnus-skills-hit-dead.png",
+          "poses": [
+            "skill1",
+            "skill2",
+            "ult",
+            "hit",
+            "dead"
+          ],
+          "columns": 8,
+          "sha256": "b71866ad643f204db54db930aa38d04c7ca333f40a6ec2663d9344c0707040bb"
+        }
+      ],
+      "animationContract": {
+        "idle": [
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1
+        ],
+        "run": [
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1
+        ],
+        "attack": [
+          0.05,
+          0.05,
+          0.05,
+          0.05,
+          0.05,
+          0.05,
+          0.05,
+          0.05
+        ],
+        "skill1": [
+          0.05,
+          0.05,
+          0.05,
+          0.05,
+          0.05,
+          0.05,
+          0.05,
+          0.05
+        ],
+        "skill2": [
+          0.05,
+          0.05,
+          0.05,
+          0.05,
+          0.05,
+          0.05,
+          0.05,
+          0.05
+        ],
+        "ult": [
+          0.05,
+          0.05,
+          0.05,
+          0.05,
+          0.05,
+          0.05,
+          0.05,
+          0.05
+        ],
+        "hit": [
+          0.05,
+          0.05,
+          0.05,
+          0.05,
+          0.05,
+          0.05,
+          0.05,
+          0.05
+        ],
+        "dead": [
+          0.05,
+          0.05,
+          0.05,
+          0.05,
+          0.05,
+          0.05,
+          0.05,
+          0.05
+        ]
+      }
     }
   ],
   "references": [
@@ -208,5 +589,6 @@
     "legacyClothing": "transparent aliases with original dimensions, frame counts and durations",
     "rankBadgesAndFunctionalDisplays": "unchanged",
     "nativeDll": "unchanged"
-  }
+  },
+  "initialBaseline": "1dec6d890c523af10e9cbe7879db50e8ece81e2c"
 }

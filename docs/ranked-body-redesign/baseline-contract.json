@@ -1,5 +1,5 @@
 {
-  "baseline": "1dec6d890c523af10e9cbe7879db50e8ece81e2c",
+  "baseline": "de10d3f7de9a8d471c4bab407f6f61ddb47907f9",
   "characters": {
     "vesper": {
       "definition": "mods/tfm2_custom/champion/tfm2_custom_vesper.data_champion",
@@ -5663,5 +5663,6 @@
       "animationSha256": "1624d05c2232fc35d126328dfb363721d974ebf65fc1bbe46b06972756e21faa"
     }
   },
-  "nativeDllSha256": "4fc66536e6118ad3ebbc91f918e8bc0181200164570d69374a202b3e7b58b81d"
+  "nativeDllSha256": "1e74f3f5c9128f8dd20cd1e6b95734246681c83590082b105107a3c15a047916",
+  "initialBaseline": "1dec6d890c523af10e9cbe7879db50e8ece81e2c"
 }

@@ -8,37 +8,42 @@
   ],
   "errors": [],
   "coldBodyLoadMs": [
+    42.40000009536743,
     27.799999952316284,
-    24.299999952316284,
-    20,
-    27,
-    23.5
+    28.600000143051147,
+    37.69999980926514,
+    41.90000009536743
   ],
   "warmDrawRuns": [
     {
-      "medianMs": 0,
-      "p95Ms": 0,
-      "p99Ms": 0.09999990463256836
+      "batchDraws": 32,
+      "normalisedMedianMs": 0.015625,
+      "normalisedP95Ms": 0.02499999850988388,
+      "normalisedP99Ms": 0.03437499701976776
     },
     {
-      "medianMs": 0,
-      "p95Ms": 0,
-      "p99Ms": 0.09999990463256836
+      "batchDraws": 32,
+      "normalisedMedianMs": 0.015625,
+      "normalisedP95Ms": 0.02187500149011612,
+      "normalisedP99Ms": 0.025000005960464478
     },
     {
-      "medianMs": 0,
-      "p95Ms": 0,
-      "p99Ms": 0.09999990463256836
+      "batchDraws": 32,
+      "normalisedMedianMs": 0.015625,
+      "normalisedP95Ms": 0.02499999850988388,
+      "normalisedP99Ms": 0.03125
     },
     {
-      "medianMs": 0,
-      "p95Ms": 0,
-      "p99Ms": 0.09999990463256836
+      "batchDraws": 32,
+      "normalisedMedianMs": 0.01874999701976776,
+      "normalisedP95Ms": 0.02812500298023224,
+      "normalisedP99Ms": 0.03437499701976776
     },
     {
-      "medianMs": 0,
-      "p95Ms": 0,
-      "p99Ms": 0.09999990463256836
+      "batchDraws": 32,
+      "normalisedMedianMs": 0.015625,
+      "normalisedP95Ms": 0.02187500149011612,
+      "normalisedP99Ms": 0.02499999850988388
     }
   ],
   "scope": "Headless browser presentation only; not game-host timing or native body-frame synchronisation proof",

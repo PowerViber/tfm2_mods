@@ -15,7 +15,7 @@ const root=path.resolve(__dirname,'..'),base=process.env.RANK_ART_REVIEW_URL||'h
     await page.selectOption('#facing',facing);await page.selectOption('#terrain',terrain);
     await page.evaluate(async({key,look})=>{await rankArtReview.select(key,'proposal',look)}, {key:c.key,look:p.look});
     await page.waitForFunction(()=>document.querySelector('#facts').textContent.includes('concept only'));
-    assert.equal(await page.locator('#missing').textContent(),'Single-pose appearance concept. Full animation is not yet authored.');proposals++;
+    assert.equal(await page.locator('#missing').textContent(),'Approved single-pose reference. Full base animations are under Current package; other ranked animations remain gated.');proposals++;
    }}}
    for(const facing of ['right','left']){await page.selectOption('#facing',facing);for(const pose of Object.keys(c.body.anims)){
     await page.evaluate(async({key,pose})=>{await rankArtReview.select(key,'package',0,pose)},{key:c.key,pose});

@@ -1,128 +1,143 @@
-# Four-character ranked body redesign
+# Approved original base bodies and ranked-art gate
 
-The proposal stage contains twelve original appearance concepts: base, middle and
-highest for Vesper, Emperor Isliid, Coder and Magnus. **Appearance approval is
-pending.** No game-body replacement, completed animation set, release package,
-installation or career migration is claimed.
+This draft integrates approved original base bodies for Vesper, Emperor Isliid,
+Coder and Magnus. **The full ranked-outfit redesign is not complete.** Remaining
+ranked animations are gated by safe native layer alignment, as required by the
+user's plan. Native presentation uses a coherent, visible base fallback.
 
-The user requires approval before completing the new animations. After approval,
-the approved source hashes become the appearance baseline; the remaining poses
-and rank variations can be completed without repeating that appearance question.
+## Approval and baseline
 
-## Workspace and source
+On November 8, 2026 the user replied **“Approve all four appearance directions”**.
+Complete poses derive from those approved sources; no repeated appearance
+question is required.
 
-- Branch: `codex/vesper-isliid-coder-magnus-redesign`.
-- Current-main baseline: `1dec6d890c523af10e9cbe7879db50e8ece81e2c`.
-- Existing edits and uncommitted Magnus proposals in the main checkout are
-  preserved. Their filenames do not establish approval and none was imported as
-  an approved source.
-- Canonical proposal manifest: `rules/ranked-body-art.json`.
-- Built-in imagegen source PNGs: `sources/`; exact prompts:
-  `concept-prompts.json`.
-- Official Emperor reference images, page URLs and hashes:
-  `reference-pages.json`. The original Emperor and Beyond Fate references govern
-  clothing/hair/posture; the TFM2 flying swords remain separate existing assets.
-- `baseline-contract.json` captures the four real champion definitions, their
-  complete frame/duration contracts, 322 declared packed assets and native DLL
-  hash. It refuses accidental regeneration over a different production baseline.
+- Vesper: brown wolf cut, real glasses, gunmetal street-fighter clothes and chrome gauntlets.
+- Isliid: official original Grand Summoners Emperor toward Beyond Fate, preserving floating movement.
+- Coder: dark-haired human programmer, graphite clothing and typing gestures.
+- Magnus: Carlsen-like face, swept brown hair, stubble, navy/ivory tailoring and handheld board.
 
-The proposals preserve each character's existing visible idle height during
-registration. Vesper and Magnus use additional transparent width, retaining
-their existing vertical origin/foot relationship. Final animation registration
-must retain the individual anchors, including wide attacks and fallen poses.
-No body is sliced into independently animated anatomy.
+Branch: `codex/vesper-isliid-coder-magnus-redesign`.
+Current-main baseline: `de10d3f7de9a8d471c4bab407f6f61ddb47907f9` (native **0.10.91**).
+The branch includes the merged movement fixes. Champion pack **0.2.94** follows
+main's 0.2.93 and depends on native >=0.10.91. The native DLL is inherited
+**byte-identically from main**, not rebuilt/replaced by this art pass.
+Existing main-folder edits and uncommitted Magnus proposals were untouched;
+filenames containing 'approval' do not establish approval.
 
-## Review
+## Integrated body artwork
 
-Run from the isolated checkout:
+| Body | Frames | Poses | New body atlas |
+| --- | ---: | ---: | ---: |
+| Vesper | 64 | 8 | 1.014 MiB |
+| Emperor Isliid | 33 | 8 | 0.443 MiB |
+| Coder | 52 | 8 | 0.619 MiB |
+| Magnus | 64 | 8 | 0.643 MiB |
+
+All **213 frames** retain existing names, counts and individual durations.
+Whole-body drawings use fixed world/foot offsets, transparent padding and
+distinct movement frames. Isliid glides without walking leg contacts.
+The actual default roster idle is visible. There is no body hiding, animation
+CC or movement restriction.
+
+Old clothing aliases and Magnus's body-only cast aliases retain their dimensions,
+frame counts, durations and names but contain transparent presentation frames.
+They no longer paint an incompatible old body on top. Existing runtime buff
+and effect command identities stay unchanged, including old embedded definitions.
+
+Coder's keyboard drawings move four pixels upward to meet the typing hands;
+their decoded design pixels remain identical. Other rig/effect frames in that
+mixed atlas are exact. Badges, rifts, engraving, flying swords, code windows,
+chess pieces, board geometry and actual PLAN calculations are preserved.
+Vesper's header and legacy preview cells use actual candidate body frames.
+
+New definitions add only `rank_art_v2: 1`, preserving existing parameters.
+It marks this presentation generation; it does not enable an unproven renderer.
+
+## Ranked animation capability gate
+
+The stable entity API has no current body animation-frame or facing query.
+Existing Vesper/Magnus layers infer poses; Coder's old clothes assume a fixed
+torso. These assumptions cannot prove exact alignment with moving whole bodies.
+A sprite draw API does not establish such synchronisation.
+
+The approved plan's visible fallback is therefore used. **The remaining
+11/9/9/11 ranked animation sets were not authored past the alignment gate.**
+Twelve approved single-pose rank references remain inspectable. No completed
+ranks or safe host-frame synchronisation are fabricated. Full ranked outfits
+require a supported pose/sprite mechanism and idle/movement/attack proof.
+
+## Review and reproduction
+
+- [Combined review](../../editor/ranked-body-review.html): before/stock/candidate
+  comparisons, approved rank references, 1x/3x, light/dark terrain, both facings,
+  actual packed pose/frame inspection and complete base animation GIFs.
+- [Vesper animation](staged/vesper-right.gif),
+  [Isliid animation](staged/isliid-right.gif),
+  [Coder animation](staged/coder-right.gif),
+  [Magnus animation](staged/magnus-right.gif). Left-facing GIFs are adjacent.
+- [Canonical art manifest](../../rules/ranked-body-art.json): frozen source
+  hashes, exact animation contracts, anchors and native/Lab asset paths.
+- [Concept prompts](concept-prompts.json), [animation prompts](animation-prompts.json)
+  and [official references](reference-pages.json). Imagegen itself is not deterministic.
+
+Open `http://localhost:7298/ranked-body-review.html`. All four existing Labs
+read actual package frames. Standalone wrappers expose the existing Isliid/Coder
+Labs without recreating their rules. The editor server uses isolated AppData.
 
 ```powershell
-rtk proxy python -X utf8 tools/build-ranked-body-review.py
-rtk proxy node tools/serve-ranked-body-review.cjs 7297
+rtk proxy python tools/serve-ranked-editor.py 7298
+rtk proxy python -X utf8 tools/verify-ranked-body-generation.py
 rtk proxy node tools/test-ranked-body-review.cjs
+rtk proxy node tools/test-ranked-body-labs.cjs
+rtk proxy python -X utf8 tools/check-ranked-body-package-manager.py
 ```
 
-Open `http://localhost:7297/editor/ranked-body-review.html`. The page provides
-1×/3× sprites, light/dark terrain, both facings, stock/current comparisons and
-rank/pose/frame inspection. Concept poses are explicitly labelled as concepts;
-uncompleted ranks show an unavailable message rather than a misleading reuse.
-The current-package inspector loads the actual PNG/FANIM files. It does not
-substitute editor-only thumbnails or pretend to reconstruct native layers.
+Registration, mirroring and packing reproduce from frozen sources. Legacy
+procedural body/outfit generators are historical; the new manifest-driven
+scripts are authoritative for these candidate bodies and compatibility aliases.
 
-Recorded browser checks: **48 proposal/facing/terrain combinations, 64 packaged
-pose/facing cases, 426 packaged frame/facing cases (213 unique frames), zero
-console errors and zero failed asset requests**.
-The interactive review's cold/warm numbers concern browser review drawing only.
-They are not native rendering benchmarks or actual-game acceptance.
+## Automated evidence
 
-Cropping, alpha-fringe cleanup (threshold 180), nearest-neighbour registration,
-mirroring and review packing are deterministic from saved sources. Imagegen
-generation itself is not deterministic. New raster anatomy is generated through
-imagegen, not drawn procedurally by the review builder.
+- Native: **1,027 passed, 0 failed, 13 ignored**. Four existing Windows bridge
+  test-helper warnings remain. The initial MSVC attempt lacked link.exe; the
+  supported GNU toolchain completed successfully. See [native-tests.txt](native-tests.txt).
+- Vesper: **40 math + 938 simulation vectors**, zero mismatches.
+- Magnus: **9,819 complete native/editor frames**, including concurrent instances.
+- Coder: **558 deterministic runs**, all 5,500 view references checked.
+- Isliid: **5,307 visual references**, Lab tables and grades passed. Its verifier
+  now accepts approved transparent padding while preserving timing and hashes.
+- Browser: **48 concept/facing/terrain cases**, **64 packaged pose/facing cases**,
+  **426 frame/facing pixel comparisons** against an independent Pillow oracle.
+  All four actual Labs load without page errors.
+- **284 complete independent assets** are byte-identical. **198 mixed-atlas
+  frames** preserve their designs, including the authorised keyboard translation.
+- Champion-load test passed. Isolated Mod Manager: **859 files**, zero
+  differences/missing files. No real installation or real AppData logs were used.
+- Native/WASM sources and gameplay definitions are unchanged apart from the
+  inert art marker; see [art-verification.json](art-verification.json).
 
-## Rank coverage
+[Five Magnus stress runs](magnus-performance.json) retain the under-4-ms
+128-piece p95 target: median **0.740 ms**. This excludes host/rendering and is
+not an upper bound on every individual step.
 
-| Character | Ordinary | Shared Top 10 | Distinct podium | Total |
-| --- | ---: | ---: | ---: | ---: |
-| Vesper | 7 | #4–10 | #3, #2, #1 | 11 |
-| Emperor Isliid | 7 | #2–10 | #1 | 9 |
-| Coder | 7 | #2–10 | Zero-Day #1 | 9 |
-| Magnus | 7 | #4–10 | #3, #2, #1 | 11 |
+[Browser measurements](lab-browser-results.json) separate five cold body loads
+from five warm runs. Warm numbers normalise 32-draw batches with a small readback
+to avoid timer-resolution zeros. They are browser timings, not game-host
+performance or evidence that a freeze is fixed.
 
-Rank selectors retain the existing index orders. In particular, Vesper's #1 is
-look **8**, #3 is **9**, #2 is **10**; Magnus's #3/#2/#1 are **8/9/10**. Do not
-silently unify those two historical orders. Names, thresholds and badges remain
-the existing systems' responsibility.
+## Memory, compatibility and remaining delivery
 
-## Presentation audit and remaining proof
+All new body atlases are <=2048 pixels and under 32 MiB individually.
+Magnus's **complete** candidate presentation is **28.85 MiB**, below 32 MiB.
+Baseline inherited totals were Vesper 165.16 MiB, Isliid 292.23 MiB and Coder
+62.52 MiB. Their large independent FX allocations remain memory debt; this
+body-only pass does not claim to resolve it. Candidate totals are in the review.
 
-The checked stable entity API supplies position, attack interval, cooldowns and
-buff/control state; it does not expose the host body's current animation frame
-or facing. Existing presentation uses inferred facing and owned action state:
+[Generation hashes](generation-results.json) record byte-identical rebuilding
+and the unchanged packaged DLL. DLL SHA-256:
+`1e74f3f5c9128f8dd20cd1e6b95734246681c83590082b105107a3c15a047916`.
 
-- Vesper: `style_names`/`sync_visuals` in `vesper.rs`; current outfit/gauntlet
-  poses follow the core's Shatter/swipe/punch/jab/block/guard priorities.
-- Magnus: `sync` in `magnus.rs` selects attack/hit/run/idle overlays; actual PLAN
-  marks are generated independently from `core.plans` and must remain so.
-- Coder: `coder.rs` uses persistent `cd_fitN` and `cd_kbN`; the old clothing art
-  assumes a fixed torso. A moving whole-body replacement cannot safely inherit
-  that alignment assumption.
-- Isliid currently changes sword/badge art rather than providing nine body
-  outfits. His hovering movement must remain a glide.
-
-Before full rank animation production, prove the shared pose references and
-native selection on idle, movement and attacks. Keep the real base sprite
-visible, add no hiding or Animation CC, and retain the coherent base fallback
-where alignment cannot be established. No exact host-frame synchronisation or
-in-game layer alignment is claimed by this prototype review.
-
-After approval, integration must add `rank_art_v2: 1` without losing existing
-parameters; generate native/Lab mappings from the art manifest; preserve badges,
-gear and independent effects; remove only incompatible owned legacy clothing
-layers for old embedded definitions. Migration stays inspect-first and separate.
-
-## Memory audit
-
-| Character | Existing declared unique sheets | Existing decoded total |
-| --- | ---: | ---: |
-| Vesper | 111 | 165.16 MiB |
-| Emperor Isliid | 119 | 292.23 MiB |
-| Coder | 18 | 62.52 MiB |
-| Magnus | 74 | 30.34 MiB |
-
-These inherited totals include skill FX; they are not new-body allocations.
-The new body/outfit allocation stays below 32 MiB per character, atlas edges at
-most 2048. **Magnus's complete presentation remains limited to 32 MiB**, so his
-remaining headroom must be checked before final packing. The concept PNGs are
-review assets, not packaged atlases.
-
-## Delivery gates
-
-Pending: user appearance approval; complete authored animation/rank coverage;
-idle/run/attack alignment proof; generated native/Lab mappings and fallback;
-native/parity/regression suites; five-run presentation/performance measurements;
-approved-asset Mod Manager load verification; new PR separate from Grimhald #67.
-
-Game code, champion definitions, packed textures/FANIM and native DLL remain
-unchanged at this stage. Therefore no combat-change or release claim is made.
-Installation, actual-career migration and live-game acceptance stay separate.
+No install, real-career migration, released package or actual-game acceptance
+is claimed. Live roster, crowding, movement/gear alignment, interruption, death
+and respawn observations remain pending. The PR stays draft while the ranked
+animation capability gate is unresolved.

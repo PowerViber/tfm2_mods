@@ -24,16 +24,15 @@ const root=path.resolve(__dirname,'..'),out=path.join(root,'docs/ranked-body-red
   for(let run=0;run<5;run++)warm.push(await page.evaluate(oracle=>{
    const canvas=document.createElement('canvas');canvas.width=canvas.height=256;const ctx=canvas.getContext('2d'),times=[];
    for(const[key,poses]of Object.entries(oracle))for(const[pose,frames]of Object.entries(poses))for(let i=0;i<frames.length;i++){
-    const start=performance.now();RankedBodyArt.draw(ctx,key,pose,0,128,128,3,false,i);times.push(performance.now()-start);
-   }times.sort((a,b)=>a-b);return{medianMs:times[Math.floor(times.length/2)],p95Ms:times[Math.floor((times.length-1)*.95)],p99Ms:times[Math.floor((times.length-1)*.99)]};
+    const start=performance.now();for(let repeat=0;repeat<32;repeat++)RankedBodyArt.draw(ctx,key,pose,0,128,128,3,false,i);ctx.getImageData(128,128,1,1);times.push((performance.now()-start)/32);
+   }times.sort((a,b)=>a-b);return{batchDraws:32,normalisedMedianMs:times[Math.floor(times.length/2)],normalisedP95Ms:times[Math.floor((times.length-1)*.95)],normalisedP99Ms:times[Math.floor((times.length-1)*.99)]};
   },oracle));
   const cold=[];for(let i=0;i<5;i++){const context=await browser.newContext();const p=await context.newPage();await p.goto(base+'/ranked-body-review.html');cold.push(await p.evaluate(async()=>{const s=performance.now();await new Promise((resolve,reject)=>{const t=document.createElement('script');t.src='ranked-body-runtime.js';t.onload=resolve;t.onerror=reject;document.body.append(t)});await RankedBodyArt.readyPromise;if(!RankedBodyArt.ready)throw Error(RankedBodyArt.error);return performance.now()-s}));await context.close();}
   const pages=[];
   for(const name of ['vesper','magnus']){await page.goto(base+'/'+name+'.html');await page.evaluate(()=>RankedBodyArt.readyPromise);assert.equal(await page.evaluate(()=>RankedBodyArt.ready),true);await page.waitForTimeout(400);await page.screenshot({path:path.join(out,name+'-lab.png'),fullPage:false});pages.push(name);}
-  await page.goto(base+'/index.html');await page.waitForFunction(()=>window.TFM2CoderLab&&window.TFM2IsliidLab&&window.RankedBodyArt?.ready);
   for(const[name,api]of [['isliid','TFM2IsliidLab'],['coder','TFM2CoderLab']]){
-   await page.evaluate(({name,api})=>{const old=document.querySelector('#rankArtTest');if(old)old.remove();const div=document.createElement('div');div.id='rankArtTest';document.body.prepend(div);window[api].mount(div)},{name,api});
-   await page.waitForTimeout(400);await page.locator('#rankArtTest').screenshot({path:path.join(out,name+'-lab.png')});pages.push(name);
+   await page.goto(base+'/ranked-lab.html?champ='+name);await page.waitForFunction(()=>window.RankedBodyArt?.ready);
+   await page.waitForTimeout(400);await page.locator('#existingLab').screenshot({path:path.join(out,name+'-lab.png')});pages.push(name);
   }
   assert.deepEqual(errors,[]);
   const report={packedFramePixelParity:parity.checked,labPages:pages,errors,coldBodyLoadMs:cold,warmDrawRuns:warm,scope:'Headless browser presentation only; not game-host timing or native body-frame synchronisation proof',nativeRankMode:'visible-base-fallback',actualGameObserved:false};
