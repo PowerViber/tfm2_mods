@@ -1,7 +1,7 @@
 {
-  "revision": 5,
+  "revision": 6,
   "walkStrideWorld": 60000,
-  "integrated": false,
+  "integrated": true,
   "weaponPrefix": "grh_weapon_",
   "frameMillis": {
     "idle": [180, 180, 180, 180],
