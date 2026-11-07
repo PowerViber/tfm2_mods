@@ -2,7 +2,7 @@
 pub const WEAPON_PREFIX: &str = "grh_weapon_";
 pub fn durations(name:&str)-> &'static [u64] { match name {
 "idle"=> &[180, 180, 180, 180],
-"run"=> &[80, 80, 80, 80, 80, 80],
+"run"=> &[160, 160, 160, 160, 160, 160],
 "attack"=> &[80, 80, 80, 80],
 "skill1"=> &[150, 150, 150, 150],
 "skill2"=> &[80, 80, 80, 80],

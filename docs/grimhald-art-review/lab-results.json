@@ -1,11 +1,15 @@
 {
   "rules_revision": "grimhald-2",
-  "art_revision": "walk-v4 armed/unarmed cycles and flat ground fissure",
-  "checks": 19,
+  "art_revision": "movement-v5 matched idle and distance-driven walk",
+  "checks": 23,
   "passed": [
     "Lab loads approved body and shared WASM",
     "13 athlete controls",
     "Live movement renders all six walk drawings",
+    "Walking cadence follows travel rather than the old fast timer",
+    "Repeated rendering cannot advance the gait",
+    "Recording reconstructs the same movement phase",
+    "Matched unarmed idle has four complete drawings",
     "Unarmed walking inspector has six distinct drawings",
     "Actual WASD moves the owner",
     "Q activates ghost",
@@ -28,7 +32,7 @@
       "id": 1,
       "split": "development",
       "fixture": "combo",
-      "frames": 131,
+      "frames": 132,
       "parity": true
     },
     {
@@ -77,7 +81,7 @@
       "id": 8,
       "split": "development",
       "fixture": "cleanse",
-      "frames": 131,
+      "frames": 132,
       "parity": true
     },
     {
@@ -126,7 +130,7 @@
       "id": 15,
       "split": "development",
       "fixture": "miss",
-      "frames": 131,
+      "frames": 132,
       "parity": true
     },
     {
@@ -277,7 +281,7 @@
       "parity": true
     }
   ],
-  "parityFrames": 4716,
+  "parityFrames": 4719,
   "errors": [],
   "liveAcceptance": "pending; Lab host movement, damage mitigation and cage isolation are simulated"
 }

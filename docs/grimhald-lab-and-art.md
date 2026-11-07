@@ -22,11 +22,25 @@ Revision 3 supplied complete connected key poses. The user then requested a real
 more fluid walk instead of its single run drawing, and a fissure lying on the
 floor rather than an upright rock silhouette.
 
-Revision 4 adds **six different complete walk drawings** in each armed/unarmed
-state, both facings, at the existing 80 ms timing. Knees, hips, shoulders and cloth
-move together. The Lab samples the cycle from a stable presentation clock; frames
-do not restart on each render. Whole-frame registration preserves the foot anchor.
-Attack, cast, idle-breathing and death cycle completion remains pending approval.
+Revision 4's complete walk and flat floor correction were approved. A later
+review found the older idle too dark, visually inconsistent and differently sized.
+The same review requested walking that looks like his actual travel speed.
+
+Revision 5 replaces that older idle with four full-body drawings per weapon
+state, referenced directly from the approved walking identity. The 39-pixel
+standing body shares the walk's helmet landmark, steel/crimson palette and fixed
+foot anchor. The six approved walk drawings are pixel-unchanged; their nominal
+duration is now **160 ms/frame** (a 0.96-second cycle instead of 0.48).
+The live Lab advances gait phase by actual ground travel, one cycle per
+**60,000 world units**, so slowing, stopping and speed bonuses do not leave a
+time-driven sprint or foot shuffle. Repeated rendering and pause do not advance
+the gait; recordings reconstruct it. This does not change gameplay movement speed.
+
+Unfinished attack/cast/hit/death drawings explicitly use the matched idle as a
+placeholder rather than displaying the superseded dark concept. Their complete
+cycles, final body/weapon asset integration and native alignment remain pending.
+The native accessory presenter remains disabled; the Lab's distance-driven body
+animation is not proof of engine-owned body playback in the game.
 
 The fissure is now a flat top-down ground crack. Native and Lab choose its
 directional alias through the same read-only resolver; the raw combat event name,
@@ -38,7 +52,7 @@ The current review is `editor/grimhald-review.html`. Frozen sources, prompts,
 hashes and actual-size comparisons are in `docs/grimhald-art-review`.
 Image generation is not deterministic; extraction and packing are reproducible.
 
-The axe is absent from the Lab body during outgoing/return flight and the leap.
+The axe is absent from the Lab body during outgoing/return flight, the leap and the current planted-axe state.
 The native weapon presenter is implemented and tested through the mock host, but remains disabled until the approved full-body and weapon frames are integrated. The SDK cannot remove a baked-in axe
 from the old base sprite. Do not hide the champion globally, renew idle Animation
 CC or claim an overlay covers the old weapon. A visible unarmed base plus a
@@ -48,18 +62,17 @@ pose-aligned weapon accessory is the supported implementation direction.
 
 | Feature | Original PR head | Current candidate |
 |---|---:|---:|
-| Bulwark range | 38,000 | 54,000 |
+| Bulwark range | 38,000 | 70,000 |
 | Preparation | 18 ticks | 36 ticks |
 | Fissure | Instant full line | 18-tick advancing sweep, one hit per target |
 | Pillar | With impact | 12 ticks after fissure arrival |
-| Bash range | 22,000 | 40,000 |
-| Bash knockback | 24,000 | 36,000 |
+| Bash range | 22,000 | 52,000 |
+| Bash knockback | 24,000 | 50,000 |
 | Ultimate impact radius | 36,000 | 40,000 |
 | Cage radius | 55,000 | 62,000 |
 | Axe steering | None | 10 degrees total turn budget, 0.25 degrees/tick |
 
-Damage coefficients, cooldowns, HP, growth, Mod Power, slow/stun/airborne durations
-and AI weights remain unchanged. This later user request explicitly supersedes
+The later Claude Round 2 changes (commit 7426636) include the 8-second cage, pillar nudge, unarmed fists and planted-axe aura described in grimhald-guide.md. This presentation correction preserves that entire combat core and its canonical rules; it does not restore the earlier numbers. This later user request explicitly supersedes
 the earlier art-only scope. Ornn's Volcanic Rupture and Alistar's Headbutt supply
 the requested attack identities; their artwork and numerical balance are not
 copied. Official reference pages: [Ornn](https://www.leagueoflegends.com/en-us/champions/ornn/)
@@ -74,7 +87,15 @@ settings retain their existing defaults.
 
 ## Current visual verification
 
-The current fixes pass 19 browser checks, including live six-frame walking, six distinct unarmed inspector frames, and identical complete traces with presentation enabled/disabled. The 36 native/WASM scenarios still match across 4,716 frames. The combat core, gameplay rules and nonvisual champion definition are unchanged from commit db5de05. Current native totals are in the delivery report.
+The correction is based on PR head **7426636** and preserves its complete
+combat core and gameplay rules. The shared Lab/native core tests pass **34**.
+The latest browser count and full native/WASM trace results are recorded in
+docs/grimhald-art-review/lab-results.json; earlier full-native totals in the
+delivery report are explicitly earlier evidence, not a fresh full-suite claim.
+Art checks reproduce extraction/packing, compare exact approved walk pixels and
+mirrors, verify fixed feet/body scale and bound the idle/walk steel-luminance
+difference. Current loaded preview textures total **10,547,200 decoded bytes**;
+final complete assets must be budgeted again.
 
 ## Verification and handoff
 
@@ -84,6 +105,7 @@ Commands (Windows GNU toolchain):
 python tools/generate-grimhald.py --check
 python tools/prepare-grimhald-connected.py
 python tools/prepare-grimhald-walk.py
+python tools/prepare-grimhald-consistency.py
 python tools/validate-grimhald-art.py
 cargo +stable-x86_64-pc-windows-gnu test --release
 cargo +stable-x86_64-pc-windows-gnu build --release --lib --target wasm32-unknown-unknown

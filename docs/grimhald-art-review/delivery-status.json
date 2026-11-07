@@ -28,9 +28,9 @@
   "canonical_generators": "Grimhald and roster current",
   "manager": "the_repos_champions_all_load passed; data-format check only, not final-asset or live acceptance",
   "art": {
-    "current": "Six-frame complete armed/unarmed walk in both facings, remaining connected key poses, flat oriented ground fissure",
-    "approval": "pending revised appearance/material review",
-    "complete_animations": "Walking cycle ready for review; other cycles pending",
+    "current": "Matched four-frame idle in both weapon states, approved six-frame walk, distance-driven Lab gait, flat oriented floor fissure",
+    "approval": "Walking and floor corrections approved; subsequent idle/light/scale/cadence corrections implemented in Lab",
+    "complete_animations": "Idle and walk complete in both weapon states; attack/cast/hit/death cycles still pending",
     "previous_cutout_rig": "rejected and superseded",
     "game_pack_integration": "held; rejected cutout assets removed from uncommitted mod candidate"
   },
@@ -45,5 +45,26 @@
     "Earlier full parallel test run had a Raze cache test failure; the isolated case and serial suites passed",
     "Performance JSON is a limited core+presentation microbenchmark, not crowded native-host performance"
   ],
-  "visual_only_verification": "Combat core and gameplay rules unchanged from db5de05; full trace identical with presentation enabled/disabled"
+  "visual_only_verification": "Gameplay core and rules unchanged from 7426636; current PR Round 2 changes retained; full trace presentation equivalence verified",
+  "earlierEvidenceCommit": "5f8a59e16ac18507f0e84ec4b297e79b5b373a4b",
+  "visualCorrection": {
+    "baseline": "7426636d2e97993e64850fa9a9a9316b75c0eba7",
+    "labTests": 34,
+    "browserReport": "lab-results.json",
+    "movementSpeedChanged": false,
+    "nominalWalkFrameMillis": 160,
+    "walkCycleWorldDistance": 60000,
+    "decodedLoadedArtBytes": 10547200,
+    "gamePackIntegration": "pending complete body animations",
+    "nativeHostAcceptance": "pending",
+    "browser": {
+      "checks": 23,
+      "scenarios": 36,
+      "completeNativeWasmTraceFrames": 4719,
+      "exceptions": 0
+    },
+    "nativeGrimhaldTests": 39,
+    "nativeWarnings": "4 existing Windows detour-test dead-code warnings",
+    "wasmSha256": "18b7f657a89d739dc6cbcd40e23644c6224d78ae85ad4140de2127fbf9cac6e1"
+  }
 }

@@ -1,19 +1,42 @@
 {
   "rules": "grimhald-2",
+  "artRevision": 5,
   "reproducibleExtractionAndPacking": true,
-  "connectedKeyPoses": 4,
+  "idleFramesPerState": 4,
   "walkFramesPerState": 6,
   "walkStates": [
     "armed",
     "unarmed"
   ],
-  "walkMirrorsPixelExact": true,
+  "walkPixelsUnchanged": true,
+  "mirrorsPixelExact": true,
   "groundFissureFlat": true,
-  "keyPosesUnclipped": true,
   "footAnchorBelowCentre": 20,
-  "previewDecodedBytes": 10084352,
-  "unrelatedBalanceValuesUnchanged": true,
-  "completeAnimationAcceptance": "walk ready for review; remaining cycles pending",
+  "bodyHeights": {
+    "idle": [
+      39,
+      39,
+      39,
+      39
+    ],
+    "walk": [
+      40,
+      38,
+      40,
+      40,
+      39,
+      41
+    ]
+  },
+  "steelLuma": {
+    "idle": 118.8328,
+    "walk": 111.8348
+  },
+  "walkStrideWorld": 60000,
+  "nominalWalkCycleSeconds": 0.96,
+  "previewDecodedBytes": 10547200,
+  "gameplayRulesUnchangedFrom": "7426636d2e97993e64850fa9a9a9316b75c0eba7",
+  "completeAnimationAcceptance": "Walk and ground correction approved; idle consistency revised; remaining action/death cycles pending",
   "gamePackIntegration": "pending",
   "hashes": {
     "connected-v3-idle.png": "082e9f865d5bb4a7cc32f22ec943fcae3a5c5a884b6f38d708d6a1bd7c90a3d2",
@@ -23,7 +46,13 @@
     "effects-v2-preview.png": "8ec889e86aaa2d47e58380a7f8908cbf03115d9c7c14ca21c444226f23c872ff",
     "effects-v2-preview.fanim": "0e2aafe640f8aab3f58eb8756180dc01cb977e6c6f70f14101caeacb3666fa0d",
     "walk-v4-preview.png": "7ff8d016ad1138013aa5b3a5d633f924199ebd2aa9b39545e9bbd3c0fa57b927",
-    "walk-v4-preview.fanim": "506d3c3b2e98318b46e4b110ea107231647c797a2139a44c7f3aed688ce1f013",
-    "walk-v4-preview.gif": "88a237cd655b4f8a93c8edff4e0a5e0241c14a6074e2114b74e922627e2f1732"
+    "walk-v4-preview.fanim": "a38b87c38d4ca0eeded2e71847833ae58f132082079faa0f2f1fe715aac04a06",
+    "walk-v4-preview.gif": "a368ecd15ff997f8a8dd3578b23a486998491f1af8e51bdab9f6a571e7a577d6",
+    "movement-v5-preview.png": "bb342d358acccf41fca6e1646911a73705630a5abd360a37ab0ab1da4daa539b",
+    "movement-v5-preview.fanim": "67f7e3b7531936c8a54350a79ca3fb279271a3feea095e011f68556377fce9bb",
+    "idle-v5.png": "996ff72fa3f0b598e7359cb387257db3a5b79e6d8a28709d96dc6885cbac0355",
+    "idle-unarmed-v5.png": "bf05f7edd98ab56534e31c9e1166a5b614fe11deea2b315a9a62256ad3666101",
+    "idle-walk-v5.gif": "ff8020f2c7aab9a639d74da9c6a58615adf0c8952b061267048620d00cb27e01",
+    "idle-v5-comparison.png": "3348b7717542864be7eebabbd733295a87e9237100f4291052e1701465e8b3cd"
   }
 }

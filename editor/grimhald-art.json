@@ -1,16 +1,15 @@
 {
-  "status": "Six complete walk drawings in both armed/unarmed states. Other animation cycles remain in progress; game-art approval pending.",
+  "status": "Matched idle/walk palette and body scale; walking follows distance travelled. Remaining action/death cycles and game-pack integration are pending.",
   "images": {},
   "effects": "../docs/grimhald-art-review/effects-v2-preview.png",
   "effectMetadata": "../docs/grimhald-art-review/effects-v2-preview.fanim",
   "candidateImages": {
-    "idle": "../docs/grimhald-art-review/connected-v3-idle.png",
-    "run": "../docs/grimhald-art-review/connected-v3-run.png",
-    "skill2": "../docs/grimhald-art-review/connected-v3-bash.png",
-    "unarmed": "../docs/grimhald-art-review/connected-v3-unarmed.png"
+    "idle": "../docs/grimhald-art-review/idle-v5.png",
+    "unarmed": "../docs/grimhald-art-review/idle-unarmed-v5.png"
   },
-  "cycleAtlas": "../docs/grimhald-art-review/walk-v4-preview.png",
-  "cycleMetadata": "../docs/grimhald-art-review/walk-v4-preview.fanim",
+  "cycleAtlas": "../docs/grimhald-art-review/movement-v5-preview.png",
+  "cycleMetadata": "../docs/grimhald-art-review/movement-v5-preview.fanim",
   "footAnchorBelowCentre": 20,
-  "revision": 4
+  "revision": 5,
+  "walkStrideWorld": 60000
 }

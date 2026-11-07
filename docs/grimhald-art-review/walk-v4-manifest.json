@@ -11,12 +11,12 @@
   "uniqueCompleteArmedFrames": 6,
   "uniqueCompleteUnarmedFrames": 6,
   "frameMillis": [
-    80,
-    80,
-    80,
-    80,
-    80,
-    80
+    160,
+    160,
+    160,
+    160,
+    160,
+    160
   ],
   "footAnchorBelowCentre": 20,
   "armedRegistration": [
@@ -109,5 +109,5 @@
   ],
   "method": "Uniform full-frame downsampling and registration; no separated torso or limb transforms",
   "decodedBytes": 1572864,
-  "status": "animation preview pending approval"
+  "status": "whole-body walk approved; cadence revised by the user to match movement"
 }
