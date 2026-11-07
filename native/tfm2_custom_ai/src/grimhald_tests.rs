@@ -91,7 +91,9 @@ mod glue {
         let h = host.borrow();
         assert!(h.damage.iter().any(|d| d.0 == 0 && d.1 == 1 && d.3 == AttackTypeV1::Skill.code()), "{:?}", h.damage);
         // the pillar and its wall buff showed up at some point, or the bash moved him
-        assert!(h.moves.iter().any(|m| m.0 == 0 || m.0 == 1), "something moved");
+        // round 156: dashes and knockbacks are engine forced moves now, not hand-set positions
+        let forced = |i: usize| h.ccs[i].iter().any(|c| c.0.kind == mod_api_stable::CcKindV1::ForceMove.code());
+        assert!(forced(0) || forced(1), "something moved through the engine");
     }
 }
 

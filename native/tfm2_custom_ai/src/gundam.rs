@@ -447,7 +447,8 @@ impl Gundam {
                         fx(sim, me.id, "wall_hit", InputTargetV1::target(id));
                     }
                 } else if !held {
-                    put(sim, me.id, nx, ny);
+                    // round 156: the engine moves him and the carried enemy (hand-set positions drew as teleports)
+                    crate::motion::step(sim, me.id, (nx, ny), crate::motion::Kind::SelfMove);
                     if tick.is_multiple_of(3) {
                         fx(sim, me.id, if dx >= 0.0 { "after_r" } else { "after_l" }, InputTargetV1::pos(x.max(0) as u64, y.max(0) as u64));
                     }
@@ -455,8 +456,10 @@ impl Gundam {
                         if let Some(e) = living(all, id) {
                             // carried ahead of him, but never into terrain, off the map or into a Steve wall
                             let to = crate::place::safe(all, tick, (e.x, e.y), (nx + (dx * 12_000.0) as i64, ny + (dy * 12_000.0) as i64));
-                            put(sim, id, to.0, to.1);
-                            sim.apply_cc(id, &CcV1::stun(2));
+                            crate::motion::step(sim, id, to, crate::motion::Kind::Knock);
+                            if crate::motion::legacy() {
+                                sim.apply_cc(id, &CcV1::stun(2));
+                            }
                         } else { pushed = None; }
                     }
                 }

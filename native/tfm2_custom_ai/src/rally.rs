@@ -213,7 +213,7 @@ pub(crate) fn ult_unlocked(slot: bool, marker: bool) -> bool {
 fn cc(sim: &StableSim, id: usize, kinds: &[CcKindV1]) -> bool {
     sim.get_entity(id).is_some_and(|u| {
         (0..u.cc_count()).filter_map(|i| u.cc_at(i)).any(|c| {
-            !["rly_motion", "rly_attack_lock"].contains(&c.name())
+            !["rly_motion", "rly_attack_lock"].contains(&c.name()) && !crate::motion::is_self_motion(&c)
                 && kinds.iter().any(|k| k.code() == c.kind)
         })
     })
@@ -530,11 +530,15 @@ impl Rally {
                         (p.0 as i64, p.1 as i64)
                     });
                     let p = crate::place::point(&[], sim.tick(), from, (pos.x, pos.y));
-                    sim.entity_set_pos(owner, p.0.max(0) as u64, p.1.max(0) as u64);
+                    // round 156: the engine moves her (a hand-set position drew as a teleport); the hold below only
+                    // keeps the old path still, a forced move already takes her input
+                    crate::motion::step(sim, owner, p, crate::motion::Kind::SelfMove);
                     self.facing.placed(p);
-                    let mut bind = CcV1::of_kind(CcKindV1::Bind, 1);
-                    bind.set_name("rly_motion");
-                    sim.apply_cc(owner, &bind);
+                    if crate::motion::legacy() {
+                        let mut bind = CcV1::of_kind(CcKindV1::Bind, 1);
+                        bind.set_name("rly_motion");
+                        sim.apply_cc(owner, &bind);
+                    }
                 }
                 Effect::Shield { amount, ticks } => {
                     sim.entity_add_shield(owner, amount.max(0) as usize, ticks as usize);

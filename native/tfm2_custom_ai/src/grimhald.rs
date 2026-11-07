@@ -229,17 +229,29 @@ impl Grimhald {
                         sim.add_buff(target, &b);
                     }
                 }
-                Effect::Place { target, pos, .. } => {
+                // round 156: knockbacks, the charge and the leap go through the engine (crate::motion); a hand-set
+                // position drew as a teleport
+                Effect::Place { target, pos, hold } => {
                     if reach(owner, target) {
-                        sim.entity_set_pos(target, pos.x.max(0) as u64, pos.y.max(0) as u64);
-                        crate::steve::note_placed(sim, target, pos.x, pos.y);
-                        sim.add_buff(target, &crate::timed(crate::place::MOVED, 2));
+                        crate::motion::step(sim, target, (pos.x, pos.y), crate::motion::Kind::Knock);
+                        if hold > 0 && crate::motion::legacy() {
+                            sim.apply_cc(target, &named(CcKindV1::Stun, hold, "grh_knock"));
+                        }
                     }
                 }
                 Effect::Move { pos } => {
-                    sim.entity_set_pos(owner, pos.x.max(0) as u64, pos.y.max(0) as u64);
-                    crate::steve::note_placed(sim, owner, pos.x, pos.y);
-                    sim.add_buff(owner, &crate::timed(crate::place::MOVED, 2));
+                    if self.core.ghost.is_some() {
+                        // Iron Ghost: banished and unseen, so a plain placement draws nothing
+                        sim.entity_set_pos(owner, pos.x.max(0) as u64, pos.y.max(0) as u64);
+                        crate::steve::note_placed(sim, owner, pos.x, pos.y);
+                        sim.add_buff(owner, &crate::timed(crate::place::MOVED, 2));
+                    } else {
+                        crate::motion::step(sim, owner, (pos.x, pos.y), crate::motion::Kind::SelfMove);
+                    }
+                }
+                Effect::Glide { target, to, ticks } => {
+                    let kind = if target == owner { crate::motion::Kind::SelfMove } else { crate::motion::Kind::Knock };
+                    crate::motion::glide(sim, target, (to.x, to.y), ticks, kind);
                 }
                 Effect::Banish { ticks } => {
                     sim.entity_banish(owner, owner, ticks as usize, "", "");

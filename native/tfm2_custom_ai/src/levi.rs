@@ -1653,7 +1653,8 @@ impl Levi {
         }
         let (fx, fy) = walls::pull_back(x0 as i64, y0 as i64, x as i64, y as i64);
         self.pos = (fx as f64, fy as f64);
-        sim.entity_set_pos(m.id, fx.max(0) as u64, fy.max(0) as u64);
+        // round 156: the engine moves him (a hand-set position drew as a teleport)
+        crate::motion::step(sim, m.id, (fx, fy), crate::motion::Kind::SelfMove);
         self.cuts(sim, m, all, (x0, y0), self.pos, tick);
         match stop {
             Some(true) => self.crash(sim, m, tick),
@@ -1741,7 +1742,7 @@ impl Levi {
         let (tx, ty) = (x + a.cos() * DASH_SPEED, y + a.sin() * DASH_SPEED);
         let (cx, cy) = walls::clip(x as i64, y as i64, tx as i64, ty as i64);
         if (cx, cy) != (tx as i64, ty as i64) { self.dash = None; }
-        sim.entity_set_pos(m.id, cx.max(0) as u64, cy.max(0) as u64);
+        crate::motion::step(sim, m.id, (cx, cy), crate::motion::Kind::SelfMove);
         self.pos = (cx as f64, cy as f64);
     }
 
@@ -2065,7 +2066,7 @@ fn displaced(flight: (f64, f64), actual: (f64, f64), speed: f64) -> bool {
 fn forced(sim: &StableSim<'_>, id: usize) -> bool {
     let Some(e) = sim.get_entity(id) else { return false };
     (0..e.cc_count()).filter_map(|i| e.cc_at(i))
-        .any(|c| c.kind == CcKindV1::ForceMove.code() || c.kind == CcKindV1::Airborne.code())
+        .any(|c| (c.kind == CcKindV1::ForceMove.code() && !crate::motion::is_self_motion(&c)) || c.kind == CcKindV1::Airborne.code())
 }
 
 #[cfg(test)]

@@ -188,6 +188,19 @@ Paste these under Volume 2's checklist:
 - [ ] Fixtures use 24 or more seeds, relative assertions and a variety cap; JS/native parity vectors cover effects and every stat.
 - [ ] The shipped DLL's SHA-256 is recorded; "automated checks passed, live acceptance pending" is stated until a real match is played.
 
+## 12. Motion through the engine, never by hand (round 156)
+
+`entity_set_pos` only writes a unit's coordinates. The game never learns that the unit is moving, so the client draws a jump and the unit keeps its standing pose. Reihan saw dashes and knockbacks "teleport" even at 0.5× speed, while base-game dashes stayed smooth.
+
+- **Anything the player should see moving goes through `crate::motion`** (`native/tfm2_custom_ai/src/motion.rs`), which drives the engine's own forced movement:
+  - `motion::step(sim, id, to, Kind::SelfMove | Kind::Knock)` moves `id` to `to` over the next tick. Use it for dashes, flights and knockback paths you plan tick by tick, which keeps your wall checks exact.
+  - `motion::glide(sim, id, to, ticks, kind)` is one command for a straight push or leap.
+- **The motion CC is named** `mv_self` (a champion moving himself) or `mv_knock` (a pushed unit). Your own "am I controlled / rooted / interrupted" checks must skip `motion::is_self_motion(c)`, otherwise your dash cancels itself. This is the same lesson as Contender's named locks.
+- **`cc_immune` blocks a forced move.** Issue a self-glide before you give yourself immunity (Grimhald's leap does this), or don't make the mover immune.
+- **Keep `entity_set_pos` for** real teleports (Flash, Minato, Omen, pearls), units nobody can see (banished, hidden carriers) and deliberate corrective snaps (cage or domain edges).
+- **`motion_guard_tests.rs` fails** when a file gains an `entity_set_pos` call beyond its allowlist. A real teleport needs an entry with its reason.
+- **A/B in the game:** `motion.flag` next to the DLL restores the old hand-set path; `motion_trace.flag` logs every motion to `motion_log.txt`.
+
 ## The example kit
 
 `champion-authoring-examples/` is in the repository, not installed and not shipped (the Manager only copies `mods/*`).
