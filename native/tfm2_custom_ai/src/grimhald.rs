@@ -289,7 +289,8 @@ impl Grimhald {
                     }
                     // the flying axe is one sprite per tick and never budgeted
                     if name.starts_with("grh_axe_p") || self.fx_ok(tick as u64, ambient) {
-                        crate::fx_point(sim, &name, owner, at.x, at.y, ticks);
+                        let visual=crate::grimhald_presentation::effect_tag(&name,&self.core);
+                        crate::fx_point(sim,visual.as_deref().unwrap_or(&name),owner,at.x,at.y,ticks);
                     }
                 }
                 Effect::Pose { name, ticks } => {

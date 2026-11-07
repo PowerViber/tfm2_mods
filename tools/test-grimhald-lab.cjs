@@ -12,6 +12,13 @@ const root=path.resolve(__dirname,'..'),out=path.join(root,'docs/grimhald-art-re
   await page.goto('http://127.0.0.1:7296/editor/grimhald.html');await page.waitForFunction(()=>window.grimhaldLab);
   check('Lab loads approved body and shared WASM',await page.locator('#status').textContent().then(s=>s.includes('Paused')));
   check('13 athlete controls',await page.locator('.stat input').count()===13);
+  await page.locator('#arena').focus();await page.keyboard.down('d');
+  const walk=await page.evaluate(()=>{grimhaldLab.pause();const frames=[];for(let i=0;i<36;i++){grimhaldLab.step();frames.push(grimhaldLab.animation.index)}return frames});
+  await page.keyboard.up('d');check('Live movement renders all six walk drawings',new Set(walk).size===6);
+  await page.selectOption('#pose','run_unarmed');await page.uncheck('#animate');
+  const unarmed=[];for(let i=0;i<6;i++){await page.locator('#artFrame').fill(String(i));await page.evaluate(()=>grimhaldLab.render());unarmed.push(await page.locator('#inspect').evaluate(c=>c.toDataURL()));}
+  check('Unarmed walking inspector has six distinct drawings',new Set(unarmed).size===6);await page.check('#animate');
+  await page.evaluate(()=>grimhaldLab.reset());
   await page.locator('#arena').focus();await page.keyboard.down('d');await page.waitForTimeout(120);await page.keyboard.up('d');await page.evaluate(()=>grimhaldLab.pause());
   check('Actual WASD moves the owner',await page.evaluate(()=>grimhaldLab.units[0].pos.x>160000));
   await page.keyboard.press('q');await page.waitForTimeout(80);await page.evaluate(()=>grimhaldLab.pause());check('Q activates ghost',await page.evaluate(()=>!!grimhaldLab.state.ghost));
@@ -30,6 +37,10 @@ const root=path.resolve(__dirname,'..'),out=path.join(root,'docs/grimhald-art-re
    scenarios.push({id:i+1,split,fixture,frames:lines.length,parity:true});
   }
   check('24 development + 12 holdout native/WASM scenarios',scenarioCount===36);
+  const visualTraces=[];
+  for(const enabled of [true,false]){await page.locator('[data-fixture="combo"]').click();await page.evaluate(enabled=>{grimhaldLab.pause();document.querySelector('#presentation').checked=enabled;document.querySelector('#fog').checked=false;document.querySelector('#moving').checked=false;for(let i=0;i<120;i++)grimhaldLab.step()},enabled);visualTraces.push(await page.evaluate(()=>grimhaldLab.outputs));}
+  check('Presentation toggle preserves complete combat trace',JSON.stringify(visualTraces[0])===JSON.stringify(visualTraces[1]));await page.check('#presentation');
+  const alias=await page.evaluate(()=>grimhaldLab.outputs.flatMap(o=>o.effect_tags||[]).filter(Boolean));check('Shared core presentation selects directional ground fissures',alias.some(n=>n==='grh_fissure_d0'));
   // Exported frames replay through the same core without a second JS skill implementation.
   const recording=await page.evaluate(()=>({version:1,rules_revision:'grimhald-2',frames:grimhaldLab.frames}));const expected=await page.evaluate(()=>grimhaldLab.outputs);
   await page.evaluate(r=>{grimhaldLab.loadRecording(r);grimhaldLab.pause();for(let i=0;i<r.frames.length;i++)grimhaldLab.step()},recording);
@@ -39,7 +50,7 @@ const root=path.resolve(__dirname,'..'),out=path.join(root,'docs/grimhald-art-re
   const frames=recording.frames.map(f=>({...f,frame:{...f.frame,manual:true}}));
   function nativeWithProfile(value){const result=spawnSync(path.join(root,'native/grimhald_lab/target/release/grimhald_lab.exe'),[],{input:frames.map(f=>JSON.stringify({...f,frame:{...f.frame,profile:Array(13).fill(value)}})).join('\n')+'\n',encoding:'utf8',maxBuffer:100*1024*1024,windowsHide:true});assert.equal(result.status,0);return result.stdout}
   check('Manual mechanics independent of athlete profile',nativeWithProfile(20)===nativeWithProfile(80));
-  await page.locator('[data-fixture="cage"]').click();await page.evaluate(()=>{grimhaldLab.pause();document.querySelector('#fog').checked=false;for(let i=0;i<110;i++)grimhaldLab.step()});await page.screenshot({path:path.join(out,'lab-cage.png')});check('Complete pentagon follows live core cage',await page.evaluate(()=>grimhaldLab.presentation.some(c=>c.tag.startsWith('cage_phase'))));
+  await page.locator('[data-fixture="cage"]').click();await page.evaluate(()=>{grimhaldLab.pause();document.querySelector('#fog').checked=false;for(let i=0;i<110;i++)grimhaldLab.step()});await page.locator('#arena').screenshot({path:path.join(out,'lab-cage.png')});check('Complete pentagon follows live core cage',await page.evaluate(()=>grimhaldLab.presentation.some(c=>c.tag.startsWith('cage_phase'))));
   for(const facing of ['right','left'])for(const theme of ['light','dark']){await page.selectOption('#facing',facing);await page.selectOption('#theme',theme);await page.selectOption('#pose','skill2');await page.screenshot({path:path.join(out,'lab-'+facing+'-'+theme+'.png')});}
   // The production editor server must serve the same page without touching game data.
   const fixture=fs.mkdtempSync(path.join(os.tmpdir(),'grimhald-editor-'));fs.writeFileSync(path.join(fixture,'bundle.game_data'),'');fs.utimesSync(path.join(fixture,'bundle.game_data'),new Date(0),new Date(0));
@@ -48,6 +59,6 @@ const root=path.resolve(__dirname,'..'),out=path.join(root,'docs/grimhald-art-re
   await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(Error(log)),10000);server.on('error',reject);server.stdout.on('data',d=>{log+=d;if(log.includes('Editor running at')){clearTimeout(timer);resolve()}});server.stderr.on('data',d=>log+=d)});
   await page.goto('http://127.0.0.1:'+port+'/editor/grimhald.html');await page.waitForFunction(()=>window.grimhaldLab);check('Actual editor server route and assets',await page.locator('#status').textContent().then(s=>s.includes('Paused')));
   check('No browser exceptions',errors.length===0);
-  const report={rules_revision:'grimhald-2',art_revision:'connected-v3 key poses',checks,passed,scenarios,parityFrames,errors,liveAcceptance:'pending; Lab host movement, damage mitigation and cage isolation are simulated'};fs.writeFileSync(path.join(out,'lab-results.json'),JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify({checks,scenarioCount,parityFrames,errors}));
+  const report={rules_revision:'grimhald-2',art_revision:'walk-v4 armed/unarmed cycles and flat ground fissure',checks,passed,scenarios,parityFrames,errors,liveAcceptance:'pending; Lab host movement, damage mitigation and cage isolation are simulated'};fs.writeFileSync(path.join(out,'lab-results.json'),JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify({checks,scenarioCount,parityFrames,errors}));
  }finally{await browser.close();if(server)server.kill()}
 })().catch(e=>{console.error(e);process.exitCode=1});

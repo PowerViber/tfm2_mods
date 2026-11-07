@@ -64,7 +64,8 @@ champ['passive_ult'] = {'passive_ref': 'tfm2_custom_ai:ult_learned', 'params': {
 VFX = 'asset/tfm2_custom/vfx/grimhald'
 effects = ['axe_p' + str(i) for i in range(8)] + ['ult_marker', 'slash', 'slash_l', 'land', 'cage_block', 'cage_rise', 'fissure', 'pillar', 'pillar_rise',
            'pillar_break', 'trail', 'bash_dust', 'slam', 'ghost', 'ghost_end', 'leap'] + ['cage_phase'+str(i) for i in range(4)] + ['trail_d'+str(a)+'_l'+str(n) for a in range(rules['presentation']['trailDirections']) for n in range(1,rules['presentation']['trailMaxSteps']+1)]
-champ['view_effects'] = [dict(type='Animation', name='grh_' + t, anim=VFX, tag=t, z=-2 if t in ('fissure', 'trail', 'land') or t.startswith('trail_d') else 5,
+effects += ['fissure_d'+str(i) for i in range(rules['presentation']['trailDirections'])]
+champ['view_effects'] = [dict(type='Animation', name='grh_' + t, anim=VFX, tag=t, z=-2 if t in ('fissure', 'trail', 'land') or t.startswith(('trail_d','fissure_d')) else 5,
                               is_follow=False) for t in effects]
 champ['view_buffs'] = [dict(type='Animated', name='grh_rage' + str(i), anim=VFX, tag='rage' + str(i), z=-1) for i in (1, 2, 3)]
 champ['view_projectiles'] = []

@@ -7,6 +7,16 @@ pub const RENEW_TICKS:u64=d::PRESENTATION_RENEW_TICKS as u64;
 #[derive(Clone,Debug,PartialEq,Serialize)]
 pub struct Cue {pub tag:String,pub at:Point,pub ticks:u64,pub start_tick:u64}
 
+/// Optional visual alias. The combat event and its identity stay unchanged.
+pub fn effect_tag(name:&str,core:&Core)->Option<String> {
+    if name!="grh_fissure" {return None;}
+    let r=core.rupture.as_ref()?;
+    let a=((r.to.y-r.from.y) as f64).atan2((r.to.x-r.from.x) as f64);
+    let n=d::PRESENTATION_TRAIL_DIRECTIONS;
+    let direction=((a/std::f64::consts::TAU*n as f64).round() as i64).rem_euclid(n);
+    Some(format!("grh_fissure_d{direction}"))
+}
+
 /// One full pentagon replaces the legacy five overlapping midpoint drawings.
 /// Persistent structures use single-frame phases; renewing them never restarts an animation.
 pub fn cues(core:&Core,tick:u64,alive:bool)->Vec<Cue> {
@@ -63,5 +73,11 @@ pub fn cues(core:&Core,tick:u64,alive:bool)->Vec<Cue> {
     }
     #[test] fn presentation_leaves_state_identical(){
         let c=Core::default();let before=serde_json::to_string(&c).unwrap();for t in 0..1000 {let _=cues(&c,t,true);}assert_eq!(before,serde_json::to_string(&c).unwrap());
+    }
+    #[test] fn fissure_alias_follows_ground_direction_without_state_changes(){
+        use crate::grimhald_core::Rupture;use std::collections::BTreeSet;
+        let mut c=Core::default();c.rupture=Some(Rupture{from:Point::new(100000,100000),to:Point::new(154000,100000),start:0,arrival:18,pillar_at:30,last:Point::new(100000,100000),hits:BTreeSet::new()});
+        let before=serde_json::to_string(&c).unwrap();assert_eq!(effect_tag("grh_fissure",&c).as_deref(),Some("grh_fissure_d0"));assert_eq!(serde_json::to_string(&c).unwrap(),before);
+        c.rupture.as_mut().unwrap().to=Point::new(100000,154000);assert_eq!(effect_tag("grh_fissure",&c).as_deref(),Some("grh_fissure_d8"));assert!(effect_tag("grh_land",&c).is_none());
     }
 }

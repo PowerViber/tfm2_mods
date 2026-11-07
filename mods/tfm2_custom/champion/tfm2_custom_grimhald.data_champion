@@ -1381,6 +1381,262 @@
       "tag": "trail_d31_l4",
       "z": -2,
       "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_fissure_d0",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "fissure_d0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_fissure_d1",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "fissure_d1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_fissure_d2",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "fissure_d2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_fissure_d3",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "fissure_d3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_fissure_d4",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "fissure_d4",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_fissure_d5",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "fissure_d5",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_fissure_d6",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "fissure_d6",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_fissure_d7",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "fissure_d7",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_fissure_d8",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "fissure_d8",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_fissure_d9",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "fissure_d9",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_fissure_d10",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "fissure_d10",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_fissure_d11",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "fissure_d11",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_fissure_d12",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "fissure_d12",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_fissure_d13",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "fissure_d13",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_fissure_d14",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "fissure_d14",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_fissure_d15",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "fissure_d15",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_fissure_d16",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "fissure_d16",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_fissure_d17",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "fissure_d17",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_fissure_d18",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "fissure_d18",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_fissure_d19",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "fissure_d19",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_fissure_d20",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "fissure_d20",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_fissure_d21",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "fissure_d21",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_fissure_d22",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "fissure_d22",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_fissure_d23",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "fissure_d23",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_fissure_d24",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "fissure_d24",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_fissure_d25",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "fissure_d25",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_fissure_d26",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "fissure_d26",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_fissure_d27",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "fissure_d27",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_fissure_d28",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "fissure_d28",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_fissure_d29",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "fissure_d29",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_fissure_d30",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "fissure_d30",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "grh_fissure_d31",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "fissure_d31",
+      "z": -2,
+      "is_follow": false
     }
   ],
   "view_projectiles": []
