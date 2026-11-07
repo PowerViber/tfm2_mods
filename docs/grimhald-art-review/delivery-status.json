@@ -4,13 +4,13 @@
   "transport": 1,
   "baseline": "a9b73a4dbea88c64e589d7ebe3e40e283bc55eb6",
   "native_serial": {
-    "passed": 1008,
+    "passed": 1013,
     "failed": 0,
     "ignored": 13,
     "warnings": "4 pre-existing Windows detour-test dead-code warnings"
   },
   "grimhald_native": {
-    "passed": 27,
+    "passed": 32,
     "failed": 0
   },
   "lab": {
@@ -34,7 +34,7 @@
     "previous_cutout_rig": "rejected and superseded",
     "game_pack_integration": "held; rejected cutout assets removed from uncommitted mod candidate"
   },
-  "native_unarmed": "pending approved full-body animation and separate weapon accessory layer; Lab currently demonstrates the state",
+  "native_unarmed": "Opt-in native weapon presenter implemented and mock-host tested; disabled until approved full-body and weapon frames are integrated. Lab demonstrates the state.",
   "live_acceptance": "pending",
   "dll_package": "not rebuilt or released",
   "installation": false,

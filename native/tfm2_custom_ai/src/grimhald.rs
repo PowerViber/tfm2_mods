@@ -25,6 +25,7 @@ pub struct Grimhald {
     cage_owned: bool,
     visual_key: Vec<(String, Point, u64)>,
     next_visual: u64,
+    weapon:crate::grimhald_weapon::Weapon,
 }
 
 fn champ_has(sim: &StableSim, id: usize, prefix: &str) -> bool {
@@ -292,6 +293,7 @@ impl Grimhald {
                     }
                 }
                 Effect::Pose { name, ticks } => {
+                    self.weapon.pose(name,tick as u64,ticks);
                     // an Animation CC is a real CC: only for the cast itself
                     sim.apply_cc(owner, &named(CcKindV1::Animation, ticks, name));
                 }
@@ -342,10 +344,12 @@ impl Grimhald {
 }
 
 impl StablePassive for Grimhald {
+    fn configure(&mut self,params:&str){self.weapon.enabled=serde_json::from_str::<serde_json::Value>(params).ok().and_then(|v|v.get("weapon_layer").and_then(|n|n.as_i64())).is_some_and(|n|n==1);}
     fn clone_box(&self) -> Box<dyn StablePassive> {
         Box::new(self.clone())
     }
     fn on_spawn(&mut self, sim: &mut StableSim, _: usize, id: usize) {
+        self.weapon.respawn(sim);
         self.core.respawn(sim.tick() as u64);
         self.visual_key.clear();
         self.next_visual=0;
@@ -356,6 +360,7 @@ impl StablePassive for Grimhald {
         }
     }
     fn on_dead(&mut self, sim: &mut StableSim, player: usize) {
+        self.weapon.clear(sim);
         if let Some(id)=sim.get_player(player).and_then(|p|p.champion()).map(|e|e.id()) {
             remove_prefix(sim,id,"grh_warn:");
         }
@@ -384,9 +389,10 @@ impl StablePassive for Grimhald {
             }
         }
     }
-    fn on_update(&mut self, sim: &mut StableSim, _: u64, _: usize, id: usize) {
+    fn on_update(&mut self, sim: &mut StableSim, _: u64, player: usize, id: usize) {
         let f = self.frame(sim, id);
         if !f.alive {
+            self.weapon.clear(sim);
             self.visual_key.clear();
             remove_prefix(sim,id,"grh_warn:");
             return;
@@ -395,5 +401,6 @@ impl StablePassive for Grimhald {
         self.apply(sim, id, effects);
         self.tail(sim, id);
         self.present(sim,id,&f);
+        self.weapon.update(sim,player,id,&f,self.core.ult);
     }
 }

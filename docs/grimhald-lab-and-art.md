@@ -29,8 +29,7 @@ hashes and actual-size comparisons are in `docs/grimhald-art-review`.
 Image generation is not deterministic; extraction and packing are reproducible.
 
 The axe is absent from the Lab body during outgoing/return flight and the leap.
-Native unarmed presentation still needs the approved full-body animation set
-and a separate weapon presentation layer. The SDK cannot remove a baked-in axe
+The native weapon presenter is implemented and tested through the mock host, but remains disabled until the approved full-body and weapon frames are integrated. The SDK cannot remove a baked-in axe
 from the old base sprite. Do not hide the champion globally, renew idle Animation
 CC or claim an overlay covers the old weapon. A visible unarmed base plus a
 pose-aligned weapon accessory is the supported implementation direction.

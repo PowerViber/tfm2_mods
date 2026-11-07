@@ -83,6 +83,19 @@ outputs = {
     ROOT / 'native/tfm2_custom_ai/src/grimhald_data.rs': rust,
     ROOT / 'mods/tfm2_custom/champion' / f'{ID}.data_champion': data,
 }
+art=json.loads((ROOT/'rules/grimhald-art.json').read_text())
+body_lines=['//! Generated from rules/grimhald-art.json.','pub const WEAPON_PREFIX: &str = '+json.dumps(art['weaponPrefix'])+';',"pub fn durations(name:&str)-> &'static [u64] { match name {"]
+for name,durations in art['frameMillis'].items():body_lines.append(json.dumps(name)+'=> &'+str(durations)+',')
+body_lines.extend(['_=> &[180],','}}'])
+outputs[ROOT/'native/tfm2_custom_ai/src/grimhald_body_data.rs']='\n'.join(body_lines)+'\n'
+if art['integrated']:
+    champ['passive']['params']['weapon_layer']=1
+    for name,frames in art['frameMillis'].items():
+        for face in ['r','l']:
+            for index in range(len(frames)):
+                tag=art['weaponPrefix']+name+'_'+face+str(index)
+                champ['view_buffs'].append(dict(type='Animated',name=tag,anim='asset/tfm2_custom/vfx/grimhald_weapon',tag=tag,z=5))
+    outputs[ROOT/'mods/tfm2_custom/champion'/f'{ID}.data_champion']=json.dumps(champ,indent=2)+'\n'
 check = '--check' in sys.argv
 stale = [str(p) for p, s in outputs.items() if not p.exists() or p.read_text() != s]
 i18n = ROOT / 'mods/tfm2_custom/text/champion.i18n'
