@@ -47,6 +47,7 @@ mod grimhald;
 mod thalassa;
 #[allow(dead_code)] mod thalassa_core;
 mod thalassa_data;
+#[allow(dead_code)] mod thalassa_art;
 #[cfg(test)] mod thalassa_tests;
 mod motion;
 #[cfg(test)] mod motion_guard_tests;

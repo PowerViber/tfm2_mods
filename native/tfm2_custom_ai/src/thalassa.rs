@@ -37,6 +37,15 @@ pub struct Thalassa {
     in_skill: bool,
     fx_tokens: usize,
     fx_tick: u64,
+    // Presentation clocks never participate in core decisions or combat randomness.
+    pool_shown: BTreeMap<u32, usize>,
+    twin_pose: &'static str,
+    twin_pose_start: usize,
+    twin_pose_until: usize,
+    twin_last_pos: Option<(i64, i64)>,
+    twin_left: bool,
+    trident_heading: i64,
+    dive_exit_at: Option<usize>,
 }
 
 fn remove_prefix(sim: &mut StableSim, id: usize, prefix: &str) {
@@ -242,9 +251,7 @@ impl Thalassa {
                     let mut b = crate::timed("tls_dive", ticks as usize);
                     b.damaged_reduce = 100;
                     sim.add_buff(owner, &b);
-                    if let Some(p) = sim.get_entity(owner).map(|e| e.pos()) {
-                        crate::fx_point(sim, "tls_dive_out", owner, p.0 as i64, p.1 as i64, ticks + 12);
-                    }
+                    self.dive_exit_at = Some(tick + ticks as usize);
                 }
                 Effect::Heal { amount } => sim.heal(owner, owner, amount.max(0) as usize),
                 Effect::Shield { target, amount, ticks } => {
@@ -274,11 +281,14 @@ impl Thalassa {
                     let name = format!("{POOL_PREFIX}{id}:{}:{}:{radius}:{until}:{}", center.x, center.y, u8::from(whirl));
                     sim.add_buff(owner, &crate::timed(&name, (until as usize).saturating_sub(tick) + 2));
                     crate::steve::note_map_buff(sim.seed());
-                    if self.fx_ok(tick as u64, false) {
-                        crate::fx_point(sim, if whirl { "tls_whirlpool" } else { "tls_pool" }, owner, center.x, center.y, (until as usize).saturating_sub(tick) as u64);
-                    }
+                    // The pool is drawn below with short, stable-clock phases so a removed
+                    // pool cannot leave a ten-second visual copy behind.
+                    let _ = whirl;
                 }
-                Effect::PoolDown { id } => remove_prefix(sim, owner, &format!("{POOL_PREFIX}{id}:")),
+                Effect::PoolDown { id } => {
+                    remove_prefix(sim, owner, &format!("{POOL_PREFIX}{id}:"));
+                    self.pool_shown.remove(&id);
+                }
                 Effect::SpawnClone { pos, ticks } => {
                     if let Some(old) = self.clone.take() {
                         sim.entity_set_hp(old, 0);
@@ -324,16 +334,65 @@ impl Thalassa {
                     }
                 }
                 Effect::Fx { name, at, ticks, ambient } => {
-                    if name.starts_with("tls_trident_p") || name.starts_with("tls_twin_p") || self.fx_ok(tick as u64, ambient) {
+                    if name.starts_with("tls_twin_p") {
+                        // One body frame per tick is emitted by present(), including both facings.
+                        continue;
+                    }
+                    if name.starts_with("tls_trident_p") {
+                        if let Some(t) = self.core.trident { self.trident_heading = t.heading_mdeg; }
+                        let phase = ((self.trident_heading + 22_500).rem_euclid(360_000) / 45_000) as usize;
+                        crate::fx_point(sim, &format!("tls_trident_p{phase}"), owner, at.x, at.y, 1);
+                    } else if self.fx_ok(tick as u64, ambient) {
                         crate::fx_point(sim, &name, owner, at.x, at.y, ticks);
                     }
                 }
                 Effect::Pose { name, ticks } => {
+                    if name == "skill1" || name == "skill2" {
+                        self.twin_pose = name;
+                        self.twin_pose_start = tick;
+                        self.twin_pose_until = tick + ticks as usize;
+                    }
                     sim.apply_cc(owner, &named(CcKindV1::Animation, ticks, name));
                 }
                 Effect::Log(line) => crate::mod_log(sim, "thalassa_log.txt", &format!("{tick}:{line}"), &line),
             }
         }
+    }
+
+    pub(crate) fn present(&mut self, sim: &mut StableSim, owner: usize) {
+        let tick = sim.tick();
+        if self.dive_exit_at.is_some_and(|at| tick >= at) {
+            self.dive_exit_at = None;
+            if let Some(p) = sim.get_entity(owner).map(|e| e.pos()) {
+                crate::fx_point(sim, "tls_dive_out", owner, p.0 as i64, p.1 as i64, 18);
+            }
+        }
+        let every = crate::thalassa_art::POOL_RENEW_TICKS;
+        let mut emitted = 0;
+        for i in 0..self.core.pools.len() {
+            let p = self.core.pools[i];
+            if tick as u64 >= p.until || self.pool_shown.get(&p.id).is_some_and(|last| tick < last + every) { continue; }
+            if emitted >= 4 || !self.fx_ok(tick as u64, false) { break; }
+            let start = p.until.saturating_sub(d::WATER_POOL_TICKS as u64) as usize;
+            let phase = tick.saturating_sub(start) / every % 8;
+            let kind = if p.whirl { "whirlpool" } else { "pool" };
+            crate::fx_point(sim, &format!("tls_{kind}_p{phase}"), owner, p.center.x, p.center.y, (every + 1) as u64);
+            self.pool_shown.insert(p.id, tick);
+            emitted += 1;
+        }
+        let Some(twin) = self.core.twin else { self.twin_last_pos = None; return };
+        let Some(c) = self.clone.and_then(|id| sim.get_entity(id)).filter(|e| e.is_alive()) else { return };
+        let pos = c.pos();
+        let pos = (pos.0 as i64, pos.1 as i64);
+        if let Some(old) = self.twin_last_pos { if old.0 != pos.0 { self.twin_left = pos.0 < old.0; } }
+        self.twin_last_pos = Some(pos);
+        let moving = (tick as u64) < twin.moving_until;
+        let (pose, elapsed, looping) = if tick < self.twin_pose_until {
+            (self.twin_pose, tick.saturating_sub(self.twin_pose_start), false)
+        } else if moving { ("run", tick, true) } else { ("idle", tick, true) };
+        let frame = crate::thalassa_art::frame(pose, elapsed, looping);
+        let facing = if self.twin_left { "_l" } else { "" };
+        crate::fx_point(sim, &format!("tls_twin_{pose}_{frame}{facing}"), owner, pos.0, pos.1, 1);
     }
 }
 
@@ -349,6 +408,10 @@ impl StablePassive for Thalassa {
             sim.entity_set_hp(c, 0);
         }
         self.basic_hits.clear();
+        self.pool_shown.clear();
+        self.twin_pose_until = 0;
+        self.twin_last_pos = None;
+        self.dive_exit_at = None;
     }
     /// Her own hits never cross a cage or a Main Event ring; accepted harp bolts feed the bounce and the twin's echo.
     fn on_attack(&mut self, sim: &mut StableSim, _: usize, id: usize, target: usize, damage: &mut usize) {
@@ -359,6 +422,12 @@ impl StablePassive for Thalassa {
         }
         if !self.in_skill && !self.basic_hits.contains(&target) {
             self.basic_hits.push(target);
+            self.twin_pose = "attack";
+            self.twin_pose_start = sim.tick();
+            self.twin_pose_until = sim.tick() + 22;
+            if let (Some(c), Some(t)) = (self.clone.and_then(|c| sim.get_entity(c)), sim.get_entity(target)) {
+                self.twin_left = t.pos().0 < c.pos().0;
+            }
         }
     }
     fn on_update(&mut self, sim: &mut StableSim, _: u64, _: usize, id: usize) {
@@ -368,5 +437,6 @@ impl StablePassive for Thalassa {
         }
         let effects = self.core.step(&f);
         self.apply(sim, id, effects);
+        self.present(sim, id);
     }
 }

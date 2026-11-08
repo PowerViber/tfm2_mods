@@ -11,6 +11,44 @@ mod glue {
     }
 
     #[test]
+    fn presentation_renewals_do_not_change_combat_state_or_add_control() {
+        let _g = crate::walls::TEST_LOCK.lock();
+        let (x, y) = open_spot(90_000);
+        let host = Host::new(vec![champ(0, (x, y), "tfm2_custom_thalassa")]);
+        let mut t = crate::thalassa::Thalassa::default();
+        with_sim(&host, |sim| t.on_spawn(sim, 0, 0));
+        for tick in 100..115 {
+            host.borrow_mut().tick = tick;
+            with_sim(&host, |sim| {
+                let mut f = t.frame(sim, 0); f.manual = true;
+                if tick == 100 { f.order = Some(Order::TidePool(f.pos)); }
+                let effects = t.core.step(&f); t.apply(sim, 0, effects);
+            });
+        }
+        let core = serde_json::to_string(&t.core).unwrap();
+        let snapshot = {
+            let h = host.borrow();
+            (h.buffs.clone(), h.ccs.clone(), h.damage.clone(), h.moves.clone(), h.units.iter().map(|u| (u.pos,u.hp)).collect::<Vec<_>>())
+        };
+        for tick in 115..180 { host.borrow_mut().tick=tick; with_sim(&host, |sim| t.present(sim,0)); }
+        let h=host.borrow();
+        assert_eq!(snapshot.0,h.buffs); assert_eq!(snapshot.1,h.ccs);
+        assert_eq!(snapshot.2,h.damage); assert_eq!(snapshot.3,h.moves);
+        assert_eq!(snapshot.4,h.units.iter().map(|u| (u.pos,u.hp)).collect::<Vec<_>>());
+        assert_eq!(core,serde_json::to_string(&t.core).unwrap());
+    }
+
+    #[test]
+    fn presentation_clock_keeps_cast_boundaries_and_fractional_idle_periods() {
+        let frame=crate::thalassa_art::frame;
+        assert_eq!(frame("skill1",2,false),0); assert_eq!(frame("skill1",3,false),1);
+        assert_eq!(frame("skill1",12,false),3);
+        assert_eq!(frame("idle",10,true),0); assert_eq!(frame("idle",11,true),1);
+        assert_eq!(frame("idle",216,true),0);
+        assert_eq!(frame("run",7,true),0); assert_eq!(frame("run",8,true),1);
+    }
+
+    #[test]
     fn pool_and_dive_go_through_the_host_as_buffs_and_engine_motion() {
         let _g = crate::walls::TEST_LOCK.lock();
         let (x, y) = open_spot(90_000);
