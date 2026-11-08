@@ -3802,3 +3802,9 @@ To check in game: close the game, Update/Check, confirm native 0.10.36 and champ
   - `motion.flag` restores the old movement; `motion_trace.flag` logs every move.
   - A guard test stops new hand-slid motion.
 - Review: `docs/main-review-round-156.md`.
+
+## Nov 8: Thalassa (in progress, not released)
+- Reihan designed a mermaid harpist (mage carry, can support).
+- **Kit:** water pools and whirlpools, a dive between pools, a water twin that echoes her skills and rescues stunned allies, and a global steerable trident.
+- **Built:** the native kit, the Lab (`editor/thalassa.html`) and tests. Guide: `docs/thalassa-guide.md`.
+- **Waiting on:** Codex's art (`docs/thalassa-art-handoff.md`), then the release.

@@ -243,6 +243,7 @@ STATIC['/rally-strokes.fanim']='../mods/tfm2_custom/vfx/rally-strokes#anim.fanim
 STATIC['/rally-white.png']='../mods/tfm2_custom/vfx/rally-white#sheet.png';
 STATIC['/rally-white.fanim']='../mods/tfm2_custom/vfx/rally-white#anim.fanim';
 for(const f of ['grimhald.html','grimhald-review.html','grimhald-lab.js','grimhald-data.js','grimhald-art.json','grimhald.wasm'])STATIC['/'+f]=f;
+for(const f of ['thalassa.html','thalassa-lab.js','thalassa-data.js','thalassa.wasm'])STATIC['/'+f]=f;
 const grimhaldReview=path.join(HERE,'../docs/grimhald-art-review');
 if(fs.existsSync(grimhaldReview))for(const f of fs.readdirSync(grimhaldReview))if(/\.(png|gif|fanim)$/i.test(f))STATIC['/docs/grimhald-art-review/'+f]='../docs/grimhald-art-review/'+f;
 const rallyReview=path.join(HERE,'../docs/rally-art-review');

@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Thalassa Lab</title>
+<style>
+body{margin:0;background:#0b1b26;color:#d8eef2;font:13px/1.4 system-ui,sans-serif;display:flex;gap:12px;padding:12px}
+canvas{background:#123447;border:1px solid #2c5d70;border-radius:6px;outline:none}
+#side{width:330px;display:flex;flex-direction:column;gap:8px}
+button{background:#1f4f63;color:#e8f6f8;border:1px solid #3b7d93;border-radius:4px;padding:5px 8px;cursor:pointer}
+button:hover{background:#2a6880}
+.row{display:flex;flex-wrap:wrap;gap:6px}
+#log{height:240px;overflow:auto;background:#081620;border:1px solid #234b5c;border-radius:4px;padding:6px;font:11px monospace;white-space:pre-wrap}
+.keys{font-size:12px;color:#9cc7d2}
+label{display:flex;gap:6px;align-items:center}
+.stat{display:grid;grid-template-columns:1fr 60px;gap:2px 6px;font-size:12px}
+.stat input{width:56px}
+</style></head>
+<body>
+<canvas id="arena" width="900" height="900" tabindex="0"></canvas>
+<div id="side">
+  <h2 style="margin:0">Thalassa Lab</h2>
+  <div id="status">Loading…</div>
+  <div class="keys">Mouse aims · WASD move · <b>1</b> Tide Pool · <b>2</b> Dive · <b>3</b> Tide Twin · <b>4</b> Trident (recast <b>4</b> while it flies to steer at the mouse) · <b>X</b> tide-link swap · <b>F</b> harp bolt at the nearest enemy</div>
+  <div class="row">
+    <button id="play">Pause</button><button id="step">Step</button><button id="reset">Reset</button>
+  </div>
+  <div class="row">
+    <button id="stunAlly">Stun ally (1 s)</button><button id="stunMe">Stun Thalassa (1 s)</button><button id="dashOnMe">Enemy dashes onto her</button>
+  </div>
+  <label><input type="checkbox" id="zoom" checked> Follow camera (zoomed)</label>
+  <label><input type="checkbox" id="auto"> Athlete AI plays her</label>
+  <label><input type="checkbox" id="moving" checked> Enemies walk</label>
+  <label><input type="checkbox" id="walls"> Terrain column</label>
+  <details><summary>Athlete attributes</summary><div class="stat" id="stats"></div></details>
+  <div id="cds"></div>
+  <div id="log"></div>
+</div>
+<script src="thalassa-data.js"></script>
+<script src="thalassa-lab.js"></script>
+</body></html>
