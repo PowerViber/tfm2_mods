@@ -9,8 +9,8 @@
     {
       "tag": "pool",
       "size": [
-        53,
-        53
+        74,
+        74
       ],
       "cell": 0,
       "source_bounds": [
@@ -19,7 +19,7 @@
         287,
         289
       ],
-      "sha256": "7d1776adaa46d321cadaafa7882e217c0ee96dae33f221e69322ca386e4c304d"
+      "sha256": "79e63ac68119790a9e71a91ee547d8a01a190e6f8c5060014c8943615b4d5d01"
     },
     {
       "tag": "whirlpool",

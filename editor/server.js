@@ -246,6 +246,7 @@ for(const f of ['grimhald.html','grimhald-review.html','grimhald-lab.js','grimha
 for(const f of ['thalassa.html','thalassa-lab.js','thalassa-data.js','thalassa.wasm','thalassa-review.html','thalassa-art.js','thalassa-renderer.js'])STATIC['/'+f]=f;
 STATIC['/thalassa-body.png']='../mods/tfm2_custom/champions/tfm2_custom_thalassa#sheet.png';
 STATIC['/thalassa-vfx.png']='../mods/tfm2_custom/vfx/thalassa#sheet.png';
+STATIC['/thalassa-links.png']='../mods/tfm2_custom/vfx/thalassa_links#sheet.png';
 for(const file of fs.readdirSync(path.join(HERE,'../docs/thalassa-art-review'))){
   if(/^[a-zA-Z0-9_.-]+\.(png|gif|json|txt|md)$/.test(file))STATIC['/thalassa-review-assets/'+file]='../docs/thalassa-art-review/'+file;
 }

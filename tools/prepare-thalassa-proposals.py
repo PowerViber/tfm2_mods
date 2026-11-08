@@ -11,8 +11,11 @@ REVIEW = ROOT / 'docs/thalassa-art-review'
 NAMES = ['idle', 'movement', 'harp_attack', 'trident_cast']
 CELL = (64, 56)
 ANCHOR = (32, 48)
+RULES=json.loads((ROOT/'rules/thalassa.json').read_text())
+POOL_DIAMETER=round(2*RULES['water']['poolRadius']/950)
+WHIRL_DIAMETER=round(2*RULES['water']['poolRadius']*RULES['tidePool']['whirlScalePct']/100/950)
 EFFECTS = [
-    ('pool',(53,53)),('whirlpool',(74,74)),('surge',(64,32)),('bump',(38,28)),
+    ('pool',(POOL_DIAMETER,POOL_DIAMETER)),('whirlpool',(WHIRL_DIAMETER,WHIRL_DIAMETER)),('surge',(64,32)),('bump',(38,28)),
     ('bolt',(18,8)),('bounce',(32,18)),('dive_in',(44,32)),('dive_out',(44,40)),
     ('twin_spawn',(36,48)),('rescue',(48,32)),('rescue_shield',(64,64)),('tide_link',(64,12)),
     ('swap',(64,32)),('trident',(48,18)),('trident_hit',(40,40)),('water_aura',(48,48)),

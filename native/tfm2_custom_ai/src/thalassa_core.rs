@@ -506,7 +506,7 @@ impl Core {
             return false;
         }
         self.ready[1] = f.tick + sec(d::DIVE_COOLDOWN_TICKS);
-        if self.water_at(f.pos, f.tick) {
+        let (destination, travel_ticks) = if self.water_at(f.pos, f.tick) {
             // into one of her own pools (the trident's, anywhere on the map) she dives all the way; otherwise in range
             let to = if self.pool_at(aim).is_some() { free_spot(f, f.pos, aim) } else { free_spot(f, f.pos, f.pos.reach(aim, d::DIVE_RANGE)) };
             if self.pool_at(to).is_none() {
@@ -519,6 +519,7 @@ impl Core {
             out.push(Effect::Pose { name: "skill2", ticks });
             self.moving_until = f.tick + ticks;
             self.last_skill = "dive";
+            (to, ticks)
         } else {
             let to = free_spot(f, f.pos, f.pos.reach(aim, d::DIVE_SLIDE_RANGE));
             let ticks = sec(d::DIVE_SLIDE_TICKS);
@@ -528,11 +529,13 @@ impl Core {
             self.moving_until = f.tick + ticks;
             self.wet_until = f.tick + ticks + sec(d::WATER_WET_TICKS);
             self.last_skill = "slide";
-        }
-        // the twin echoes the dive toward the same point
+            (to, ticks)
+        };
+        // Copy the committed owner destination and clock, including far owned-pool dives.
+        // The clone still resolves its own legal landing if its approach is obstructed.
         if let (Some(c), Some(t)) = (f.clone, self.twin) {
-            let to = free_spot(f, c.pos, c.pos.reach(aim, d::DIVE_RANGE));
-            let ticks = sec(d::DIVE_DIVE_TICKS);
+            let to = free_spot(f, c.pos, destination);
+            let ticks = travel_ticks;
             self.twin = Some(Twin { moving_until: f.tick + ticks, ..t });
             out.push(Effect::CloneMove { to, ticks });
         }
@@ -611,12 +614,7 @@ impl Core {
         if moving || f.tick % 6 == 0 {
             out.push(Effect::Fx { name: format!("tls_twin_p{}", (f.tick / 6) % 8), at: c.pos, ticks: if moving { 1 } else { 6 }, ambient: false });
         }
-        if f.tick % 6 == 0 {
-            if t.linked && !t.swapped {
-                let mid = Point::new((c.pos.x + f.pos.x) / 2, (c.pos.y + f.pos.y) / 2);
-                out.push(Effect::Fx { name: "tls_tide_link".into(), at: mid, ticks: 6, ambient: true });
-            }
-        }
+        // The presentation adapter connects live carrier endpoints every tick.
         // the rescue: arrived?
         if let Some((ally, at)) = t.rescue {
             if f.tick >= at {

@@ -46,6 +46,7 @@ pub struct Thalassa {
     twin_left: bool,
     trident_heading: i64,
     dive_exit_at: Option<usize>,
+    twin_dive_exit_at: Option<usize>,
 }
 
 fn remove_prefix(sim: &mut StableSim, id: usize, prefix: &str) {
@@ -202,6 +203,7 @@ impl Thalassa {
         let team = sim.get_entity(owner).map_or(usize::MAX, |e| e.team());
         // a V1 who parries the trident takes nothing from that throw
         let mut parried: Option<usize> = None;
+        let mut dive_started = false;
         for e in effects {
             match e {
                 Effect::TridentHit { target, ticks, .. } => {
@@ -245,6 +247,7 @@ impl Thalassa {
                     crate::motion::glide(sim, owner, (to.x, to.y), ticks, crate::motion::Kind::SelfMove);
                 }
                 Effect::Submerge { ticks } => {
+                    dive_started = true;
                     // under water: unseen and untouchable, but not crowd-control immune (that would stop the glide)
                     sim.entity_set_invisible(owner, ticks as usize);
                     sim.entity_remove_buff(owner, "tls_dive");
@@ -313,10 +316,15 @@ impl Thalassa {
                     if let Some(c) = self.clone {
                         let from = sim.get_entity(c).map(|e| e.pos()).map_or((to.x, to.y), |p| (p.0 as i64, p.1 as i64));
                         let to = crate::place::safe(&all, tick, from, (to.x, to.y));
+                        if dive_started {
+                            if self.fx_ok(tick as u64, false) { crate::fx_point(sim,"tls_dive_in",owner,from.0,from.1,18); }
+                            self.twin_dive_exit_at=Some(tick+ticks as usize);
+                        }
                         crate::motion::glide(sim, c, to, ticks, crate::motion::Kind::Knock);
                     }
                 }
                 Effect::RemoveClone => {
+                    self.twin_dive_exit_at=None;
                     if let Some(c) = self.clone.take() {
                         sim.entity_set_hp(c, 0);
                     }
@@ -334,7 +342,7 @@ impl Thalassa {
                     }
                 }
                 Effect::Fx { name, at, ticks, ambient } => {
-                    if name.starts_with("tls_twin_p") {
+                    if name.starts_with("tls_twin_p") || name == "tls_tide_link" {
                         // One body frame per tick is emitted by present(), including both facings.
                         continue;
                     }
@@ -380,10 +388,21 @@ impl Thalassa {
             self.pool_shown.insert(p.id, tick);
             emitted += 1;
         }
-        let Some(twin) = self.core.twin else { self.twin_last_pos = None; return };
+        let Some(twin) = self.core.twin else { self.twin_last_pos = None; self.twin_dive_exit_at = None; return };
         let Some(c) = self.clone.and_then(|id| sim.get_entity(id)).filter(|e| e.is_alive()) else { return };
         let pos = c.pos();
         let pos = (pos.0 as i64, pos.1 as i64);
+        if self.twin_dive_exit_at.is_some_and(|at|tick>=at) {
+            self.twin_dive_exit_at=None;
+            if self.fx_ok(tick as u64,false) { crate::fx_point(sim,"tls_dive_out",owner,pos.0,pos.1,18); }
+        }
+        if twin.linked && !twin.swapped {
+            if let Some(p) = sim.get_entity(owner).map(|e| e.pos()) {
+                for (tag,x,y) in crate::thalassa_art::link_segments((p.0 as i64,p.1 as i64),pos) {
+                    crate::fx_point(sim,&format!("tls_{tag}"),owner,x,y,1);
+                }
+            }
+        }
         if let Some(old) = self.twin_last_pos { if old.0 != pos.0 { self.twin_left = pos.0 < old.0; } }
         self.twin_last_pos = Some(pos);
         let moving = (tick as u64) < twin.moving_until;
@@ -412,6 +431,7 @@ impl StablePassive for Thalassa {
         self.twin_pose_until = 0;
         self.twin_last_pos = None;
         self.dive_exit_at = None;
+        self.twin_dive_exit_at = None;
     }
     /// Her own hits never cross a cage or a Main Event ring; accepted harp bolts feed the bounce and the twin's echo.
     fn on_attack(&mut self, sim: &mut StableSim, _: usize, id: usize, target: usize, damage: &mut usize) {

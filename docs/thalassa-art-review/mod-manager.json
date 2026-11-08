@@ -1,7 +1,7 @@
 {
   "scope": "Disposable fixture comparison only; no real installation, game or career migration",
   "exit_code": 0,
-  "files_compared": 864,
+  "files_compared": 866,
   "different_or_missing": [],
   "isolated_appdata": true,
   "packaged_dll_sha256": "1e74f3f5c9128f8dd20cd1e6b95734246681c83590082b105107a3c15a047916",

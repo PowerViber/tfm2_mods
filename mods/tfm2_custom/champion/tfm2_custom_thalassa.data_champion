@@ -1124,6 +1124,1798 @@
       "tag": "twin_p7",
       "z": 5,
       "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_512_0",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_512_0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_512_16",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_512_16",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_512_24",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_512_24",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_512_8",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_512_8",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_512_1",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_512_1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_512_15",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_512_15",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_512_17",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_512_17",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_512_23",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_512_23",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_512_25",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_512_25",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_512_31",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_512_31",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_512_7",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_512_7",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_512_9",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_512_9",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_512_10",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_512_10",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_512_14",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_512_14",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_512_18",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_512_18",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_512_2",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_512_2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_512_22",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_512_22",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_512_26",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_512_26",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_512_30",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_512_30",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_512_6",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_512_6",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_512_11",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_512_11",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_512_13",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_512_13",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_512_19",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_512_19",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_512_21",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_512_21",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_512_27",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_512_27",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_512_29",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_512_29",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_512_3",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_512_3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_512_5",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_512_5",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_512_12",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_512_12",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_512_20",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_512_20",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_512_28",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_512_28",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_512_4",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_512_4",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_256_0",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_256_0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_256_16",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_256_16",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_256_24",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_256_24",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_256_8",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_256_8",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_256_1",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_256_1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_256_15",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_256_15",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_256_17",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_256_17",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_256_23",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_256_23",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_256_25",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_256_25",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_256_31",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_256_31",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_256_7",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_256_7",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_256_9",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_256_9",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_256_10",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_256_10",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_256_14",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_256_14",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_256_18",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_256_18",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_256_2",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_256_2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_256_22",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_256_22",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_256_26",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_256_26",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_256_30",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_256_30",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_256_6",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_256_6",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_256_11",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_256_11",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_256_13",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_256_13",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_256_19",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_256_19",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_256_21",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_256_21",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_256_27",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_256_27",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_256_29",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_256_29",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_256_3",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_256_3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_256_5",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_256_5",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_256_12",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_256_12",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_256_20",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_256_20",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_256_28",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_256_28",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_256_4",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_256_4",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_128_1",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_128_1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_128_15",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_128_15",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_128_17",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_128_17",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_128_23",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_128_23",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_128_25",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_128_25",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_128_31",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_128_31",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_128_7",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_128_7",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_128_9",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_128_9",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_128_0",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_128_0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_128_16",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_128_16",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_128_24",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_128_24",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_128_8",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_128_8",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_128_10",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_128_10",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_128_14",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_128_14",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_128_18",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_128_18",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_128_2",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_128_2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_128_22",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_128_22",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_128_26",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_128_26",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_128_30",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_128_30",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_128_6",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_128_6",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_128_11",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_128_11",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_128_13",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_128_13",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_128_19",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_128_19",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_128_21",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_128_21",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_128_27",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_128_27",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_128_29",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_128_29",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_128_3",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_128_3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_128_5",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_128_5",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_128_12",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_128_12",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_128_20",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_128_20",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_128_28",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_128_28",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_128_4",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_128_4",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_64_1",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_64_1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_64_15",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_64_15",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_64_17",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_64_17",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_64_23",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_64_23",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_64_25",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_64_25",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_64_31",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_64_31",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_64_7",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_64_7",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_64_9",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_64_9",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_64_10",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_64_10",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_64_14",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_64_14",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_64_18",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_64_18",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_64_2",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_64_2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_64_22",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_64_22",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_64_26",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_64_26",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_64_30",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_64_30",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_64_6",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_64_6",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_64_0",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_64_0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_64_16",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_64_16",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_64_24",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_64_24",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_64_8",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_64_8",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_64_11",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_64_11",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_64_13",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_64_13",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_64_19",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_64_19",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_64_21",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_64_21",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_64_27",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_64_27",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_64_29",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_64_29",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_64_3",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_64_3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_64_5",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_64_5",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_64_12",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_64_12",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_64_20",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_64_20",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_64_28",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_64_28",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_64_4",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_64_4",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_32_10",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_32_10",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_32_14",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_32_14",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_32_18",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_32_18",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_32_2",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_32_2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_32_22",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_32_22",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_32_26",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_32_26",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_32_30",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_32_30",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_32_6",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_32_6",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_32_1",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_32_1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_32_15",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_32_15",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_32_17",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_32_17",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_32_23",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_32_23",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_32_25",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_32_25",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_32_31",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_32_31",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_32_7",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_32_7",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_32_9",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_32_9",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_32_11",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_32_11",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_32_13",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_32_13",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_32_19",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_32_19",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_32_21",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_32_21",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_32_27",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_32_27",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_32_29",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_32_29",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_32_3",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_32_3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_32_5",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_32_5",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_32_0",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_32_0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_32_16",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_32_16",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_32_24",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_32_24",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_32_8",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_32_8",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_32_12",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_32_12",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_32_20",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_32_20",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_32_28",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_32_28",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_32_4",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_32_4",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_16_12",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_16_12",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_16_20",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_16_20",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_16_28",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_16_28",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_16_4",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_16_4",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_16_11",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_16_11",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_16_13",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_16_13",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_16_19",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_16_19",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_16_21",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_16_21",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_16_27",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_16_27",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_16_29",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_16_29",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_16_3",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_16_3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_16_5",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_16_5",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_16_10",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_16_10",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_16_14",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_16_14",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_16_18",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_16_18",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_16_2",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_16_2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_16_22",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_16_22",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_16_26",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_16_26",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_16_30",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_16_30",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_16_6",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_16_6",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_16_1",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_16_1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_16_15",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_16_15",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_16_17",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_16_17",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_16_23",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_16_23",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_16_25",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_16_25",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_16_31",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_16_31",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_16_7",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_16_7",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_16_9",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_16_9",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_16_0",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_16_0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_16_16",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_16_16",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_16_24",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_16_24",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_16_8",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_16_8",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_8_10",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_8_10",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_8_11",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_8_11",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_8_12",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_8_12",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_8_13",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_8_13",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_8_14",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_8_14",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_8_18",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_8_18",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_8_19",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_8_19",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_8_2",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_8_2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_8_20",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_8_20",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_8_21",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_8_21",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_8_22",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_8_22",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_8_26",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_8_26",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_8_27",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_8_27",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_8_28",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_8_28",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_8_29",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_8_29",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_8_3",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_8_3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_8_30",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_8_30",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_8_4",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_8_4",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_8_5",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_8_5",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_8_6",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_8_6",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_8_1",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_8_1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_8_15",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_8_15",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_8_17",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_8_17",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_8_23",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_8_23",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_8_25",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_8_25",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_8_31",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_8_31",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_8_7",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_8_7",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_8_9",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_8_9",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_8_0",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_8_0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_8_16",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_8_16",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_8_24",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_8_24",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link_8_8",
+      "anim": "asset/tfm2_custom/vfx/thalassa_links",
+      "tag": "tide_link_8_8",
+      "z": -2,
+      "is_follow": false
     }
   ],
   "view_projectiles": [

@@ -24,7 +24,7 @@ const root = path.resolve(__dirname, '..'), port = 7319;
       out.bumped = L.units.filter(u => u.team === 1 && u.stunUntil > L.tick).length;
       L.setAim({x: 340000, y: 480000}); L.order('twin'); run(2); out.twin = !!L.clone;
       L.units[2].stunUntil = L.tick + 60; run(20); out.rescued = !L.clone;
-      L.setAim({x: 900000, y: 150000}); L.order('ult'); run(300);
+      L.setAim({x: 900000, y: 150000}); L.order('ult'); run(500);
       out.trident = L.state.pools.some(p => p.center.x > 700000);
       const far = L.state.pools.find(p => p.center.x > 700000);
       out.wet = L.state.in_water;

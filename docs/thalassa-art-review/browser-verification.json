@@ -36,22 +36,22 @@
     "death selects the packaged death pose and clears owned pools",
     "no browser script errors"
   ],
-  "manual_equivalence_frames": 954,
-  "native_wasm_parity_frames": 954,
-  "trace_sha256": "de380e44f1d1424c4b0a4afcd137a073bc743b86427293e202a6b1494662ff61",
+  "manual_equivalence_frames": 1154,
+  "native_wasm_parity_frames": 1154,
+  "trace_sha256": "8da779f093515d6b5648a21e2e843235bc8d4cdae76af6ab79c0aa44946333e2",
   "cold_browser_context_load_ms": [
-    76.62970013916492,
-    80.98910003900528,
-    85.6417000759393,
-    97.88289992138743,
-    84.6212999895215
+    80.66790015436709,
+    76.72169990837574,
+    75.20800014026463,
+    86.90489991568029,
+    76.70530001632869
   ],
   "warm_browser_draw_ms_per_body": [
-    0.002,
-    0.0011000001430511474,
-    0.0010999999046325684,
-    0.0007999999523162842,
-    0.07770000004768371
+    0.0026000001430511476,
+    0.0012999999523162842,
+    0.0020999999046325685,
+    0.0018000001907348632,
+    0.11459999990463257
   ],
   "measurement_scope": "five new-browser-context loads and five sustained canvas samples; not actual-game host performance",
   "errors": [],

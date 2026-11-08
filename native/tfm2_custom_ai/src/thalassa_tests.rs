@@ -6,6 +6,19 @@ mod glue {
     use crate::thalassa_core::Order;
     use mod_api_stable::{CcKindV1, EntityKindV1 as K, StablePassive};
 
+    #[test]
+    fn moving_link_has_live_endpoints_and_bounded_one_tick_geometry() {
+        let parts=crate::thalassa_art::link_segments;
+        assert!(parts((0,0),(0,0)).is_empty());
+        for end in [(100_000,100_000),(900_000,900_000),(100_000,900_000)] {
+            let a=parts((100_000,100_000),end);
+            let b=parts((110_000,120_000),(end.0+10_000,end.1+20_000));
+            assert!(a.len()<=6);assert_eq!(a.len(),b.len());
+            for (a,b) in a.iter().zip(&b) {assert_eq!(a.0,b.0);assert_eq!((b.1-a.1,b.2-a.2),(10_000,20_000));}
+        }
+        assert_ne!(parts((0,0),(40_000,0))[0].0,parts((0,0),(0,40_000))[0].0);
+    }
+
     fn champ(team: usize, pos: (u64, u64), name: &'static str) -> HostUnit {
         HostUnit { kind: K::Champion, team, pos, hp: 2000, name, targetable: true }
     }

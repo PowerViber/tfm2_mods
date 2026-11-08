@@ -91,6 +91,55 @@ fn cast_s1(core: &mut Core, f: &mut Frame, aim: Point, log: &mut Vec<Effect>) {
 // ------------------------------------------------------------------ passive
 
 #[test]
+fn twin_water_dive_copies_committed_endpoint_and_arrival_clock_at_both_ranges() {
+    for far in [false, true] {
+        let mut core = Core::default();
+        let mut f = frame(0, 100_000, 480_000, vec![]);
+        let mut log = vec![]; let here=f.pos;
+        cast_s1(&mut core,&mut f,here,&mut log);
+        f.order=Some(Order::Twin(Point::new(100_000,510_000)));
+        run(&mut core,&mut f,1,&mut log);
+        let target=Point::new(if far {900_000} else {200_000},480_000);
+        if far { core.pools.push(Pool{id:900,center:target,radius:d::WATER_POOL_RADIUS,until:1000,whirl:false}); }
+        f.order=Some(Order::Dive(target));
+        let start=f.tick; let effects=core.step(&f);
+        let (to,ticks)=effects.iter().find_map(|e|if let Effect::Glide{to,ticks}=e{Some((*to,*ticks))}else{None}).unwrap();
+        let copy=effects.iter().find_map(|e|if let Effect::CloneMove{to,ticks}=e{Some((*to,*ticks))}else{None}).unwrap();
+        assert_eq!(copy,(to,ticks),"same endpoint and arrival, far={far}");
+        assert_eq!(core.twin.unwrap().moving_until,start+ticks);
+        assert_eq!(ticks,(d::DIVE_DIVE_TICKS+(here.dist(to) as i64/20_000)) as u64,"travel formula retained");
+        assert_eq!(to.x,if far {target.x}else{here.x+75_000});
+    }
+}
+
+#[test]
+fn twin_dive_still_resolves_a_legal_landing_when_approach_is_blocked() {
+    let mut core=Core::default();let mut f=frame(0,300_000,300_000,vec![]);let mut log=vec![];let here=f.pos;
+    cast_s1(&mut core,&mut f,here,&mut log);
+    f.order=Some(Order::Twin(Point::new(300_000,330_000)));run(&mut core,&mut f,1,&mut log);
+    let target=Point::new(360_000,300_000);
+    f.terrain[((target.y/CELL)*CELLS+target.x/CELL) as usize]=true;
+    f.order=Some(Order::Dive(target));let effects=core.step(&f);
+    let (to,ticks)=effects.iter().find_map(|e|if let Effect::Glide{to,ticks}=e{Some((*to,*ticks))}else{None}).unwrap();
+    let (copy,clock)=effects.iter().find_map(|e|if let Effect::CloneMove{to,ticks}=e{Some((*to,*ticks))}else{None}).unwrap();
+    assert!(!f.terrain_at(to));assert!(!f.terrain_at(copy));assert_eq!(clock,ticks);
+}
+
+#[test]
+fn trident_moves_at_revised_speed_with_same_water_bonus_and_damage() {
+    for water in [false,true] {
+        let mut core=Core::default();let mut f=frame(0,100_000,480_000,vec![]);let mut log=vec![];
+        if water {let here=f.pos;cast_s1(&mut core,&mut f,here,&mut log);}
+        f.order=Some(Order::Ult(Point::new(900_000,480_000)));
+        run(&mut core,&mut f,d::ULT_WINDUP_TICKS as u64+1,&mut log);
+        let before=core.trident.unwrap();run(&mut core,&mut f,1,&mut log);let after=core.trident.unwrap();
+        let speed=if water {2600}else{2000};
+        assert_eq!(after.speed,speed);assert_eq!(after.at.x-before.at.x,speed);
+        assert_eq!(d::ULT_BASE,150);assert_eq!(d::ULT_AP_RATIO,90);
+    }
+}
+
+#[test]
 fn water_mode_heals_then_overheals_up_to_ten_percent() {
     let mut core = Core::default();
     let mut f = frame(0, 300_000, 300_000, vec![]);
@@ -145,7 +194,7 @@ fn tide_pool_on_land_forms_below_her() {
 }
 
 #[test]
-fn surge_moves_her_pool_makes_a_bigger_whirlpool_bumps_two_champions_and_leaves_one_below_her() {
+fn surge_moves_her_pool_matches_whirlpool_size_bumps_two_champions_and_leaves_one_below_her() {
     let mut core = Core::default();
     let mut f = frame(0, 300_000, 300_000, vec![unit(5, 1, 350_000, 300_000), unit(6, 1, 356_000, 306_000)]);
     let mut log = vec![];
@@ -157,7 +206,7 @@ fn surge_moves_her_pool_makes_a_bigger_whirlpool_bumps_two_champions_and_leaves_
     cast_s1(&mut core, &mut f, Point::new(352_000, 302_000), &mut log);
     assert!(!core.pools.iter().any(|p| p.id == first), "the pool she stood in moved");
     let far = core.pools.iter().find(|p| p.center.within(Point::new(352_000, 302_000), 1_000)).expect("surged whirlpool");
-    assert!(far.whirl && far.radius > d::WATER_POOL_RADIUS);
+    assert!(far.whirl && far.radius == d::WATER_POOL_RADIUS);
     assert!(core.pools.iter().any(|p| p.whirl && p.holds(f.pos)), "a whirlpool below her");
     assert!(stuns(&log, 5).contains(&(d::TIDE_POOL_BUMP_STUN_TICKS as u64)) && stuns(&log, 6).contains(&(d::TIDE_POOL_BUMP_STUN_TICKS as u64)));
     assert!(log.iter().any(|e| matches!(e, Effect::Pull { target: 5, .. })));
@@ -314,7 +363,7 @@ fn trident_crosses_the_map_stuns_three_seconds_and_leaves_a_pool() {
     let mut f = frame(0, 50_000, 480_000, vec![unit(5, 1, 900_000, 480_000)]);
     let mut log = vec![];
     f.order = Some(Order::Ult(Point::new(900_000, 480_000)));
-    run(&mut core, &mut f, 400, &mut log);
+    run(&mut core, &mut f, 500, &mut log);
     assert!(stuns(&log, 5).contains(&(d::ULT_STUN_TICKS as u64)));
     assert!(core.pools.iter().any(|p| p.holds(Point::new(900_000, 480_000))));
 }
@@ -383,7 +432,7 @@ fn dive_reaches_her_far_pool_but_a_plain_point_stays_in_range() {
     cast_s1(&mut core, &mut f, here, &mut log);
     // the trident's pool, across the map
     f.order = Some(Order::Ult(Point::new(900_000, 480_000)));
-    run(&mut core, &mut f, 300, &mut log);
+    run(&mut core, &mut f, 550, &mut log);
     let far = core.pools.iter().find(|p| p.center.x > 700_000).copied().expect("trident pool");
     f.order = Some(Order::Dive(far.center));
     run(&mut core, &mut f, 1, &mut log);

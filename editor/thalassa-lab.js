@@ -4,6 +4,7 @@
   const R = window.THALASSA_RULES, REV = R.revision, $ = s => document.querySelector(s);
   const canvas = $('#arena'), ctx = canvas.getContext('2d'), W = canvas.width, MAP = 960000;
   const painter = new ThalassaPainter();
+  const clock = new ThalassaClock();
   let recorder=null;
   let S = W / MAP, cam = {x: MAP / 2, y: MAP / 2};
   const wasm = (await WebAssembly.instantiate(await (await fetch('thalassa.wasm')).arrayBuffer(), {})).instance.exports;
@@ -13,6 +14,7 @@
   const myShield = () => { me.shields = me.shields.filter(s => s.until > tick); return me.shields.reduce((a, s) => a + s.amount, 0); };
   const unit = (id, team, x, y, champion = true) => ({id, team, pos: {x, y}, hp: 1000, max_hp: 1000, radius: 8000, champion, tower: false, visible: true, targetable: true, farmable: false, stunned: false, stunUntil: 0, velocity: {x: 0, y: 0}});
   function reset() {
+    clock.reset();
     wasm.thalassa_reset();
     tick = 0; state = {}; logLines = []; queue = []; glides = []; clone = null; banished = 0;
     visual = {pose:'idle',start:0,until:0,left:false,cloneLeft:false,moving:false,fx:[],deadSince:null};
@@ -46,6 +48,7 @@
   function apply(out) {
     if (out.error) { log('ERROR ' + out.error); running = false; return; }
     state = out.state;
+    const waterDive=out.effects.some(e=>e.kind==='submerge');
     for (const e of out.effects) {
       const d = e.data;
       if(e.kind==='pose'){visual.pose=d.name;visual.start=tick;visual.until=tick+d.ticks;}
@@ -66,8 +69,8 @@
         case 'cc_immune': log(`#${d.target} crowd-control immune ${(d.ticks / 60).toFixed(2)} s`); break;
         case 'water': log(d.on ? 'Water mode ON' : 'Water mode off'); break;
         case 'spawn_clone': clone = {pos: {...d.pos}, hp: 200, until: tick + d.ticks}; log('Tide Twin appears'); break;
-        case 'clone_move': if (clone) {if(d.to.x!==clone.pos.x)visual.cloneLeft=d.to.x<clone.pos.x;glide(clone, d.to, d.ticks);} break;
-        case 'remove_clone': clone = null; break;
+        case 'clone_move': if (clone) {if(d.to.x!==clone.pos.x)visual.cloneLeft=d.to.x<clone.pos.x;if(waterDive){visual.fx.push({tag:'dive_in',at:{...clone.pos},start:tick,until:tick+18});visual.cloneExitAt=tick+d.ticks;}glide(clone, d.to, d.ticks);} break;
+        case 'remove_clone': clone = null; visual.cloneExitAt=0; break;
         case 'swap': { const c = clone; me.pos = {...d.owner_to}; if (c) c.pos = {...d.clone_to}; log('Tide link: swapped with the twin'); break; }
         case 'log': log(String(e.data)); break;
       }
@@ -94,6 +97,7 @@
     visual.fx=visual.fx.filter(f=>tick<f.until&&me.hp>0);
     if(me.hp<=0&&visual.deadSince===null)visual.deadSince=tick;
     if(visual.exitAt&&tick>=visual.exitAt){visual.exitAt=0;visual.fx.push({tag:'dive_out',at:{...me.pos},start:tick,until:tick+18});}
+    if(visual.cloneExitAt&&tick>=visual.cloneExitAt){visual.cloneExitAt=0;if(clone)visual.fx.push({tag:'dive_out',at:{...clone.pos},start:tick,until:tick+18});}
   }
   function order(kind) { queue.push(kind === 'swap' ? {kind} : {kind, aim: {x: Math.round(aim.x), y: Math.round(aim.y)}}); }
   // ---- drawing
@@ -110,7 +114,7 @@
       else circle(p.center, p.radius, p.whirl ? 'rgba(60,140,220,.45)' : 'rgba(80,170,230,.3)', p.whirl ? '#9fd4ff' : '#5fb2d9');
     }
     if (clone&&me.hp>0) {
-      if (state.twin && state.twin.linked && !state.twin.swapped) { const a = P(me.pos), b = P(clone.pos); if(art)painter.effect(ctx,'tide_link',tick,a.x+(b.x-a.x)/2,a.y+(b.y-a.y)/2,pixel,true);else{ctx.strokeStyle = '#7fe0ff';ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();} }
+      if (state.twin && state.twin.linked && !state.twin.swapped) { const a = P(me.pos), b = P(clone.pos); if(art)for(const part of painter.linkSegments(me.pos,clone.pos)){const q=P(part.at);painter.effect(ctx,part.tag,0,q.x,q.y,pixel);}else{ctx.strokeStyle = '#7fe0ff';ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();} }
       if(art){const q=P(clone.pos),moving=glides.some(g=>g.who===clone),pose=tick<visual.until&&['attack','skill1','skill2'].includes(visual.pose)?visual.pose:moving?'run':'idle';painter.body(ctx,pose,tick<visual.until?tick-visual.start:tick,q.x,q.y,pixel,visual.cloneLeft,true,pose==='idle'||pose==='run');}
       else circle(clone.pos, 9000, 'rgba(120,220,255,.5)', '#bff0ff');
     }
@@ -125,7 +129,9 @@
     $('#cds').innerHTML = label.map((l, i) => `${l}: ${tick >= r[i] ? '<b>ready</b>' : ((r[i] - tick) / 60).toFixed(1) + ' s'}`).join(' · ') + `<br>In water: <b>${state.in_water ? 'yes' : 'no'}</b> · overheal ${state.overheal || 0} · HP ${Math.round(me.hp)}`;
     $('#status').textContent = `${running ? 'Running' : 'Paused'} · tick ${tick} · rules ${REV}`;
   }
-  function loop() { if (running) step(); draw(); requestAnimationFrame(loop); }
+  function loop(now) { clock.advance(now,running&&!document.hidden,step); draw(); requestAnimationFrame(loop); }
+  window.addEventListener('blur',()=>held.clear());
+  document.addEventListener('visibilitychange',()=>clock.reset());
   canvas.addEventListener('mousemove', e => { const b = canvas.getBoundingClientRect(); const k = W / b.width; aim = {x: ((e.clientX - b.left) * k - W / 2) / S + cam.x, y: ((e.clientY - b.top) * k - W / 2) / S + cam.y}; });
   canvas.addEventListener('keydown', e => {
     const k = e.key.toLowerCase(); if ('wasdf'.includes(k) && k.length === 1) held.add(k);
@@ -140,6 +146,6 @@
   $('#stunAlly').onclick = () => { units[2].stunUntil = tick + 60; log('#7 (ally) stunned'); canvas.focus(); };
   $('#stunMe').onclick = () => { me.stunUntil = tick + 60; log('Thalassa stunned'); canvas.focus(); };
   $('#dashOnMe').onclick = () => { const u = units[0]; u.pos = {x: me.pos.x + 9000, y: me.pos.y}; me.hp = Math.max(1, me.hp - 200); log('#5 dashes onto her (and hits hard)'); canvas.focus(); };
-  window.thalassaLab = {get state() { return state; }, get tick() { return tick; }, get me() { return me; }, get units() { return units; }, get clone() { return clone; }, painter, step, reset, order, setRecorder: fn=>{recorder=fn;}, setAim: p => { aim = {...p}; }, pause: () => { running = false; }};
-  reset(); canvas.focus(); loop();
+  window.thalassaLab = {get state() { return state; }, get tick() { return tick; }, get me() { return me; }, get units() { return units; }, get clone() { return clone; }, painter, step, reset, order, setRecorder: fn=>{recorder=fn;}, setAim: p => { aim = {...p}; }, pause: () => { running = false; clock.reset(); $('#play').textContent='Play'; }};
+  reset(); canvas.focus(); requestAnimationFrame(loop);
 })();

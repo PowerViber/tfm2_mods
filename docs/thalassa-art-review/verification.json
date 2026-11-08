@@ -1,8 +1,8 @@
 {
-  "checks": 742,
+  "checks": 1415,
   "body_frames": 37,
   "both_facings": true,
-  "decoded_bytes": 10584064,
+  "decoded_bytes": 27361280,
   "atlases": [
     [
       512,
@@ -11,17 +11,32 @@
     [
       1536,
       1536
+    ],
+    [
+      2048,
+      2048
     ]
   ],
-  "gameplay_baseline": "68f3d8048bcbed7500921743f740e3821b580c60",
+  "comparison_baseline": "68f3d8048bcbed7500921743f740e3821b580c60",
+  "rules_revision": "thalassa-1.1",
+  "authorized_followup": [
+    "pool 35000 equal to existing whirlpool",
+    "Dive range 75000, unchanged travel formula",
+    "clone copies committed Dive endpoint/clock",
+    "trident 2000/2600 units per tick",
+    "live segmented link",
+    "60 Hz real-time Lab clock"
+  ],
   "hashes": {
     "mods/tfm2_custom/champions/tfm2_custom_thalassa#sheet.png": "69abfdcced3cef079c4f579f4ca639433086d0b972bcc8243c73dfb0c7f4b155",
     "mods/tfm2_custom/champions/tfm2_custom_thalassa#anim.fanim": "3618e511494e44f1bc699e0cb53542aecb2b70508105738faa648592372f7f32",
-    "mods/tfm2_custom/vfx/thalassa#sheet.png": "bc948ac71d7b011b55be783233c484a24b90d4377ce50fedf661d2a1cd7f7f42",
+    "mods/tfm2_custom/vfx/thalassa#sheet.png": "36301d6d91cf94d3aa165b5b8e0ed7d1f198dedecc9bb132d3843024225ceb22",
     "mods/tfm2_custom/vfx/thalassa#anim.fanim": "2fdf62aab418c642f66a899729851d78aeed0ee8c3a500d07c6b4b56d757c3e8",
-    "docs/thalassa-art-review/art-manifest.json": "90e6b458e6aee1df128dae249f15ceb80b785d187d1fbc41c87d22c95c762ec8",
-    "editor/thalassa-art.js": "dd4d54b74c901a4e91506e7455130a277cf061f177fe707a2331850c5a88f59f",
-    "native/tfm2_custom_ai/src/thalassa_art.rs": "ecccc7d3a6b9fca3752d88adf963456bf9244f2b920a4a98f5455d72a4af59e6"
+    "mods/tfm2_custom/vfx/thalassa_links#sheet.png": "c546123eb9c4c226383e15935ad34291fa5593d3eab8bc036b897beb5359c223",
+    "mods/tfm2_custom/vfx/thalassa_links#anim.fanim": "06ba1a38fb3b64d2479758e13954f32530fe3a073c9ce654cd061f9e4a595054",
+    "docs/thalassa-art-review/art-manifest.json": "46daec01a051396c6455cba9ad3db625f529a05df083d5cb7408bb78a92a5499",
+    "editor/thalassa-art.js": "7e4d8428d1a2f6cceacd3e4f2f523e34bbbb28f500bf43d46dea989de9a02107",
+    "native/tfm2_custom_ai/src/thalassa_art.rs": "800cd543924a61434e6a88139544b6075318ade2a093bb2c5ab2335153868ef1"
   },
   "live_game_acceptance": "pending"
 }

@@ -65,7 +65,7 @@ champ['view_projectiles'] = [dict(type='Animated', name=ID + '_bolt', anim=VFX, 
 art_manifest = ROOT / 'docs/thalassa-art-review/art-manifest.json'
 if art_manifest.exists():
     art = json.loads(art_manifest.read_text(encoding='utf-8'))
-    champ['view_effects'] = [dict(type='Animation', name='tls_' + tag, anim=VFX, tag=tag, z=spec['z'], is_follow=False)
+    champ['view_effects'] = [dict(type='Animation', name='tls_' + tag, anim=spec.get('asset',VFX), tag=tag, z=spec['z'], is_follow=False)
                             for tag, spec in art['effects'].items() if spec['kind'] == 'effect']
 data = json.dumps(champ, indent=2) + '\n'
 
