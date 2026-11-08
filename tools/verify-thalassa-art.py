@@ -61,6 +61,8 @@ rules=json.loads((ROOT/'rules/thalassa.json').read_text())
 expected=json.loads(json.dumps(original_rules));expected['revision']='thalassa-1.1'
 expected['water']['poolRadius']=35000;expected['tidePool']['whirlScalePct']=100
 expected['dive']['range']=75000;expected['ult']['speed']=2000
+# thalassa-1.2 (round 157 follow-up): the twin plays on its own and a water twin rescues her at any range
+expected['revision']='thalassa-1.2';expected['twin'].update(walkSpeed=990,leash=60000,aggroRange=70000,kitePct=60,selfRescueGlobal=1)
 check(rules==expected,'only authorized canonical rule changes')
 for tag,ani in links.items():check(len(ani['frames'])==1 and ani['frames'][0]['duration']==1/60,tag+' one-tick tracked link')
 check(Image.open(REVIEW/'effect-pool.png').size==Image.open(REVIEW/'effect-whirlpool.png').size==(74,74),'equal pool and whirlpool footprints')

@@ -5172,7 +5172,7 @@
       "Protect",
       "Poke"
      ],
-     "summary": "Dive (10 s): in water, opens a pool up to 75000 away, dives into hers and surfaces from it. On land, a short slide that leaves her wet for 1.5 s. Tide Twin (18 s): a water clone for 12 s (20% of her HP) copies her Tide Pool, Dive and harp attacks at 50% to the same point. When an ally or Thalassa is stunned within 40000, it flies to them and becomes a pool: cleanse, 80 + 50% AP shield and 1.5 s crowd-control immunity. Spawned on water, a tide link lets her swap places with it once when engaged, leaving a whirlpool."
+     "summary": "Dive (10 s): in water, opens a pool up to 75000 away, dives into hers and surfaces from it. On land, a short slide that leaves her wet for 1.5 s. Tide Twin (18 s): a water clone for 12 s (20% of her HP) that moves and fires harp bolts on its own at 50%, and copies her Tide Pool and Dive to the same point when she casts them. When an ally or Thalassa is stunned within 40000, it flies to them and becomes a pool: cleanse, 80 + 50% AP shield and 1.5 s crowd-control immunity. Spawned on water, it rescues Thalassa at any range, instantly, and a tide link lets her swap places with it once when engaged, leaving a whirlpool."
     },
     {
      "slot": "ult",

@@ -488,3 +488,133 @@ fn twin_flights_are_timed_glides_drawn_every_tick() {
     let bodies = log.iter().filter(|e| matches!(e, Effect::Fx { name, .. } if name.starts_with("tls_twin_p"))).count();
     assert!(bodies >= 6, "drawn every tick in flight ({bodies})");
 }
+
+// ------------------------------------------------------------------ the twin plays on its own (thalassa-1.2)
+
+fn clone_moves(log: &[Effect]) -> Vec<Point> {
+    log.iter().filter_map(|e| if let Effect::CloneMove { to, .. } = e { Some(*to) } else { None }).collect()
+}
+fn twin_hits(log: &[Effect], id: usize) -> Vec<i64> {
+    log.iter().filter_map(|e| if let Effect::Damage { target, amount, from_clone: true } = e { (*target == id).then_some(*amount) } else { None }).collect()
+}
+
+#[test]
+fn twin_walks_into_range_and_fires_its_own_bolts_without_her() {
+    let mut core = Core::default();
+    let mut f = frame(0, 300_000, 300_000, vec![unit(7, 1, 392_000, 300_000)]);
+    let mut log = vec![];
+    f.order = Some(Order::Twin(Point::new(330_000, 300_000)));
+    run(&mut core, &mut f, 120, &mut log);
+    assert!(!clone_moves(&log).is_empty(), "it walked");
+    let hits = twin_hits(&log, 7);
+    assert!(!hits.is_empty(), "it attacked on its own while she attacked nothing");
+    let hers = (d::BASIC_BASE + d::BASIC_AP_RATIO * 100 / 100) as i64;
+    assert!(hits.iter().all(|&h| h == hers * d::TWIN_COPY_PCT / 100), "{hits:?} vs {hers}");
+    assert!(hits.len() as u64 <= 120 / d::BASIC_COOLDOWN_TICKS as u64 + 1, "on its own clock");
+}
+
+#[test]
+fn twin_no_longer_echoes_her_bolts() {
+    let mut core = Core::default();
+    // the enemy is in her range but out of the twin's sight
+    let mut f = frame(0, 300_000, 300_000, vec![unit(7, 1, 250_000, 300_000)]);
+    let mut log = vec![];
+    f.order = Some(Order::Twin(Point::new(330_000, 300_000)));
+    run(&mut core, &mut f, 1, &mut log);
+    for _ in 0..5 {
+        f.basic_hits = vec![7];
+        run(&mut core, &mut f, 1, &mut log);
+    }
+    // the twin only joins once it has walked within its own range (it may start walking, but no echo per her hit)
+    assert!(twin_hits(&log, 7).len() <= 1, "{:?}", twin_hits(&log, 7));
+}
+
+#[test]
+fn twin_kites_back_from_a_close_enemy() {
+    let mut core = Core::default();
+    let mut f = frame(0, 300_000, 300_000, vec![unit(7, 1, 342_000, 300_000)]);
+    let mut log = vec![];
+    f.order = Some(Order::Twin(Point::new(330_000, 300_000)));
+    run(&mut core, &mut f, 13, &mut log);
+    let c = f.clone.expect("twin").pos;
+    assert!(c.x < 330_000, "backed off: {c:?}");
+}
+
+#[test]
+fn twin_never_walks_past_the_leash_and_comes_back_when_alone() {
+    let mut core = Core::default();
+    let mut f = frame(0, 300_000, 300_000, vec![unit(7, 1, 420_000, 300_000)]);
+    let mut log = vec![];
+    f.order = Some(Order::Twin(Point::new(330_000, 300_000)));
+    run(&mut core, &mut f, 300, &mut log);
+    for to in clone_moves(&log) {
+        assert!(to.within(f.pos, d::TWIN_LEASH + 1), "leash: {to:?}");
+    }
+    // the enemy leaves; she walks off: it follows her back
+    f.units.clear();
+    f.pos = Point::new(260_000, 300_000);
+    run(&mut core, &mut f, 120, &mut log);
+    let c = f.clone.expect("twin").pos;
+    assert!(c.within(f.pos, 22_000), "back near her: {c:?}");
+    assert!(clone_moves(&log).iter().all(|p| !f.terrain_at(*p)));
+}
+
+#[test]
+fn twin_still_casts_skills_only_when_she_does() {
+    let mut core = Core::default();
+    let mut f = frame(0, 300_000, 300_000, vec![unit(7, 1, 380_000, 300_000), unit(8, 1, 385_000, 305_000)]);
+    let mut log = vec![];
+    f.order = Some(Order::Twin(Point::new(330_000, 300_000)));
+    run(&mut core, &mut f, 200, &mut log);
+    let surges = |l: &[Effect]| l.iter().filter(|e| matches!(e, Effect::Fx { name, .. } if name == "tls_surge")).count();
+    assert_eq!(surges(&log), 0, "no skill of its own");
+}
+
+#[test]
+fn a_water_twin_rescues_thalassa_anywhere_instantly_a_land_twin_does_not() {
+    for water in [true, false] {
+        let mut core = Core::default();
+        let mut f = frame(0, 300_000, 300_000, vec![]);
+        let mut log = vec![];
+        if water {
+            let here = f.pos;
+            cast_s1(&mut core, &mut f, here, &mut log);
+        }
+        f.order = Some(Order::Twin(Point::new(320_000, 300_000)));
+        run(&mut core, &mut f, 1, &mut log);
+        assert!(f.clone.is_some());
+        f.pos = Point::new(800_000, 300_000);
+        f.stunned = true;
+        log.clear();
+        run(&mut core, &mut f, 1, &mut log);
+        let cleansed = log.iter().any(|e| matches!(e, Effect::Cleanse { target: ME }));
+        assert_eq!(cleansed, water, "water twin: {water}");
+        if water {
+            assert!(f.clone.is_none(), "the twin is used up");
+            assert!(log.iter().any(|e| matches!(e, Effect::CcImmune { target: ME, .. })));
+            assert!(core.pools.iter().any(|p| p.holds(f.pos)), "rescue pool under her");
+        } else {
+            run(&mut core, &mut f, 30, &mut log);
+            assert!(!log.iter().any(|e| matches!(e, Effect::Cleanse { .. })));
+        }
+    }
+}
+
+#[test]
+fn allies_keep_the_rescue_range_and_the_flight() {
+    let mut core = Core::default();
+    let mut far = unit(7, 0, 620_000, 300_000);
+    far.stunned = true;
+    let mut f = frame(0, 300_000, 300_000, vec![far]);
+    let mut log = vec![];
+    let here = f.pos;
+    cast_s1(&mut core, &mut f, here, &mut log);
+    f.order = Some(Order::Twin(Point::new(320_000, 300_000)));
+    run(&mut core, &mut f, 30, &mut log);
+    assert!(!log.iter().any(|e| matches!(e, Effect::Cleanse { target: 7 })), "300,000 away: no rescue");
+    f.units[0].pos = Point::new(345_000, 300_000);
+    log.clear();
+    run(&mut core, &mut f, 30, &mut log);
+    assert!(log.iter().any(|e| matches!(e, Effect::CloneMove { ticks, .. } if *ticks == d::TWIN_FLY_TICKS as u64)), "flew");
+    assert!(log.iter().any(|e| matches!(e, Effect::Cleanse { target: 7 })));
+}

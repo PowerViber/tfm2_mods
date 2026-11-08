@@ -3807,5 +3807,6 @@ To check in game: close the game, Update/Check, confirm native 0.10.36 and champ
 - Reihan designed a mermaid harpist (mage carry, can support).
 - **Kit:** water pools and whirlpools, a dive between pools (any distance into her own pools), a water twin that echoes her skills and rescues stunned allies, and a global steerable trident that V1 can parry.
 - **Art:** Codex's approved pearl-and-seafoam body and effects, with a live Tide Link. Retune `thalassa-1.1`: pools 35,000, Dive 75,000, trident speed 2,000.
-- **Checks:** 1058 native tests, 25 Lab tests, 8 browser checks, 1406 art checks, Mod Manager load. Review: `docs/main-review-round-157.md`.
+- **Checks:** 1065 native tests, 32 Lab tests, 9 browser checks, 1406 art checks, Mod Manager load. Review: `docs/main-review-round-157.md`.
+- **Follow-up (`thalassa-1.2`):** the Tide Twin walks and fires its own bolts like someone playing her (skills only when she casts them); a twin spawned on water rescues Thalassa at any range, instantly.
 - **Pending:** live acceptance and balance.

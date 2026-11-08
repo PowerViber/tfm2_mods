@@ -33,10 +33,11 @@ text = {
               f"({t['whirlScalePct']}% size) that slows {t['slowPct']}%, pulls inward and deals {t['base']} + {t['apRatio']}% AP; two or more champions caught bump and are stunned "
               f"{sec(t['bumpStunTicks'])}. A new whirlpool forms below her."),
     'skill2': (f"Dive ({sec(d['cooldownTicks'])}): in water, opens a pool up to {d['range']} away, dives into hers and surfaces from it. On land, a short slide that leaves her wet for "
-               f"{sec(w['wetTicks'])}. Tide Twin ({sec(tw['cooldownTicks'])}): a water clone for {sec(tw['ticks'])} ({tw['hpPct']}% of her HP) copies her Tide Pool, Dive and harp "
-               f"attacks at {tw['copyPct']}% to the same point. When an ally or Thalassa is stunned within {tw['rescueRange']}, it flies to them and becomes a pool: cleanse, "
-               f"{tw['shieldBase']} + {tw['shieldApRatio']}% AP shield and {sec(tw['immuneTicks'])} crowd-control immunity. Spawned on water, a tide link lets her swap places with it "
-               f"once when engaged, leaving a whirlpool."),
+               f"{sec(w['wetTicks'])}. Tide Twin ({sec(tw['cooldownTicks'])}): a water clone for {sec(tw['ticks'])} ({tw['hpPct']}% of her HP) that moves and fires harp bolts on its own at "
+               f"{tw['copyPct']}%, and copies her Tide Pool and Dive to the same point when she casts them. When an ally or Thalassa is stunned within {tw['rescueRange']}, it flies to "
+               f"them and becomes a pool: cleanse, "
+               f"{tw['shieldBase']} + {tw['shieldApRatio']}% AP shield and {sec(tw['immuneTicks'])} crowd-control immunity. Spawned on water, it rescues Thalassa at any range, instantly, and a "
+               f"tide link lets her swap places with it once when engaged, leaving a whirlpool."),
     'ult': (f"Trident of the Deep ({sec(u['cooldownTicks'])}): a slow trident with global range, steerable {u['curveMilliDegrees'] / 1000:g} degrees in total. The first enemy champion "
             f"hit is stunned {sec(u['stunTicks'])} ({sec(u['waterStunTicks'])} if thrown from water) and enemies around take {u['base']} + {u['apRatio']}% AP. It leaves a pool where it "
             f"lands; from water it flies faster and the pool is a whirlpool."),

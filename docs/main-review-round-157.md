@@ -3,14 +3,14 @@
 You designed a mermaid who fights with a harp: a mage carry for mid or bot who can also support. Her water mode comes from pools she makes herself. Her twin copies her skills and rescues stunned allies, and her trident crosses the whole map. We fixed five review findings, Codex drew the art and tuned the playback, and this round puts her in the game.
 
 ## Thalassa, the mermaid harpist
-She is an Original-family mage with magic damage, no mastery and Mod Power `[0, 25, 5, 5, 10, 0, 10]`. She keeps Flash and farms with Tide Pool and her harp bolts. The full kit is in `docs/thalassa-guide.md`; every number lives in `rules/thalassa.json` (revision `thalassa-1.1`).
+She is an Original-family mage with magic damage, no mastery and Mod Power `[0, 25, 5, 5, 10, 0, 10]`. She keeps Flash and farms with Tide Pool and her harp bolts. The full kit is in `docs/thalassa-guide.md`; every number lives in `rules/thalassa.json` (revision `thalassa-1.2`).
 
 | | Skill | In short |
 |---|---|---|
 | Passive | Tidebound | In water: +20% move speed and range, harp bolts bounce to a second enemy, 1% max HP regen per second. At full HP the regen becomes a shield, up to 10% of her HP. No penalty on land. |
 | S1 | Tide Pool | On land, a pool (radius 35,000) forms below her. In water, her pool surges up to 60,000 into a whirlpool that slows, pulls and damages. 2+ enemy champions caught bump and are stunned 1 s, and a new whirlpool forms below her. |
 | S2 | Dive | In water, she opens a pool up to 75,000 away and dives across. Into one of her own pools (the trident's too) she dives at any distance. On land, a short slide that leaves her wet. |
-| S3 | Tide Twin | A 12 s twin that can be killed. It copies Tide Pool, Dive and her bolts to the same point (not the ult). An ally (or she) stunned near it gets a rescue pool: cleanse, shield, CC immunity. Spawned on water, she can swap with it once when engaged, leaving a whirlpool. |
+| S3 | Tide Twin | A 12 s twin that can be killed. It walks and fires its own bolts (50%) like someone playing her, and copies Tide Pool and Dive only when she casts them (not the ult). An ally (or she) stunned near it gets a rescue pool: cleanse, shield, CC immunity. Spawned on water, it rescues Thalassa at any range instantly, and she can swap with it once when engaged, leaving a whirlpool. |
 | Ult | Trident of the Deep | A slow trident with global range, steerable 25° in total. It stuns the first champion hit 3 s (4 s from water) and leaves a pool where it lands. V1 can parry it. |
 
 ## Review fixes (since the first draft)
@@ -32,16 +32,22 @@ She is an Original-family mage with magic damage, no mastery and Mod Power `[0, 
   | Dive range | 50,000 | 75,000 |
   | Trident speed | 6,000 | 2,000 (a slower trident) |
 
+## Your follow-up: the twin plays like her (`thalassa-1.2`)
+You asked whether the copy moves (it didn't: it stood where it was cast) and for a global self-cleanse from S3 on water.
+- **It plays on its own now.** It walks at her move speed (+20% in water) and fires its own harp bolts at 50% on its own cooldown. It targets the nearest enemy champion it can see (a farmable unit when none is near), walks into range, backs off when an enemy gets close, and returns near her when alone. It never strays more than 60,000 from her. Its steps are engine glides (the round 156 rule).
+- **Skills still follow her:** it copies Tide Pool and Dive only when she casts them, to the same point, and never the ult. It no longer echoes her bolts; its own attacks replace that.
+- **Global self-rescue:** a twin spawned on water rescues Thalassa anywhere on the map, at once: the rescue pool, cleanse, shield and CC immunity appear under her, and the twin is used up. Allies keep the 40,000 range and the flight; a twin spawned on land keeps 40,000 for her too.
+
 ## Shipped this round
 - Native **0.10.92** (DLL rebuilt for Windows; it reports 0.10.92 and carries her passive) and **tfm2_custom 0.2.95**, which needs 0.10.92 or later.
 - 0.2.94 is left for PR #69. Other packs are unchanged.
 - README row and pack description.
 
 ## Verification
-- `cargo test --release` in `native/tfm2_custom_ai`: 1058 passed, 0 failed, 0 warnings.
-  - This includes 29 Thalassa tests: core, mock host, V1 parry, overheal, placement.
+- `cargo test --release` in `native/tfm2_custom_ai`: 1065 passed, 0 failed, 0 warnings.
+  - This includes 36 Thalassa tests (7 for the follow-up: own bolts, no echo, kiting, leash and return, skills only with her, the global self-rescue, allies' range): core, mock host, V1 parry, overheal, placement.
   - One run had a Rally tick-budget comparison fail once. It passed alone and on two full reruns. It looks like a flaky test sharing global test state; nothing in it touches Thalassa.
-- `native/thalassa_lab` tests: 25 passed. `node tools/test-thalassa-lab.cjs`: 8 browser checks passed, including the dive into the trident's far pool.
+- `native/thalassa_lab` tests: 32 passed. `node tools/test-thalassa-lab.cjs`: 9 browser checks passed, including the dive into the trident's far pool and the twin walking and attacking with no input.
 - Codex's art verifier: 1406 checks passed, covering:
   - approved source hashes;
   - frame counts and mirrored facings;

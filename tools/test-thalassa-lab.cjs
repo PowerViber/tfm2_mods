@@ -31,6 +31,15 @@ const root = path.resolve(__dirname, '..'), port = 7319;
       if (far) { L.setAim(far.center); L.order('dive'); run(120); out.farDive = Math.hypot(L.me.pos.x - far.center.x, L.me.pos.y - far.center.y) <= far.radius; out.farX = L.me.pos.x; }
       return out;
     });
+    const tw = await page.evaluate(() => {
+      const L = thalassaLab; L.reset(); document.querySelector('#moving').checked = false;
+      const run = n => { for (let i = 0; i < n; i++) L.step(); };
+      const e = L.units.find(u => u.team === 1); e.pos = {x: L.me.pos.x + 95000, y: L.me.pos.y};
+      L.setAim({x: L.me.pos.x + 30000, y: L.me.pos.y}); L.order('twin'); run(2);
+      const start = {...L.clone.pos}, hp = e.hp; run(150);
+      return {moved: !!L.clone && Math.hypot(L.clone.pos.x - start.x, L.clone.pos.y - start.y) > 3000, hit: e.hp < hp};
+    });
+    check('The Tide Twin walks and fires its own bolts with no input', tw.moved && tw.hit);
     check('Tide Pool on land forms a pool below her and turns water mode on', r.pool === 1 && r.water);
     check('In water Tide Pool surges into whirlpools (target and below her)', r.whirls >= 2);
     check('Two enemy champions caught by the surge bump and are stunned', r.bumped === 2);

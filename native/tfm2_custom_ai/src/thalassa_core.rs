@@ -227,6 +227,8 @@ pub struct Twin {
     pub swapped: bool,
     /// flying to rescue this ally, arriving at tick
     pub rescue: Option<(usize, u64)>,
+    /// its own harp bolt is ready again at this tick (it attacks on its own, like someone playing her)
+    pub next_bolt: u64,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
@@ -406,12 +408,6 @@ impl Core {
                     out.push(Effect::Fx { name: "tls_bounce".into(), at: next.pos, ticks: 10, ambient: true });
                 }
             }
-            if let (Some(c), Some(_)) = (f.clone, self.twin) {
-                if c.pos.within(target.pos, d::BASIC_RANGE + target.radius) {
-                    out.push(Effect::Damage { target: t, amount: base * d::TWIN_COPY_PCT / 100, from_clone: true });
-                    out.push(Effect::Fx { name: "tls_bounce".into(), at: target.pos, ticks: 10, ambient: true });
-                }
-            }
         }
     }
 
@@ -555,7 +551,7 @@ impl Core {
         let at = free_spot(f, f.pos, f.pos.reach(aim, d::TWIN_RANGE));
         let linked = self.pool_at(at).is_some();
         let ticks = sec(d::TWIN_TICKS);
-        self.twin = Some(Twin { until: f.tick + ticks, moving_until: 0, linked, swapped: false, rescue: None });
+        self.twin = Some(Twin { until: f.tick + ticks, moving_until: 0, linked, swapped: false, rescue: None, next_bolt: f.tick + 12 });
         out.push(Effect::SpawnClone { pos: at, ticks });
         out.push(Effect::Fx { name: "tls_twin_spawn".into(), at, ticks: 20, ambient: false });
         out.push(Effect::Pose { name: "skill3", ticks: 18 });
@@ -619,14 +615,13 @@ impl Core {
         if let Some((ally, at)) = t.rescue {
             if f.tick >= at {
                 let pos = if ally == f.owner { f.pos } else { f.units.iter().find(|u| u.id == ally).map_or(c.pos, |u| u.pos) };
-                self.add_pool(f, pos, d::WATER_POOL_RADIUS, false, out);
-                out.push(Effect::Cleanse { target: ally });
-                out.push(Effect::Shield { target: ally, amount: pct(d::TWIN_SHIELD_BASE, d::TWIN_SHIELD_AP_RATIO, f.ap), ticks: sec(d::TWIN_SHIELD_TICKS) });
-                out.push(Effect::CcImmune { target: ally, ticks: sec(d::TWIN_IMMUNE_TICKS) });
-                out.push(Effect::Fx { name: "tls_rescue".into(), at: pos, ticks: 24, ambient: false });
-                out.push(Effect::Log(format!("tide twin rescued {ally}")));
-                self.end_twin(out);
+                self.rescue(f, ally, pos, format!("tide twin rescued {ally}"), out);
             }
+            return;
+        }
+        // a twin cast on water reaches Thalassa herself anywhere on the map, instantly
+        if t.linked && d::TWIN_SELF_RESCUE_GLOBAL != 0 && f.stunned && !c.pos.within(f.pos, d::TWIN_RESCUE_RANGE) {
+            self.rescue(f, f.owner, f.pos, "tide twin rescued Thalassa from afar".into(), out);
             return;
         }
         // an ally (or she) stunned in range: fly to them
@@ -644,7 +639,72 @@ impl Core {
         // the tide link: engaged on, she swaps with it
         if t.linked && !t.swapped && !f.manual && self.engaged(f) {
             self.swap(f, out);
+            return;
         }
+        // otherwise it plays on its own: harp bolts and its own footwork (skills only when she casts hers)
+        self.twin_play(f, c, out);
+    }
+
+    fn rescue(&mut self, f: &Frame, ally: usize, pos: Point, log: String, out: &mut Vec<Effect>) {
+        self.add_pool(f, pos, d::WATER_POOL_RADIUS, false, out);
+        out.push(Effect::Cleanse { target: ally });
+        out.push(Effect::Shield { target: ally, amount: pct(d::TWIN_SHIELD_BASE, d::TWIN_SHIELD_AP_RATIO, f.ap), ticks: sec(d::TWIN_SHIELD_TICKS) });
+        out.push(Effect::CcImmune { target: ally, ticks: sec(d::TWIN_IMMUNE_TICKS) });
+        out.push(Effect::Fx { name: "tls_rescue".into(), at: pos, ticks: 24, ambient: false });
+        out.push(Effect::Log(log));
+        self.end_twin(out);
+    }
+
+    /// The twin's own target: the nearest enemy champion it can see, or, when no champion is near, a farmable unit.
+    fn twin_target<'a>(&self, f: &'a Frame, c: CloneView) -> Option<&'a Unit> {
+        let near = |u: &&Unit| f.enemy(u) && !u.tower && u.pos.within(c.pos, d::TWIN_AGGRO_RANGE) && u.pos.within(f.pos, d::TWIN_LEASH + d::TWIN_AGGRO_RANGE);
+        f.units
+            .iter()
+            .filter(|u| u.champion)
+            .filter(near)
+            .min_by_key(|u| (u.pos.d2(c.pos), u.id))
+            .or_else(|| f.units.iter().filter(|u| !u.champion && u.farmable).filter(near).min_by_key(|u| (u.pos.d2(c.pos), u.id)))
+    }
+
+    fn twin_play(&mut self, f: &Frame, c: CloneView, out: &mut Vec<Effect>) {
+        let Some(mut t) = self.twin else { return };
+        let wet = self.water_at(c.pos, f.tick);
+        let range = d::BASIC_RANGE * (100 + if wet { d::WATER_RANGE_PCT } else { 0 }) / 100;
+        let target = self.twin_target(f, c);
+        // harp bolts on its own clock, at copyPct of hers
+        if let Some(u) = target {
+            if f.tick >= t.next_bolt && c.pos.within(u.pos, range + u.radius) {
+                t.next_bolt = f.tick + sec(d::BASIC_COOLDOWN_TICKS);
+                out.push(Effect::Damage { target: u.id, amount: pct(d::BASIC_BASE, d::BASIC_AP_RATIO, f.ap) * d::TWIN_COPY_PCT / 100, from_clone: true });
+                out.push(Effect::Fx { name: "tls_bounce".into(), at: u.pos, ticks: 10, ambient: true });
+            }
+        }
+        // footwork every 6 ticks, unless a flight or a dive is still carrying it
+        if f.tick >= t.moving_until && f.tick % 6 == 0 {
+            let step = d::TWIN_WALK_SPEED * (100 + if wet { d::WATER_MOVE_SPEED_PCT } else { 0 }) / 100 * 6;
+            let goal = match target {
+                Some(u) => {
+                    let gap = c.pos.dist(u.pos) as i64 - u.radius;
+                    if gap > range {
+                        c.pos.toward(u.pos, step.min(gap - range * 9 / 10))
+                    } else if gap < range * d::TWIN_KITE_PCT / 100 {
+                        c.pos.toward(u.pos, -step)
+                    } else {
+                        c.pos
+                    }
+                }
+                None if !c.pos.within(f.pos, 20_000) => c.pos.toward(f.pos, step.min(c.pos.dist(f.pos) as i64 - 20_000)),
+                None => c.pos,
+            };
+            // never past the leash
+            let goal = if goal.within(f.pos, d::TWIN_LEASH) { goal } else { f.pos.reach(goal, d::TWIN_LEASH) };
+            let to = free_spot(f, c.pos, goal);
+            if !to.within(c.pos, 500) {
+                t.moving_until = f.tick + 6;
+                out.push(Effect::CloneMove { to, ticks: 6 });
+            }
+        }
+        self.twin = Some(t);
     }
 
     // ---------------------------------------------------------------- Ult: Trident of the Deep
