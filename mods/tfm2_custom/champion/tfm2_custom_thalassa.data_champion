@@ -1,0 +1,419 @@
+{
+  "id": "tfm2_custom_thalassa",
+  "category": "Magician",
+  "tags": [
+    "AP",
+    "Magic",
+    "Range",
+    "CC",
+    "Shield"
+  ],
+  "sprite": "asset/tfm2_custom/champions/tfm2_custom_thalassa",
+  "anim_prefix": "",
+  "stat": {
+    "attack": 30,
+    "magic_power": 60,
+    "hp": 920,
+    "defence": 22,
+    "magic_resistance": 28,
+    "move_speed": 990,
+    "hp_regen": 3,
+    "stack": 0,
+    "crit_chance": 0
+  },
+  "growth": {
+    "attack": 3,
+    "magic_power": 26,
+    "hp": 96,
+    "defence": 4,
+    "magic_resistance": 5,
+    "move_speed": 9,
+    "hp_regen": 0,
+    "stack": 0,
+    "crit_chance": 0
+  },
+  "attack": {
+    "action_name": "attack",
+    "cancelable": true,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 22,
+    "cooltime": 78,
+    "start_timing": 12,
+    "range": 55000,
+    "casting_type": "Targeting",
+    "casting_target": "Enemy",
+    "attack_type": "BaseAttack",
+    "effect": {
+      "type": "TargetProjectile",
+      "speed": 7000,
+      "name": "tfm2_custom_thalassa_bolt",
+      "y_offset": 0,
+      "applied_target": "Enemy",
+      "applied_effects": [
+        {
+          "effect": {
+            "type": "ApAttack",
+            "damage": 20,
+            "attack_ratio": 60
+          },
+          "casting_type": "Targeting"
+        }
+      ]
+    }
+  },
+  "skill": {
+    "action_name": "skill1",
+    "cancelable": false,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 6,
+    "cooltime": 5184000,
+    "start_timing": 3,
+    "range": 1,
+    "casting_type": "Targeting",
+    "casting_target": "EnemyChampionInCC",
+    "attack_type": "Skill",
+    "effect": {
+      "type": "Combine",
+      "effects": []
+    },
+    "description": "#asset/base/text/champion?description.tfm2_custom_thalassa.skill"
+  },
+  "skill2": {
+    "action_name": "skill2",
+    "cancelable": false,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 6,
+    "cooltime": 5184000,
+    "start_timing": 3,
+    "range": 1,
+    "casting_type": "Targeting",
+    "casting_target": "EnemyChampionInCC",
+    "attack_type": "Skill",
+    "effect": {
+      "type": "Combine",
+      "effects": []
+    },
+    "description": "#asset/base/text/champion?description.tfm2_custom_thalassa.skill2"
+  },
+  "ult": {
+    "action_name": "ult",
+    "cancelable": false,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 6,
+    "cooltime": 5184000,
+    "start_timing": 3,
+    "range": 1,
+    "casting_type": "Targeting",
+    "casting_target": "EnemyChampionInCC",
+    "attack_type": "Skill",
+    "effect": {
+      "type": "Combine",
+      "effects": []
+    },
+    "description": "#asset/base/text/champion?description.tfm2_custom_thalassa.ult"
+  },
+  "passive": {
+    "passive_ref": "tfm2_custom_ai:thalassa",
+    "params": {}
+  },
+  "passive_ult": {
+    "passive_ref": "tfm2_custom_ai:ult_learned",
+    "params": {}
+  },
+  "view_buffs": [
+    {
+      "type": "Animated",
+      "name": "tls_water",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "water_aura",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "tls_rescued",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "rescue_shield",
+      "z": 4
+    }
+  ],
+  "view_effects": [
+    {
+      "type": "Animation",
+      "name": "tls_pool",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "pool",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_whirlpool",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "whirlpool",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_pool_rise",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "pool_rise",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_surge",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "surge",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_bump",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "bump",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_bounce",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "bounce",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_dive_in",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "dive_in",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_dive_out",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "dive_out",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_slide",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "slide",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_spawn",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_spawn",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_fly",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_fly",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_pool",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_pool",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tide_link",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "tide_link",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_swap",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "swap",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_rescue",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "rescue",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_trident_hit",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "trident_hit",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_trident_land",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "trident_land",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_trident_p0",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "trident_p0",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_trident_p1",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "trident_p1",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_trident_p2",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "trident_p2",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_trident_p3",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "trident_p3",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_trident_p4",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "trident_p4",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_trident_p5",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "trident_p5",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_trident_p6",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "trident_p6",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_trident_p7",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "trident_p7",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_p0",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_p0",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_p1",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_p1",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_p2",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_p2",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_p3",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_p3",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_p4",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_p4",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_p5",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_p5",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_p6",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_p6",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_p7",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_p7",
+      "z": 5,
+      "is_follow": false
+    }
+  ],
+  "view_projectiles": [
+    {
+      "type": "Animated",
+      "name": "tfm2_custom_thalassa_bolt",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "bolt",
+      "z": 2,
+      "repeat": true
+    }
+  ]
+}
