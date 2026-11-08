@@ -65,4 +65,4 @@ Thalassa's native kit and Lab now have approved original artwork. On November 9,
 ## After the art lands
 1. `python3 tools/generate-thalassa.py --check` passes. If a tag is renamed, update the generator's `effects` list and regenerate.
 2. Mod Manager `the_repos_champions_all_load` passes.
-3. Release: native 0.10.92 / tfm2_custom 0.2.95 (0.2.94 is taken by PR #69), the DLL, and the review doc.
+3. Release: native 0.10.92 / tfm2_custom 0.2.95 (0.2.94 is taken by PR #69), the DLL, and the review doc. **Done in round 157** (`docs/main-review-round-157.md`).
