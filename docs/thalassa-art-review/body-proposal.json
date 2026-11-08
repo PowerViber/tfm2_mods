@@ -1,0 +1,72 @@
+{
+  "status": "approved",
+  "source_sha256": "74b124c78653b77b74b401c0ea6123594bf6b0a1d44651f7237fa880a8be88d8",
+  "source_size": [
+    1254,
+    1254
+  ],
+  "source_cells": [
+    [
+      67,
+      71,
+      477,
+      589
+    ],
+    [
+      0,
+      92,
+      492,
+      587
+    ],
+    [
+      67,
+      45,
+      627,
+      571
+    ],
+    [
+      0,
+      49,
+      625,
+      571
+    ]
+  ],
+  "shared_scale": 0.07722007722007722,
+  "canvas": [
+    64,
+    56
+  ],
+  "ground_anchor": [
+    32,
+    48
+  ],
+  "poses": [
+    "idle",
+    "movement",
+    "harp_attack",
+    "trident_cast"
+  ],
+  "body_visible_height": 40,
+  "game_assets_written": false,
+  "pixel_processing": "uniform nearest-neighbour reduction; alpha threshold; remove isolated components <=6 native pixels; no repainting",
+  "stock_visible_bounds": {
+    "bard": [
+      23,
+      5,
+      46,
+      40
+    ],
+    "archer": [
+      22,
+      7,
+      47,
+      40
+    ],
+    "knight": [
+      11,
+      4,
+      47,
+      40
+    ]
+  }
+}

@@ -1,0 +1,252 @@
+{
+  "status": "approved",
+  "source_sha256": "6b42f8b074d1fe376bb784328a219d1f8504cc1291e51e0eb7fca31d1ce46067",
+  "source_size": [
+    1254,
+    1254
+  ],
+  "effects": [
+    {
+      "tag": "pool",
+      "size": [
+        53,
+        53
+      ],
+      "cell": 0,
+      "source_bounds": [
+        25,
+        48,
+        287,
+        289
+      ],
+      "sha256": "7d1776adaa46d321cadaafa7882e217c0ee96dae33f221e69322ca386e4c304d"
+    },
+    {
+      "tag": "whirlpool",
+      "size": [
+        74,
+        74
+      ],
+      "cell": 1,
+      "source_bounds": [
+        23,
+        34,
+        296,
+        297
+      ],
+      "sha256": "7e6195eeb44f700b3a4d666a92afe3de257f53d54044162cdc2347d6e53f3c31"
+    },
+    {
+      "tag": "surge",
+      "size": [
+        64,
+        32
+      ],
+      "cell": 2,
+      "source_bounds": [
+        15,
+        98,
+        288,
+        250
+      ],
+      "sha256": "801c9be6ed376e658ed805ae4513a796d0e1e94f89233b473610babc8e817233"
+    },
+    {
+      "tag": "bump",
+      "size": [
+        38,
+        28
+      ],
+      "cell": 3,
+      "source_bounds": [
+        16,
+        89,
+        300,
+        237
+      ],
+      "sha256": "2a77945065172f8eb60fe891acbe704a5a9570089f35c27c589b5ac04fe6f9ea"
+    },
+    {
+      "tag": "bolt",
+      "size": [
+        18,
+        8
+      ],
+      "cell": 4,
+      "source_bounds": [
+        40,
+        120,
+        264,
+        204
+      ],
+      "sha256": "2e9eaa1e3d0a7abc8aa3a39f3210e41135b3d3b642a8b73f8ea50b55be9c6305"
+    },
+    {
+      "tag": "bounce",
+      "size": [
+        32,
+        18
+      ],
+      "cell": 5,
+      "source_bounds": [
+        24,
+        117,
+        273,
+        221
+      ],
+      "sha256": "cd7d62d44864537a98f425b54705c675a74e829efb90477e7bdcf70ba2ea93d0"
+    },
+    {
+      "tag": "dive_in",
+      "size": [
+        44,
+        32
+      ],
+      "cell": 6,
+      "source_bounds": [
+        24,
+        71,
+        286,
+        260
+      ],
+      "sha256": "ddb137d801f20a31f9b1c7a09c7b6709fcc86876d44fa2687eef7e0840a95f6e"
+    },
+    {
+      "tag": "dive_out",
+      "size": [
+        44,
+        40
+      ],
+      "cell": 7,
+      "source_bounds": [
+        26,
+        37,
+        281,
+        270
+      ],
+      "sha256": "b3d27e05f3ff283712e494481b811705c520b33c654860adb5460b93a96c8980"
+    },
+    {
+      "tag": "twin_spawn",
+      "size": [
+        36,
+        48
+      ],
+      "cell": 8,
+      "source_bounds": [
+        48,
+        22,
+        267,
+        279
+      ],
+      "sha256": "f5d6f3395d44b9aaa8423103a61e1ae4fab7039ee97ea68fa49800abbab48972"
+    },
+    {
+      "tag": "rescue",
+      "size": [
+        48,
+        32
+      ],
+      "cell": 9,
+      "source_bounds": [
+        13,
+        72,
+        289,
+        255
+      ],
+      "sha256": "73747eac0da25f01d89a3bf77491040b57d6697e439fcde950a54ef8926c6895"
+    },
+    {
+      "tag": "rescue_shield",
+      "size": [
+        64,
+        64
+      ],
+      "cell": 10,
+      "source_bounds": [
+        26,
+        29,
+        279,
+        278
+      ],
+      "sha256": "f69a8406ee8ce02ff9d6b8ffc668d07eebc312027944d012a723f6d5bd67db3f"
+    },
+    {
+      "tag": "tide_link",
+      "size": [
+        64,
+        12
+      ],
+      "cell": 11,
+      "source_bounds": [
+        9,
+        116,
+        298,
+        192
+      ],
+      "sha256": "957733976126d94eca2a31801d63e0c8a85e042ebcc620be10dc6c2771622b51"
+    },
+    {
+      "tag": "swap",
+      "size": [
+        64,
+        32
+      ],
+      "cell": 12,
+      "source_bounds": [
+        25,
+        59,
+        296,
+        255
+      ],
+      "sha256": "3f962af3e17a874c00dad1cb14f94581d6cfb8713333b978e19d62fc040b2f81"
+    },
+    {
+      "tag": "trident",
+      "size": [
+        48,
+        18
+      ],
+      "cell": 13,
+      "source_bounds": [
+        23,
+        95,
+        298,
+        216
+      ],
+      "sha256": "67321ec22b376d4b1748ba125455fb91548382c95a579e16ed8ec931bcb7a635"
+    },
+    {
+      "tag": "trident_hit",
+      "size": [
+        40,
+        40
+      ],
+      "cell": 14,
+      "source_bounds": [
+        30,
+        48,
+        280,
+        251
+      ],
+      "sha256": "3a8b1eee6cc5556e8a7d860b517c50d48b87330aecd735179858c9ec2e3abbc5"
+    },
+    {
+      "tag": "water_aura",
+      "size": [
+        48,
+        48
+      ],
+      "cell": 15,
+      "source_bounds": [
+        27,
+        20,
+        282,
+        271
+      ],
+      "sha256": "cfb45ed41698624340eea2f93c9add75581a452c810e3026c3469ca617a65d38"
+    }
+  ],
+  "game_assets_written": false,
+  "pixel_processing": "nearest-neighbour fit to declared native footprint; alpha threshold; no repainting"
+}

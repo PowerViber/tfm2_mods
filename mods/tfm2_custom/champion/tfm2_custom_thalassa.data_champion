@@ -151,9 +151,137 @@
     },
     {
       "type": "Animation",
+      "name": "tls_pool_p0",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "pool_p0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_pool_p1",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "pool_p1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_pool_p2",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "pool_p2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_pool_p3",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "pool_p3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_pool_p4",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "pool_p4",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_pool_p5",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "pool_p5",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_pool_p6",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "pool_p6",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_pool_p7",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "pool_p7",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "tls_whirlpool",
       "anim": "asset/tfm2_custom/vfx/thalassa",
       "tag": "whirlpool",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_whirlpool_p0",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "whirlpool_p0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_whirlpool_p1",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "whirlpool_p1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_whirlpool_p2",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "whirlpool_p2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_whirlpool_p3",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "whirlpool_p3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_whirlpool_p4",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "whirlpool_p4",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_whirlpool_p5",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "whirlpool_p5",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_whirlpool_p6",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "whirlpool_p6",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_whirlpool_p7",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "whirlpool_p7",
       "z": -2,
       "is_follow": false
     },
@@ -338,6 +466,598 @@
       "name": "tls_trident_p7",
       "anim": "asset/tfm2_custom/vfx/thalassa",
       "tag": "trident_p7",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_idle_0",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_idle_0",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_idle_0_l",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_idle_0_l",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_idle_1",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_idle_1",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_idle_1_l",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_idle_1_l",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_idle_2",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_idle_2",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_idle_2_l",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_idle_2_l",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_idle_3",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_idle_3",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_idle_3_l",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_idle_3_l",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_run_0",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_run_0",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_run_0_l",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_run_0_l",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_run_1",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_run_1",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_run_1_l",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_run_1_l",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_run_2",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_run_2",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_run_2_l",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_run_2_l",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_run_3",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_run_3",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_run_3_l",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_run_3_l",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_run_4",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_run_4",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_run_4_l",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_run_4_l",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_run_5",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_run_5",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_run_5_l",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_run_5_l",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_hit_0",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_hit_0",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_hit_0_l",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_hit_0_l",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_attack_0",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_attack_0",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_attack_0_l",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_attack_0_l",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_attack_1",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_attack_1",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_attack_1_l",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_attack_1_l",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_attack_2",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_attack_2",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_attack_2_l",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_attack_2_l",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_attack_3",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_attack_3",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_attack_3_l",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_attack_3_l",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_skill1_0",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_skill1_0",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_skill1_0_l",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_skill1_0_l",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_skill1_1",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_skill1_1",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_skill1_1_l",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_skill1_1_l",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_skill1_2",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_skill1_2",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_skill1_2_l",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_skill1_2_l",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_skill1_3",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_skill1_3",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_skill1_3_l",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_skill1_3_l",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_skill2_0",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_skill2_0",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_skill2_0_l",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_skill2_0_l",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_skill2_1",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_skill2_1",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_skill2_1_l",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_skill2_1_l",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_skill2_2",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_skill2_2",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_skill2_2_l",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_skill2_2_l",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_skill2_3",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_skill2_3",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_skill2_3_l",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_skill2_3_l",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_skill3_0",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_skill3_0",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_skill3_0_l",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_skill3_0_l",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_skill3_1",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_skill3_1",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_skill3_1_l",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_skill3_1_l",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_skill3_2",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_skill3_2",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_skill3_2_l",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_skill3_2_l",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_skill3_3",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_skill3_3",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_skill3_3_l",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_skill3_3_l",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_ult_0",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_ult_0",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_ult_0_l",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_ult_0_l",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_ult_1",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_ult_1",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_ult_1_l",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_ult_1_l",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_ult_2",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_ult_2",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_ult_2_l",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_ult_2_l",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_ult_3",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_ult_3",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_ult_3_l",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_ult_3_l",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_dead_0",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_dead_0",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_dead_0_l",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_dead_0_l",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_dead_1",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_dead_1",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_dead_1_l",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_dead_1_l",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_dead_2",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_dead_2",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_dead_2_l",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_dead_2_l",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_dead_3",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_dead_3",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_dead_3_l",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_dead_3_l",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_dead_4",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_dead_4",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_dead_4_l",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_dead_4_l",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_dead_5",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_dead_5",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_twin_dead_5_l",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_dead_5_l",
       "z": 5,
       "is_follow": false
     },

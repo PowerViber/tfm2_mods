@@ -1,0 +1,14 @@
+
+==============================  TFM2 Mod Manager  ==============================
+ repo: C:\Users\arian\.codex\worktrees\thalassa-art\tfm2_mods [codex/thalassa-art] 68f3d80 Thalassa review fixes: overheal, far-pool dive, V1 parry, safe placement, gliding twin
+ game: C:\Users\arian\.codex\worktrees\thalassa-art\tfm2_mods\backups\thalassa-art-manager-ex9u3agk
+ installed: native 0.10.91  champions 0.2.93
+ log: C:\Users\arian\.codex\worktrees\thalassa-art\tfm2_mods\logs\manager-20261108_184612.txt
+================================================================================
+Game folder: C:\Users\arian\.codex\worktrees\thalassa-art\tfm2_mods\backups\thalassa-art-manager-ex9u3agk
+  native (tfm2_custom_ai): repo 0.10.91  game 0.10.91
+  champions (tfm2_custom): repo 0.2.93  game 0.2.93
+  751 champion files compared, 0 differ, 0 missing; native DLL identical
+
+  UP TO DATE: the game has exactly the repo's mods.
+Log saved: C:\Users\arian\.codex\worktrees\thalassa-art\tfm2_mods\logs\manager-20261108_184612.txt

@@ -1,0 +1,53 @@
+{
+  "scope": "Thalassa art and presentation; no installation, real-career migration or actual-game acceptance",
+  "baseline": "68f3d8048bcbed7500921743f740e3821b580c60",
+  "native_serial": {
+    "passed": 1052,
+    "failed": 0,
+    "ignored": 13,
+    "command": "cargo +stable-x86_64-pc-windows-gnu test --release -- --test-threads=1",
+    "warnings": "Four pre-existing Windows native-bridge test-helper dead-code warnings"
+  },
+  "initial_native_parallel": {
+    "passed": 1050,
+    "failed": 2,
+    "ignored": 13,
+    "failures": [
+      "levi::tests::apex_plans_a_clear_line_down_the_corridor",
+      "walls::area_tests::batching_preserves_bush_locations_order_edges_and_missing_cells (poisoned lock)"
+    ],
+    "note": "Parallel isolation remains unverified; no unrelated gameplay source was changed"
+  },
+  "lab_tests": {
+    "passed": 22,
+    "failed": 0
+  },
+  "legacy_browser": {
+    "passed": 8
+  },
+  "art_browser": {
+    "passed": 34,
+    "manual_equivalence_frames": 954,
+    "native_wasm_parity_frames": 954
+  },
+  "art_checks": 742,
+  "manager_champion_load": true,
+  "manager_files_compared": 864,
+  "magnus_128_piece_p95_us": {
+    "five_runs": [
+      729,
+      711,
+      750,
+      702,
+      654
+    ],
+    "median": 711,
+    "target": 4000
+  },
+  "reserved_release": {
+    "native": "0.10.92",
+    "champion_pack": "0.2.95",
+    "packaging": "pending"
+  },
+  "live_game_acceptance": "pending"
+}

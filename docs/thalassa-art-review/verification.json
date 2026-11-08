@@ -1,0 +1,27 @@
+{
+  "checks": 742,
+  "body_frames": 37,
+  "both_facings": true,
+  "decoded_bytes": 10584064,
+  "atlases": [
+    [
+      512,
+      560
+    ],
+    [
+      1536,
+      1536
+    ]
+  ],
+  "gameplay_baseline": "68f3d8048bcbed7500921743f740e3821b580c60",
+  "hashes": {
+    "mods/tfm2_custom/champions/tfm2_custom_thalassa#sheet.png": "69abfdcced3cef079c4f579f4ca639433086d0b972bcc8243c73dfb0c7f4b155",
+    "mods/tfm2_custom/champions/tfm2_custom_thalassa#anim.fanim": "3618e511494e44f1bc699e0cb53542aecb2b70508105738faa648592372f7f32",
+    "mods/tfm2_custom/vfx/thalassa#sheet.png": "bc948ac71d7b011b55be783233c484a24b90d4377ce50fedf661d2a1cd7f7f42",
+    "mods/tfm2_custom/vfx/thalassa#anim.fanim": "2fdf62aab418c642f66a899729851d78aeed0ee8c3a500d07c6b4b56d757c3e8",
+    "docs/thalassa-art-review/art-manifest.json": "90e6b458e6aee1df128dae249f15ceb80b785d187d1fbc41c87d22c95c762ec8",
+    "editor/thalassa-art.js": "dd4d54b74c901a4e91506e7455130a277cf061f177fe707a2331850c5a88f59f",
+    "native/tfm2_custom_ai/src/thalassa_art.rs": "ecccc7d3a6b9fca3752d88adf963456bf9244f2b920a4a98f5455d72a4af59e6"
+  },
+  "live_game_acceptance": "pending"
+}

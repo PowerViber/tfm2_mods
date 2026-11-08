@@ -1,0 +1,17 @@
+{
+  "date": "2026-11-09",
+  "appearance": {
+    "approved": true,
+    "quote": "Approve this appearance",
+    "source_sha256": "74b124c78653b77b74b401c0ea6123594bf6b0a1d44651f7237fa880a8be88d8",
+    "scope": "Pearl-and-seafoam body appearance, four concept poses and both facings. Complete the remaining animations without repeating appearance approval."
+  },
+  "effects": {
+    "approved": true,
+    "quote": "Approve these effects",
+    "source_sha256": "6b42f8b074d1fe376bb784328a219d1f8504cc1291e51e0eb7fca31d1ce46067",
+    "scope": "Water-effect design direction: pools, whirlpools, bolts, splashes, rescue/link, shield and trident."
+  },
+  "installation_approved": false,
+  "live_game_acceptance": "pending"
+}
