@@ -17,6 +17,8 @@ label{display:flex;gap:6px;align-items:center}
 <canvas id="arena" width="900" height="900" tabindex="0"></canvas>
 <div id="side">
   <h2 style="margin:0">Thalassa Lab</h2>
+  <a href="thalassa-review.html" style="color:#91e0d3">Artwork and animation inspection</a>
+  <label><input type="checkbox" id="art" checked> Approved artwork (presentation only)</label>
   <div id="status">Loading…</div>
   <div class="keys">Mouse aims · WASD move · <b>1</b> Tide Pool · <b>2</b> Dive · <b>3</b> Tide Twin · <b>4</b> Trident (recast <b>4</b> while it flies to steer at the mouse) · <b>X</b> tide-link swap · <b>F</b> harp bolt at the nearest enemy</div>
   <div class="row">
@@ -34,5 +36,7 @@ label{display:flex;gap:6px;align-items:center}
   <div id="log"></div>
 </div>
 <script src="thalassa-data.js"></script>
+<script src="thalassa-art.js"></script>
+<script src="thalassa-renderer.js"></script>
 <script src="thalassa-lab.js"></script>
 </body></html>

@@ -1,8 +1,8 @@
 # Thalassa art handoff (for Codex)
 
-Thalassa's kit is built and tested: the native core, bridge, data, tooltips, roster entry and Lab. She has **no art yet**.
+Thalassa's native kit and Lab now have approved original artwork. On November 9, 2026, Reihan approved the pearl-and-seafoam body and water effects. The complete 37-frame body, twin, atlases and actual-asset Lab/review are documented in [the art review](thalassa-art-review/README.md).
 
-> **Until both sheets exist, don't install or merge her data.** `tfm2_custom_thalassa.data_champion` points at them.
+> **Release packaging and actual-game acceptance remain pending.** Both sheets now exist; the packaged native DLL still needs the separate release build/version gate before installation.
 
 ## Design brief (Reihan, Nov 8 2026)
 
