@@ -63,6 +63,8 @@ expected['water']['poolRadius']=35000;expected['tidePool']['whirlScalePct']=100
 expected['dive']['range']=75000;expected['ult']['speed']=2000
 # thalassa-1.2 (round 157 follow-up): the twin plays on its own and a water twin rescues her at any range
 expected['revision']='thalassa-1.2';expected['twin'].update(walkSpeed=990,leash=60000,aggroRange=70000,kitePct=60,selfRescueGlobal=1)
+# thalassa-1.3: the trident leaves a clone of her that fights on its own (no far-pool Dive)
+expected['revision']='thalassa-1.3';expected['ult'].update(echoTicks=480,echoHpPct=25,echoDamagePct=50,echoLeash=80000,echoLowHpPct=40)
 check(rules==expected,'only authorized canonical rule changes')
 for tag,ani in links.items():check(len(ani['frames'])==1 and ani['frames'][0]['duration']==1/60,tag+' one-tick tracked link')
 check(Image.open(REVIEW/'effect-pool.png').size==Image.open(REVIEW/'effect-whirlpool.png').size==(74,74),'equal pool and whirlpool footprints')

@@ -26,9 +26,13 @@ const root = path.resolve(__dirname, '..'), port = 7319;
       L.units[2].stunUntil = L.tick + 60; run(20); out.rescued = !L.clone;
       L.setAim({x: 900000, y: 150000}); L.order('ult'); run(500);
       out.trident = L.state.pools.some(p => p.center.x > 700000);
-      const far = L.state.pools.find(p => p.center.x > 700000);
-      out.wet = L.state.in_water;
-      if (far) { L.setAim(far.center); L.order('dive'); run(120); out.farDive = Math.hypot(L.me.pos.x - far.center.x, L.me.pos.y - far.center.y) <= far.radius; out.farX = L.me.pos.x; }
+      // the trident leaves a clone of her that fights on its own (thalassa-1.3); she stays where she is
+      out.echo = !!L.echo; out.meX = L.me.pos.x;
+      if (L.echo) {
+        const foe = L.units.find(u => u.team === 1); foe.pos = {x: L.echo.pos.x - 45000, y: L.echo.pos.y}; foe.stunUntil = 0;
+        const hp = foe.hp, pools = L.state.pools.length; run(120);
+        out.echoActs = foe.hp < hp || L.state.pools.length !== pools;
+      }
       return out;
     });
     const tw = await page.evaluate(() => {
@@ -46,7 +50,7 @@ const root = path.resolve(__dirname, '..'), port = 7319;
     check('Tide Twin spawns', r.twin);
     check('A stunned ally near the twin gets the rescue pool (the twin is used up)', r.rescued);
     check('The trident crosses the map and leaves a pool where it lands', r.trident);
-    check(`Dive follows the trident into its far pool (water ${r.wet}, x ${r.farX})`, r.farDive);
+    check(`The trident leaves a clone of her that fights on its own (she stays at x ${r.meX})`, r.echo && r.echoActs && r.meX < 500000);
     check('No page errors: ' + errors.join(' / '), errors.length === 0);
     console.log(`${checks} checks passed`);
   } finally { await browser.close(); server.kill(); }

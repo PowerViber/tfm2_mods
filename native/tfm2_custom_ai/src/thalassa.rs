@@ -47,6 +47,28 @@ pub struct Thalassa {
     trident_heading: i64,
     dive_exit_at: Option<usize>,
     twin_dive_exit_at: Option<usize>,
+    /// the trident's clone of her (a second hidden carrier) and its presentation state
+    echo: Option<usize>,
+    echo_pose: &'static str,
+    echo_pose_start: usize,
+    echo_pose_until: usize,
+    echo_last_pos: Option<(i64, i64)>,
+    echo_left: bool,
+}
+
+/// A hidden, unattackable-by-itself carrier unit for one of her clones (Raze's pattern); its body is drawn as effects.
+fn spawn_carrier(sim: &mut StableSim, owner: usize, team: usize, pos: Point, ticks: u64, hp_pct: i64, tag: &str) -> Option<usize> {
+    let max = sim.get_entity(owner).map_or(1000, |e| e.hp().1);
+    let stat = StatV1 { hp: (max as i64 * hp_pct / 100).max(1) as usize, defence: 15, magic_resistance: 15, move_speed: 1, ..StatV1::default() };
+    let attack = UnitAttackV1 { attack: 0, attack_ratio: 0, range: 1, cooltime: 5_184_000, duration: 1, start_timing: 0, ..UnitAttackV1::default() };
+    let host = sim.spawn_unit("alchemist", owner, team, pos.x.max(0) as u64, pos.y.max(0) as u64, ticks, &stat, &attack)?;
+    // no Bind: it would hold the carrier against its own engine glides (flights, dives, steps)
+    for k in [CcKindV1::BlockAttack, CcKindV1::BlockSkill] {
+        sim.apply_cc(host, &named(k, ticks, &format!("tls_{tag}_hold")));
+    }
+    sim.apply_cc(host, &named(CcKindV1::Animation, ticks, &format!("tls_{tag}_hidden")));
+    sim.add_buff(host, &crate::timed(&format!("tls_{tag}:{owner}"), ticks as usize));
+    Some(host)
 }
 
 fn remove_prefix(sim: &mut StableSim, id: usize, prefix: &str) {
@@ -107,7 +129,7 @@ impl Thalassa {
         let mut history = BTreeMap::new();
         let mut units = vec![];
         for e in (0..sim.entity_count()).filter_map(|i| sim.entity_at(i)) {
-            if e.id() == owner || Some(e.id()) == self.clone || !e.is_alive() || crate::realm::realm_of(&realms, e.id()) != my_realm {
+            if e.id() == owner || Some(e.id()) == self.clone || Some(e.id()) == self.echo || !e.is_alive() || crate::realm::realm_of(&realms, e.id()) != my_realm {
                 continue;
             }
             let e_team = e.team();
@@ -157,6 +179,13 @@ impl Thalassa {
         if clone.is_none() {
             self.clone = None;
         }
+        let echo = self.echo.and_then(|id| sim.get_entity(id).filter(|e| e.is_alive())).map(|e| {
+            let p = e.pos();
+            CloneView { id: e.id(), pos: Point::new(p.0 as i64, p.1 as i64), hp: e.hp().0 as i64 }
+        });
+        if echo.is_none() {
+            self.echo = None;
+        }
         let ult_unlocked = me.as_ref().is_some_and(|e| (0..e.buff_count()).filter_map(|i| e.buff_at(i)).any(|b| b.name() == crate::ULT_LEARNED));
         Frame {
             tick,
@@ -174,6 +203,7 @@ impl Thalassa {
             terrain: self.terrain(tick),
             profile: values,
             clone,
+            echo,
             basic_hits: std::mem::take(&mut self.basic_hits),
             manual: false,
             order: None,
@@ -296,20 +326,38 @@ impl Thalassa {
                     if let Some(old) = self.clone.take() {
                         sim.entity_set_hp(old, 0);
                     }
-                    let max = sim.get_entity(owner).map_or(1000, |e| e.hp().1);
-                    let stat = StatV1 { hp: (max as i64 * d::TWIN_HP_PCT / 100).max(1) as usize, defence: 15, magic_resistance: 15, move_speed: 1, ..StatV1::default() };
-                    let attack = UnitAttackV1 { attack: 0, attack_ratio: 0, range: 1, cooltime: 5_184_000, duration: 1, start_timing: 0, ..UnitAttackV1::default() };
-                    if let Some(host) = sim.spawn_unit("alchemist", owner, team, pos.x.max(0) as u64, pos.y.max(0) as u64, ticks, &stat, &attack) {
-                        // no Bind: it would hold the carrier against its own engine glides (flights, dives)
-                        for k in [CcKindV1::BlockAttack, CcKindV1::BlockSkill] {
-                            sim.apply_cc(host, &named(k, ticks, "tls_twin_hold"));
-                        }
-                        sim.apply_cc(host, &named(CcKindV1::Animation, ticks, "tls_twin_hidden"));
-                        sim.add_buff(host, &crate::timed(&format!("tls_twin:{owner}"), ticks as usize));
-                        self.clone = Some(host);
-                    } else {
+                    self.clone = spawn_carrier(sim, owner, team, pos, ticks, d::TWIN_HP_PCT, "twin");
+                    if self.clone.is_none() {
                         crate::mod_log(sim, "thalassa_log.txt", &format!("twin{tick}"), "tide twin: the host refused the clone unit");
                     }
+                }
+                Effect::SpawnEcho { pos, ticks } => {
+                    if let Some(old) = self.echo.take() {
+                        sim.entity_set_hp(old, 0);
+                    }
+                    self.echo = spawn_carrier(sim, owner, team, pos, ticks, d::ULT_ECHO_HP_PCT, "echo");
+                    self.echo_last_pos = None;
+                    self.echo_pose_until = 0;
+                    if self.echo.is_none() {
+                        crate::mod_log(sim, "thalassa_log.txt", &format!("echo{tick}"), "trident echo: the host refused the clone unit");
+                    }
+                }
+                Effect::EchoMove { to, ticks } => {
+                    if let Some(c) = self.echo {
+                        let from = sim.get_entity(c).map(|e| e.pos()).map_or((to.x, to.y), |p| (p.0 as i64, p.1 as i64));
+                        let to = crate::place::safe(&all, tick, from, (to.x, to.y));
+                        crate::motion::glide(sim, c, to, ticks, crate::motion::Kind::Knock);
+                    }
+                }
+                Effect::RemoveEcho => {
+                    if let Some(c) = self.echo.take() {
+                        sim.entity_set_hp(c, 0);
+                    }
+                }
+                Effect::EchoPose { name, ticks } => {
+                    self.echo_pose = name;
+                    self.echo_pose_start = tick;
+                    self.echo_pose_until = tick + ticks as usize;
                 }
                 Effect::CloneMove { to, ticks } => {
                     // an engine glide of the carrier; its body effect is drawn every tick meanwhile, so it reads as a flight
@@ -388,6 +436,7 @@ impl Thalassa {
             self.pool_shown.insert(p.id, tick);
             emitted += 1;
         }
+        self.present_echo(sim, owner, tick);
         let Some(twin) = self.core.twin else { self.twin_last_pos = None; self.twin_dive_exit_at = None; return };
         let Some(c) = self.clone.and_then(|id| sim.get_entity(id)).filter(|e| e.is_alive()) else { return };
         let pos = c.pos();
@@ -415,6 +464,25 @@ impl Thalassa {
     }
 }
 
+impl Thalassa {
+    /// The trident's clone of her: one body frame per tick at its carrier, its own pose and facing.
+    fn present_echo(&mut self, sim: &mut StableSim, owner: usize, tick: usize) {
+        let Some(echo) = self.core.echo else { self.echo_last_pos = None; return };
+        let Some(c) = self.echo.and_then(|id| sim.get_entity(id)).filter(|e| e.is_alive()) else { return };
+        let pos = c.pos();
+        let pos = (pos.0 as i64, pos.1 as i64);
+        if let Some(old) = self.echo_last_pos { if old.0 != pos.0 { self.echo_left = pos.0 < old.0; } }
+        self.echo_last_pos = Some(pos);
+        let moving = (tick as u64) < echo.moving_until;
+        let (pose, elapsed, looping) = if tick < self.echo_pose_until {
+            (self.echo_pose, tick.saturating_sub(self.echo_pose_start), false)
+        } else if moving { ("run", tick, true) } else { ("idle", tick, true) };
+        let frame = crate::thalassa_art::frame(pose, elapsed, looping);
+        let facing = if self.echo_left { "_l" } else { "" };
+        crate::fx_point(sim, &format!("tls_twin_{pose}_{frame}{facing}"), owner, pos.0, pos.1, 1);
+    }
+}
+
 impl StablePassive for Thalassa {
     fn clone_box(&self) -> Box<dyn StablePassive> {
         Box::new(self.clone())
@@ -424,6 +492,9 @@ impl StablePassive for Thalassa {
         remove_prefix(sim, id, POOL_PREFIX);
         sim.entity_remove_buff(id, WATER);
         if let Some(c) = self.clone.take() {
+            sim.entity_set_hp(c, 0);
+        }
+        if let Some(c) = self.echo.take() {
             sim.entity_set_hp(c, 0);
         }
         self.basic_hits.clear();

@@ -25,6 +25,7 @@ fn frame(tick: u64, x: i64, y: i64, units: Vec<Unit>) -> Frame {
         terrain: vec![false; 900],
         profile: [50; 13],
         clone: None,
+        echo: None,
         basic_hits: vec![],
         manual: true,
         order: None,
@@ -51,6 +52,13 @@ fn run(core: &mut Core, f: &mut Frame, n: u64, log: &mut Vec<Effect>) {
                     }
                 }
                 Effect::RemoveClone => f.clone = None,
+                Effect::SpawnEcho { pos, .. } => f.echo = Some(CloneView { id: 98, pos: *pos, hp: f.max_hp * d::ULT_ECHO_HP_PCT / 100 }),
+                Effect::EchoMove { to, .. } => {
+                    if let Some(c) = f.echo.as_mut() {
+                        c.pos = *to;
+                    }
+                }
+                Effect::RemoveEcho => f.echo = None,
                 Effect::Swap { owner_to, clone_to } => {
                     f.pos = *owner_to;
                     if let Some(c) = f.clone.as_mut() {
@@ -108,7 +116,8 @@ fn twin_water_dive_copies_committed_endpoint_and_arrival_clock_at_both_ranges() 
         assert_eq!(copy,(to,ticks),"same endpoint and arrival, far={far}");
         assert_eq!(core.twin.unwrap().moving_until,start+ticks);
         assert_eq!(ticks,(d::DIVE_DIVE_TICKS+(here.dist(to) as i64/20_000)) as u64,"travel formula retained");
-        assert_eq!(to.x,if far {target.x}else{here.x+75_000});
+        // thalassa-1.3: even her own far pool is clamped to Dive range (the trident leaves a clone instead)
+        assert_eq!(to.x,here.x+d::DIVE_RANGE);
     }
 }
 
@@ -424,7 +433,7 @@ fn overheal_refills_absorbed_shield_and_expires_after_leaving_water() {
 }
 
 #[test]
-fn dive_reaches_her_far_pool_but_a_plain_point_stays_in_range() {
+fn dive_stays_in_range_even_into_her_far_pool() {
     let mut core = Core::default();
     let mut f = frame(0, 100_000, 480_000, vec![]);
     let mut log = vec![];
@@ -436,7 +445,7 @@ fn dive_reaches_her_far_pool_but_a_plain_point_stays_in_range() {
     let far = core.pools.iter().find(|p| p.center.x > 700_000).copied().expect("trident pool");
     f.order = Some(Order::Dive(far.center));
     run(&mut core, &mut f, 1, &mut log);
-    assert!(far.holds(f.pos), "dived into the far pool: {:?}", f.pos);
+    assert_eq!(f.pos.x, 100_000 + d::DIVE_RANGE, "clamped, not a global dive: {:?}", f.pos);
     // a plain far point: clamped
     let mut core = Core::default();
     let mut f = frame(0, 100_000, 480_000, vec![]);
@@ -617,4 +626,140 @@ fn allies_keep_the_rescue_range_and_the_flight() {
     run(&mut core, &mut f, 30, &mut log);
     assert!(log.iter().any(|e| matches!(e, Effect::CloneMove { ticks, .. } if *ticks == d::TWIN_FLY_TICKS as u64)), "flew");
     assert!(log.iter().any(|e| matches!(e, Effect::Cleanse { target: 7 })));
+}
+
+// ------------------------------------------------------------------ the trident's clone of her (thalassa-1.3)
+
+/// Throw the ult at `aim` and run until the trident lands and its clone rises; returns the landing log.
+fn land_trident(core: &mut Core, f: &mut Frame, aim: Point, log: &mut Vec<Effect>) -> Vec<Effect> {
+    f.order = Some(Order::Ult(aim));
+    for _ in 0..1200 {
+        let mut step = vec![];
+        run(core, f, 1, &mut step);
+        let landed = step.iter().any(|e| matches!(e, Effect::SpawnEcho { .. }));
+        log.extend(step.iter().cloned());
+        if landed {
+            return step;
+        }
+    }
+    panic!("the trident never landed");
+}
+fn echo_moves(log: &[Effect]) -> Vec<(Point, u64)> {
+    log.iter().filter_map(|e| if let Effect::EchoMove { to, ticks } = e { Some((*to, *ticks)) } else { None }).collect()
+}
+
+#[test]
+fn the_trident_leaves_a_clone_of_her_for_8_seconds() {
+    let mut core = Core::default();
+    let mut f = frame(0, 100_000, 480_000, vec![]);
+    let mut log = vec![];
+    let landing = land_trident(&mut core, &mut f, Point::new(950_000, 480_000), &mut log);
+    let e = f.echo.expect("echo spawned");
+    assert!(core.pools.iter().any(|p| p.holds(e.pos)), "it rises from the landing pool: {:?}", e.pos);
+    assert!(!f.terrain_at(e.pos));
+    assert!(landing.iter().any(|x| matches!(x, Effect::SpawnEcho { ticks, .. } if *ticks == d::ULT_ECHO_TICKS as u64)));
+    assert_eq!(e.hp, f.max_hp * d::ULT_ECHO_HP_PCT / 100);
+    assert!(f.pos.x == 100_000, "she stays where she is");
+    run(&mut core, &mut f, d::ULT_ECHO_TICKS as u64 + 1, &mut log);
+    assert!(f.echo.is_none() && core.echo.is_none(), "gone after 8 s");
+}
+
+#[test]
+fn a_new_trident_replaces_the_standing_clone() {
+    let mut core = Core::default();
+    let mut f = frame(0, 100_000, 480_000, vec![]);
+    let mut log = vec![];
+    land_trident(&mut core, &mut f, Point::new(950_000, 480_000), &mut log);
+    core.ready[3] = 0;
+    log.clear();
+    let landing = land_trident(&mut core, &mut f, Point::new(100_000, 950_000), &mut log);
+    assert!(log.iter().any(|x| matches!(x, Effect::RemoveEcho)), "the old one is removed");
+    assert_eq!(landing.iter().filter(|x| matches!(x, Effect::SpawnEcho { .. })).count(), 1);
+    assert!(f.echo.expect("new echo").pos.y > 800_000);
+}
+
+#[test]
+fn the_clone_surges_its_own_tide_pool_and_bumps_at_half_damage() {
+    let mut core = Core::default();
+    let mut f = frame(0, 100_000, 480_000, vec![unit(7, 1, 700_000, 480_000), unit(8, 1, 706_000, 490_000)]);
+    let mut log = vec![];
+    land_trident(&mut core, &mut f, Point::new(700_000, 480_000), &mut log);
+    log.clear();
+    run(&mut core, &mut f, 60, &mut log);
+    assert!(log.iter().any(|x| matches!(x, Effect::Fx { name, .. } if name == "tls_surge")), "its own surge, no order from her");
+    for id in [7, 8] {
+        assert!(log.iter().any(|x| matches!(x, Effect::Stun { target, .. } if *target == id)), "{id} bumped");
+    }
+    let surge = pct_of(d::TIDE_POOL_BASE, d::TIDE_POOL_AP_RATIO) * d::ULT_ECHO_DAMAGE_PCT / 100;
+    assert!(log.iter().any(|x| matches!(x, Effect::Damage { target: 7, amount, from_clone: true } if *amount == surge)), "half damage {surge}");
+}
+
+fn pct_of(base: i64, ratio: i64) -> i64 {
+    base + ratio * 100 / 100
+}
+
+#[test]
+fn the_clone_dives_onto_a_far_champion_and_away_when_low() {
+    let mut core = Core::default();
+    let mut f = frame(0, 100_000, 480_000, vec![]);
+    let mut log = vec![];
+    land_trident(&mut core, &mut f, Point::new(950_000, 480_000), &mut log);
+    let at = f.echo.unwrap().pos;
+    f.units.push(unit(7, 1, at.x - 110_000, at.y));
+    log.clear();
+    run(&mut core, &mut f, 40, &mut log);
+    let (to, ticks) = *echo_moves(&log).iter().find(|m| m.1 >= d::DIVE_DIVE_TICKS as u64).expect("a dive");
+    assert!(to.x < at.x - 40_000 && ticks <= 90, "onto the champion: {to:?}");
+    assert!(core.pools.iter().any(|p| p.holds(to)), "it opened a pool there");
+    // low and caught: it dives away
+    let mut core = Core::default();
+    let mut f = frame(0, 100_000, 480_000, vec![]);
+    land_trident(&mut core, &mut f, Point::new(950_000, 480_000), &mut log);
+    let at = f.echo.unwrap().pos;
+    f.units.push(unit(7, 1, at.x, at.y - 20_000));
+    f.echo.as_mut().unwrap().hp = 10;
+    log.clear();
+    run(&mut core, &mut f, 40, &mut log);
+    let away = echo_moves(&log).into_iter().find(|m| m.1 >= d::DIVE_DIVE_TICKS as u64).expect("an escape dive").0;
+    let foe = Point::new(at.x, at.y - 20_000);
+    assert!(away.dist(foe) > at.dist(foe) + 20_000.0, "away: {away:?}");
+}
+
+#[test]
+fn the_clone_fires_bolts_at_half_damage_and_stays_near_its_landing() {
+    let mut core = Core::default();
+    let mut f = frame(0, 100_000, 480_000, vec![]);
+    let mut log = vec![];
+    land_trident(&mut core, &mut f, Point::new(950_000, 480_000), &mut log);
+    let anchor = core.echo.unwrap().anchor;
+    f.units.push(unit(7, 1, anchor.x - 50_000, anchor.y));
+    log.clear();
+    run(&mut core, &mut f, 200, &mut log);
+    let bolt = pct_of(d::BASIC_BASE, d::BASIC_AP_RATIO) * d::ULT_ECHO_DAMAGE_PCT / 100;
+    assert!(log.iter().any(|x| matches!(x, Effect::Damage { target: 7, amount, from_clone: true } if *amount == bolt)), "bolts at {bolt}");
+    // the enemy runs off across the map: it doesn't chase past its leash
+    f.units[0].pos = Point::new(anchor.x - 200_000, anchor.y);
+    run(&mut core, &mut f, 200, &mut log);
+    for (to, _) in echo_moves(&log) {
+        assert!(to.within(anchor, d::ULT_ECHO_LEASH + 1), "leash: {to:?}");
+    }
+}
+
+#[test]
+fn the_clone_and_the_twin_coexist_and_only_the_twin_rescues() {
+    let mut core = Core::default();
+    let mut f = frame(0, 100_000, 480_000, vec![]);
+    let mut log = vec![];
+    f.order = Some(Order::Twin(Point::new(120_000, 480_000)));
+    run(&mut core, &mut f, 1, &mut log);
+    land_trident(&mut core, &mut f, Point::new(950_000, 480_000), &mut log);
+    assert!(f.clone.is_some() && f.echo.is_some(), "both stand");
+    // she is stunned right next to the clone, far from the (land) twin: the clone never rescues
+    f.order = None;
+    f.pos = f.echo.unwrap().pos;
+    f.stunned = true;
+    log.clear();
+    run(&mut core, &mut f, 30, &mut log);
+    assert!(!log.iter().any(|x| matches!(x, Effect::Cleanse { .. })));
+    assert!(!log.iter().any(|x| matches!(x, Effect::SpawnClone { .. } | Effect::Swap { .. })), "no twin or swap from the clone");
 }

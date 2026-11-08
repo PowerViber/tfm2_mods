@@ -3,7 +3,7 @@
   "name": "Thalassa",
   "category": "Magician",
   "tags": ["AP", "Magic", "Range", "CC", "Shield"],
-  "revision": "thalassa-1.2",
+  "revision": "thalassa-1.3",
   "stat": {"attack": 30, "magic_power": 60, "hp": 920, "defence": 22, "magic_resistance": 28, "move_speed": 990, "hp_regen": 3},
   "growth": {"attack": 3, "magic_power": 26, "hp": 96, "defence": 4, "magic_resistance": 5, "move_speed": 9},
   "modPower": [0, 25, 5, 5, 10, 0, 10],
@@ -23,6 +23,11 @@
     "selfRescueGlobal": 1},
   "ult": {"cooldownTicks": 6000, "windupTicks": 24, "speed": 2000, "waterSpeedPct": 130, "maxDistance": 1300000, "hitRadius": 10000,
           "stunTicks": 180, "waterStunTicks": 240, "base": 150, "apRatio": 90, "splashRadius": 20000, "curveMilliDegrees": 25000,
-          "curveRateMilliDegrees": 500},
+          "curveRateMilliDegrees": 500,
+    "echoTicks": 480,
+    "echoHpPct": 25,
+    "echoDamagePct": 50,
+    "echoLeash": 80000,
+    "echoLowHpPct": 40},
   "fxTokens": 12
 }

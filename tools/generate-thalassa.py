@@ -40,7 +40,8 @@ text = {
                f"tide link lets her swap places with it once when engaged, leaving a whirlpool."),
     'ult': (f"Trident of the Deep ({sec(u['cooldownTicks'])}): a slow trident with global range, steerable {u['curveMilliDegrees'] / 1000:g} degrees in total. The first enemy champion "
             f"hit is stunned {sec(u['stunTicks'])} ({sec(u['waterStunTicks'])} if thrown from water) and enemies around take {u['base']} + {u['apRatio']}% AP. It leaves a pool where it "
-            f"lands; from water it flies faster and the pool is a whirlpool."),
+            f"lands (from water it flies faster and the pool is a whirlpool) and a clone of her there for {sec(u['echoTicks'])} ({u['echoHpPct']}% of her HP) that fights on its own "
+            f"with harp bolts, Tide Pool and Dive at {u['echoDamagePct']}% damage."),
 }
 
 champ = copy.deepcopy(json.loads((ROOT / 'mods/tfm2_custom/champion/tfm2_custom_contender.data_champion').read_text()))

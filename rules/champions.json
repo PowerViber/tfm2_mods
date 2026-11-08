@@ -5185,7 +5185,7 @@
       "Engage",
       "Poke"
      ],
-     "summary": "Trident of the Deep (100 s): a slow trident with global range, steerable 25 degrees in total. The first enemy champion hit is stunned 3 s (4 s if thrown from water) and enemies around take 150 + 90% AP. It leaves a pool where it lands; from water it flies faster and the pool is a whirlpool."
+     "summary": "Trident of the Deep (100 s): a slow trident with global range, steerable 25 degrees in total. The first enemy champion hit is stunned 3 s (4 s if thrown from water) and enemies around take 150 + 90% AP. It leaves a pool where it lands (from water it flies faster and the pool is a whirlpool) and a clone of her there for 8 s (25% of her HP) that fights on its own with harp bolts, Tide Pool and Dive at 50% damage."
     }
    ]
   }

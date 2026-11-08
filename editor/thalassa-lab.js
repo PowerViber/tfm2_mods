@@ -10,14 +10,14 @@
   const wasm = (await WebAssembly.instantiate(await (await fetch('thalassa.wasm')).arrayBuffer(), {})).instance.exports;
   const names = ['ego', 'judgement', 'positioning', 'control_speed', 'skill_hit', 'skill_avoid', 'aggressive', 'order', 'roaming', 'macro', 'micro', 'awareness', 'strategy'];
   $('#stats').innerHTML = names.map(n => `<span>${n}</span><input type="number" min="0" max="100" value="50">`).join('');
-  let tick, units, me, state, logLines, queue, glides, clone, visual, running = true, aim = {x: 480000, y: 480000}, held = new Set(), basicHits = [], banished = 0;
+  let tick, units, me, state, logLines, queue, glides, clone, echo = null, visual, running = true, aim = {x: 480000, y: 480000}, held = new Set(), basicHits = [], banished = 0;
   const myShield = () => { me.shields = me.shields.filter(s => s.until > tick); return me.shields.reduce((a, s) => a + s.amount, 0); };
   const unit = (id, team, x, y, champion = true) => ({id, team, pos: {x, y}, hp: 1000, max_hp: 1000, radius: 8000, champion, tower: false, visible: true, targetable: true, farmable: false, stunned: false, stunUntil: 0, velocity: {x: 0, y: 0}});
   function reset() {
     clock.reset();
     wasm.thalassa_reset();
-    tick = 0; state = {}; logLines = []; queue = []; glides = []; clone = null; banished = 0;
-    visual = {pose:'idle',start:0,until:0,left:false,cloneLeft:false,moving:false,fx:[],deadSince:null};
+    tick = 0; state = {}; logLines = []; queue = []; glides = []; clone = null; echo = null; banished = 0;
+    visual = {pose:'idle',start:0,until:0,left:false,cloneLeft:false,echoPose:'idle',echoStart:0,echoUntil:0,echoLeft:false,moving:false,fx:[],deadSince:null};
     me = {pos: {x: 300000, y: 480000}, hp: 1000, max_hp: 1000, stunUntil: 0, shields: []};
     units = [unit(5, 1, 470000, 470000), unit(6, 1, 480000, 500000), unit(7, 0, 330000, 520000)];
     log('Reset. Thalassa (blue) vs two enemies (red), one ally (green).');
@@ -40,7 +40,7 @@
       tick, owner: 1, team: 0, alive: me.hp > 0, pos: rp(me.pos), hp: Math.round(me.hp), max_hp: me.max_hp, shield: myShield(), ap: 100, stunned: tick < me.stunUntil, ult_unlocked: true,
       units: units.map(u => ({id: u.id, team: u.team, pos: rp(u.pos), hp: Math.round(u.hp), max_hp: u.max_hp, radius: u.radius, champion: u.champion, tower: u.tower, visible: u.visible, targetable: u.targetable, farmable: u.farmable, stunned: tick < u.stunUntil, velocity: rp(u.velocity)})), terrain: terrain(),
       profile: [...document.querySelectorAll('.stat input')].map(i => Number(i.value)),
-      clone: clone ? {id: 99, pos: rp(clone.pos), hp: clone.hp} : null, basic_hits: basicHits.splice(0),
+      clone: clone ? {id: 99, pos: rp(clone.pos), hp: clone.hp} : null, echo: echo ? {id: 98, pos: rp(echo.pos), hp: Math.round(echo.hp)} : null, basic_hits: basicHits.splice(0),
       manual: !$('#auto').checked, order: queue.shift() || null}};
   }
   const find = id => id === 1 ? me : units.find(u => u.id === id);
@@ -70,6 +70,10 @@
         case 'water': log(d.on ? 'Water mode ON' : 'Water mode off'); break;
         case 'spawn_clone': clone = {pos: {...d.pos}, hp: 200, until: tick + d.ticks}; log('Tide Twin appears'); break;
         case 'clone_move': if (clone) {if(d.to.x!==clone.pos.x)visual.cloneLeft=d.to.x<clone.pos.x;if(waterDive){visual.fx.push({tag:'dive_in',at:{...clone.pos},start:tick,until:tick+18});visual.cloneExitAt=tick+d.ticks;}glide(clone, d.to, d.ticks);} break;
+        case 'spawn_echo': echo = {pos: {...d.pos}, hp: 250, until: tick + d.ticks}; log('The trident leaves a clone of her'); break;
+        case 'echo_move': if (echo) { if (d.to.x !== echo.pos.x) visual.echoLeft = d.to.x < echo.pos.x; glide(echo, d.to, d.ticks); } break;
+        case 'remove_echo': echo = null; break;
+        case 'echo_pose': visual.echoPose = d.name; visual.echoStart = tick; visual.echoUntil = tick + d.ticks; break;
         case 'remove_clone': clone = null; visual.cloneExitAt=0; break;
         case 'swap': { const c = clone; me.pos = {...d.owner_to}; if (c) c.pos = {...d.clone_to}; log('Tide link: swapped with the twin'); break; }
         case 'log': log(String(e.data)); break;
@@ -91,6 +95,7 @@
       if (u.hp <= 0) { u.hp = 1000; u.pos = {x: 470000 + (u.id - 5) * 10000, y: 470000 + (u.id - 5) * 30000}; log(`#${u.id} respawns`); }
     }
     if (clone && tick >= clone.until) clone = null;
+    if (echo && tick >= echo.until) echo = null;
     if (held.has('f') && tick % 40 === 0) { const t = units.filter(u => u.team === 1).sort((a, b) => dist(me.pos, a.pos) - dist(me.pos, b.pos))[0]; if (t && dist(me.pos, t.pos) <= R.basic.range * 1.2 + 8000) { t.hp -= 30; basicHits.push(t.id); visual.pose='attack';visual.start=tick;visual.until=tick+22;visual.left=t.pos.x<me.pos.x;if(clone)visual.cloneLeft=t.pos.x<clone.pos.x; } }
     apply(call(frame()));
     visual.moving=me.pos.x!==previous.x||me.pos.y!==previous.y;
@@ -117,6 +122,13 @@
       if (state.twin && state.twin.linked && !state.twin.swapped) { const a = P(me.pos), b = P(clone.pos); if(art)for(const part of painter.linkSegments(me.pos,clone.pos)){const q=P(part.at);painter.effect(ctx,part.tag,0,q.x,q.y,pixel);}else{ctx.strokeStyle = '#7fe0ff';ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();} }
       if(art){const q=P(clone.pos),moving=glides.some(g=>g.who===clone),pose=tick<visual.until&&['attack','skill1','skill2'].includes(visual.pose)?visual.pose:moving?'run':'idle';painter.body(ctx,pose,tick<visual.until?tick-visual.start:tick,q.x,q.y,pixel,visual.cloneLeft,true,pose==='idle'||pose==='run');}
       else circle(clone.pos, 9000, 'rgba(120,220,255,.5)', '#bff0ff');
+    }
+    if (echo) {
+      // the trident's clone of her, drawn a little translucent so it reads apart from the Tide Twin
+      ctx.save(); ctx.globalAlpha = 0.75;
+      if(art){const q=P(echo.pos),moving=glides.some(g=>g.who===echo),pose=tick<visual.echoUntil?visual.echoPose:moving?'run':'idle';painter.body(ctx,pose,tick<visual.echoUntil?tick-visual.echoStart:tick,q.x,q.y,pixel,visual.echoLeft,true,pose==='idle'||pose==='run');}
+      else circle(echo.pos, 9000, 'rgba(160,200,255,.45)', '#d0e4ff');
+      ctx.restore();
     }
     if (state.trident) { if(art){const q=P(state.trident.at),phase=Math.floor(((state.trident.heading_mdeg+22500)%360000+360000)%360000/45000);painter.effect(ctx,'trident_p'+phase,0,q.x,q.y,pixel);}else circle(state.trident.at, 6000, '#ffd36b', '#fff'); }
     for (const u of units) { circle(u.pos, u.radius, u.team ? '#d9735f' : '#6fcf8f', tick < u.stunUntil ? '#ffe36b' : '#111'); const q = P(u.pos); ctx.fillStyle = '#fff'; ctx.fillText(`#${u.id} ${Math.round(u.hp)}`, q.x - 18, q.y - 12); }
@@ -146,6 +158,6 @@
   $('#stunAlly').onclick = () => { units[2].stunUntil = tick + 60; log('#7 (ally) stunned'); canvas.focus(); };
   $('#stunMe').onclick = () => { me.stunUntil = tick + 60; log('Thalassa stunned'); canvas.focus(); };
   $('#dashOnMe').onclick = () => { const u = units[0]; u.pos = {x: me.pos.x + 9000, y: me.pos.y}; me.hp = Math.max(1, me.hp - 200); log('#5 dashes onto her (and hits hard)'); canvas.focus(); };
-  window.thalassaLab = {get state() { return state; }, get tick() { return tick; }, get me() { return me; }, get units() { return units; }, get clone() { return clone; }, painter, step, reset, order, setRecorder: fn=>{recorder=fn;}, setAim: p => { aim = {...p}; }, pause: () => { running = false; clock.reset(); $('#play').textContent='Play'; }};
+  window.thalassaLab = {get state() { return state; }, get tick() { return tick; }, get me() { return me; }, get units() { return units; }, get clone() { return clone; }, get echo() { return echo; }, painter, step, reset, order, setRecorder: fn=>{recorder=fn;}, setAim: p => { aim = {...p}; }, pause: () => { running = false; clock.reset(); $('#play').textContent='Play'; }};
   reset(); canvas.focus(); requestAnimationFrame(loop);
 })();

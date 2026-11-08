@@ -3,19 +3,19 @@
 You designed a mermaid who fights with a harp: a mage carry for mid or bot who can also support. Her water mode comes from pools she makes herself. Her twin copies her skills and rescues stunned allies, and her trident crosses the whole map. We fixed five review findings, Codex drew the art and tuned the playback, and this round puts her in the game.
 
 ## Thalassa, the mermaid harpist
-She is an Original-family mage with magic damage, no mastery and Mod Power `[0, 25, 5, 5, 10, 0, 10]`. She keeps Flash and farms with Tide Pool and her harp bolts. The full kit is in `docs/thalassa-guide.md`; every number lives in `rules/thalassa.json` (revision `thalassa-1.2`).
+She is an Original-family mage with magic damage, no mastery and Mod Power `[0, 25, 5, 5, 10, 0, 10]`. She keeps Flash and farms with Tide Pool and her harp bolts. The full kit is in `docs/thalassa-guide.md`; every number lives in `rules/thalassa.json` (revision `thalassa-1.3`).
 
 | | Skill | In short |
 |---|---|---|
 | Passive | Tidebound | In water: +20% move speed and range, harp bolts bounce to a second enemy, 1% max HP regen per second. At full HP the regen becomes a shield, up to 10% of her HP. No penalty on land. |
 | S1 | Tide Pool | On land, a pool (radius 35,000) forms below her. In water, her pool surges up to 60,000 into a whirlpool that slows, pulls and damages. 2+ enemy champions caught bump and are stunned 1 s, and a new whirlpool forms below her. |
-| S2 | Dive | In water, she opens a pool up to 75,000 away and dives across. Into one of her own pools (the trident's too) she dives at any distance. On land, a short slide that leaves her wet. |
+| S2 | Dive | In water, she opens a pool up to 75,000 away and dives across. On land, a short slide that leaves her wet. |
 | S3 | Tide Twin | A 12 s twin that can be killed. It walks and fires its own bolts (50%) like someone playing her, and copies Tide Pool and Dive only when she casts them (not the ult). An ally (or she) stunned near it gets a rescue pool: cleanse, shield, CC immunity. Spawned on water, it rescues Thalassa at any range instantly, and she can swap with it once when engaged, leaving a whirlpool. |
-| Ult | Trident of the Deep | A slow trident with global range, steerable 25° in total. It stuns the first champion hit 3 s (4 s from water) and leaves a pool where it lands. V1 can parry it. |
+| Ult | Trident of the Deep | A slow trident with global range, steerable 25° in total. It stuns the first champion hit 3 s (4 s from water) and leaves a pool where it lands, plus a clone of her that fights on its own for 8 s. V1 can parry it. |
 
 ## Review fixes (since the first draft)
 1. **Overheal:** only her own shield that she still has counts toward the 10% cap. A broken shield gets refilled, and it fades about 2 s after she leaves the water.
-2. **Far-pool Dive:** she reaches her own pools at any distance, so she can follow the trident. The AI does this when enemies stand in that pool.
+2. **Far-pool Dive:** she could reach her own pools at any distance to follow the trident. Your later follow-up replaced this with the trident's clone (below).
 3. **V1 parry:** a parried trident deals no stun and no damage to V1. Its splash and pool still happen.
 4. **Safe placement:** the twin, its flights and the tide-link swap never land on terrain or walls.
 5. **Twin movement:** its flights move through the engine (the round 156 rule). Only the swap is an instant teleport.
@@ -38,16 +38,22 @@ You asked whether the copy moves (it didn't: it stood where it was cast) and for
 - **Skills still follow her:** it copies Tide Pool and Dive only when she casts them, to the same point, and never the ult. It no longer echoes her bolts; its own attacks replace that.
 - **Global self-rescue:** a twin spawned on water rescues Thalassa anywhere on the map, at once: the rescue pool, cleanse, shield and CC immunity appear under her, and the twin is used up. Allies keep the 40,000 range and the flight; a twin spawned on land keeps 40,000 for her too.
 
+## Your follow-up: the trident leaves a clone of her (`thalassa-1.3`)
+You suggested that instead of her going to the landing, the trident leaves a clone of her there that uses skills on its own, and asked whether that would be too strong.
+- **What it does:** where the trident lands, a clone of her rises for **8 s with 25% of her HP**. It fights on its own like the twin (bolts, kiting) within 80,000 of the landing, and casts **its own Tide Pool** (onto the spot that catches the most champions, a pool below it on land) and **its own Dive** (onto a champion beyond its bolts, or away when below 40% HP). It never casts the Twin or the ult, and never rescues or tide-links. A new trident replaces it; it coexists with the Tide Twin.
+- **Balance call:** a second body with her S1/S2 anywhere on the map is strong mainly through crowd control (whirlpool bumps). So its **damage is 50%** of hers while its crowd control stays full, it's short and fragile, and her **far-pool Dive is removed**: Dive is 75,000 again even into her own pools, so she isn't global twice. If it still feels strong, lower its damage or HP first.
+- It's a second hidden carrier unit drawn with her body frames (no new art); its moves are engine glides.
+
 ## Shipped this round
 - Native **0.10.92** (DLL rebuilt for Windows; it reports 0.10.92 and carries her passive) and **tfm2_custom 0.2.95**, which needs 0.10.92 or later.
 - 0.2.94 is left for PR #69. Other packs are unchanged.
 - README row and pack description.
 
 ## Verification
-- `cargo test --release` in `native/tfm2_custom_ai`: 1065 passed, 0 failed, 0 warnings.
-  - This includes 36 Thalassa tests (7 for the follow-up: own bolts, no echo, kiting, leash and return, skills only with her, the global self-rescue, allies' range): core, mock host, V1 parry, overheal, placement.
+- `cargo test --release` in `native/tfm2_custom_ai`: 1071 passed, 0 failed, 0 warnings.
+  - This includes 42 Thalassa tests: 7 for the twin follow-up (own bolts, no echo, kiting, leash and return, skills only with her, the global self-rescue, allies' range) and 6 for the trident's clone (8 s at the landing, replaced by a new trident, its own surge and bump at half damage, its own dives in and out, bolts and leash, coexisting with the twin without rescuing): core, mock host, V1 parry, overheal, placement.
   - One run had a Rally tick-budget comparison fail once. It passed alone and on two full reruns. It looks like a flaky test sharing global test state; nothing in it touches Thalassa.
-- `native/thalassa_lab` tests: 32 passed. `node tools/test-thalassa-lab.cjs`: 9 browser checks passed, including the dive into the trident's far pool and the twin walking and attacking with no input.
+- `native/thalassa_lab` tests: 38 passed. `node tools/test-thalassa-lab.cjs`: 9 browser checks passed, including the twin walking and attacking with no input and the trident's clone fighting on its own while she stays put.
 - Codex's art verifier: 1406 checks passed, covering:
   - approved source hashes;
   - frame counts and mirrored facings;
@@ -61,6 +67,7 @@ You asked whether the copy moves (it didn't: it stood where it was cast) and for
 ## Not proven yet (please check in play)
 - **Live acceptance:** nothing here has been seen in the real game yet.
 - **Balance:** no viability harness yet. Tell me how she feels; damage goes down first if she's too strong.
+- **The trident's clone:** a second hidden carrier; there's no mock-host test for its spawn (the shared test host can't spawn units), so its look, glides and HP need checking live. Codex's Python follow-up checks still describe the old far-pool Dive.
 - **The twin:** it's a hidden carrier unit drawn with effect frames. Its look and its glides need checking live.
 - **Grimhald's axe** still doesn't ask V1 to parry (separate task).
 

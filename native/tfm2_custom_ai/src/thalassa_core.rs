@@ -138,6 +138,9 @@ pub struct Frame {
     /// her clone, if one stands
     #[serde(default)]
     pub clone: Option<CloneView>,
+    /// the trident's clone of her (the echo), if one stands
+    #[serde(default)]
+    pub echo: Option<CloneView>,
     /// her basic attacks the game accepted since the last frame (targets)
     #[serde(default)]
     pub basic_hits: Vec<usize>,
@@ -197,6 +200,13 @@ pub enum Effect {
     RemoveClone,
     /// trade places with her clone (a deliberate swap)
     Swap { owner_to: Point, clone_to: Point },
+    /// the trident's clone of her: spawned where it lands, fighting on its own
+    SpawnEcho { pos: Point, ticks: u64 },
+    /// the echo walks, dives or slides over `ticks` (an engine glide of its hidden carrier)
+    EchoMove { to: Point, ticks: u64 },
+    RemoveEcho,
+    /// the echo's pose for its body drawing (attack, skill1, skill2)
+    EchoPose { name: &'static str, ticks: u64 },
     Fx { name: String, at: Point, ticks: u64, ambient: bool },
     Pose { name: &'static str, ticks: u64 },
     Log(String),
@@ -229,6 +239,20 @@ pub struct Twin {
     pub rescue: Option<(usize, u64)>,
     /// its own harp bolt is ready again at this tick (it attacks on its own, like someone playing her)
     pub next_bolt: u64,
+}
+
+/// The trident's clone of her: it fights on its own with bolts, Tide Pool and Dive near where the trident landed.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub struct Echo {
+    pub until: u64,
+    pub anchor: Point,
+    pub max_hp: i64,
+    pub next_bolt: u64,
+    pub moving_until: u64,
+    /// its own [Tide Pool, Dive] cooldowns
+    pub ready: [u64; 2],
+    /// a Tide Pool resolving at (tick, aim)
+    pub cast: Option<(u64, Point)>,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
@@ -266,6 +290,7 @@ pub struct Core {
     /// diving or sliding until
     pub moving_until: u64,
     pub twin: Option<Twin>,
+    pub echo: Option<Echo>,
     pub trident: Option<Trident>,
     /// recent HP for the tide link's "engaged" read: (tick, hp)
     pub hp_log: Vec<(u64, i64)>,
@@ -286,6 +311,7 @@ impl Default for Core {
             cast: None,
             moving_until: 0,
             twin: None,
+            echo: None,
             trident: None,
             hp_log: vec![],
             last_positions: vec![],
@@ -328,6 +354,7 @@ impl Core {
         self.passive(f, &mut out);
         self.run_whirlpools(f, &mut out);
         self.run_twin(f, &mut out);
+        self.run_echo(f, &mut out);
         self.run_trident(f, &mut out);
         self.bounce(f, &mut out);
         let order = if f.manual { f.order } else { self.decide(f) };
@@ -503,8 +530,8 @@ impl Core {
         }
         self.ready[1] = f.tick + sec(d::DIVE_COOLDOWN_TICKS);
         let (destination, travel_ticks) = if self.water_at(f.pos, f.tick) {
-            // into one of her own pools (the trident's, anywhere on the map) she dives all the way; otherwise in range
-            let to = if self.pool_at(aim).is_some() { free_spot(f, f.pos, aim) } else { free_spot(f, f.pos, f.pos.reach(aim, d::DIVE_RANGE)) };
+            // always within range (thalassa-1.3: the trident leaves a clone of her instead of a far dive)
+            let to = free_spot(f, f.pos, f.pos.reach(aim, d::DIVE_RANGE));
             if self.pool_at(to).is_none() {
                 self.add_pool(f, to, d::WATER_POOL_RADIUS, false, out);
             }
@@ -655,22 +682,47 @@ impl Core {
         self.end_twin(out);
     }
 
-    /// The twin's own target: the nearest enemy champion it can see, or, when no champion is near, a farmable unit.
-    fn twin_target<'a>(&self, f: &'a Frame, c: CloneView) -> Option<&'a Unit> {
-        let near = |u: &&Unit| f.enemy(u) && !u.tower && u.pos.within(c.pos, d::TWIN_AGGRO_RANGE) && u.pos.within(f.pos, d::TWIN_LEASH + d::TWIN_AGGRO_RANGE);
+    /// A clone's own target: the nearest enemy champion it can see, or, when no champion is near, a farmable unit.
+    fn body_target<'a>(f: &'a Frame, body: Point, anchor: Point, leash: i64) -> Option<&'a Unit> {
+        let near = |u: &&Unit| f.enemy(u) && !u.tower && u.pos.within(body, d::TWIN_AGGRO_RANGE) && u.pos.within(anchor, leash + d::TWIN_AGGRO_RANGE);
         f.units
             .iter()
             .filter(|u| u.champion)
             .filter(near)
-            .min_by_key(|u| (u.pos.d2(c.pos), u.id))
-            .or_else(|| f.units.iter().filter(|u| !u.champion && u.farmable).filter(near).min_by_key(|u| (u.pos.d2(c.pos), u.id)))
+            .min_by_key(|u| (u.pos.d2(body), u.id))
+            .or_else(|| f.units.iter().filter(|u| !u.champion && u.farmable).filter(near).min_by_key(|u| (u.pos.d2(body), u.id)))
+    }
+
+    /// A clone's footwork (like someone playing her): into range, back off when crowded, home to its anchor when alone,
+    /// never past the leash. Returns where to glide over the next 6 ticks, if anywhere.
+    fn footwork(&self, f: &Frame, body: Point, anchor: Point, leash: i64, target: Option<&Unit>) -> Option<Point> {
+        let wet = self.water_at(body, f.tick);
+        let range = d::BASIC_RANGE * (100 + if wet { d::WATER_RANGE_PCT } else { 0 }) / 100;
+        let step = d::TWIN_WALK_SPEED * (100 + if wet { d::WATER_MOVE_SPEED_PCT } else { 0 }) / 100 * 6;
+        let goal = match target {
+            Some(u) => {
+                let gap = body.dist(u.pos) as i64 - u.radius;
+                if gap > range {
+                    body.toward(u.pos, step.min(gap - range * 9 / 10))
+                } else if gap < range * d::TWIN_KITE_PCT / 100 {
+                    body.toward(u.pos, -step)
+                } else {
+                    body
+                }
+            }
+            None if !body.within(anchor, 20_000) => body.toward(anchor, step.min(body.dist(anchor) as i64 - 20_000)),
+            None => body,
+        };
+        let goal = if goal.within(anchor, leash) { goal } else { anchor.reach(goal, leash) };
+        let to = free_spot(f, body, goal);
+        (!to.within(body, 500)).then_some(to)
     }
 
     fn twin_play(&mut self, f: &Frame, c: CloneView, out: &mut Vec<Effect>) {
         let Some(mut t) = self.twin else { return };
         let wet = self.water_at(c.pos, f.tick);
         let range = d::BASIC_RANGE * (100 + if wet { d::WATER_RANGE_PCT } else { 0 }) / 100;
-        let target = self.twin_target(f, c);
+        let target = Self::body_target(f, c.pos, f.pos, d::TWIN_LEASH);
         // harp bolts on its own clock, at copyPct of hers
         if let Some(u) = target {
             if f.tick >= t.next_bolt && c.pos.within(u.pos, range + u.radius) {
@@ -681,30 +733,116 @@ impl Core {
         }
         // footwork every 6 ticks, unless a flight or a dive is still carrying it
         if f.tick >= t.moving_until && f.tick % 6 == 0 {
-            let step = d::TWIN_WALK_SPEED * (100 + if wet { d::WATER_MOVE_SPEED_PCT } else { 0 }) / 100 * 6;
-            let goal = match target {
-                Some(u) => {
-                    let gap = c.pos.dist(u.pos) as i64 - u.radius;
-                    if gap > range {
-                        c.pos.toward(u.pos, step.min(gap - range * 9 / 10))
-                    } else if gap < range * d::TWIN_KITE_PCT / 100 {
-                        c.pos.toward(u.pos, -step)
-                    } else {
-                        c.pos
-                    }
-                }
-                None if !c.pos.within(f.pos, 20_000) => c.pos.toward(f.pos, step.min(c.pos.dist(f.pos) as i64 - 20_000)),
-                None => c.pos,
-            };
-            // never past the leash
-            let goal = if goal.within(f.pos, d::TWIN_LEASH) { goal } else { f.pos.reach(goal, d::TWIN_LEASH) };
-            let to = free_spot(f, c.pos, goal);
-            if !to.within(c.pos, 500) {
+            if let Some(to) = self.footwork(f, c.pos, f.pos, d::TWIN_LEASH, target) {
                 t.moving_until = f.tick + 6;
                 out.push(Effect::CloneMove { to, ticks: 6 });
             }
         }
         self.twin = Some(t);
+    }
+
+    // ---------------------------------------------------------------- the trident's clone of her (the echo)
+
+    fn run_echo(&mut self, f: &Frame, out: &mut Vec<Effect>) {
+        let Some(mut e) = self.echo else { return };
+        if f.tick >= e.until {
+            self.echo = None;
+            out.push(Effect::RemoveEcho);
+            return;
+        }
+        let Some(c) = f.echo else {
+            // killed (or the host never placed it): give it a tick to appear
+            if f.tick > e.until.saturating_sub(sec(d::ULT_ECHO_TICKS)) + 1 {
+                self.echo = None;
+            }
+            return;
+        };
+        let power = d::ULT_ECHO_DAMAGE_PCT;
+        // its own Tide Pool resolving
+        if let Some((at, aim)) = e.cast {
+            if f.tick >= at {
+                e.cast = None;
+                self.echo = Some(e);
+                self.tide_pool_from(f, c.pos, aim, power, out);
+                e = self.echo.unwrap_or(e);
+            }
+            self.echo = Some(e);
+            return;
+        }
+        let wet = self.water_at(c.pos, f.tick);
+        let range = d::BASIC_RANGE * (100 + if wet { d::WATER_RANGE_PCT } else { 0 }) / 100;
+        let target = Self::body_target(f, c.pos, e.anchor, d::ULT_ECHO_LEASH);
+        let free = f.tick >= e.moving_until;
+        let low = c.hp * 100 <= e.max_hp * d::ULT_ECHO_LOW_HP_PCT;
+        let champs: Vec<&Unit> = f.enemy_champions().filter(|u| u.pos.within(c.pos, d::TWIN_AGGRO_RANGE + d::DIVE_RANGE)).collect();
+        // its own Dive: away when low, onto a champion beyond its bolts when healthy (in water)
+        if free && f.tick >= e.ready[1] {
+            let nearest = champs.iter().min_by_key(|u| (u.pos.d2(c.pos), u.id)).copied();
+            let aim = match nearest {
+                Some(u) if low && u.pos.within(c.pos, range + u.radius) => Some(c.pos.toward(u.pos, -d::DIVE_RANGE)),
+                Some(u) if !low && wet && !u.pos.within(c.pos, range + u.radius) && u.pos.within(c.pos, d::DIVE_RANGE + range) => {
+                    Some(u.pos.toward(c.pos, range * 7 / 10))
+                }
+                _ => None,
+            };
+            if let Some(aim) = aim {
+                e.ready[1] = f.tick + sec(d::DIVE_COOLDOWN_TICKS);
+                let (to, ticks) = if wet {
+                    let to = free_spot(f, c.pos, c.pos.reach(aim, d::DIVE_RANGE));
+                    if self.pool_at(to).is_none() {
+                        self.add_pool(f, to, d::WATER_POOL_RADIUS, false, out);
+                    }
+                    out.push(Effect::Fx { name: "tls_dive_in".into(), at: c.pos, ticks: 18, ambient: false });
+                    (to, sec(d::DIVE_DIVE_TICKS + c.pos.dist(to) as i64 / 20_000).min(90))
+                } else {
+                    out.push(Effect::Fx { name: "tls_slide".into(), at: c.pos, ticks: 14, ambient: false });
+                    (free_spot(f, c.pos, c.pos.reach(aim, d::DIVE_SLIDE_RANGE)), sec(d::DIVE_SLIDE_TICKS))
+                };
+                e.moving_until = f.tick + ticks;
+                out.push(Effect::EchoMove { to, ticks });
+                out.push(Effect::EchoPose { name: "skill2", ticks });
+                out.push(Effect::Log(format!("echo dives to {},{}", to.x, to.y)));
+                self.echo = Some(e);
+                return;
+            }
+        }
+        // its own Tide Pool: surge onto the spot that catches the most champions, or a pool below it before a fight
+        if free && f.tick >= e.ready[0] && !champs.is_empty() {
+            let aim = if wet {
+                let r = d::WATER_POOL_RADIUS * d::TIDE_POOL_WHIRL_SCALE_PCT / 100;
+                champs
+                    .iter()
+                    .filter(|u| u.pos.within(c.pos, d::TIDE_POOL_RANGE))
+                    .map(|u| (champs.iter().filter(|o| o.pos.within(u.pos, r)).count(), *u))
+                    .max_by_key(|(n, u)| (*n, std::cmp::Reverse(u.id)))
+                    .map(|(_, u)| u.pos)
+            } else {
+                champs.iter().any(|u| u.pos.within(c.pos, 90_000)).then_some(c.pos)
+            };
+            if let Some(aim) = aim {
+                e.ready[0] = f.tick + sec(d::TIDE_POOL_COOLDOWN_TICKS);
+                e.cast = Some((f.tick + sec(d::TIDE_POOL_CAST_TICKS), c.pos.reach(aim, d::TIDE_POOL_RANGE)));
+                out.push(Effect::EchoPose { name: "skill1", ticks: sec(d::TIDE_POOL_CAST_TICKS) });
+                self.echo = Some(e);
+                return;
+            }
+        }
+        // harp bolts on its own clock
+        if let Some(u) = target {
+            if f.tick >= e.next_bolt && c.pos.within(u.pos, range + u.radius) {
+                e.next_bolt = f.tick + sec(d::BASIC_COOLDOWN_TICKS);
+                out.push(Effect::Damage { target: u.id, amount: pct(d::BASIC_BASE, d::BASIC_AP_RATIO, f.ap) * power / 100, from_clone: true });
+                out.push(Effect::Fx { name: "tls_bounce".into(), at: u.pos, ticks: 10, ambient: true });
+                out.push(Effect::EchoPose { name: "attack", ticks: 22 });
+            }
+        }
+        if free && f.tick % 6 == 0 {
+            if let Some(to) = self.footwork(f, c.pos, e.anchor, d::ULT_ECHO_LEASH, target) {
+                e.moving_until = f.tick + 6;
+                out.push(Effect::EchoMove { to, ticks: 6 });
+            }
+        }
+        self.echo = Some(e);
     }
 
     // ---------------------------------------------------------------- Ult: Trident of the Deep
@@ -768,6 +906,24 @@ impl Core {
         out.push(Effect::Fx { name: "tls_trident_land".into(), at, ticks: 24, ambient: false });
         let radius = if from_water { d::WATER_POOL_RADIUS * d::TIDE_POOL_WHIRL_SCALE_PCT / 100 } else { d::WATER_POOL_RADIUS };
         self.add_pool(f, at, radius, from_water, out);
+        // a clone of her rises from the landing and fights on its own
+        if self.echo.take().is_some() {
+            out.push(Effect::RemoveEcho);
+        }
+        let pos = free_spot(f, f.pos, at);
+        let ticks = sec(d::ULT_ECHO_TICKS);
+        self.echo = Some(Echo {
+            until: f.tick + ticks,
+            anchor: pos,
+            max_hp: (f.max_hp * d::ULT_ECHO_HP_PCT / 100).max(1),
+            next_bolt: f.tick + 12,
+            moving_until: 0,
+            ready: [f.tick + 30, f.tick + 30],
+            cast: None,
+        });
+        out.push(Effect::SpawnEcho { pos, ticks });
+        out.push(Effect::Fx { name: "tls_twin_spawn".into(), at: pos, ticks: 20, ambient: false });
+        out.push(Effect::Log("the trident leaves a clone of her".into()));
     }
 
     // ---------------------------------------------------------------- orders
@@ -835,9 +991,15 @@ impl Core {
                 return Some(Order::TidePool(f.pos));
             }
         }
-        // follow up into the trident's pool with a dive
+        // follow up with a dive into one of her pools in range that holds an enemy champion
         if self.ready(1, f.tick) && wet && !low {
-            if let Some(p) = self.pools.iter().filter(|p| !p.holds(f.pos)).filter(|p| f.enemy_champions().any(|u| p.holds(u.pos))).min_by_key(|p| (p.center.d2(f.pos), p.id)) {
+            if let Some(p) = self
+                .pools
+                .iter()
+                .filter(|p| !p.holds(f.pos) && p.center.within(f.pos, d::DIVE_RANGE + p.radius))
+                .filter(|p| f.enemy_champions().any(|u| p.holds(u.pos)))
+                .min_by_key(|p| (p.center.d2(f.pos), p.id))
+            {
                 return Some(Order::Dive(p.center));
             }
         }
