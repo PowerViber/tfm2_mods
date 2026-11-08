@@ -26,7 +26,7 @@ const ALLOWED: &[(&str, usize, &str)] = &[
     ("steve.rs", 9, "boat ride and pearl (Steve's own movement model; boat to be reviewed)"),
     ("steve_craft.rs", 2, "pearl teleport and crafted placements"),
     ("unified_theory.rs", 1, "equation teleport"),
-    ("thalassa.rs", 3, "her hidden clone carrier (unseen) and the tide-link swap (a teleport by design)"),
+    ("thalassa.rs", 2, "the tide-link swap of her and her hidden carrier (a teleport by design)"),
     ("valorant.rs", 4, "Omen's teleports and shadow units"),
     ("vesper.rs", 1, "rift punch exit (a teleport through a tear)"),
 ];

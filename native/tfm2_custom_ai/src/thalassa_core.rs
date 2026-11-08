@@ -125,6 +125,9 @@ pub struct Frame {
     pub max_hp: i64,
     /// her ability power
     pub ap: i64,
+    /// her current shield total (any source); her overheal never counts more than this
+    #[serde(default)]
+    pub shield: i64,
     /// stunned (someone else's hard crowd control; her own named motion never counts)
     pub stunned: bool,
     pub ult_unlocked: bool,
@@ -187,8 +190,10 @@ pub enum Effect {
     PoolUp { id: u32, center: Point, radius: i64, until: u64, whirl: bool },
     PoolDown { id: u32 },
     SpawnClone { pos: Point, ticks: u64 },
-    /// her clone flies or dives (it's hidden; its body is drawn as an effect)
-    CloneMove { to: Point },
+    /// her clone flies or dives over `ticks` (an engine glide of its hidden carrier; its body is drawn as an effect)
+    CloneMove { to: Point, ticks: u64 },
+    /// the trident impales a champion: stun unless V1 parries it (the bridge checks; a parry also cancels damage)
+    TridentHit { target: usize, at: Point, ticks: u64 },
     RemoveClone,
     /// trade places with her clone (a deliberate swap)
     Swap { owner_to: Point, clone_to: Point },
@@ -216,6 +221,8 @@ impl Pool {
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 pub struct Twin {
     pub until: u64,
+    /// the twin is flying or diving until this tick (its body is drawn every tick meanwhile)
+    pub moving_until: u64,
     pub linked: bool,
     pub swapped: bool,
     /// flying to rescue this ally, arriving at tick
@@ -249,8 +256,10 @@ pub struct Core {
     pub next_pool: u32,
     pub wet_until: u64,
     pub in_water: bool,
+    /// her overheal right now (own unexpired increments, never above her actual shield)
     pub overheal: i64,
-    pub overheal_until: u64,
+    /// her own overheal increments: (amount, expires)
+    pub overheal_parts: Vec<(i64, u64)>,
     pub cast: Option<Cast>,
     /// diving or sliding until
     pub moving_until: u64,
@@ -271,7 +280,7 @@ impl Default for Core {
             wet_until: 0,
             in_water: false,
             overheal: 0,
-            overheal_until: 0,
+            overheal_parts: vec![],
             cast: None,
             moving_until: 0,
             twin: None,
@@ -358,11 +367,11 @@ impl Core {
             self.in_water = wet;
             out.push(Effect::Water { on: wet });
         }
-        if wet {
-            self.overheal_until = f.tick + sec(d::WATER_OVERHEAL_LINGER_TICKS);
-        } else if f.tick >= self.overheal_until {
-            self.overheal = 0;
-        }
+        // overheal: only her own unexpired increments count, and never more than the shield she still has (absorbed
+        // shielding is gone); each increment lasts the linger plus one refresh, so it holds in water and fades ~2 s after
+        self.overheal_parts.retain(|(_, until)| f.tick < *until);
+        let own = self.overheal_parts.iter().map(|p| p.0).sum::<i64>().min(f.shield.max(0));
+        self.overheal = own;
         // twice a second: half of the per-second regen
         if wet && f.tick % 30 == 0 {
             let amount = f.max_hp * d::WATER_REGEN_PER_MILLE_PER_SECOND / 2000;
@@ -370,10 +379,12 @@ impl Core {
                 out.push(Effect::Heal { amount });
             } else {
                 let cap = f.max_hp * d::WATER_OVERHEAL_CAP_PCT / 100;
-                let add = amount.min(cap - self.overheal);
+                let add = amount.min(cap - own);
                 if add > 0 {
-                    self.overheal += add;
-                    out.push(Effect::Shield { target: f.owner, amount: add, ticks: sec(d::WATER_OVERHEAL_LINGER_TICKS) + 30 });
+                    let ticks = sec(d::WATER_OVERHEAL_LINGER_TICKS) + 30;
+                    self.overheal_parts.push((add, f.tick + ticks));
+                    self.overheal = own + add;
+                    out.push(Effect::Shield { target: f.owner, amount: add, ticks });
                 }
             }
         }
@@ -496,11 +507,12 @@ impl Core {
         }
         self.ready[1] = f.tick + sec(d::DIVE_COOLDOWN_TICKS);
         if self.water_at(f.pos, f.tick) {
-            let to = f.pos.reach(aim, d::DIVE_RANGE).clamp_map();
+            // into one of her own pools (the trident's, anywhere on the map) she dives all the way; otherwise in range
+            let to = if self.pool_at(aim).is_some() { free_spot(f, f.pos, aim) } else { free_spot(f, f.pos, f.pos.reach(aim, d::DIVE_RANGE)) };
             if self.pool_at(to).is_none() {
                 self.add_pool(f, to, d::WATER_POOL_RADIUS, false, out);
             }
-            let ticks = sec(d::DIVE_DIVE_TICKS);
+            let ticks = sec(d::DIVE_DIVE_TICKS + f.pos.dist(to) as i64 / 20_000).min(90);
             out.push(Effect::Fx { name: "tls_dive_in".into(), at: f.pos, ticks: 18, ambient: false });
             out.push(Effect::Submerge { ticks });
             out.push(Effect::Glide { to, ticks });
@@ -508,7 +520,7 @@ impl Core {
             self.moving_until = f.tick + ticks;
             self.last_skill = "dive";
         } else {
-            let to = f.pos.reach(aim, d::DIVE_SLIDE_RANGE).clamp_map();
+            let to = free_spot(f, f.pos, f.pos.reach(aim, d::DIVE_SLIDE_RANGE));
             let ticks = sec(d::DIVE_SLIDE_TICKS);
             out.push(Effect::Glide { to, ticks });
             out.push(Effect::Fx { name: "tls_slide".into(), at: f.pos, ticks: 14, ambient: false });
@@ -518,9 +530,11 @@ impl Core {
             self.last_skill = "slide";
         }
         // the twin echoes the dive toward the same point
-        if let (Some(c), Some(_)) = (f.clone, self.twin) {
-            let to = c.pos.reach(aim, d::DIVE_RANGE).clamp_map();
-            out.push(Effect::CloneMove { to });
+        if let (Some(c), Some(t)) = (f.clone, self.twin) {
+            let to = free_spot(f, c.pos, c.pos.reach(aim, d::DIVE_RANGE));
+            let ticks = sec(d::DIVE_DIVE_TICKS);
+            self.twin = Some(Twin { moving_until: f.tick + ticks, ..t });
+            out.push(Effect::CloneMove { to, ticks });
         }
         true
     }
@@ -535,10 +549,10 @@ impl Core {
         if self.twin.is_some() {
             out.push(Effect::RemoveClone);
         }
-        let at = f.pos.reach(aim, d::TWIN_RANGE).clamp_map();
+        let at = free_spot(f, f.pos, f.pos.reach(aim, d::TWIN_RANGE));
         let linked = self.pool_at(at).is_some();
         let ticks = sec(d::TWIN_TICKS);
-        self.twin = Some(Twin { until: f.tick + ticks, linked, swapped: false, rescue: None });
+        self.twin = Some(Twin { until: f.tick + ticks, moving_until: 0, linked, swapped: false, rescue: None });
         out.push(Effect::SpawnClone { pos: at, ticks });
         out.push(Effect::Fx { name: "tls_twin_spawn".into(), at, ticks: 20, ambient: false });
         out.push(Effect::Pose { name: "skill3", ticks: 18 });
@@ -574,7 +588,7 @@ impl Core {
             return false;
         }
         self.twin = Some(Twin { swapped: true, ..t });
-        out.push(Effect::Swap { owner_to: c.pos, clone_to: f.pos });
+        out.push(Effect::Swap { owner_to: free_spot(f, f.pos, c.pos), clone_to: f.pos });
         out.push(Effect::Fx { name: "tls_swap".into(), at: f.pos, ticks: 18, ambient: false });
         self.add_pool(f, f.pos, d::WATER_POOL_RADIUS, true, out);
         self.last_skill = "swap";
@@ -592,8 +606,12 @@ impl Core {
             self.end_twin(out);
             return;
         }
+        // its body: every tick while it moves (so a flight reads as motion), else every 6 ticks
+        let moving = f.tick < t.moving_until;
+        if moving || f.tick % 6 == 0 {
+            out.push(Effect::Fx { name: format!("tls_twin_p{}", (f.tick / 6) % 8), at: c.pos, ticks: if moving { 1 } else { 6 }, ambient: false });
+        }
         if f.tick % 6 == 0 {
-            out.push(Effect::Fx { name: format!("tls_twin_p{}", (f.tick / 6) % 8), at: c.pos, ticks: 6, ambient: false });
             if t.linked && !t.swapped {
                 let mid = Point::new((c.pos.x + f.pos.x) / 2, (c.pos.y + f.pos.y) / 2);
                 out.push(Effect::Fx { name: "tls_tide_link".into(), at: mid, ticks: 6, ambient: true });
@@ -620,8 +638,8 @@ impl Core {
             .min_by_key(|(id, p, _)| (p.d2(c.pos), *id));
         if let Some((ally, pos, _)) = stunned_ally {
             let arrive = f.tick + sec(d::TWIN_FLY_TICKS);
-            self.twin = Some(Twin { rescue: Some((ally, arrive)), ..t });
-            out.push(Effect::CloneMove { to: pos });
+            self.twin = Some(Twin { rescue: Some((ally, arrive)), moving_until: arrive, ..t });
+            out.push(Effect::CloneMove { to: free_spot(f, c.pos, pos), ticks: sec(d::TWIN_FLY_TICKS) });
             out.push(Effect::Fx { name: "tls_twin_fly".into(), at: c.pos, ticks: 12, ambient: false });
             return;
         }
@@ -669,7 +687,7 @@ impl Core {
         out.push(Effect::Fx { name: format!("tls_trident_p{}", f.tick % 8), at: next, ticks: 1, ambient: false });
         if let Some(u) = hit {
             let stun = if t.from_water { d::ULT_WATER_STUN_TICKS } else { d::ULT_STUN_TICKS };
-            out.push(Effect::Stun { target: u.id, ticks: sec(stun) });
+            out.push(Effect::TridentHit { target: u.id, at: u.pos, ticks: sec(stun) });
             let dmg = pct(d::ULT_BASE, d::ULT_AP_RATIO, f.ap);
             for e in f.units.iter().filter(|e| f.enemy(e) && !e.tower && e.pos.within(u.pos, d::ULT_SPLASH_RADIUS + e.radius)) {
                 out.push(Effect::Damage { target: e.id, amount: dmg, from_clone: false });
@@ -761,7 +779,7 @@ impl Core {
         }
         // follow up into the trident's pool with a dive
         if self.ready(1, f.tick) && wet && !low {
-            if let Some(p) = self.pools.iter().filter(|p| !p.holds(f.pos) && p.center.within(f.pos, d::DIVE_RANGE + p.radius)).find(|p| near.iter().any(|u| p.holds(u.pos))) {
+            if let Some(p) = self.pools.iter().filter(|p| !p.holds(f.pos)).filter(|p| f.enemy_champions().any(|u| p.holds(u.pos))).min_by_key(|p| (p.center.d2(f.pos), p.id)) {
                 return Some(Order::Dive(p.center));
             }
         }
@@ -805,6 +823,21 @@ impl Core {
         }
         None
     }
+}
+
+/// `to`, or the nearest point back toward `from` (2,000 at a time) that's on the map and off terrain.
+pub fn free_spot(f: &Frame, from: Point, to: Point) -> Point {
+    let mut p = to.clamp_map();
+    for _ in 0..200 {
+        if !f.terrain_at(p) {
+            return p;
+        }
+        if p.within(from, 2_000) {
+            break;
+        }
+        p = p.toward(from, 2_000);
+    }
+    from.clamp_map()
 }
 
 pub fn seg_d2(p: Point, a: Point, b: Point) -> f64 {

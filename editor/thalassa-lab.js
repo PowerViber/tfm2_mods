@@ -8,11 +8,12 @@
   const names = ['ego', 'judgement', 'positioning', 'control_speed', 'skill_hit', 'skill_avoid', 'aggressive', 'order', 'roaming', 'macro', 'micro', 'awareness', 'strategy'];
   $('#stats').innerHTML = names.map(n => `<span>${n}</span><input type="number" min="0" max="100" value="50">`).join('');
   let tick, units, me, state, logLines, queue, glides, clone, running = true, aim = {x: 480000, y: 480000}, held = new Set(), basicHits = [], banished = 0;
+  const myShield = () => { me.shields = me.shields.filter(s => s.until > tick); return me.shields.reduce((a, s) => a + s.amount, 0); };
   const unit = (id, team, x, y, champion = true) => ({id, team, pos: {x, y}, hp: 1000, max_hp: 1000, radius: 8000, champion, tower: false, visible: true, targetable: true, farmable: false, stunned: false, stunUntil: 0, velocity: {x: 0, y: 0}});
   function reset() {
     wasm.thalassa_reset();
     tick = 0; state = {}; logLines = []; queue = []; glides = []; clone = null; banished = 0;
-    me = {pos: {x: 300000, y: 480000}, hp: 1000, max_hp: 1000, stunUntil: 0};
+    me = {pos: {x: 300000, y: 480000}, hp: 1000, max_hp: 1000, stunUntil: 0, shields: []};
     units = [unit(5, 1, 470000, 470000), unit(6, 1, 480000, 500000), unit(7, 0, 330000, 520000)];
     log('Reset. Thalassa (blue) vs two enemies (red), one ally (green).');
   }
@@ -29,7 +30,7 @@
   const rp = p => ({x: Math.round(p.x), y: Math.round(p.y)});
   function frame() {
     return {version: 1, rules_revision: REV, frame: {
-      tick, owner: 1, team: 0, alive: me.hp > 0, pos: rp(me.pos), hp: Math.round(me.hp), max_hp: me.max_hp, ap: 100, stunned: tick < me.stunUntil, ult_unlocked: true,
+      tick, owner: 1, team: 0, alive: me.hp > 0, pos: rp(me.pos), hp: Math.round(me.hp), max_hp: me.max_hp, shield: myShield(), ap: 100, stunned: tick < me.stunUntil, ult_unlocked: true,
       units: units.map(u => ({id: u.id, team: u.team, pos: rp(u.pos), hp: Math.round(u.hp), max_hp: u.max_hp, radius: u.radius, champion: u.champion, tower: u.tower, visible: u.visible, targetable: u.targetable, farmable: u.farmable, stunned: tick < u.stunUntil, velocity: rp(u.velocity)})), terrain: terrain(),
       profile: [...document.querySelectorAll('.stat input')].map(i => Number(i.value)),
       clone: clone ? {id: 99, pos: rp(clone.pos), hp: clone.hp} : null, basic_hits: basicHits.splice(0),
@@ -45,16 +46,17 @@
       switch (e.kind) {
         case 'damage': { const u = find(d.target); if (u) { u.hp = Math.max(0, u.hp - d.amount); log(`#${d.target} takes ${d.amount}${d.from_clone ? ' (twin)' : ''}`); } break; }
         case 'stun': { const u = find(d.target); if (u) { u.stunUntil = Math.max(u.stunUntil || 0, tick + d.ticks); log(`#${d.target} stunned ${(d.ticks / 60).toFixed(2)} s`); } break; }
+        case 'trident_hit': { const u = find(d.target); if (u) { u.stunUntil = Math.max(u.stunUntil || 0, tick + d.ticks); log(`#${d.target} impaled: stunned ${(d.ticks / 60).toFixed(2)} s`); } break; }
         case 'pull': { const u = find(d.target); if (u) glide(u, d.to, d.ticks); break; }
         case 'glide': glide(me, d.to, d.ticks); break;
         case 'submerge': banished = tick + d.ticks; break;
         case 'heal': me.hp = Math.min(me.max_hp, me.hp + d.amount); break;
-        case 'shield': if (d.target !== 1 || d.amount > 20) log(`#${d.target} shield ${d.amount}`); break;
+        case 'shield': if (d.target === 1) me.shields.push({amount: d.amount, until: tick + d.ticks}); if (d.target !== 1 || d.amount > 20) log(`#${d.target} shield ${d.amount}`); break;
         case 'cleanse': { const u = find(d.target); if (u) u.stunUntil = 0; log(`#${d.target} cleansed`); break; }
         case 'cc_immune': log(`#${d.target} crowd-control immune ${(d.ticks / 60).toFixed(2)} s`); break;
         case 'water': log(d.on ? 'Water mode ON' : 'Water mode off'); break;
         case 'spawn_clone': clone = {pos: {...d.pos}, hp: 200, until: tick + d.ticks}; log('Tide Twin appears'); break;
-        case 'clone_move': if (clone) glide(clone, d.to, 12); break;
+        case 'clone_move': if (clone) glide(clone, d.to, d.ticks); break;
         case 'remove_clone': clone = null; break;
         case 'swap': { const c = clone; me.pos = {...d.owner_to}; if (c) c.pos = {...d.clone_to}; log('Tide link: swapped with the twin'); break; }
         case 'log': log(String(e.data)); break;

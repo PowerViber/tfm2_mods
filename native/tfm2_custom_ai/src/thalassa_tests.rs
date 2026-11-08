@@ -52,4 +52,24 @@ mod glue {
         let f = with_sim(&host, |sim| t.frame(sim, 0));
         assert!(!f.stunned);
     }
+
+    #[test]
+    fn a_v1_parry_cancels_the_trident_stun_and_damage() {
+        let _g = crate::walls::TEST_LOCK.lock();
+        let (x, y) = open_spot(90_000);
+        let host = Host::new(vec![champ(0, (x, y), "tfm2_custom_thalassa"), champ(1, (x + 30_000, y), "tfm2_ultrakill_v1")]);
+        with_sim(&host, |sim| sim.add_buff(1, &crate::timed("v1_guard", 600)));
+        let mut t = crate::thalassa::Thalassa::default();
+        host.borrow_mut().tick = 50;
+        with_sim(&host, |sim| {
+            t.apply(sim, 0, vec![
+                crate::thalassa_core::Effect::TridentHit { target: 1, at: crate::thalassa_core::Point::new(x as i64 + 30_000, y as i64), ticks: 180 },
+                crate::thalassa_core::Effect::Damage { target: 1, amount: 300, from_clone: false },
+            ])
+        });
+        let h = host.borrow();
+        assert!(!h.ccs[1].iter().any(|c| c.0.kind == CcKindV1::Stun.code()), "no stun");
+        assert!(!h.damage.iter().any(|d| d.1 == 1), "no damage");
+        assert!(h.buffs[1].iter().any(|b| b.name() == "v1_parry"), "V1 parried");
+    }
 }

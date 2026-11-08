@@ -18,6 +18,7 @@ fn frame(tick: u64, x: i64, y: i64, units: Vec<Unit>) -> Frame {
         hp: 1000,
         max_hp: 1000,
         ap: 100,
+        shield: 0,
         stunned: false,
         ult_unlocked: true,
         units,
@@ -43,7 +44,8 @@ fn run(core: &mut Core, f: &mut Frame, n: u64, log: &mut Vec<Effect>) {
                     }
                 }
                 Effect::SpawnClone { pos, .. } => f.clone = Some(CloneView { id: 99, pos: *pos, hp: 200 }),
-                Effect::CloneMove { to } => {
+                Effect::Shield { target, amount, .. } if *target == ME => f.shield += amount,
+                Effect::CloneMove { to, .. } => {
                     if let Some(c) = f.clone.as_mut() {
                         c.pos = *to;
                     }
@@ -71,7 +73,12 @@ fn run(core: &mut Core, f: &mut Frame, n: u64, log: &mut Vec<Effect>) {
 }
 
 fn stuns(log: &[Effect], id: usize) -> Vec<u64> {
-    log.iter().filter_map(|e| if let Effect::Stun { target, ticks } = e { (*target == id).then_some(*ticks) } else { None }).collect()
+    log.iter()
+        .filter_map(|e| match e {
+            Effect::Stun { target, ticks } | Effect::TridentHit { target, ticks, .. } => (*target == id).then_some(*ticks),
+            _ => None,
+        })
+        .collect()
 }
 fn damage_to(log: &[Effect], id: usize) -> i64 {
     log.iter().filter_map(|e| if let Effect::Damage { target, amount, .. } = e { (*target == id).then_some(*amount) } else { None }).sum()
@@ -339,4 +346,96 @@ fn trident_steering_is_capped_at_twenty_five_degrees() {
             assert!(t.spent_mdeg <= d::ULT_CURVE_MILLI_DEGREES);
         }
     }
+}
+
+// ------------------------------------------------------------------ review fixes
+
+#[test]
+fn overheal_refills_absorbed_shield_and_expires_after_leaving_water() {
+    let mut core = Core::default();
+    let mut f = frame(0, 300_000, 300_000, vec![]);
+    let mut log = vec![];
+    let here = f.pos;
+    cast_s1(&mut core, &mut f, here, &mut log);
+    run(&mut core, &mut f, 300, &mut log);
+    let cap = f.max_hp * d::WATER_OVERHEAL_CAP_PCT / 100;
+    assert!(core.overheal <= cap && core.overheal > 0);
+    // a hit takes the shield away: it no longer counts, and the regen fills it again
+    f.shield = 0;
+    run(&mut core, &mut f, 1, &mut log);
+    assert_eq!(core.overheal, 0, "absorbed shielding no longer counts");
+    let n = log.len();
+    run(&mut core, &mut f, 60, &mut log);
+    assert!(log[n..].iter().any(|e| matches!(e, Effect::Shield { target: ME, .. })), "refilled");
+    // out of the water: about 2 s later nothing of it counts any more
+    f.pos = Point::new(800_000, 800_000);
+    run(&mut core, &mut f, (d::WATER_OVERHEAL_LINGER_TICKS + 40) as u64, &mut log);
+    assert!(core.overheal_parts.is_empty(), "expired");
+    assert_eq!(core.overheal, 0);
+}
+
+#[test]
+fn dive_reaches_her_far_pool_but_a_plain_point_stays_in_range() {
+    let mut core = Core::default();
+    let mut f = frame(0, 100_000, 480_000, vec![]);
+    let mut log = vec![];
+    let here = f.pos;
+    cast_s1(&mut core, &mut f, here, &mut log);
+    // the trident's pool, across the map
+    f.order = Some(Order::Ult(Point::new(900_000, 480_000)));
+    run(&mut core, &mut f, 300, &mut log);
+    let far = core.pools.iter().find(|p| p.center.x > 700_000).copied().expect("trident pool");
+    f.order = Some(Order::Dive(far.center));
+    run(&mut core, &mut f, 1, &mut log);
+    assert!(far.holds(f.pos), "dived into the far pool: {:?}", f.pos);
+    // a plain far point: clamped
+    let mut core = Core::default();
+    let mut f = frame(0, 100_000, 480_000, vec![]);
+    cast_s1(&mut core, &mut f, here, &mut log);
+    f.order = Some(Order::Dive(Point::new(900_000, 480_000)));
+    run(&mut core, &mut f, 1, &mut log);
+    assert_eq!(f.pos.x, 100_000 + d::DIVE_RANGE);
+}
+
+#[test]
+fn twin_and_swap_never_land_on_terrain() {
+    let mut core = Core::default();
+    let mut f = frame(0, 300_000, 300_000, vec![]);
+    // terrain cell x 320,000..352,000 at this row
+    f.terrain[(300_000 / CELL * CELLS + 320_000 / CELL) as usize] = true;
+    let mut log = vec![];
+    f.order = Some(Order::Twin(Point::new(330_000, 300_000)));
+    run(&mut core, &mut f, 1, &mut log);
+    let c = f.clone.expect("twin").pos;
+    assert!(!f.terrain_at(c), "twin on open ground: {c:?}");
+    // a swap whose destination is terrain stops short of it
+    let mut core = Core::default();
+    let mut f = frame(0, 300_000, 300_000, vec![]);
+    let here = f.pos;
+    cast_s1(&mut core, &mut f, here, &mut log);
+    f.order = Some(Order::Twin(Point::new(322_000, 300_000)));
+    run(&mut core, &mut f, 1, &mut log);
+    assert_eq!(f.clone.expect("twin").pos.x, 322_000);
+    // the twin's spot turns out to be terrain (a wall rose there)
+    f.terrain[(300_000 / CELL * CELLS + 322_000 / CELL) as usize] = true;
+    log.clear();
+    f.order = Some(Order::Swap);
+    run(&mut core, &mut f, 1, &mut log);
+    let to = log.iter().find_map(|e| if let Effect::Swap { owner_to, .. } = e { Some(*owner_to) } else { None }).expect("swap");
+    assert!(!f.terrain_at(to), "{to:?}");
+}
+
+#[test]
+fn twin_flights_are_timed_glides_drawn_every_tick() {
+    let mut core = Core::default();
+    let mut ally = unit(7, 0, 330_000, 300_000);
+    ally.stunned = true;
+    let mut f = frame(0, 300_000, 300_000, vec![ally]);
+    let mut log = vec![];
+    f.order = Some(Order::Twin(Point::new(310_000, 300_000)));
+    run(&mut core, &mut f, 12, &mut log);
+    assert!(log.iter().any(|e| matches!(e, Effect::CloneMove { ticks, .. } if *ticks == d::TWIN_FLY_TICKS as u64)));
+    // standing still it is drawn every 6 ticks (2 in 12); in flight every tick
+    let bodies = log.iter().filter(|e| matches!(e, Effect::Fx { name, .. } if name.starts_with("tls_twin_p"))).count();
+    assert!(bodies >= 6, "drawn every tick in flight ({bodies})");
 }

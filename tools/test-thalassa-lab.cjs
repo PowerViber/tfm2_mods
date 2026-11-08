@@ -26,6 +26,9 @@ const root = path.resolve(__dirname, '..'), port = 7319;
       L.units[2].stunUntil = L.tick + 60; run(20); out.rescued = !L.clone;
       L.setAim({x: 900000, y: 150000}); L.order('ult'); run(300);
       out.trident = L.state.pools.some(p => p.center.x > 700000);
+      const far = L.state.pools.find(p => p.center.x > 700000);
+      out.wet = L.state.in_water;
+      if (far) { L.setAim(far.center); L.order('dive'); run(120); out.farDive = Math.hypot(L.me.pos.x - far.center.x, L.me.pos.y - far.center.y) <= far.radius; out.farX = L.me.pos.x; }
       return out;
     });
     check('Tide Pool on land forms a pool below her and turns water mode on', r.pool === 1 && r.water);
@@ -34,6 +37,7 @@ const root = path.resolve(__dirname, '..'), port = 7319;
     check('Tide Twin spawns', r.twin);
     check('A stunned ally near the twin gets the rescue pool (the twin is used up)', r.rescued);
     check('The trident crosses the map and leaves a pool where it lands', r.trident);
+    check(`Dive follows the trident into its far pool (water ${r.wet}, x ${r.farX})`, r.farDive);
     check('No page errors: ' + errors.join(' / '), errors.length === 0);
     console.log(`${checks} checks passed`);
   } finally { await browser.close(); server.kill(); }

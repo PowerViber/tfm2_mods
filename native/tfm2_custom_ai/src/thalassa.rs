@@ -79,10 +79,10 @@ impl Thalassa {
         let tick = sim.tick() as u64;
         let me = sim.get_entity(owner);
         let team = me.as_ref().map_or(usize::MAX, |e| e.team());
-        let (pos, hp, max_hp, ap, alive) = me.as_ref().map_or((Point::default(), 0, 1, 0, false), |e| {
+        let (pos, hp, max_hp, ap, alive, shield) = me.as_ref().map_or((Point::default(), 0, 1, 0, false, 0), |e| {
             let p = e.pos();
             let h = e.hp();
-            (Point::new(p.0 as i64, p.1 as i64), h.0 as i64, h.1.max(1) as i64, e.stat().magic_power as i64, e.is_alive())
+            (Point::new(p.0 as i64, p.1 as i64), h.0 as i64, h.1.max(1) as i64, e.stat().magic_power as i64, e.is_alive(), e.shield() as i64)
         });
         let stunned = me.as_ref().is_some_and(|e| {
             (0..e.cc_count()).filter_map(|i| e.cc_at(i)).any(|c| !c.name().starts_with(OWN_CC) && !crate::motion::is_self_motion(&c) && HARD.iter().any(|k| k.code() == c.kind))
@@ -157,6 +157,7 @@ impl Thalassa {
             hp,
             max_hp,
             ap,
+            shield,
             stunned,
             ult_unlocked,
             units,
@@ -190,10 +191,24 @@ impl Thalassa {
         let realms = crate::realm::realms(sim);
         let reach = |a: usize, b: usize| crate::realm::can_interact(&realms, a, b) && crate::grimhald_cage::can_interact(&all, a, b);
         let team = sim.get_entity(owner).map_or(usize::MAX, |e| e.team());
+        // a V1 who parries the trident takes nothing from that throw
+        let mut parried: Option<usize> = None;
         for e in effects {
             match e {
-                Effect::Damage { target, amount, .. } => {
+                Effect::TridentHit { target, ticks, .. } => {
                     if reach(owner, target) {
+                        let estimate = d::ULT_BASE as usize + sim.get_entity(owner).map_or(0, |e| e.stat().magic_power) * d::ULT_AP_RATIO as usize / 100;
+                        let champ = all.iter().find(|c| c.id == target).cloned();
+                        if champ.is_some_and(|c| crate::batch2::try_parry(sim, &c, owner, estimate)) {
+                            parried = Some(target);
+                            crate::mod_log(sim, "thalassa_log.txt", &format!("parry{tick}"), &format!("trident parried by {target}"));
+                        } else {
+                            sim.apply_cc(target, &named(CcKindV1::Stun, ticks, "tls_stun"));
+                        }
+                    }
+                }
+                Effect::Damage { target, amount, .. } => {
+                    if parried != Some(target) && reach(owner, target) {
                         self.in_skill = true;
                         sim.deal_damage(owner, target, 0, amount.max(0) as usize, AttackTypeV1::Skill);
                         self.in_skill = false;
@@ -272,7 +287,8 @@ impl Thalassa {
                     let stat = StatV1 { hp: (max as i64 * d::TWIN_HP_PCT / 100).max(1) as usize, defence: 15, magic_resistance: 15, move_speed: 1, ..StatV1::default() };
                     let attack = UnitAttackV1 { attack: 0, attack_ratio: 0, range: 1, cooltime: 5_184_000, duration: 1, start_timing: 0, ..UnitAttackV1::default() };
                     if let Some(host) = sim.spawn_unit("alchemist", owner, team, pos.x.max(0) as u64, pos.y.max(0) as u64, ticks, &stat, &attack) {
-                        for k in [CcKindV1::Bind, CcKindV1::BlockAttack, CcKindV1::BlockSkill] {
+                        // no Bind: it would hold the carrier against its own engine glides (flights, dives)
+                        for k in [CcKindV1::BlockAttack, CcKindV1::BlockSkill] {
                             sim.apply_cc(host, &named(k, ticks, "tls_twin_hold"));
                         }
                         sim.apply_cc(host, &named(CcKindV1::Animation, ticks, "tls_twin_hidden"));
@@ -282,10 +298,12 @@ impl Thalassa {
                         crate::mod_log(sim, "thalassa_log.txt", &format!("twin{tick}"), "tide twin: the host refused the clone unit");
                     }
                 }
-                Effect::CloneMove { to } => {
-                    // the carrier is hidden (its body is the tls_twin_p effect), so a placement draws nothing
+                Effect::CloneMove { to, ticks } => {
+                    // an engine glide of the carrier; its body effect is drawn every tick meanwhile, so it reads as a flight
                     if let Some(c) = self.clone {
-                        sim.entity_set_pos(c, to.x.max(0) as u64, to.y.max(0) as u64);
+                        let from = sim.get_entity(c).map(|e| e.pos()).map_or((to.x, to.y), |p| (p.0 as i64, p.1 as i64));
+                        let to = crate::place::safe(&all, tick, from, (to.x, to.y));
+                        crate::motion::glide(sim, c, to, ticks, crate::motion::Kind::Knock);
                     }
                 }
                 Effect::RemoveClone => {
@@ -294,12 +312,15 @@ impl Thalassa {
                     }
                 }
                 Effect::Swap { owner_to, clone_to } => {
-                    // a deliberate swap through the tide link (a teleport by design)
-                    sim.entity_set_pos(owner, owner_to.x.max(0) as u64, owner_to.y.max(0) as u64);
-                    crate::steve::note_placed(sim, owner, owner_to.x, owner_to.y);
+                    // a deliberate swap through the tide link (a teleport by design), only onto open ground
+                    let from = sim.get_entity(owner).map(|e| e.pos()).map_or((owner_to.x, owner_to.y), |p| (p.0 as i64, p.1 as i64));
+                    let (ox, oy) = crate::place::safe(&all, tick, from, (owner_to.x, owner_to.y));
+                    sim.entity_set_pos(owner, ox.max(0) as u64, oy.max(0) as u64);
+                    crate::steve::note_placed(sim, owner, ox, oy);
                     sim.add_buff(owner, &crate::timed(crate::place::MOVED, 2));
                     if let Some(c) = self.clone {
-                        sim.entity_set_pos(c, clone_to.x.max(0) as u64, clone_to.y.max(0) as u64);
+                        let (cx, cy) = crate::place::safe(&all, tick, (ox, oy), (clone_to.x, clone_to.y));
+                        sim.entity_set_pos(c, cx.max(0) as u64, cy.max(0) as u64);
                     }
                 }
                 Effect::Fx { name, at, ticks, ambient } => {

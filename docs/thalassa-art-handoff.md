@@ -65,4 +65,4 @@ Thalassa's kit is built and tested: the native core, bridge, data, tooltips, ros
 ## After the art lands
 1. `python3 tools/generate-thalassa.py --check` passes. If a tag is renamed, update the generator's `effects` list and regenerate.
 2. Mod Manager `the_repos_champions_all_load` passes.
-3. Release: native 0.10.92 / tfm2_custom 0.2.94 (or the next unused), the DLL, and the review doc.
+3. Release: native 0.10.92 / tfm2_custom 0.2.95 (0.2.94 is taken by PR #69), the DLL, and the review doc.
