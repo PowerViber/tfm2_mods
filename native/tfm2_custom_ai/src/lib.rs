@@ -50,6 +50,7 @@ mod thalassa_data;
 #[allow(dead_code)] mod thalassa_art;
 #[cfg(test)] mod thalassa_tests;
 mod wright;
+mod wright_art;
 #[allow(dead_code)] mod wright_core;
 mod wright_data;
 #[cfg(test)] mod wright_tests;

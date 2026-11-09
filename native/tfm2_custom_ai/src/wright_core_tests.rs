@@ -4,6 +4,16 @@ use crate::wright_data as d;
 
 const ME: usize = 1;
 
+#[test]
+fn unreported_carriers_are_removed_after_the_existing_receipt_grace() {
+    let mut core=Core::default();let mut f=frame(0,300_000,300_000,vec![unit(5,1,320_000,300_000)]);
+    f.order=Some(Order::Fighters(Point::default()));let first=core.step(&f);
+    assert_eq!(first.iter().filter(|e|matches!(e,Effect::SpawnPlane{..})).count(),2);
+    // Host rejected both spawns: the next snapshot contains no carrier receipts.
+    f.order=None;f.tick=2;let next=core.step(&f);
+    assert_eq!(core.own_fighters(),0);assert!(!next.iter().any(|e|matches!(e,Effect::Damage{..})));
+}
+
 fn unit(id: usize, team: usize, x: i64, y: i64) -> Unit {
     Unit { id, team, pos: Point::new(x, y), hp: 1000, max_hp: 1000, radius: 4_000, champion: true, tower: false, visible: true, targetable: true, farmable: false }
 }

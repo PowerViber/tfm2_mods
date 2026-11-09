@@ -31,6 +31,10 @@ pub(crate) struct Host {
     pub moves: Vec<(usize, (u64, u64))>,
     /// units spawned through `spawn_unit`: (id, sprite name, stat)
     pub spawned: Vec<(usize, String, StatV1)>,
+    /// Presentation receipts: name, owner, exact SDK target, lifetime.
+    pub view_effects: Vec<(String,usize,mod_api_stable::InputTargetV1,u64)>,
+    pub record_view_effects: bool,
+    pub reject_spawns: bool,
 }
 impl Host {
     pub fn new(units: Vec<Unit>) -> RefCell<Host> {
@@ -78,6 +82,7 @@ unsafe extern "C" fn spawn_unit(
     _a: *const UnitAttackV1,
 ) -> usize {
     let mut g = h(p).borrow_mut();
+    if g.reject_spawns {return usize::MAX;}
     let id = g.units.len();
     let name = String::from_utf8_lossy(std::slice::from_raw_parts(n, len)).into_owned();
     g.units.push(Unit { kind: K::Minion, team, pos: (x, y), hp: (*s).hp, name: "summon", targetable: true });
@@ -185,8 +190,12 @@ unsafe extern "C" fn champ_at(p: *const c_void, i: usize) -> usize {
 unsafe extern "C" fn level(_: *const c_void, _: E) -> usize { 9 }
 unsafe extern "C" fn shield(_: *const c_void, _: E) -> usize { 0 }
 unsafe extern "C" fn effect(
-    _: *mut c_void, _: *const u8, _: usize, _: usize, _: *const mod_api_stable::InputTargetV1, _: u64, _: u64, _: u64,
+    p: *mut c_void, name: *const u8, len: usize, owner: usize, target: *const mod_api_stable::InputTargetV1, _: u64, _: u64, time: u64,
 ) -> bool {
+    if !h(p).borrow().record_view_effects {return true;}
+    let name=String::from_utf8_lossy(std::slice::from_raw_parts(name,len)).into_owned();
+    let mut host=h(p).borrow_mut();
+    if host.view_effects.len()<4096 {host.view_effects.push((name,owner,*target,time));}
     true
 }
 
