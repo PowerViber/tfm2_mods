@@ -130,7 +130,7 @@
         const tag=painter.effectTag(f.name,f.ticks);
         const q=P(point);painter.effect(ctx,tag,tick-f.start,q.x,q.y,pixel);continue;
       }
-      if (f.name === 'wrt_warn') circle(point,R.bomber.radius,'rgba(248,113,113,.08)','#f87171');
+      if (/^wrt_warn[123]?$/.test(f.name)) circle(point,R.bomber.radius,'rgba(248,113,113,.08)','#f87171');
       else if (f.name==='wrt_carrier_shadow')circle(point,R.carrier.knockRadius,'rgba(0,0,0,.25)','#9ca3af');
       else if (f.name==='wrt_knock_ring')circle(point,R.carrier.knockRadius,null,'#fde68a');
       else if (f.name==='wrt_bomb'||f.name==='wrt_kamikaze')circle(point,f.name==='wrt_bomb'?10000:R.fighter.kamikazeRadius,'rgba(251,146,60,.45)');

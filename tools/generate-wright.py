@@ -37,7 +37,7 @@ text = {
               f"come around again; with no champion near they clear minions and camps. They never damage turrets. When their time ends or they fall below "
               f"{fi['kamikazeHpPct']}% HP they kamikaze: {fi['kamikazeBase']} + {fi['kamikazeApRatio']}% AP, a knockback and a burn of "
               f"{fi['burnPermillePerSecond'] / 10:g}% max HP a second for {sec(fi['burnTicks'])}."),
-    'skill2': (f"Carpet Bomber ({sec(bo['cooldownTicks'])}): marks an area and, after {sec(bo['warnTicks'])}, a bomber drops {bo['waves']} carpet waves "
+    'skill2': (f"Carpet Bomber ({sec(bo['cooldownTicks'])}): marks {bo['waves']} overlapping circles advancing in a fixed line (radius {bo['radius']}, spacing {bo['spacing']}, furthest centre within {bo['range']}). After {sec(bo['warnTicks'])}, a bomber triggers one large explosion per circle, {sec(bo['waveEveryTicks'])} apart "
                f"({bo['waveBase']} + {bo['waveApRatio']}% AP each): the first ones slow {bo['slowPct']}%, the last stuns {sec(bo['stunTicks'])}. "
                f"Repair Wing ({sec(re_['cooldownTicks'])}): a repair chopper circles him and a repair plane flies to the most hurt ally anywhere, both for "
                f"{sec(re_['ticks'])}. Every {sec(re_['kitEveryTicks'])} each drops a kit: {re_['healPermille'] / 10:g}% max HP and a {re_['shieldBase']} + "

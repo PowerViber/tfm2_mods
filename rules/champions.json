@@ -5230,7 +5230,7 @@
       "Protect",
       "Clear"
      ],
-     "summary": "Carpet Bomber (10 s): marks an area and, after 1 s, a bomber drops 3 carpet waves (45 + 40% AP each): the first ones slow 30%, the last stuns 0.75 s. Repair Wing (14 s): a repair chopper circles him and a repair plane flies to the most hurt ally anywhere, both for 6 s. Every 1 s each drops a kit: 1% max HP and a 15 + 10% AP shield (up to 60 + 40% AP). The chopper also repairs his fighters."
+     "summary": "Carpet Bomber (10 s): marks 3 overlapping circles advancing in a fixed line (radius 45000, spacing 40000, furthest centre within 110000). After 1 s, a bomber triggers one large explosion per circle, 0.3 s apart (45 + 40% AP each): the first ones slow 30%, the last stuns 0.75 s. Repair Wing (14 s): a repair chopper circles him and a repair plane flies to the most hurt ally anywhere, both for 6 s. Every 1 s each drops a kit: 1% max HP and a 15 + 10% AP shield (up to 60 + 40% AP). The chopper also repairs his fighters."
     },
     {
      "slot": "ult",

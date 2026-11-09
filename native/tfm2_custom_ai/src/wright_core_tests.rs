@@ -240,10 +240,10 @@ fn waves_on(log: &[Effect], id: usize) -> (Vec<i64>, usize, usize) {
 fn the_carpet_bomber_readies_up_then_drops_three_waves_the_last_stuns() {
     let mut core = Core::default();
     let center = Point::new(380_000, 300_000);
-    let mut f = frame(0, 300_000, 300_000, vec![unit(7, 1, 390_000, 300_000), unit(8, 1, 380_000, 300_000 + d::BOMBER_RADIUS + 20_000)]);
+    let mut f = frame(0, 300_000, 300_000, vec![unit(7, 1, 370_000, 300_000), unit(8, 1, 380_000, 300_000 + d::BOMBER_RADIUS + 20_000)]);
     let mut log = vec![];
     order(&mut core, &mut f, Order::Bomber(center), &mut log);
-    assert!(log.iter().any(|e| matches!(e, Effect::Fx { name, .. } if name == "wrt_warn")), "the ready-up warning");
+    assert_eq!(log.iter().filter(|e| matches!(e, Effect::Fx { name, .. } if name.starts_with("wrt_warn"))).count(),3,"one ready-up warning per explosion");
     log.clear();
     run(&mut core, &mut f, d::BOMBER_WARN_TICKS as u64 - 2, &mut log);
     assert!(damage(&log, 7).is_empty(), "nothing during the ready-up");
@@ -254,6 +254,41 @@ fn the_carpet_bomber_readies_up_then_drops_three_waves_the_last_stuns() {
     assert_eq!((slows, stuns), (d::BOMBER_WAVES as usize - 1, 1), "the first waves slow, the last stuns");
     assert!(damage(&log, 8).is_empty(), "outside the area: untouched");
     assert!(!core.planes.iter().any(|p| p.kind == Kind::Bomber), "flown off");
+}
+
+#[test]
+fn bomber_strikes_advance_and_only_damage_their_own_warned_footprints() {
+    let mut core=Core::default();let mut f=frame(0,300_000,480_000,vec![]);
+    let centres=bomber_centres(f.pos,Point::new(370_000,480_000)).unwrap();
+    assert_eq!(centres,[Point::new(330_000,480_000),Point::new(370_000,480_000),Point::new(410_000,480_000)]);
+    for (i,c) in centres.iter().enumerate(){f.units.push(unit(7+i,1,c.x,c.y+44_000));}
+    let mut log=vec![];order(&mut core,&mut f,Order::Bomber(Point::new(370_000,480_000)),&mut log);
+    let warnings:Vec<_>=log.iter().filter_map(|e|match e {Effect::Fx{name,at,ticks,..} if name.starts_with("wrt_warn")=>Some((name.clone(),*at,*ticks)),_=>None}).collect();
+    assert_eq!(warnings.iter().map(|w|w.1).collect::<Vec<_>>(),centres);
+    assert_eq!(warnings.iter().map(|w|w.2).collect::<Vec<_>>(),vec![60,78,96]);
+    // Later caster/target movement cannot rotate or move an accepted line.
+    f.pos=Point::new(200_000,200_000);log.clear();run(&mut core,&mut f,130,&mut log);
+    let impacts:Vec<_>=log.iter().filter_map(|e|match e {Effect::Fx{name,at,..} if name.starts_with("wrt_bomber_wave")=>Some(*at),_=>None}).collect();
+    assert_eq!(impacts,centres);
+    for id in 7..10 {assert_eq!(damage(&log,id).len(),1,"one packet in the isolated footprint");}
+    assert_eq!(waves_on(&log,7).1,1);assert_eq!(waves_on(&log,8).1,1);assert_eq!(waves_on(&log,9).2,1);
+}
+
+#[test]
+fn bomber_lines_keep_direction_range_and_distinct_centres_near_map_edges() {
+    for from in [Point::new(1000,1000),Point::new(300_000,480_000),Point::new(940_000,940_000)] {
+        for aim in [Point::new(0,0),Point::new(MAP,MAP),Point::new(MAP,0),Point::new(0,MAP),from] {
+            if let Some(cs)=bomber_centres(from,aim) {
+                assert!(cs.iter().all(|p|p.on_map()&&p.within(from,d::BOMBER_RANGE+2)));
+                assert!(cs[0]!=cs[1]&&cs[1]!=cs[2]);
+                let cross=(cs[1].x-cs[0].x)*(cs[2].y-cs[0].y)-(cs[1].y-cs[0].y)*(cs[2].x-cs[0].x);
+                assert!(cross.abs()<=2*d::BOMBER_SPACING,"rounding stays on the same line");
+            }
+        }
+    }
+    let mut core=Core::default();let mut f=frame(0,MAP-1000,480_000,vec![]);f.order=Some(Order::Bomber(Point::new(MAP,480_000)));
+    let out=core.step(&f);assert_eq!(core.stock,d::WORKSHOP_START_STOCK);assert_eq!(core.ready[1],0);
+    assert!(!out.iter().any(|e|matches!(e,Effect::Fx{name,..} if name.starts_with("wrt_warn"))));
 }
 
 // ------------------------------------------------------------------ S3 Repair Wing

@@ -31,7 +31,8 @@ mod glue {
     #[test]
     fn bomber_wave_presentation_is_centred_and_does_not_duplicate_damage() {
         use crate::wright_core::{Core,Frame,Unit};
-        let center=Point::new(400_000,480_000);
+        let center=Point::new(370_000,480_000);
+        let centres=crate::wright_core::bomber_centres(Point::new(300_000,480_000),center).unwrap();
         let mut f=Frame{tick:100,alive:true,hp:1000,max_hp:1000,pos:Point::new(300_000,480_000),manual:true,order:Some(Order::Bomber(center)),..Frame::default()};
         f.units.push(Unit{id:2,team:1,pos:center,hp:10000,max_hp:10000,champion:true,visible:true,targetable:true,..Unit::default()});
         let mut core=Core::default();let mut waves=Vec::new();let mut hits=0;
@@ -39,7 +40,7 @@ mod glue {
             f.tick=tick;if tick>100{f.order=None;}
             for e in core.step(&f) {
                 match e {
-                    Effect::Fx{name,at,ticks,..} if name.starts_with("wrt_bomber_wave")=>{assert_eq!(at,center);assert_eq!(ticks,14);waves.push(name);},
+                    Effect::Fx{name,at,ticks,..} if name.starts_with("wrt_bomber_wave")=>{assert_eq!(at,centres[waves.len()]);assert_eq!(ticks,14);waves.push(name);},
                     Effect::Damage{target:2,..}=>hits+=1,
                     _=>{}
                 }

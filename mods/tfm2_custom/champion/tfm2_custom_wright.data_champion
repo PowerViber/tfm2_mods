@@ -908,9 +908,57 @@
     },
     {
       "type": "Animation",
+      "name": "wrt_warn1_t60",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "warn1_t60",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_warn2_t78",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "warn2_t78",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_warn3_t96",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "warn3_t96",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "wrt_warn_t72",
       "anim": "asset/tfm2_custom/vfx/wright",
       "tag": "warn_t72",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_warn1_t18",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "warn1_t18",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_warn2_t36",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "warn2_t36",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_warn3_t54",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "warn3_t54",
       "z": -2,
       "is_follow": false
     },

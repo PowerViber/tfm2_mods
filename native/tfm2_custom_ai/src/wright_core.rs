@@ -6,11 +6,11 @@
 //!   S1      Fighter Wing: 2 fighters (real, targetable units) for 20 s, at most 4. They escort him and attack his target:
 //!           machine-gun bursts, a lock-on rocket every 4 s, and a kamikaze (knockback, burn) when their time ends or
 //!           they are nearly shot down.
-//!   S2      Carpet Bomber: a bomber circles the target area for 6 s, carpet-bombing its path (capped hits per enemy, slow).
+//!   S2      Carpet Bomber: three large, overlapping explosions advance along a committed line; the last stuns.
 //!   S3      Repair Wing: a repair chopper circles him and a repair plane flies to the most hurt ally anywhere; both drop
 //!           kits (heal + capped shield) for 6 s, and the chopper repairs his fighters.
-//!   Ult     Sky Carrier: drops from the sky (no damage; knockback stronger the closer, a small slow), then hovers 8 s
-//!           launching fighters, carpet-bomb passes and repair choppers.
+//!   Ult     Sky Carrier: drops on Wright (no damage; knockback stronger the closer), then follows him for 10 s,
+//!           guarding him, launching fighters/repair choppers and stocking ready bombers.
 //!
 //! Planes are simulated here; fighters and the drone also have a host carrier unit (their position and HP come back in
 //! the frame, and a carrier that dies means the plane was shot down).
@@ -20,6 +20,27 @@ use serde::{Deserialize, Serialize};
 pub const MAP: i64 = 960_000;
 pub const CELL: i64 = 32_000;
 pub const CELLS: i64 = 30;
+
+/// Aim selects the middle strike/direction. Keep the entire centre-line in the
+/// existing range. Near a map edge, shorten its spacing along the same ray.
+/// All three centres are committed once; later movement cannot retarget them.
+pub fn bomber_centres(from: Point, aim: Point) -> Option<[Point; 3]> {
+    let from=from.clamp_map();
+    let direction=if aim==from {Point::new(from.x+1,from.y)}else{aim};
+    let end_distance=((from.dist(direction) as i64)+d::BOMBER_SPACING)
+        .clamp(2*d::BOMBER_SPACING,d::BOMBER_RANGE);
+    let raw=from.toward(direction,end_distance);
+    let mut fraction=1.0_f64;
+    for (base,delta) in [(from.x,raw.x-from.x),(from.y,raw.y-from.y)] {
+        if delta>0 {fraction=fraction.min((MAP-1000-base) as f64/delta as f64);}
+        if delta<0 {fraction=fraction.min((1000-base) as f64/delta as f64);}
+    }
+    let end=Point::new(from.x+((raw.x-from.x) as f64*fraction).trunc() as i64,
+        from.y+((raw.y-from.y) as f64*fraction).trunc() as i64).clamp_map();
+    let first=from.toward(end,((from.dist(end) as i64)-2*d::BOMBER_SPACING).max(0));
+    let middle=first.toward(end,(first.dist(end) as i64)/2);
+    if first==middle||middle==end {None}else{Some([first,middle,end])}
+}
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct Point {
@@ -279,6 +300,8 @@ pub struct Plane {
     pub phase_until: u64,
     /// carpet waves dropped so far (the bomber)
     pub waves: i64,
+    /// Accepted bomber geometry; other aircraft have no strike line.
+    pub strikes: Option<[Point; 3]>,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
@@ -463,6 +486,7 @@ impl Core {
             phase: Phase::Patrol,
             phase_until: f.tick + (key as u64 % 2) * sec(d::FIGHTER_STAGGER_TICKS),
             waves: 0,
+            strikes: None,
         });
         if kind.real() {
             let hp_pct = if kind == Kind::Drone { d::DRONE_HP_PCT } else { d::FIGHTER_HP_PCT };
@@ -725,10 +749,11 @@ impl Core {
     /// The Carpet Bomber: after its ready-up it sweeps across the marked area dropping carpet waves; the first ones slow,
     /// the last stuns. Every enemy in the area (never a tower) is hit once per wave.
     fn bomber(&mut self, f: &Frame, p: &mut Plane, out: &mut Vec<Effect>) -> bool {
-        let Anchor::At(center) = p.anchor else { return false };
+        let Some(strikes)=p.strikes else {return false};
+        let center=strikes[(p.waves as usize).min(strikes.len()-1)];
         if p.waves >= d::BOMBER_WAVES {
             // flying out
-            let out_to = p.pos.toward(center, -60_000);
+            let out_to = strikes[2].toward(strikes[0], -60_000);
             self.fly(f, p, out_to, d::BOMBER_SPEED, out);
             return f.tick < p.until;
         }
@@ -738,14 +763,13 @@ impl Core {
             self.fly(f, p, center, step, out);
             return true;
         }
-        let across = p.pos.toward(center, -d::BOMBER_RADIUS);
-        self.fly(f, p, across, d::BOMBER_SPEED, out);
+        self.fly(f, p, center, d::BOMBER_SPEED, out);
         if f.tick >= p.next_bomb {
             p.next_bomb = f.tick + sec(d::BOMBER_WAVE_EVERY_TICKS);
             p.waves += 1;
             let last = p.waves >= d::BOMBER_WAVES;
-            // One bounded presentation composite covers this exact wave. Its
-            // seven decorative bombs aren't seven separate damage footprints.
+            // Each warned centre gets one large explosion and one packet per
+            // victim. The line is committed; it never follows later target motion.
             out.push(Effect::Fx { name: format!("wrt_bomber_wave{}", p.waves), at: center, ticks: 14, ambient: false });
             let dmg = pct(d::BOMBER_WAVE_BASE, d::BOMBER_WAVE_AP_RATIO, f.ap);
             for u in f.units.iter().filter(|u| f.enemy(u) && !u.tower && u.pos.within(center, d::BOMBER_RADIUS + u.radius)) {
@@ -923,6 +947,7 @@ impl Core {
         if f.stunned {
             return false;
         }
+        let Some(strikes)=bomber_centres(f.pos,aim) else{return false};
         // a ready bomber from the carrier: no airframe, no cooldown, a short mark
         let from_deck = self.ready_bombers(f.tick) > 0;
         if from_deck {
@@ -936,13 +961,16 @@ impl Core {
             self.ready[1] = f.tick + sec(d::BOMBER_COOLDOWN_TICKS);
         }
         let mark = sec(if from_deck { d::BOMBER_READY_MARK_TICKS } else { d::BOMBER_WARN_TICKS });
-        let center = f.pos.reach(aim, d::BOMBER_RANGE).clamp_map();
-        let key = self.launch(f, Kind::Bomber, f.pos, mark + sec(d::BOMBER_WAVES * d::BOMBER_WAVE_EVERY_TICKS) + 90, Anchor::At(center), 0, from_deck, out);
+        let key = self.launch(f, Kind::Bomber, f.pos, mark + sec(d::BOMBER_WAVES * d::BOMBER_WAVE_EVERY_TICKS) + 90, Anchor::At(strikes[0]), 0, from_deck, out);
         if let Some(p) = self.planes.iter_mut().find(|p| p.key == key) {
             p.start = f.tick + mark;
             p.next_bomb = p.start;
+            p.strikes=Some(strikes);
+            p.goal=strikes[2];
         }
-        out.push(Effect::Fx { name: "wrt_warn".into(), at: center, ticks: mark + sec(d::BOMBER_WAVES * d::BOMBER_WAVE_EVERY_TICKS), ambient: false });
+        for (i,center) in strikes.into_iter().enumerate() {
+            out.push(Effect::Fx { name: format!("wrt_warn{}",i+1), at:center, ticks:mark+sec(i as i64*d::BOMBER_WAVE_EVERY_TICKS), ambient:false });
+        }
         out.push(Effect::Pose { name: "skill2", ticks: 18 });
         out.push(Effect::Log(if from_deck { "a ready bomber from the carrier".into() } else { "carpet bomber called".into() }));
         self.last_skill = "bomber";
@@ -1011,7 +1039,8 @@ impl Core {
         let best_bomb = || {
             near.iter()
                 .filter(|u| u.pos.within(f.pos, d::BOMBER_RANGE))
-                .map(|u| (near.iter().filter(|o| o.pos.within(u.pos, d::BOMBER_RADIUS)).count(), *u))
+                .filter_map(|u|bomber_centres(f.pos,u.pos).map(|centres|
+                    (near.iter().filter(|o|centres.iter().any(|c|o.pos.within(*c,d::BOMBER_RADIUS+o.radius))).count(),*u)))
                 .max_by_key(|(n, u)| (*n, std::cmp::Reverse(u.id)))
                 .map(|(_, u)| u.pos)
         };
@@ -1037,7 +1066,8 @@ impl Core {
             // calm: carpet-bomb a camp or a wave (3+ units)
             if f.calm() {
                 let farm: Vec<&Unit> = f.units.iter().filter(|u| f.enemy(u) && u.farmable && u.pos.within(f.pos, d::BOMBER_RANGE)).collect();
-                if let Some(u) = farm.iter().find(|u| farm.iter().filter(|o| o.pos.within(u.pos, d::BOMBER_RADIUS)).count() >= 3) {
+                if let Some(u) = farm.iter().find(|u|bomber_centres(f.pos,u.pos).is_some_and(|centres|
+                    farm.iter().filter(|o|centres.iter().any(|c|o.pos.within(*c,d::BOMBER_RADIUS+o.radius))).count()>=3)) {
                     return Some(Order::Bomber(u.pos));
                 }
             }

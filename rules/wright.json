@@ -10,7 +10,7 @@
     "Dot",
     "Shield"
   ],
-  "revision": "wright-2",
+  "revision": "wright-3",
   "stat": {
     "attack": 28,
     "magic_power": 60,
@@ -95,7 +95,7 @@
     "slowPct": 30,
     "slowTicks": 60,
     "stunTicks": 45,
-    "bombsPerWave": 7,
+    "spacing": 40000,
     "speed": 3000
   },
   "repair": {

@@ -19,7 +19,7 @@ window.WrightPainter=class {
     const f=index===null?this.frame(frames,tick,loop):Math.min(index,frames.length-1);this.blit(ctx,this.bodyImage,frames[f].data,x,y,s);this.lastBody={pose,left,frame:f};return f;
   }
   effect(ctx,tag,tick,x,y,s=1,loop=false){const spec=this.manifest.effects[tag];if(!spec)return false;const i=this.frame(spec.frames,tick,loop);this.blit(ctx,this.fxImage,spec.frames[i].data,x,y,s);return true;}
-  effectTag(name,ticks){let tag=name.replace(/^wrt_/,'');if(tag==='bomb'&&[14,16,18].includes(ticks))tag+='_t'+ticks;if(tag==='warn'&&this.manifest.selection.warning_totals.includes(ticks))tag+='_t'+ticks;return tag;}
+  effectTag(name,ticks){return this.manifest.selection.effect_aliases[name+':'+ticks]||name.replace(/^wrt_/,'');}
   planeTag(p,tick){
     const s=this.manifest.selection,phase=p.phase==='Run'?'run':p.phase==='Break'?'break':null;
     return p.kind==='fighter'&&phase?'fighter_'+phase+(Math.floor(Math.max(0,tick-p.born)/s.fighter_phase_ticks)%s.fighter_variants)+'_p'+p.heading:p.kind+'_p'+p.heading;
