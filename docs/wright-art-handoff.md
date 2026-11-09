@@ -43,7 +43,10 @@ View buffs: `burn` (`wrt_burn`, the kamikaze burn on a target) and `repair_shiel
 2. Mod Manager `the_repos_champions_all_load` passes.
 3. Release: the next unused native / tfm2_custom versions in all four places, the DLL, and a review doc.
 
-## Note for Codex after the `wright-2` Lab review
+## Resolved after the `wright-2` Lab review
 - The rules changed: the bomber's area is now `bomber.radius` 45,000 (replacing `orbitRadius` 40,000 and `bombRadius` 10,000), and the carrier's knockback ring is `carrier.knockRadius` 100,000 (was 70,000). The carrier now hovers over Wright.
-- `tools/build-wright-art.py` still reads `bomber.bombRadius` and `bomber.orbitRadius`. The shipped sheets were built with the old sizes, so `warn`, `bomb` and `knock_ring` are drawn smaller than the new areas. Please update the script to the new keys and rebuild those effects.
+- The `wright-art-2` generator now reads the current keys. Bomber warning variants cover both 60-tick and 18-tick marks and retain the 45,000 footprint through all waves. Each wave uses one centred composite with seven decorative blasts, replacing seven separately positioned effects; damage and control are unchanged. Compact `bomb` aliases remain for single-target rocket hits and shot-down planes.
+- Carrier shadow, drop and knockback ring now use the 100,000 radius. The descent warning follows Wright, matching the authoritative drop centre.
+- Boosted and banking fighter variants reuse approved pixels/palette, select phases from the authoritative plane state and advance from its stable birth tick. They replace the ordinary one-tick aircraft layer; no duplicate aircraft, extra emission or new movement rule is introduced.
+- The body, numerical `wright-2` rules, 15% fighter HP and carrier guard model are unchanged. Callback-stage calibration, turret targeting, DLL packaging and live acceptance remain separate pending gates.
 

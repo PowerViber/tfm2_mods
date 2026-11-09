@@ -1,9 +1,9 @@
 {
-  "checks": 818,
+  "checks": 1024,
   "body_frames": 72,
   "both_facings": true,
-  "fx_tags": 70,
-  "decoded_bytes": 5505024,
+  "fx_tags": 107,
+  "decoded_bytes": 9928704,
   "atlases": [
     [
       512,
@@ -11,19 +11,19 @@
     ],
     [
       1920,
-      448
+      1024
     ]
   ],
-  "combat_baseline": "2635f714c89d761df822e174ffad7c3984799bef",
-  "native_adapter_exception": "Immediate failed-spawn and dead-owner carrier cleanup; successful mechanics unchanged",
+  "combat_baseline": "57a75b8f8bf89d042acee94352cc98fdfb2759d2",
+  "presentation_changes": "Core FX only: one centred composite per bomber wave and stable-clock jet phase tags; adapter attaches the drop warning to its owner. Baseline combat traces checked separately.",
   "hashes": {
     "mods/tfm2_custom/champions/tfm2_custom_wright#sheet.png": "4fab99927bdbf4428b207dea5f44dc14b831182b7284bc7c61542b316276696d",
     "mods/tfm2_custom/champions/tfm2_custom_wright#anim.fanim": "b5ce90b301dd140d4f9391e824eb5a69c7248009d95b2d3087465502c4caf269",
-    "mods/tfm2_custom/vfx/wright#sheet.png": "5132cd1c5a57bcdd78a646a567d26b51feb6af2c7eb07cd782345c33ef1f7239",
-    "mods/tfm2_custom/vfx/wright#anim.fanim": "cfe0b05133c035c4349046da9956514b95a3c4a9a64712e32da01b2ab9591c8c",
-    "docs/wright-art-review/art-manifest.json": "862642d648dfa786ddd2fbb9a9ffe6e42722885a774a949a512630b1259b3971",
-    "editor/wright-art.js": "7d62b8bdebc8fcbb368fd9e2a4332c7712604d772b8cad78e5cb30bc0bb9206c",
-    "native/tfm2_custom_ai/src/wright_art.rs": "ed5c49ea302f941308a8c697f510173a6c9e06cfce1be8d01ff75e446c7817f6"
+    "mods/tfm2_custom/vfx/wright#sheet.png": "691e1351b9c5aab0f081e86db18c0ec11360d40d961ba736a785a6e475b37b46",
+    "mods/tfm2_custom/vfx/wright#anim.fanim": "9d922b82898f6a68e548493759f9c2c20aaed8bbb79a34b1c1e2b2dad04fa9fb",
+    "docs/wright-art-review/art-manifest.json": "2269df93d25c2ed06f6b54f277a4c363e10498ca95843deb7b8f6e6dd1f14b64",
+    "editor/wright-art.js": "fb3cce4d2f4c0d50c0d1f72a237a37359562cb5402d0305a2e948c6078a9b21f",
+    "native/tfm2_custom_ai/src/wright_art.rs": "9088fdc4a5d172d9c22268e7281235fea63e6678b04cfaa98101164316c2860d"
   },
   "live_game_acceptance": "pending"
 }

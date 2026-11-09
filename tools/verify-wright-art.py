@@ -2,7 +2,7 @@
 from pathlib import Path
 from PIL import Image,ImageOps
 import hashlib,json,subprocess,sys
-ROOT=Path(__file__).resolve().parents[1];OUT=ROOT/'docs/wright-art-review';BASE='2635f714c89d761df822e174ffad7c3984799bef'
+ROOT=Path(__file__).resolve().parents[1];OUT=ROOT/'docs/wright-art-review';BASE='57a75b8f8bf89d042acee94352cc98fdfb2759d2'
 sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
 manifest=json.loads((OUT/'art-manifest.json').read_text());approval=json.loads((OUT/'approval.json').read_text());checks=[]
 def check(name,ok):
@@ -37,15 +37,22 @@ for plane in ('fighter','bomber','chopper','repair','drone','rocket'):
     for heading in range(8):
         fs=effects[plane+'_p'+str(heading)]['frames'];check(plane+' heading '+str(heading),len(fs)==1 and fs[0]['duration']==1/60)
 check('carrier single tick renewal',effects['carrier']['frames'][0]['duration']==1/60)
-for tag,ticks in [('warn',36),('carrier_shadow',60),('carrier_land',30),('knock_ring',24),('mg',8),('lock',30),('kamikaze',24),('repair_kit',20),('drone_up',18),('taunt',30),('bomb_t14',14),('bomb_t16',16),('bomb_t18',18)]:
+for tag,ticks in [('warn',114),('warn_t114',114),('warn_t72',72),('carrier_shadow',60),('carrier_land',30),('knock_ring',24),('mg',8),('lock',30),('kamikaze',24),('repair_kit',20),('drone_up',18),('taunt',30),('bomb_t14',14),('bomb_t16',16),('bomb_t18',18),('bomber_wave1',14),('bomber_wave2',14),('bomber_wave3',14)]:
     check(tag+' complete effect lifetime',abs(sum(f['duration'] for f in effects[tag]['frames'])*60-ticks)<1e-6)
+for tag,world_radius in [('warn_t114',45000),('warn_t72',45000),('bomber_wave1',45000),('bomber_wave3',45000),('knock_ring',100000),('carrier_shadow',100000),('carrier_land',100000)]:
+    for f in effects[tag]['frames']:check(tag+' canonical footprint',f['data']['w']==round(world_radius*2/manifest['units_per_pixel'])+2)
+for phase in ('run','break'):
+    for variant in range(2):
+        for heading in range(8):
+            fs=effects[f'fighter_{phase}{variant}_p{heading}']['frames'];check('single-frame '+phase+str(variant)+' '+str(heading),len(fs)==1 and fs[0]['duration']==1/60)
 champ_path='mods/tfm2_custom/champion/tfm2_custom_wright.data_champion';champ=json.loads((ROOT/champ_path).read_text())
 for group in ('view_effects','view_buffs','view_projectiles'):
     for entry in champ[group]:check(entry['name']+' asset binding',entry['tag'] in effects)
 check('lock follows target',next(e for e in champ['view_effects'] if e['name']=='wrt_lock')['is_follow'])
+check('drop warning follows actual carrier centre',next(e for e in champ['view_effects'] if e['name']=='wrt_carrier_shadow')['is_follow'])
 for i in range(4):check('native stock '+str(i),any(b['name']=='wrt_airframes:'+str(i) for b in champ['view_buffs']))
 decoded=(body.width*body.height+fx.width*fx.height)*4;check('decoded artwork budget',decoded==manifest['decoded_bytes'] and decoded<=32*1024*1024)
-for rel in ('rules/wright.json','native/tfm2_custom_ai/src/wright_core.rs','native/tfm2_custom_ai/src/wright_data.rs','native/wright_lab/src/lib.rs','editor/wright-data.js','editor/wright.wasm'):
+for rel in ('rules/wright.json','native/tfm2_custom_ai/src/wright_data.rs','editor/wright-data.js','mods/tfm2_custom/champions/tfm2_custom_wright#sheet.png','mods/tfm2_custom/champions/tfm2_custom_wright#anim.fanim'):
     before=subprocess.check_output(['rtk','proxy','git','show',BASE+':'+rel],cwd=ROOT);after=(ROOT/rel).read_bytes()
     if not rel.endswith('.wasm'):before=before.replace(b'\r\n',b'\n');after=after.replace(b'\r\n',b'\n')
     check(rel+' unchanged combat/transport',before==after)
@@ -55,5 +62,5 @@ files=[Path(str(b)+s) for b in (body_base,fx_base) for s in ('#sheet.png','#anim
 hashes={p:sha(p) for p in files};subprocess.run([sys.executable,str(ROOT/'tools/build-wright-art.py'),'--integrate'],cwd=ROOT,capture_output=True,check=True)
 for p,digest in hashes.items():check(str(p.relative_to(ROOT))+' reproducible',sha(p)==digest)
 report={'checks':len(checks),'body_frames':72,'both_facings':True,'fx_tags':len(effects),'decoded_bytes':decoded,'atlases':[body.size,fx.size],'combat_baseline':BASE,
-        'native_adapter_exception':'Immediate failed-spawn and dead-owner carrier cleanup; successful mechanics unchanged','hashes':{p.relative_to(ROOT).as_posix():sha(p) for p in files},'live_game_acceptance':'pending'}
+        'presentation_changes':'Core FX only: one centred composite per bomber wave and stable-clock jet phase tags; adapter attaches the drop warning to its owner. Baseline combat traces checked separately.','hashes':{p.relative_to(ROOT).as_posix():sha(p) for p in files},'live_game_acceptance':'pending'}
 (OUT/'verification.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report))

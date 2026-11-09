@@ -1,19 +1,22 @@
 {
-  "scope": "Approved Wright body/fleet/FX, native presentation and artwork Lab; release and live acceptance separate",
-  "baseline": "2635f714c89d761df822e174ffad7c3984799bef",
+  "scope": "wright-art-2: current bomber/carrier geometry, dogfight visuals and shared actual-asset Lab; no gameplay rebalance",
+  "baseline": "57a75b8f8bf89d042acee94352cc98fdfb2759d2",
+  "historical_evidence": "validation-summary-wright-art-1.json",
   "native_serial": {
-    "passed": 1095,
+    "passed": 1103,
     "failed": 0,
     "ignored": 13,
     "warnings": "Four pre-existing Windows native-bridge detour-test-helper dead-code warnings"
   },
-  "lab_tests": 18,
-  "original_browser_checks": 8,
-  "art_browser_checks": 52,
+  "wright_native": 30,
+  "lab_tests": 22,
+  "gameplay_browser_checks": 12,
+  "art_browser_checks": 58,
   "actual_editor_routes": 5,
   "complete_native_wasm_frames": 2010,
-  "art_checks": 818,
-  "decoded_bytes": 5505024,
+  "unchanged_baseline_combat_frames": 2010,
+  "art_checks": 1024,
+  "decoded_bytes": 9928704,
   "manager_champion_load": true,
   "manager_comparison": {
     "scope": "Disposable fixture comparison only; no real installation, game or career migration",
@@ -25,20 +28,244 @@
     "release_packaging": "pending; this check does not prove DLL registration or live rendering"
   },
   "magnus_stress": {
-    "five_p95_us": [
-      1400,
-      949,
-      1014,
-      940,
-      847
+    "scope": "Unchanged Magnus release core; excludes native host, rendering and crowded-game FPS",
+    "five_runs": [
+      [
+        {
+          "pieces": 32,
+          "finalArmy": 32,
+          "p95StepUs": 1200,
+          "maxStepUs": 5804,
+          "p95PlanningUs": 1446,
+          "commands": [
+            0,
+            3,
+            0,
+            6,
+            0
+          ]
+        },
+        {
+          "pieces": 64,
+          "finalArmy": 64,
+          "p95StepUs": 637,
+          "maxStepUs": 6835,
+          "p95PlanningUs": 850,
+          "commands": [
+            1,
+            0,
+            0,
+            7,
+            0
+          ]
+        },
+        {
+          "pieces": 128,
+          "finalArmy": 128,
+          "p95StepUs": 983,
+          "maxStepUs": 8381,
+          "p95PlanningUs": 1205,
+          "commands": [
+            0,
+            3,
+            1,
+            4,
+            0
+          ]
+        }
+      ],
+      [
+        {
+          "pieces": 32,
+          "finalArmy": 32,
+          "p95StepUs": 1005,
+          "maxStepUs": 4498,
+          "p95PlanningUs": 1244,
+          "commands": [
+            0,
+            3,
+            0,
+            6,
+            0
+          ]
+        },
+        {
+          "pieces": 64,
+          "finalArmy": 64,
+          "p95StepUs": 470,
+          "maxStepUs": 4278,
+          "p95PlanningUs": 628,
+          "commands": [
+            1,
+            0,
+            0,
+            7,
+            0
+          ]
+        },
+        {
+          "pieces": 128,
+          "finalArmy": 128,
+          "p95StepUs": 842,
+          "maxStepUs": 6461,
+          "p95PlanningUs": 1011,
+          "commands": [
+            0,
+            3,
+            1,
+            4,
+            0
+          ]
+        }
+      ],
+      [
+        {
+          "pieces": 32,
+          "finalArmy": 32,
+          "p95StepUs": 1247,
+          "maxStepUs": 5604,
+          "p95PlanningUs": 1436,
+          "commands": [
+            0,
+            3,
+            0,
+            6,
+            0
+          ]
+        },
+        {
+          "pieces": 64,
+          "finalArmy": 64,
+          "p95StepUs": 555,
+          "maxStepUs": 5229,
+          "p95PlanningUs": 778,
+          "commands": [
+            1,
+            0,
+            0,
+            7,
+            0
+          ]
+        },
+        {
+          "pieces": 128,
+          "finalArmy": 128,
+          "p95StepUs": 937,
+          "maxStepUs": 8176,
+          "p95PlanningUs": 1244,
+          "commands": [
+            0,
+            3,
+            1,
+            4,
+            0
+          ]
+        }
+      ],
+      [
+        {
+          "pieces": 32,
+          "finalArmy": 32,
+          "p95StepUs": 2414,
+          "maxStepUs": 12607,
+          "p95PlanningUs": 2893,
+          "commands": [
+            0,
+            3,
+            0,
+            6,
+            0
+          ]
+        },
+        {
+          "pieces": 64,
+          "finalArmy": 64,
+          "p95StepUs": 1154,
+          "maxStepUs": 12418,
+          "p95PlanningUs": 1495,
+          "commands": [
+            1,
+            0,
+            0,
+            7,
+            0
+          ]
+        },
+        {
+          "pieces": 128,
+          "finalArmy": 128,
+          "p95StepUs": 2204,
+          "maxStepUs": 19474,
+          "p95PlanningUs": 2968,
+          "commands": [
+            0,
+            3,
+            1,
+            4,
+            0
+          ]
+        }
+      ],
+      [
+        {
+          "pieces": 32,
+          "finalArmy": 32,
+          "p95StepUs": 2306,
+          "maxStepUs": 10171,
+          "p95PlanningUs": 3152,
+          "commands": [
+            0,
+            3,
+            0,
+            6,
+            0
+          ]
+        },
+        {
+          "pieces": 64,
+          "finalArmy": 64,
+          "p95StepUs": 1147,
+          "maxStepUs": 15078,
+          "p95PlanningUs": 1386,
+          "commands": [
+            1,
+            0,
+            0,
+            7,
+            0
+          ]
+        },
+        {
+          "pieces": 128,
+          "finalArmy": 128,
+          "p95StepUs": 2568,
+          "maxStepUs": 20293,
+          "p95PlanningUs": 3065,
+          "commands": [
+            0,
+            3,
+            1,
+            4,
+            0
+          ]
+        }
+      ]
     ],
-    "median_p95_us": 949,
+    "median_128_piece_p95_us": 983,
     "target_us": 4000
   },
   "release_packaging": "pending",
   "installation": "not performed",
   "career_migration": "not performed",
   "live_game_acceptance": "pending",
-  "wright_native": 22,
-  "independent_owners_and_replay": "Native Lab integration test passed"
+  "live_gates": [
+    "Post-reduction damage receipt calibration for carrier guard pool",
+    "Actual turret targeting of jets/drone",
+    "Rendering, reticle/shadow tracking, cleanup and host performance"
+  ],
+  "file_hashes": {
+    "editor/wright.wasm": "f2343f8825f4e9fd0c68964e2f0e7935c5c301dec6bd662b89474c2cbe78e9fc",
+    "mods/tfm2_custom/vfx/wright#sheet.png": "691e1351b9c5aab0f081e86db18c0ec11360d40d961ba736a785a6e475b37b46",
+    "mods/tfm2_custom/vfx/wright#anim.fanim": "9d922b82898f6a68e548493759f9c2c20aaed8bbb79a34b1c1e2b2dad04fa9fb"
+  }
 }

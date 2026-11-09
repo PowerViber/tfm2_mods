@@ -1,5 +1,5 @@
 {
-  "checks": 52,
+  "checks": 58,
   "passed": [
     "review images decode",
     "idle eight-frame inspection",
@@ -29,8 +29,12 @@
     "dead eight-frame inspection",
     "dead left binding",
     "dead right binding",
+    "review exposes dogfight phase inspection",
     "actual packaged atlases load",
     "thirteen athlete controls retained",
+    "canonical 45k and 100k areas loaded",
+    "normal and carrier-ready warnings select complete lifetimes",
+    "jet phase selection retains stable birth clock",
     "30 Hz gives 60 ticks/sec",
     "60 Hz gives 60 ticks/sec",
     "120 Hz gives 60 ticks/sec",
@@ -39,6 +43,8 @@
     "pause resets accumulator and stalls have bounded catch-up",
     "complete combat/host trace identical with art on/off",
     "complete native/WASM states and command arrays",
+    "updated-main baseline complete combat states and nonvisual commands unchanged",
+    "native/WASM jet phase names agree with Lab renderer",
     "manual mechanics independent of thirteen-stat profile",
     "WASD moves actor",
     "arena focus loss clears held movement",
@@ -56,7 +62,9 @@
   ],
   "complete_trace_frames": 2010,
   "native_wasm_parity_frames": 2010,
-  "trace_sha256": "1ac9eb02d4e8146e85271fea6f7eb44a13ed3c1a281c86c1b495161c9e59bdc7",
+  "combat_baseline": "57a75b8f8bf89d042acee94352cc98fdfb2759d2",
+  "baseline_combat_frames": 2010,
+  "trace_sha256": "be203cdb5ce27900e63b0d0ea7786de4670b1d2c362a2841905293a6c64d8b7b",
   "display_rates": [
     {
       "rate": 30,
@@ -80,18 +88,18 @@
     }
   ],
   "cold_browser_load_ms": [
-    153.04209990426898,
-    118.21339977905154,
-    121.38919997960329,
-    132.09250010550022,
-    126.20049994438887
+    88.55780004523695,
+    65.06650010123849,
+    82.25149987265468,
+    86.61610004492104,
+    67.72370007820427
   ],
   "sustained_draw_ms_per_16_plane_scene": [
-    0.22470000004768373,
-    0.21470000004768372,
-    0.22609999990463256,
-    0.21,
-    0.2002000000476837
+    0.394,
+    0.4022000000476837,
+    0.3974000000953674,
+    0.44770000004768373,
+    0.4025
   ],
   "performance_scope": "Five cold browser contexts and five sustained canvas scenes; not native-host FPS",
   "live_game_acceptance": "pending",

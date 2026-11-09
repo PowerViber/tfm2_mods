@@ -1,7 +1,7 @@
 """Browser art/control checks, complete native/WASM traces and five rendering samples."""
 from pathlib import Path
 from playwright.sync_api import sync_playwright
-import hashlib,json,subprocess,time
+import hashlib,json,subprocess,time,tempfile
 ROOT=Path(__file__).resolve().parents[1];OUT=ROOT/'docs/wright-art-review';URL='http://127.0.0.1:7300/editor/'
 checks=[]
 def check(name,ok):
@@ -18,9 +18,14 @@ with sync_playwright() as p:
             page.select_option('#facing',facing);page.wait_for_timeout(20)
             check(pose+' '+facing+' binding',page.evaluate('wrightArtReview.painter.lastBody.pose')==pose)
     page.screenshot(path=str(OUT/'complete-animation-review.png'),full_page=True)
+    page.select_option('#plane','fighter');page.select_option('#flightPhase','Run');page.locator('#heading').fill('3')
+    check('review exposes dogfight phase inspection',page.locator('#flightPhase').input_value()=='Run')
     page.goto(URL+'wright.html');page.wait_for_function('window.wrightLab?.painter.loaded')
     check('actual packaged atlases load',page.evaluate('wrightLab.painter.bodyImage.width===512&&wrightLab.painter.fxImage.width===1920&&!wrightLab.painter.manifest.review_only'))
     check('thirteen athlete controls retained',page.locator('#stats input').count()==13)
+    check('canonical 45k and 100k areas loaded',page.evaluate('WRIGHT_ART.geometry.bomber_radius===WRIGHT_RULES.bomber.radius&&WRIGHT_ART.geometry.carrier_knock_radius===WRIGHT_RULES.carrier.knockRadius'))
+    check('normal and carrier-ready warnings select complete lifetimes',page.evaluate("wrightLab.painter.effectTag('wrt_warn',114)==='warn_t114'&&wrightLab.painter.effectTag('wrt_warn',72)==='warn_t72'"))
+    check('jet phase selection retains stable birth clock',page.evaluate("wrightLab.painter.planeTag({kind:'fighter',phase:'Run',born:100,heading:3},103)==='fighter_run0_p3'&&wrightLab.painter.planeTag({kind:'fighter',phase:'Run',born:100,heading:3},104)==='fighter_run1_p3'&&wrightLab.painter.planeTag({kind:'fighter',phase:'Break',born:100,heading:3},108)==='fighter_break0_p3'"))
     rates=page.evaluate('''()=>[30,60,120,144,240].map(rate=>{const c=new WrightClock();let ticks=0;for(let i=0;i<=rate*2;i++)c.advance(i*1000/rate,true,()=>ticks++);return {rate,ticks};})''')
     for row in rates:check(str(row['rate'])+' Hz gives 60 ticks/sec',row['ticks']==120)
     check('pause resets accumulator and stalls have bounded catch-up',page.evaluate('''()=>{let ticks=0;const c=new WrightClock();c.advance(0,true,()=>ticks++);c.advance(60000,true,()=>ticks++);if(ticks!==15)return false;c.advance(61000,false,()=>ticks++);c.advance(61016.666667,true,()=>ticks++);return ticks===16;}'''))
@@ -37,6 +42,19 @@ with sync_playwright() as p:
     native=subprocess.run([str(ROOT/'native/wright_lab/target/release/parity.exe')],input='\n'.join(r[0] for r in records)+'\n',capture_output=True,text=True,encoding='utf8',check=True)
     native_rows=[json.loads(s) for s in native.stdout.splitlines() if s.strip()];wasm_rows=[json.loads(r[1]) for r in records]
     check('complete native/WASM states and command arrays',native_rows==wasm_rows)
+    # Replay these exact host snapshots through the PR's pre-art wright-2 WASM.
+    # Only FX names/geometry/emission count may differ, not state or other commands.
+    baseline='57a75b8f8bf89d042acee94352cc98fdfb2759d2'
+    baseline_bytes=subprocess.check_output(['rtk','proxy','git','show',baseline+':editor/wright.wasm'],cwd=ROOT)
+    cache=ROOT/'backups';cache.mkdir(exist_ok=True)
+    with tempfile.NamedTemporaryFile(dir=cache,suffix='.wasm',delete=False) as temp:
+        temp.write(baseline_bytes);baseline_file=Path(temp.name)
+    try:
+        baseline_rows=page.evaluate('''async({url,records})=>{const w=(await WebAssembly.instantiate(await(await fetch(url)).arrayBuffer(),{})).instance.exports;w.wright_reset();return records.map(([input])=>{const b=new TextEncoder().encode(input),p=w.wright_input(b.length);new Uint8Array(w.memory.buffer,p,b.length).set(b);const o=w.wright_step(b.length);return JSON.parse(new TextDecoder().decode(new Uint8Array(w.memory.buffer,o,w.wright_output_len())));});}''',{'url':'../backups/'+baseline_file.name,'records':records})
+    finally:baseline_file.unlink()
+    combat=lambda row:{**row,'effects':[e for e in row.get('effects',[]) if e['kind']!='fx']}
+    check('updated-main baseline complete combat states and nonvisual commands unchanged',[combat(r) for r in baseline_rows]==[combat(r) for r in wasm_rows])
+    check('native/WASM jet phase names agree with Lab renderer',page.evaluate('''records=>records.every(([input,output])=>{const row=JSON.parse(output),tick=JSON.parse(input).frame.tick;return(row.state.planes||[]).filter(p=>p.kind==='fighter'&&p.born<tick&&p.start<=tick).every(p=>row.effects.some(e=>e.kind==='fx'&&e.data.name==='wrt_'+wrightLab.painter.planeTag(p,tick)&&e.data.at.x===p.pos.x&&e.data.at.y===p.pos.y));})''',records))
     low=page.evaluate(scenario,{'art':True,'rating':20});high=page.evaluate(scenario,{'art':True,'rating':80})
     check('manual mechanics independent of thirteen-stat profile',low==high)
     # Real keyboard movement, focus loss and pause/step on the actual arena.
@@ -58,7 +76,7 @@ with sync_playwright() as p:
     cold=[]
     for _ in range(5):
         context=browser.new_context();tab=context.new_page();start=time.perf_counter();tab.goto(URL+'wright.html');tab.wait_for_function('window.wrightLab?.painter.loaded');cold.append((time.perf_counter()-start)*1000);context.close()
-    warm=page.evaluate('''()=>{const c=document.createElement('canvas');c.width=c.height=900;const x=c.getContext('2d'),p=wrightLab.painter,out=[];for(let run=0;run<5;run++){const t=performance.now();for(let i=0;i<1000;i++){p.body(x,'run',i,450,450,2);for(let plane=0;plane<16;plane++)p.effect(x,['fighter','bomber','chopper','repair','drone','rocket'][plane%6]+'_p'+(i%8),0,plane*45,300,2);p.effect(x,'carrier',0,450,600,2);}out.push((performance.now()-t)/1000);}return out;}''')
+    warm=page.evaluate('''()=>{const c=document.createElement('canvas');c.width=c.height=900;const x=c.getContext('2d'),p=wrightLab.painter,out=[];for(let run=0;run<5;run++){const t=performance.now();for(let i=0;i<1000;i++){p.body(x,'run',i,450,450,2);for(let plane=0;plane<16;plane++){const kind=['fighter','bomber','chopper','repair','drone','rocket'][plane%6];p.effect(x,p.planeTag({kind,heading:i%8,phase:plane%2?'Break':'Run',born:0},i),0,plane*45,300,2);}p.effect(x,'carrier',0,450,600,2);p.effect(x,'warn_t114',i%114,500,300,2);p.effect(x,'bomber_wave3',i%14,500,300,2);p.effect(x,'knock_ring',i%24,450,600,2);}out.push((performance.now()-t)/1000);}return out;}''')
     check('no browser errors',not errors);browser.close()
-report={'checks':len(checks),'passed':checks,'complete_trace_frames':len(on),'native_wasm_parity_frames':len(native_rows),'trace_sha256':hashlib.sha256('\n'.join(on).encode()).hexdigest(),'display_rates':rates,'cold_browser_load_ms':cold,'sustained_draw_ms_per_16_plane_scene':warm,'performance_scope':'Five cold browser contexts and five sustained canvas scenes; not native-host FPS','live_game_acceptance':'pending','errors':errors}
+report={'checks':len(checks),'passed':checks,'complete_trace_frames':len(on),'native_wasm_parity_frames':len(native_rows),'combat_baseline':baseline,'baseline_combat_frames':len(baseline_rows),'trace_sha256':hashlib.sha256('\n'.join(on).encode()).hexdigest(),'display_rates':rates,'cold_browser_load_ms':cold,'sustained_draw_ms_per_16_plane_scene':warm,'performance_scope':'Five cold browser contexts and five sustained canvas scenes; not native-host FPS','live_game_acceptance':'pending','errors':errors}
 (OUT/'browser-verification.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report))
