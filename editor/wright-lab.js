@@ -8,11 +8,11 @@
   $('stats').innerHTML = names.map(n => `<span>${n}</span><input type="number" min="0" max="100" value="50">`).join('');
   const rp = p => ({x: Math.round(p.x), y: Math.round(p.y)});
   const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
-  let tick, me, units, carriers, glides, state, queue, fx, logLines, attackTarget, running = true, aim = {x: 480000, y: 480000}, held = new Set();
-  const unit = (id, team, x, y, champion = true, farmable = false) => ({id, team, pos: {x, y}, hp: 1000, max_hp: 1000, radius: 8000, champion, tower: false, visible: true, targetable: true, farmable, slowUntil: 0});
+  let tick, me, units, carriers, glides, state, queue, fx, logLines, attackTarget, hits, guard, taken, running = true, aim = {x: 480000, y: 480000}, held = new Set();
+  const unit = (id, team, x, y, champion = true, farmable = false) => ({id, team, pos: {x, y}, hp: 1000, max_hp: 1000, radius: 8000, champion, tower: false, visible: true, targetable: true, farmable, slowUntil: 0, stunUntil: 0});
   function reset() {
     wasm.wright_reset();
-    tick = 0; state = {}; queue = []; glides = []; fx = []; logLines = []; carriers = new Map(); attackTarget = null;
+    tick = 0; state = {}; queue = []; glides = []; fx = []; logLines = []; carriers = new Map(); attackTarget = null; hits = []; guard = 0; taken = 0;
     me = {pos: {x: 300000, y: 480000}, hp: 1000, max_hp: 1000};
     units = [unit(2, 1, 400000, 470000), unit(3, 1, 410000, 500000), unit(4, 0, 700000, 760000), unit(20, 9, 330000, 400000, false, true)];
     log('Reset: two enemies east, a far ally to the south-east, a camp to the north');
@@ -34,14 +34,16 @@
         champion: u.champion, tower: false, visible: true, targetable: true, farmable: u.farmable && calm()})),
       terrain: terrain(), profile,
       planes: [...carriers.values()].filter(c => c.hp > 0 && tick < c.until).map(c => ({key: c.key, pos: rp(c.pos), hp: Math.round(c.hp), max_hp: c.max_hp})),
-      attack_target: attackTarget, manual: !$('auto').checked, order: queue.shift() || null}};
+      attack_target: attackTarget, damage_taken: (() => { const t = taken; taken = 0; return t; })(), manual: !$('auto').checked, order: queue.shift() || null}};
   }
   const calm = () => !units.some(u => u.team === 1 && u.champion && u.hp > 0 && dist(u.pos, me.pos) < 90000);
   function apply(out) {
     for (const e of out.effects || []) {
       const d = e.data;
       switch (e.kind) {
-        case 'damage': { const u = find(d.target); if (u) u.hp = Math.max(0, u.hp - d.amount); break; }
+        case 'damage': { const u = find(d.target); if (u) { u.hp = Math.max(0, u.hp - d.amount); hits.push({id: u.id, amount: d.amount, ally: u.team === 0, until: tick + 30}); if (u.team === 0) log(`!! ally #${u.id} hit by Wright (should never happen)`); } break; }
+        case 'stun': { const u = find(d.target); if (u) u.stunUntil = tick + d.ticks; log(`#${d.target} stunned`); break; }
+        case 'guard': guard = d.on ? d.pct : 0; log(d.on ? `Carrier guard on: it takes ${d.pct}% of his damage` : 'Carrier guard off'); break;
         case 'slow': { const u = find(d.target); if (u) u.slowUntil = tick + d.ticks; break; }
         case 'knock': { const u = find(d.target); if (u) glide(u, d.to, d.ticks); log(`#${d.target} knocked back`); break; }
         case 'heal': { const u = d.target === 1 ? me : find(d.target); if (u) u.hp = Math.min(u.max_hp, u.hp + d.amount); break; }
@@ -76,17 +78,21 @@
     if ($('moving').checked) {
       for (const u of units.filter(u => u.team === 1 && u.hp > 0)) {
         const speed = tick < u.slowUntil ? 500 : 650;
+        if (tick < u.stunUntil) continue;
         if (!glides.some(g => g.who === u) && dist(u.pos, me.pos) > 45000) { const k = speed / dist(u.pos, me.pos); u.pos = {x: u.pos.x + (me.pos.x - u.pos.x) * k, y: u.pos.y + (me.pos.y - u.pos.y) * k}; }
         if (tick % 50 === 0) {
           const c = [...carriers.values()].filter(c => c.hp > 0 && dist(c.pos, u.pos) < 45000).sort((a, b) => dist(a.pos, u.pos) - dist(b.pos, u.pos))[0];
-          if (c) c.hp -= 30; else if (dist(me.pos, u.pos) < 45000) me.hp = Math.max(1, me.hp - 20);
+          if (c) c.hp -= 30; else if (dist(me.pos, u.pos) < 45000) hitMe(40);
         }
       }
     }
     for (const [k, c] of carriers) if (c.hp <= 0 || tick >= c.until) carriers.delete(k);
     for (const u of units) if (u.hp <= 0 && u.team === 9) { u.hp = u.max_hp; }
     fx = fx.filter(f => tick <= f.until);
+    hits = hits.filter(h => tick < h.until);
   }
+  // a hit on Wright: the carrier's guard takes its share, the rest is reported to the core
+  function hitMe(raw) { const dmg = Math.round(raw * (100 - guard) / 100); me.hp = Math.max(1, me.hp - dmg); taken += dmg; return dmg; }
   function order(kind) { queue.push({kind, aim: rp(aim)}); }
   // ---------------------------------------------------------------- drawing
   let cam = {x: 480000, y: 480000, s: 900 / 960000};
@@ -119,13 +125,18 @@
       const q = P(u.pos); ctx.fillStyle = '#fff'; ctx.fillText(`#${u.id} ${Math.round(u.hp)}`, q.x - 18, q.y - W(u.radius) - 4);
     }
     circle(me.pos, 8000, '#f59e0b', '#fff');
+    if (state.carrier && state.carrier.guarding) { const q = P(me.pos); ctx.fillStyle = '#111827'; ctx.fillRect(q.x - 30, q.y - W(14000) - 10, 60, 5); ctx.fillStyle = '#38bdf8'; ctx.fillRect(q.x - 30, q.y - W(14000) - 10, 60 * Math.max(0, state.carrier.pool / state.carrier.max_pool), 5); }
+    for (const h of hits) { const u = find(h.id); if (!u) continue; const q = P(u.pos), k = (h.until - tick) / 30;
+      ctx.strokeStyle = h.ally ? `rgba(255,0,255,${k})` : `rgba(239,68,68,${k})`; ctx.beginPath(); ctx.arc(q.x, q.y, W(u.radius) + 4, 0, 7); ctx.stroke();
+      ctx.fillStyle = `rgba(254,202,202,${k})`; ctx.fillText('-' + h.amount, q.x + 10, q.y - 12 - (1 - k) * 18); }
     for (const p of state.planes || []) {
       const host = carriers.get(p.key), at = host ? host.pos : p.pos;
+      if (p.kind === 'fighter' && p.phase === 'Run') { const q = P(at), a = p.heading * Math.PI / 4; ctx.strokeStyle = 'rgba(253,186,116,.8)'; ctx.beginPath(); ctx.moveTo(q.x, q.y); ctx.lineTo(q.x - Math.cos(a) * 22, q.y - Math.sin(a) * 22); ctx.stroke(); }
       plane(at, p.kind, p.heading, p.kind === 'bomber' ? 9000 : p.kind === 'rocket' ? 2500 : 5000);
       if (host) { const q = P(at); ctx.fillStyle = '#22c55e'; ctx.fillRect(q.x - 8, q.y + 8, 16 * Math.max(0, host.hp / host.max_hp), 2); }
     }
     $('hud').innerHTML = [`Tick ${tick}`, `Airframes ${state.stock ?? '-'}`, `Fighters ${(state.planes || []).filter(p => p.kind === 'fighter' && !p.from_carrier && !p.kamikaze).length}`,
-      `Carrier ${state.carrier ? 'up' : '-'}`, ...['S1', 'S2', 'S3', 'U'].map((n, i) => `${n} ${state.ready ? Math.max(0, ((state.ready[i] - tick) / 60)).toFixed(1) + ' s' : '-'}`), `Wright HP ${Math.round(me.hp)}`].map(s => `<span>${s}</span>`).join('');
+      `Carrier ${state.carrier ? 'up, ' + state.carrier.ready_bombers + ' bombers ready' : '-'}`, ...['S1', 'S2', 'S3', 'U'].map((n, i) => `${n} ${state.ready ? Math.max(0, ((state.ready[i] - tick) / 60)).toFixed(1) + ' s' : '-'}`), `Wright HP ${Math.round(me.hp)}`].map(s => `<span>${s}</span>`).join('');
     $('status').textContent = state.rejection ? 'Last rejected: ' + state.rejection : 'Running';
   }
   function loop() { if (running) step(); draw(); requestAnimationFrame(loop); }
@@ -142,7 +153,7 @@
   $('hurtAlly').onclick = () => { const a = find(4); a.hp = 250; log('The far ally drops to 25%'); };
   $('hurtMe').onclick = () => { me.hp = 450; log('Wright drops to 45%'); };
   $('group').onclick = () => { units.filter(u => u.team === 1).forEach((u, i) => u.pos = {x: me.pos.x + 90000 + i * 6000, y: me.pos.y + i * 5000}); log('Enemies grouped'); };
-  window.wrightLab = {get state() { return state; }, get tick() { return tick; }, get me() { return me; }, get units() { return units; }, get carriers() { return carriers; },
+  window.wrightLab = {get state() { return state; }, get tick() { return tick; }, get me() { return me; }, get units() { return units; }, get carriers() { return carriers; }, get hits() { return hits; }, hitMe,
     step, reset, order, setAim: p => { aim = {...p}; }, pause: () => { running = false; $('play').textContent = 'Play'; }};
   reset(); canvas.focus(); requestAnimationFrame(loop);
 })();

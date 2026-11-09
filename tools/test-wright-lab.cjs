@@ -17,32 +17,44 @@ const root = path.resolve(__dirname, '..'), port = 7321;
       const L = wrightLab, out = {}, run = n => { for (let i = 0; i < n; i++) L.step(); };
       L.pause(); L.reset(); document.querySelector('#moving').checked = false;
       run(500); out.stock = L.state.stock;
-      // fighters: real carriers that fight on their own
-      L.units[0].pos = {x: L.me.pos.x + 35000, y: L.me.pos.y}; const hp = L.units[0].hp;
+      // jets: patrol, then boost in and strafe a target on their own
+      L.units[0].pos = {x: L.me.pos.x + 50000, y: L.me.pos.y}; const hp = L.units[0].hp;
       L.order('fighters'); run(2); out.carriers = L.carriers.size;
-      run(240); out.fighterDamage = L.units[0].hp < hp;
-      // the carpet bomber over the pair
+      const phases = new Set(); for (let i = 0; i < 300; i++) { L.step(); (L.state.planes || []).filter(p => p.kind === 'fighter').forEach(p => phases.add(p.phase)); }
+      out.phases = [...phases]; out.fighterDamage = L.units[0].hp < hp;
+      // S2: a ready-up, then 3 waves; the last stuns
+      L.units[0].hp = 1000; L.units[1].hp = 1000;
       L.units[1].pos = {x: L.me.pos.x + 80000, y: L.me.pos.y}; L.units[0].pos = {x: L.me.pos.x + 82000, y: L.me.pos.y + 6000};
-      const hp1 = L.units[1].hp; L.setAim(L.units[1].pos); L.order('bomber'); run(420); out.bombed = L.units[1].hp < hp1;
+      // (his jets are still fighting, so watch the stun: none during the ready-up, then the last wave's)
+      const hp1 = L.units[1].hp; L.units[1].stunUntil = 0; L.setAim(L.units[1].pos); L.order('bomber'); run(40); out.readyUp = L.units[1].stunUntil === 0;
+      run(80); out.waves = hp1 - L.units[1].hp; out.stunned = L.units[1].stunUntil > 0;
       // repair: the far ally gets the global repair plane
       const ally = L.units[2]; ally.hp = 250; run(300); L.order('repair'); run(400); out.allyRepaired = ally.hp > 250;
-      // the carrier drop: no damage, a knockback
-      // (let his fighters and burns run out first, so only the drop acts on the target)
+      // the carrier drops on Wright (knockback, no damage), follows him and takes 80% of his damage
       run(1300);
-      const e = L.units[1]; e.hp = e.max_hp; e.pos = {x: L.me.pos.x + 100000, y: L.me.pos.y}; const before = {...e.pos}, hpBefore = e.hp;
-      L.setAim({x: e.pos.x - 5000, y: e.pos.y}); L.order('carrier'); run(62 + 22);
-      out.dropMoved = Math.round(Math.hypot(e.pos.x - before.x, e.pos.y - before.y)); out.dropHp = [hpBefore, e.hp];
-      out.knocked = out.dropMoved > 20000; out.noDropDamage = e.hp === hpBefore;
-      run(120); out.carrierUp = !!L.state.carrier;
+      const e = L.units[1]; e.hp = e.max_hp; e.stunUntil = 0; e.pos = {x: L.me.pos.x + 10000, y: L.me.pos.y}; const before = {...e.pos};
+      L.setAim({x: 900000, y: 900000}); L.order('carrier'); run(62 + 22);
+      out.knocked = Math.hypot(e.pos.x - before.x, e.pos.y - before.y) > 40000; out.noDropDamage = e.hp === e.max_hp;
+      out.guard = !!(L.state.carrier && L.state.carrier.guarding);
+      L.me.pos = {x: L.me.pos.x - 20000, y: L.me.pos.y}; run(3);
+      out.follows = L.state.carrier && Math.abs(L.state.carrier.center.x - Math.round(L.me.pos.x)) < 2;
+      const meHp = L.me.hp, pool = L.state.carrier.pool;
+      for (let i = 0; i < 5; i++) { L.hitMe(100); run(10); }
+      out.meLost = meHp - L.me.hp; out.poolLost = pool - (L.state.carrier ? L.state.carrier.pool : 0);
+      out.allyHits = L.hits.filter(h => h.ally).length;
       return out;
     });
     check('The workshop stocks airframes up to 3', r.stock === 3);
     check('Fighter Wing spawns two real, targetable carriers', r.carriers >= 2);
-    check('Fighters attack on their own', r.fighterDamage);
-    check('The carpet bomber hits the target area', r.bombed);
+    check(`Jets patrol, boost in and break away (${r.phases})`, r.phases.includes('Run') && r.phases.includes('Break'));
+    check('Jets attack on their own', r.fighterDamage);
+    check('S2 readies up before the waves', r.readyUp);
+    check(`S2 drops its waves and the last one stuns (${r.waves} damage)`, r.waves > 0 && r.stunned);
     check('Repair Wing reaches the far ally', r.allyRepaired);
-    check(`The Sky Carrier drop knocks back without damage (moved ${r.dropMoved}, hp ${r.dropHp})`, r.knocked && r.noDropDamage);
-    check('The carrier hovers after the drop', r.carrierUp);
+    check('The Sky Carrier drops on Wright: knockback, no damage, guard on', r.knocked && r.noDropDamage && r.guard);
+    check('The carrier follows him', r.follows);
+    check(`It takes 80% of his damage (500 raw: he lost ${r.meLost} after its chopper heals, its pool ${r.poolLost})`, r.meLost > 0 && r.meLost <= 100 && r.poolLost === 400);
+    check('Nothing of his ever hits an ally', r.allyHits === 0);
     check('No page errors: ' + errors.join(' / '), errors.length === 0);
     console.log(`${checks} checks passed`);
   } finally { await browser.close(); server.kill(); }

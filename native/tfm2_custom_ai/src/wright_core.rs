@@ -138,6 +138,9 @@ pub struct Frame {
     /// the unit his last accepted basic attack hit (his fighters join it)
     #[serde(default)]
     pub attack_target: Option<usize>,
+    /// damage he actually took since the last frame (after the carrier's guard)
+    #[serde(default)]
+    pub damage_taken: i64,
     pub manual: bool,
     pub order: Option<Order>,
 }
@@ -206,6 +209,9 @@ pub enum Effect {
     /// `direct`: a single strike on one target (a V1 parry may cancel it)
     Damage { target: usize, amount: i64, direct: bool },
     Slow { target: usize, percent: i64, ticks: u64 },
+    Stun { target: usize, ticks: u64 },
+    /// the Sky Carrier's guard on him: it takes `pct`% of the damage he takes (on) or stops (off)
+    Guard { on: bool, pct: i64 },
     /// pushed to `to` over `ticks` (an engine glide)
     Knock { target: usize, to: Point, ticks: u64 },
     Heal { target: usize, amount: i64 },
@@ -268,16 +274,35 @@ pub struct Plane {
     pub taunted: bool,
     pub hover_until: u64,
     pub goal: Point,
+    /// a jet's dogfight phase: patrol, run (boosting in), break (banking away), until `phase_until`
+    pub phase: Phase,
+    pub phase_until: u64,
+    /// carpet waves dropped so far (the bomber)
+    pub waves: i64,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub enum Phase {
+    Patrol,
+    Run,
+    Break,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 pub struct Carrier {
+    /// over Wright (it follows him)
     pub center: Point,
     pub land_at: u64,
     pub until: u64,
     pub next_fighter: u64,
     pub next_bomber: u64,
     pub next_chopper: u64,
+    /// what it can still absorb for him, and its full size
+    pub pool: i64,
+    pub max_pool: i64,
+    /// bombers readied on deck for his Carpet Bomber
+    pub ready_bombers: i64,
+    pub guarding: bool,
 }
 
 #[derive(Clone, Debug, Serialize)]
@@ -292,8 +317,6 @@ pub struct Core {
     pub carrier: Option<Carrier>,
     /// burns: (target, until, damage per half second)
     pub burns: Vec<(usize, u64, i64)>,
-    /// carpet-bomb hits per enemy in the last second: (enemy, tick)
-    pub bomb_hits: Vec<(usize, u64)>,
     /// repair shields given per ally: (ally, amount, until)
     pub repair_shields: Vec<(usize, i64, u64)>,
     pub last_seen: Vec<(usize, Point)>,
@@ -312,7 +335,6 @@ impl Default for Core {
             next_key: 1,
             carrier: None,
             burns: vec![],
-            bomb_hits: vec![],
             repair_shields: vec![],
             last_seen: vec![],
             rejection: String::new(),
@@ -438,6 +460,9 @@ impl Core {
             taunted: false,
             hover_until: 0,
             goal: at,
+            phase: Phase::Patrol,
+            phase_until: f.tick + (key as u64 % 2) * sec(d::FIGHTER_STAGGER_TICKS),
+            waves: 0,
         });
         if kind.real() {
             let hp_pct = if kind == Kind::Drone { d::DRONE_HP_PCT } else { d::FIGHTER_HP_PCT };
@@ -493,7 +518,6 @@ impl Core {
                 }
             }
         }
-        self.bomb_hits.retain(|h| f.tick < h.1 + 60);
         self.repair_shields.retain(|s| f.tick < s.2);
     }
 
@@ -518,20 +542,20 @@ impl Core {
         }
     }
 
+    /// His target first, then the nearest enemy champion in reach, then minions and camps (they clear like normal).
+    /// Never a tower.
     fn fighter_target<'a>(&self, f: &'a Frame, p: &Plane) -> Option<&'a Unit> {
-        let (home, reach) = match p.anchor {
-            Anchor::At(c) => (c, d::CARRIER_RADIUS + d::FIGHTER_AGGRO_RANGE / 2),
-            _ => (f.pos, d::FIGHTER_AGGRO_RANGE),
-        };
-        let ok = |u: &&Unit| f.enemy(u) && !u.tower && u.pos.within(home, reach);
-        // his own target first, then the nearest champion, then (calm) the nearest farmable unit
+        let reach = d::FIGHTER_AGGRO_RANGE;
+        let ok = |u: &&Unit| f.enemy(u) && !u.tower && u.pos.within(f.pos, reach);
         f.attack_target
             .and_then(|t| f.units.iter().find(|u| u.id == t))
-            .filter(|u| ok(u) && (u.champion || f.calm()))
+            .filter(|u| ok(u) && (u.champion || !f.enemy_champions().any(|c| c.pos.within(f.pos, reach))))
             .or_else(|| f.units.iter().filter(|u| u.champion).filter(ok).min_by_key(|u| (u.pos.d2(p.pos), u.id)))
-            .or_else(|| f.calm().then(|| f.units.iter().filter(|u| !u.champion && u.farmable).filter(ok).min_by_key(|u| (u.pos.d2(p.pos), u.id))).flatten())
+            .or_else(|| f.units.iter().filter(|u| !u.champion).filter(ok).min_by_key(|u| (u.pos.d2(p.pos), u.id)))
     }
 
+    /// A jet: patrols around him, boosts in on attack runs (guns while pointed at the target), breaks away and comes
+    /// around again. Always moving, always targetable.
     fn fighter(&mut self, f: &Frame, p: &mut Plane, out: &mut Vec<Effect>) -> bool {
         let speed = d::FIGHTER_SPEED;
         if p.kamikaze {
@@ -561,64 +585,73 @@ impl Core {
                 _ => false,
             };
         }
-        match &target {
-            Some(u) => {
-                // circle the target at gun range
-                p.angle_mdeg = (p.angle_mdeg + 4_000).rem_euclid(360_000);
-                let goal = u.pos.around(d::FIGHTER_GUN_RANGE * 7 / 10, p.angle_mdeg);
-                self.fly(f, p, goal, speed, out);
-                if f.tick >= p.next_gun && p.pos.within(u.pos, d::FIGHTER_GUN_RANGE + u.radius) {
+        let boost = speed * d::FIGHTER_BOOST_PCT / 100;
+        match (&target, p.phase) {
+            (Some(u), Phase::Patrol) if f.tick >= p.phase_until => {
+                // start a run: boost in from where it is, aiming past the target
+                p.phase = Phase::Run;
+                p.phase_until = f.tick + sec(d::FIGHTER_RUN_TICKS);
+                p.goal = u.pos.toward(p.pos, -d::FIGHTER_OVERSHOOT);
+                if p.lock.is_none() && f.tick >= p.next_rocket {
+                    p.lock = Some((u.id, f.tick + sec(d::FIGHTER_LOCK_TICKS)));
+                    out.push(Effect::Fx { name: "wrt_lock".into(), at: u.pos, ticks: sec(d::FIGHTER_LOCK_TICKS), ambient: false });
+                }
+                self.fly(f, p, p.goal, boost, out);
+            }
+            (Some(u), Phase::Run) => {
+                // keep the line through the target (it's moving), guns while it's ahead and in range
+                let ahead = p.goal.d2(u.pos) < p.goal.d2(p.pos);
+                if ahead {
+                    p.goal = u.pos.toward(p.pos, -d::FIGHTER_OVERSHOOT);
+                }
+                if ahead && f.tick >= p.next_gun && p.pos.within(u.pos, d::FIGHTER_GUN_RANGE + u.radius) {
                     p.next_gun = f.tick + sec(d::FIGHTER_GUN_EVERY_TICKS);
                     out.push(Effect::Damage { target: u.id, amount: pct(d::FIGHTER_GUN_BASE, d::FIGHTER_GUN_AP_RATIO, f.ap), direct: false });
                     out.push(Effect::Fx { name: "wrt_mg".into(), at: u.pos, ticks: 8, ambient: true });
                 }
-                if p.lock.is_none() && f.tick >= p.next_rocket && p.pos.within(u.pos, d::FIGHTER_GUN_RANGE * 2) {
-                    p.lock = Some((u.id, f.tick + sec(d::FIGHTER_LOCK_TICKS)));
-                    out.push(Effect::Fx { name: "wrt_lock".into(), at: u.pos, ticks: sec(d::FIGHTER_LOCK_TICKS), ambient: false });
+                self.fly(f, p, p.goal, boost, out);
+                if f.tick >= p.phase_until || p.pos.within(p.goal, 6_000) {
+                    // break away: bank around the target to a new side
+                    p.phase = Phase::Break;
+                    p.phase_until = f.tick + sec(d::FIGHTER_BREAK_TICKS);
+                    let side = if p.key % 2 == 0 { 120_000 } else { -120_000 };
+                    let from = ((p.pos.y - u.pos.y) as f64).atan2((p.pos.x - u.pos.x) as f64).to_degrees().round() as i64 * 1000;
+                    p.goal = u.pos.around(d::FIGHTER_BREAK_RADIUS, from + side);
                 }
             }
-            None => {
-                // escort: circle him (or the carrier)
-                p.angle_mdeg = (p.angle_mdeg + 2_500).rem_euclid(360_000);
-                let home = match p.anchor {
-                    Anchor::At(c) => c,
-                    _ => f.pos,
-                };
-                let goal = home.around(d::FIGHTER_ESCORT_RADIUS, p.angle_mdeg);
-                self.fly(f, p, goal, speed, out);
+            (_, Phase::Break) => {
+                self.fly(f, p, p.goal, speed * 2, out);
+                if f.tick >= p.phase_until || p.pos.within(p.goal, 5_000) {
+                    p.phase = Phase::Patrol;
+                    p.phase_until = f.tick;
+                }
+            }
+            _ => {
+                // patrol: fast laps around him
+                p.phase = Phase::Patrol;
+                p.angle_mdeg = (p.angle_mdeg + 5_000).rem_euclid(360_000);
+                let goal = f.pos.around(d::FIGHTER_ESCORT_RADIUS, p.angle_mdeg + if p.from_carrier { 60_000 } else { 0 });
+                self.fly(f, p, goal, speed * 2, out);
             }
         }
         if let Some((t, at)) = p.lock {
             if f.tick >= at {
                 p.lock = None;
                 p.next_rocket = f.tick + sec(d::FIGHTER_ROCKET_EVERY_TICKS);
-                if f.units.iter().any(|u| u.id == t && f.enemy(u)) {
+                if f.units.iter().any(|u| u.id == t && f.enemy(u) && !u.tower) {
                     let key = self.next_key;
                     self.next_key += 1;
-                    self.planes.push(Plane {
-                        key,
-                        kind: Kind::Rocket,
-                        pos: p.pos,
-                        heading: p.heading,
-                        born: f.tick,
-                        start: f.tick,
-                        until: f.tick + 180,
-                        anchor: Anchor::Owner,
-                        orbit: 0,
-                        angle_mdeg: 0,
-                        from_carrier: p.from_carrier,
-                        target: Some(t),
-                        moving_until: 0,
-                        next_gun: 0,
-                        next_rocket: 0,
-                        lock: None,
-                        next_kit: 0,
-                        next_bomb: 0,
-                        kamikaze: false,
-                        taunted: false,
-                        hover_until: 0,
-                        goal: p.pos,
-                    });
+                    let mut r = *p;
+                    r.key = key;
+                    r.kind = Kind::Rocket;
+                    r.born = f.tick;
+                    r.start = f.tick;
+                    r.until = f.tick + 180;
+                    r.target = Some(t);
+                    r.lock = None;
+                    r.moving_until = 0;
+                    r.phase = Phase::Patrol;
+                    self.planes.push(r);
                 }
             }
         }
@@ -686,35 +719,46 @@ impl Core {
         true
     }
 
+    /// The Carpet Bomber: after its ready-up it sweeps across the marked area dropping carpet waves; the first ones slow,
+    /// the last stuns. Every enemy in the area (never a tower) is hit once per wave.
     fn bomber(&mut self, f: &Frame, p: &mut Plane, out: &mut Vec<Effect>) -> bool {
-        if f.tick >= p.until {
-            return false;
-        }
         let Anchor::At(center) = p.anchor else { return false };
+        if p.waves >= d::BOMBER_WAVES {
+            // flying out
+            let out_to = p.pos.toward(center, -60_000);
+            self.fly(f, p, out_to, d::BOMBER_SPEED, out);
+            return f.tick < p.until;
+        }
         if f.tick < p.start {
-            // the warning (drawn on the cast): it flies in meanwhile
-            let entry = center.around(p.orbit, p.angle_mdeg);
-            let step = (p.pos.dist(entry) as i64 / (p.start - f.tick).max(1) as i64).max(1);
-            self.fly(f, p, entry, step, out);
+            // flying in toward the area for the first wave
+            let step = (p.pos.dist(center) as i64 / (p.start - f.tick).max(1) as i64).max(1);
+            self.fly(f, p, center, step, out);
             return true;
         }
-        // circle the area: angular speed from its air speed
-        let rate = (d::BOMBER_SPEED as f64 / p.orbit.max(1) as f64).to_degrees() * 1000.0;
-        p.angle_mdeg = (p.angle_mdeg + rate.round() as i64).rem_euclid(360_000);
-        let goal = center.around(p.orbit, p.angle_mdeg);
-        p.heading = heading(p.pos, goal);
-        p.pos = goal.clamp_map();
+        let across = p.pos.toward(center, -d::BOMBER_RADIUS);
+        self.fly(f, p, across, d::BOMBER_SPEED, out);
         if f.tick >= p.next_bomb {
-            p.next_bomb = f.tick + sec(d::BOMBER_BOMB_EVERY_TICKS);
-            out.push(Effect::Fx { name: "wrt_bomb".into(), at: p.pos, ticks: 14, ambient: true });
-            let dmg = pct(d::BOMBER_BOMB_BASE, d::BOMBER_BOMB_AP_RATIO, f.ap);
-            for u in f.units.iter().filter(|u| f.enemy(u) && !u.tower && u.pos.within(p.pos, d::BOMBER_BOMB_RADIUS + u.radius)) {
-                if self.bomb_hits.iter().filter(|h| h.0 == u.id).count() as i64 >= d::BOMBER_HITS_PER_SECOND {
-                    continue;
-                }
-                self.bomb_hits.push((u.id, f.tick));
+            p.next_bomb = f.tick + sec(d::BOMBER_WAVE_EVERY_TICKS);
+            p.waves += 1;
+            let last = p.waves >= d::BOMBER_WAVES;
+            // a row of bombs across the area
+            let n = d::BOMBER_BOMBS_PER_WAVE.max(1);
+            for i in 0..n {
+                let a = (p.waves * 37_000 + i * 360_000 / n) % 360_000;
+                let r = d::BOMBER_RADIUS * ((i * 7 + p.waves * 3) % 10) / 10;
+                out.push(Effect::Fx { name: "wrt_bomb".into(), at: center.around(r, a), ticks: 14, ambient: i > 0 });
+            }
+            let dmg = pct(d::BOMBER_WAVE_BASE, d::BOMBER_WAVE_AP_RATIO, f.ap);
+            for u in f.units.iter().filter(|u| f.enemy(u) && !u.tower && u.pos.within(center, d::BOMBER_RADIUS + u.radius)) {
                 out.push(Effect::Damage { target: u.id, amount: dmg, direct: false });
-                out.push(Effect::Slow { target: u.id, percent: d::BOMBER_SLOW_PCT, ticks: sec(d::BOMBER_SLOW_TICKS) });
+                if last {
+                    out.push(Effect::Stun { target: u.id, ticks: sec(d::BOMBER_STUN_TICKS) });
+                } else {
+                    out.push(Effect::Slow { target: u.id, percent: d::BOMBER_SLOW_PCT, ticks: sec(d::BOMBER_SLOW_TICKS) });
+                }
+            }
+            if last {
+                p.until = f.tick + 40;
             }
         }
         true
@@ -738,7 +782,8 @@ impl Core {
         let goal = center.around(p.orbit, p.angle_mdeg);
         let speed = if p.kind == Kind::Repair { d::REPAIR_PLANE_SPEED } else { d::REPAIR_PLANE_SPEED / 2 };
         self.fly(f, p, goal, speed, out);
-        if f.tick < p.next_kit || !p.pos.within(center, d::REPAIR_KIT_RANGE + p.orbit) {
+        let reach = if p.from_carrier { d::CARRIER_KIT_RADIUS } else { d::REPAIR_KIT_RANGE + p.orbit };
+        if f.tick < p.next_kit || !p.pos.within(center, reach) {
             return true;
         }
         p.next_kit = f.tick + sec(d::REPAIR_KIT_EVERY_TICKS);
@@ -746,7 +791,8 @@ impl Core {
         let near = |a: &&(usize, Point, i64, i64)| a.1.within(p.pos, d::REPAIR_KIT_RANGE);
         let pick = match p.anchor {
             Anchor::Ally(id) => allies.iter().find(|a| a.0 == id),
-            Anchor::At(c) => allies.iter().filter(|a| a.1.within(c, d::CARRIER_RADIUS)).min_by_key(|a| (a.2 * 1000 / a.3.max(1), a.0)),
+            Anchor::At(c) => allies.iter().filter(|a| a.1.within(c, d::CARRIER_KIT_RADIUS)).min_by_key(|a| (a.2 * 1000 / a.3.max(1), a.0)),
+            Anchor::Owner if p.from_carrier => allies.iter().filter(|a| a.1.within(f.pos, d::CARRIER_KIT_RADIUS)).min_by_key(|a| (a.2 * 1000 / a.3.max(1), a.0)),
             Anchor::Owner => allies.iter().filter(near).min_by_key(|a| (a.2 * 1000 / a.3.max(1), a.0)),
         };
         if let Some(&(id, pos, _, max_hp)) = pick {
@@ -778,11 +824,14 @@ impl Core {
 
     fn run_carrier(&mut self, f: &Frame, out: &mut Vec<Effect>) {
         let Some(mut c) = self.carrier else { return };
+        // it follows him
+        c.center = f.pos;
         if f.tick < c.land_at {
+            self.carrier = Some(c);
             return;
         }
         if f.tick == c.land_at {
-            // the drop: no damage, a knockback away from the center (the closer, the farther) and a small slow
+            // the drop on him: no damage, a knockback away from him (the closer, the farther) and a small slow
             out.push(Effect::Fx { name: "wrt_carrier_land".into(), at: c.center, ticks: 30, ambient: false });
             out.push(Effect::Fx { name: "wrt_knock_ring".into(), at: c.center, ticks: 24, ambient: false });
             for u in f.units.iter().filter(|u| f.enemy(u) && !u.tower && u.pos.within(c.center, d::CARRIER_KNOCK_RADIUS + u.radius)) {
@@ -795,11 +844,20 @@ impl Core {
                 }
                 out.push(Effect::Slow { target: u.id, percent: d::CARRIER_SLOW_PCT, ticks: sec(d::CARRIER_SLOW_TICKS) });
             }
-            out.push(Effect::Log("the sky carrier lands".into()));
+            c.guarding = true;
+            out.push(Effect::Guard { on: true, pct: d::CARRIER_GUARD_PCT });
+            out.push(Effect::Log("the sky carrier lands on him".into()));
+        } else if c.guarding && f.damage_taken > 0 {
+            // it took guardPct of what he was hit for: what got through is the rest
+            let through = (100 - d::CARRIER_GUARD_PCT).max(1);
+            c.pool -= f.damage_taken * d::CARRIER_GUARD_PCT / through;
         }
-        if f.tick >= c.until {
+        if f.tick >= c.until || c.pool <= 0 {
             self.carrier = None;
-            out.push(Effect::Log("the sky carrier leaves".into()));
+            if c.guarding {
+                out.push(Effect::Guard { on: false, pct: 0 });
+            }
+            out.push(Effect::Log(if c.pool <= 0 { "the sky carrier is shot out of the sky".into() } else { "the sky carrier leaves".into() }));
             return;
         }
         out.push(Effect::Fx { name: "wrt_carrier".into(), at: c.center, ticks: 1, ambient: false });
@@ -807,18 +865,26 @@ impl Core {
         if f.tick >= c.next_fighter {
             c.next_fighter = f.tick + sec(d::CARRIER_FIGHTER_EVERY_TICKS);
             if carrier_fighters < d::CARRIER_MAX_FIGHTERS {
-                self.launch(f, Kind::Fighter, c.center, sec(d::CARRIER_FIGHTER_TICKS), Anchor::At(c.center), 0, true, out);
+                self.launch(f, Kind::Fighter, c.center, sec(d::CARRIER_FIGHTER_TICKS), Anchor::Owner, 0, true, out);
             }
         }
         if f.tick >= c.next_bomber {
             c.next_bomber = f.tick + sec(d::CARRIER_BOMBER_EVERY_TICKS);
-            self.launch(f, Kind::Bomber, c.center, sec(d::CARRIER_BOMBER_TICKS), Anchor::At(c.center), d::CARRIER_RADIUS * 6 / 10, true, out);
+            if c.ready_bombers < d::CARRIER_MAX_READY_BOMBERS {
+                c.ready_bombers += 1;
+                out.push(Effect::Log(format!("bomber ready on deck ({})", c.ready_bombers)));
+            }
         }
         if f.tick >= c.next_chopper {
             c.next_chopper = f.tick + sec(d::CARRIER_CHOPPER_EVERY_TICKS);
-            self.launch(f, Kind::Chopper, c.center, sec(d::REPAIR_TICKS), Anchor::At(c.center), d::REPAIR_CHOPPER_ORBIT, true, out);
+            self.launch(f, Kind::Chopper, c.center, sec(d::REPAIR_TICKS), Anchor::Owner, d::REPAIR_CHOPPER_ORBIT, true, out);
         }
         self.carrier = Some(c);
+    }
+
+    /// Ready bombers on the carrier's deck (S2 uses them while it's up).
+    pub fn ready_bombers(&self, tick: u64) -> i64 {
+        self.carrier.filter(|c| tick >= c.land_at).map_or(0, |c| c.ready_bombers)
     }
 
     // ---------------------------------------------------------------- orders
@@ -855,19 +921,31 @@ impl Core {
     }
 
     fn bomber_cast(&mut self, f: &Frame, aim: Point, out: &mut Vec<Effect>) -> bool {
-        if f.stunned || !self.ready(1, f.tick) || !self.take_airframe(out) {
+        if f.stunned {
             return false;
         }
-        self.ready[1] = f.tick + sec(d::BOMBER_COOLDOWN_TICKS);
-        let center = f.pos.reach(aim, d::BOMBER_RANGE).clamp_map();
-        let key = self.launch(f, Kind::Bomber, f.pos, sec(d::BOMBER_WARN_TICKS + d::BOMBER_TICKS), Anchor::At(center), d::BOMBER_ORBIT_RADIUS, false, out);
-        if let Some(p) = self.planes.iter_mut().find(|p| p.key == key) {
-            p.start = f.tick + sec(d::BOMBER_WARN_TICKS);
-            p.next_bomb = p.start;
-            p.angle_mdeg = ((f.pos.y - center.y) as f64).atan2((f.pos.x - center.x) as f64).to_degrees().round() as i64 * 1000;
+        // a ready bomber from the carrier: no airframe, no cooldown, a short mark
+        let from_deck = self.ready_bombers(f.tick) > 0;
+        if from_deck {
+            if let Some(c) = self.carrier.as_mut() {
+                c.ready_bombers -= 1;
+            }
+        } else {
+            if !self.ready(1, f.tick) || !self.take_airframe(out) {
+                return false;
+            }
+            self.ready[1] = f.tick + sec(d::BOMBER_COOLDOWN_TICKS);
         }
-        out.push(Effect::Fx { name: "wrt_warn".into(), at: center, ticks: sec(d::BOMBER_WARN_TICKS), ambient: false });
+        let mark = sec(if from_deck { d::BOMBER_READY_MARK_TICKS } else { d::BOMBER_WARN_TICKS });
+        let center = f.pos.reach(aim, d::BOMBER_RANGE).clamp_map();
+        let key = self.launch(f, Kind::Bomber, f.pos, mark + sec(d::BOMBER_WAVES * d::BOMBER_WAVE_EVERY_TICKS) + 90, Anchor::At(center), 0, from_deck, out);
+        if let Some(p) = self.planes.iter_mut().find(|p| p.key == key) {
+            p.start = f.tick + mark;
+            p.next_bomb = p.start;
+        }
+        out.push(Effect::Fx { name: "wrt_warn".into(), at: center, ticks: mark + sec(d::BOMBER_WAVES * d::BOMBER_WAVE_EVERY_TICKS), ambient: false });
         out.push(Effect::Pose { name: "skill2", ticks: 18 });
+        out.push(Effect::Log(if from_deck { "a ready bomber from the carrier".into() } else { "carpet bomber called".into() }));
         self.last_skill = "bomber";
         true
     }
@@ -888,24 +966,28 @@ impl Core {
         true
     }
 
-    fn carrier_cast(&mut self, f: &Frame, aim: Point, out: &mut Vec<Effect>) -> bool {
+    fn carrier_cast(&mut self, f: &Frame, _aim: Point, out: &mut Vec<Effect>) -> bool {
         if f.stunned || !f.ult_unlocked || !self.ready(3, f.tick) || self.carrier.is_some() {
             return false;
         }
         self.ready[3] = f.tick + sec(d::CARRIER_COOLDOWN_TICKS);
-        let center = f.pos.reach(aim, d::CARRIER_RANGE).clamp_map();
         let land_at = f.tick + sec(d::CARRIER_WARN_TICKS);
+        let pool = (f.max_hp * d::CARRIER_POOL_PCT / 100).max(1);
         self.carrier = Some(Carrier {
-            center,
+            center: f.pos,
             land_at,
             until: land_at + sec(d::CARRIER_TICKS),
             next_fighter: land_at + 10,
-            next_bomber: land_at + 30,
+            next_bomber: land_at + sec(d::CARRIER_BOMBER_EVERY_TICKS),
             next_chopper: land_at + 20,
+            pool,
+            max_pool: pool,
+            ready_bombers: 0,
+            guarding: false,
         });
-        out.push(Effect::Fx { name: "wrt_carrier_shadow".into(), at: center, ticks: sec(d::CARRIER_WARN_TICKS), ambient: false });
+        out.push(Effect::Fx { name: "wrt_carrier_shadow".into(), at: f.pos, ticks: sec(d::CARRIER_WARN_TICKS), ambient: false });
         out.push(Effect::Pose { name: "ult", ticks: 24 });
-        out.push(Effect::Log(format!("sky carrier called to {},{}", center.x, center.y)));
+        out.push(Effect::Log("sky carrier called down on him".into()));
         self.last_skill = "carrier";
         true
     }
@@ -919,18 +1001,25 @@ impl Core {
         let near: Vec<&Unit> = f.enemy_champions().filter(|u| u.pos.within(f.pos, 120_000)).collect();
         let allies = f.allies();
         let hurt = allies.iter().filter(|a| a.2 * 100 < a.3 * 60).min_by_key(|a| (a.2 * 1000 / a.3.max(1), a.0)).copied();
-        // the carrier: onto the spot that knocks the most champions (2+, or 1 when aggressive and an ally is there)
+        // the carrier is a peel and a guard: when he's under pressure
         if f.ult_unlocked && self.ready(3, f.tick) && self.carrier.is_none() {
-            let best = near
-                .iter()
-                .filter(|u| u.pos.within(f.pos, d::CARRIER_RANGE))
-                .map(|u| (near.iter().filter(|o| o.pos.within(u.pos, d::CARRIER_KNOCK_RADIUS)).count(), *u))
-                .max_by_key(|(n, u)| (*n, std::cmp::Reverse(u.id)));
-            if let Some((n, u)) = best {
-                let ally_there = allies.iter().skip(1).any(|a| a.1.within(u.pos, 80_000));
-                if n >= 2 || (ally_there && f.profile(PROFILE_AGGRESSIVE) >= 50) {
-                    return Some(Order::Carrier(u.pos));
-                }
+            let close = near.iter().filter(|u| u.pos.within(f.pos, d::CARRIER_PRESSURE_RANGE)).count();
+            let low = f.hp * 100 < f.max_hp * 50;
+            if close >= 2 || (low && close >= 1) || (close >= 1 && f.profile(PROFILE_AGGRESSIVE) >= 80) {
+                return Some(Order::Carrier(f.pos));
+            }
+        }
+        let best_bomb = || {
+            near.iter()
+                .filter(|u| u.pos.within(f.pos, d::BOMBER_RANGE))
+                .map(|u| (near.iter().filter(|o| o.pos.within(u.pos, d::BOMBER_RADIUS)).count(), *u))
+                .max_by_key(|(n, u)| (*n, std::cmp::Reverse(u.id)))
+                .map(|(_, u)| u.pos)
+        };
+        // a ready bomber on the carrier's deck: use it on the best spot
+        if self.ready_bombers(f.tick) > 0 {
+            if let Some(at) = best_bomb() {
+                return Some(Order::Bomber(at));
             }
         }
         if self.stock <= 0 {
@@ -943,18 +1032,13 @@ impl Core {
             }
         }
         if self.ready(1, f.tick) {
-            let best = near
-                .iter()
-                .filter(|u| u.pos.within(f.pos, d::BOMBER_RANGE))
-                .map(|u| (near.iter().filter(|o| o.pos.within(u.pos, d::BOMBER_ORBIT_RADIUS)).count(), *u))
-                .max_by_key(|(n, u)| (*n, std::cmp::Reverse(u.id)));
-            if let Some((_, u)) = best {
-                return Some(Order::Bomber(u.pos));
+            if let Some(at) = best_bomb() {
+                return Some(Order::Bomber(at));
             }
             // calm: carpet-bomb a camp or a wave (3+ units)
             if f.calm() {
                 let farm: Vec<&Unit> = f.units.iter().filter(|u| f.enemy(u) && u.farmable && u.pos.within(f.pos, d::BOMBER_RANGE)).collect();
-                if let Some(u) = farm.iter().find(|u| farm.iter().filter(|o| o.pos.within(u.pos, d::BOMBER_ORBIT_RADIUS)).count() >= 3) {
+                if let Some(u) = farm.iter().find(|u| farm.iter().filter(|o| o.pos.within(u.pos, d::BOMBER_RADIUS)).count() >= 3) {
                     return Some(Order::Bomber(u.pos));
                 }
             }

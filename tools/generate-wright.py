@@ -32,19 +32,21 @@ text = {
               f"a scout drone ({dr['hpPct']}% of his HP) flies to the nearest enemy champion, hovers {sec(dr['hoverTicks'])} and taunts enemies within "
               f"{dr['tauntRadius']} onto it for {sec(dr['tauntTicks'])}. "
               f"Fighter Wing ({sec(fi['cooldownTicks'])}): launches {fi['perCast']} fighters for {sec(fi['ticks'])} (up to {fi['maxAlive']}, {fi['hpPct']}% of his HP "
-              f"each, can be shot down). They escort him and attack: machine gun every {sec(fi['gunEveryTicks'])} for {fi['gunBase']} + {fi['gunApRatio']}% AP, a lock-on "
-              f"rocket every {sec(fi['rocketEveryTicks'])} for {fi['rocketBase']} + {fi['rocketApRatio']}% AP. When their time ends or they fall below "
+              f"each, can be shot down). They circle him and dogfight: they boost in on attack runs with a machine gun ({fi['gunBase']} + {fi['gunApRatio']}% AP every "
+              f"{sec(fi['gunEveryTicks'])}) and a lock-on rocket every {sec(fi['rocketEveryTicks'])} ({fi['rocketBase']} + {fi['rocketApRatio']}% AP), break away and "
+              f"come around again; with no champion near they clear minions and camps. They never damage turrets. When their time ends or they fall below "
               f"{fi['kamikazeHpPct']}% HP they kamikaze: {fi['kamikazeBase']} + {fi['kamikazeApRatio']}% AP, a knockback and a burn of "
               f"{fi['burnPermillePerSecond'] / 10:g}% max HP a second for {sec(fi['burnTicks'])}."),
-    'skill2': (f"Carpet Bomber ({sec(bo['cooldownTicks'])}): a bomber circles the target area for {sec(bo['ticks'])}, carpet-bombing its path: "
-               f"{bo['bombBase']} + {bo['bombApRatio']}% AP per bomb (at most {bo['hitsPerSecond']} hits a second per enemy) and a {bo['slowPct']}% slow. "
+    'skill2': (f"Carpet Bomber ({sec(bo['cooldownTicks'])}): marks an area and, after {sec(bo['warnTicks'])}, a bomber drops {bo['waves']} carpet waves "
+               f"({bo['waveBase']} + {bo['waveApRatio']}% AP each): the first ones slow {bo['slowPct']}%, the last stuns {sec(bo['stunTicks'])}. "
                f"Repair Wing ({sec(re_['cooldownTicks'])}): a repair chopper circles him and a repair plane flies to the most hurt ally anywhere, both for "
                f"{sec(re_['ticks'])}. Every {sec(re_['kitEveryTicks'])} each drops a kit: {re_['healPermille'] / 10:g}% max HP and a {re_['shieldBase']} + "
                f"{re_['shieldApRatio']}% AP shield (up to {re_['shieldCapBase']} + {re_['shieldCapApRatio']}% AP). The chopper also repairs his fighters."),
-    'ult': (f"Sky Carrier ({sec(ca['cooldownTicks'])}): a carrier drops from the sky on the target. The impact knocks enemies away, the closer the farther "
-            f"(up to {ca['knockMax']}), and slows them {ca['slowPct']}%. It hovers for {sec(ca['ticks'])}, launching a fighter every "
-            f"{sec(ca['fighterEveryTicks'])} (up to {ca['maxFighters']}), a carpet-bomb pass every {sec(ca['bomberEveryTicks'])} and a repair chopper every "
-            f"{sec(ca['chopperEveryTicks'])}."),
+    'ult': (f"Sky Carrier ({sec(ca['cooldownTicks'])}): a carrier drops from the sky on Wright, knocking enemies away (the closer, the farther, up to "
+            f"{ca['knockMax']}) and slowing them {ca['slowPct']}%, with no damage. It hovers over him for {sec(ca['ticks'])} and takes {ca['guardPct']}% of the damage "
+            f"he takes (until its pool of {ca['poolPct']}% of his HP runs out). It launches a fighter every {sec(ca['fighterEveryTicks'])} (up to {ca['maxFighters']}) "
+            f"and a repair chopper every {sec(ca['chopperEveryTicks'])}, and readies a bomber every {sec(ca['bomberEveryTicks'])} (up to {ca['maxReadyBombers']}): "
+            f"while it's up, Carpet Bomber uses a ready bomber, with no airframe or cooldown."),
 }
 
 champ = copy.deepcopy(json.loads((ROOT / 'mods/tfm2_custom/champion/tfm2_custom_contender.data_champion').read_text()))

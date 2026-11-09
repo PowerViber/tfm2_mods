@@ -12,13 +12,13 @@ Re-sent every tick, so **single frame each** (`_p0`–`_p7` = 8 headings, 0 = ea
 
 | tag | what |
 |---|---|
-| `fighter_p0`–`p7` | a small jet fighter |
+| `fighter_p0`–`p7` | a small jet fighter (it banks and boosts in dogfights; an afterburner glow reads well on attack runs) |
 | `bomber_p0`–`p7` | a heavier bomber (larger) |
 | `chopper_p0`–`p7` | a repair helicopter |
 | `repair_p0`–`p7` | a repair plane |
 | `drone_p0`–`p7` | a small scout drone |
 | `rocket_p0`–`p7` | a homing rocket with a trail |
-| `carrier` | the hovering carrier, top-down (about 60,000 × 18,000 world units = ~63 × 19 px) |
+| `carrier` | the hovering carrier over Wright, top-down (about 60,000 × 18,000 world units = ~63 × 19 px) |
 
 Timed effects (frames add up to the time):
 
@@ -26,8 +26,8 @@ Timed effects (frames add up to the time):
 |---|---|---|
 | `carrier_shadow` | its shadow before the drop (1 s) | ground |
 | `carrier_land` | the drop impact | |
-| `knock_ring` | the shockwave ring (70,000 radius) | ground |
-| `warn` | the bomber's warning circle (40,000 radius, 0.6 s) | ground |
+| `knock_ring` | the shockwave ring (100,000 radius) | ground |
+| `warn` | the bomber's ready-up circle (45,000 radius, 1 s, held through the 3 waves) | ground |
 | `bomb` | a bomb blast (10,000 radius) | |
 | `kamikaze` | a fighter's crash blast (15,000 radius) | |
 | `mg` | machine-gun tracers/impacts on a target | |

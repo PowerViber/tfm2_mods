@@ -11,6 +11,7 @@ use mod_api_stable::{AttackTypeV1, CcKindV1, CcV1, StablePassive, StableSim, Sta
 use std::collections::BTreeMap;
 
 pub(crate) const OWN_CC: &str = "wrt_";
+pub(crate) const GUARD: &str = "wrt_guard";
 const HARD: [CcKindV1; 6] = [CcKindV1::Stun, CcKindV1::Airborne, CcKindV1::Taunt, CcKindV1::Fear, CcKindV1::Charm, CcKindV1::BlockSkill];
 
 fn named(kind: CcKindV1, ticks: u64, name: &str) -> CcV1 {
@@ -27,7 +28,10 @@ pub struct Wright {
     /// plane key -> its carrier unit
     carriers: BTreeMap<u32, usize>,
     attack_target: Option<usize>,
+    /// damage he took since the last frame (what got past the carrier's guard)
+    damage_taken: i64,
     in_skill: bool,
+    owner: Option<usize>,
     fx_tokens: usize,
     fx_tick: u64,
 }
@@ -140,6 +144,7 @@ impl Wright {
             profile: values,
             planes,
             attack_target: self.attack_target,
+            damage_taken: std::mem::take(&mut self.damage_taken),
             manual: false,
             order: None,
         }
@@ -191,6 +196,20 @@ impl Wright {
                         let mut b = crate::timed("wrt_slow", ticks as usize);
                         b.move_speed_mult = -(percent as i32);
                         sim.add_buff(target, &b);
+                    }
+                }
+                Effect::Stun { target, ticks } => {
+                    if reach(owner, target) {
+                        sim.apply_cc(target, &named(CcKindV1::Stun, ticks, "wrt_stun"));
+                    }
+                }
+                Effect::Guard { on, pct } => {
+                    // the Sky Carrier over him takes pct% of the damage he takes (its pool is kept by the core)
+                    sim.entity_remove_buff(owner, GUARD);
+                    if on {
+                        let mut b = crate::timed(GUARD, d::CARRIER_TICKS as usize + 120);
+                        b.damaged_reduce = pct.clamp(0, 100) as usize;
+                        sim.add_buff(owner, &b);
                     }
                 }
                 Effect::Knock { target, to, ticks } => {
@@ -274,7 +293,10 @@ impl StablePassive for Wright {
     fn clone_box(&self) -> Box<dyn StablePassive> {
         Box::new(self.clone())
     }
-    fn on_spawn(&mut self, sim: &mut StableSim, _: usize, _: usize) {
+    fn on_spawn(&mut self, sim: &mut StableSim, _: usize, id: usize) {
+        self.owner = Some(id);
+        sim.entity_remove_buff(id, GUARD);
+        self.damage_taken = 0;
         self.core.respawn(sim.tick() as u64);
         self.clear(sim);
         self.attack_target = None;
@@ -290,7 +312,14 @@ impl StablePassive for Wright {
             self.attack_target = Some(target);
         }
     }
+    /// What got past the carrier's guard drains its pool (the core scales it back up).
+    fn on_damaged(&mut self, _: &mut StableSim, _: usize, entity: usize, _: usize, damage: usize) {
+        if Some(entity) == self.owner {
+            self.damage_taken += damage as i64;
+        }
+    }
     fn on_update(&mut self, sim: &mut StableSim, _: u64, _: usize, id: usize) {
+        self.owner = Some(id);
         let f = self.frame(sim, id);
         if !f.alive {
             return;

@@ -73,4 +73,27 @@ mod glue {
         assert!(h.ccs[1].iter().any(|c| c.0.kind == CcKindV1::ForceMove.code()), "the knockback is an engine glide");
         assert!(!h.moves.iter().any(|m| m.0 == 1));
     }
+
+    #[test]
+    fn the_carrier_guard_is_a_damage_reduction_buff_and_his_damage_feeds_its_pool() {
+        let _g = crate::walls::TEST_LOCK.lock();
+        let (x, y) = open_spot(90_000);
+        let host = Host::new(vec![champ(0, (x, y), "tfm2_custom_wright")]);
+        let mut w = crate::wright::Wright::default();
+        with_sim(&host, |sim| w.on_spawn(sim, 0, 0));
+        host.borrow_mut().tick = 50;
+        with_sim(&host, |sim| w.apply(sim, 0, vec![Effect::Guard { on: true, pct: d::CARRIER_GUARD_PCT }]));
+        let guard = host.borrow().buffs[0].iter().find(|b| b.name() == crate::wright::GUARD).map(|b| b.damaged_reduce);
+        assert_eq!(guard, Some(d::CARRIER_GUARD_PCT as usize));
+        // what gets through is reported to the core once
+        with_sim(&host, |sim| {
+            w.on_damaged(sim, 0, 0, 5, 40);
+            w.on_damaged(sim, 0, 3, 5, 99);
+            let f = w.frame(sim, 0);
+            assert_eq!(f.damage_taken, 40, "only his own damage");
+            assert_eq!(w.frame(sim, 0).damage_taken, 0, "taken once");
+        });
+        with_sim(&host, |sim| w.apply(sim, 0, vec![Effect::Guard { on: false, pct: 0 }]));
+        assert!(!host.borrow().buffs[0].iter().any(|b| b.name() == crate::wright::GUARD), "off again");
+    }
 }
