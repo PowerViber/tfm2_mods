@@ -4,6 +4,8 @@
 pub mod wright_core;
 #[path = "../../tfm2_custom_ai/src/wright_data.rs"]
 pub mod wright_data;
+#[path = "../../tfm2_custom_ai/src/wright_art.rs"]
+pub mod wright_art;
 use serde::Deserialize;
 use serde_json::json;
 use std::cell::RefCell;

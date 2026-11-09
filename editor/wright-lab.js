@@ -61,7 +61,7 @@
         case 'pose': visual.pose=d.name;visual.start=tick;visual.until=tick+d.ticks;break;
         case 'fx': {
           if (/_p\d+$/.test(d.name)||d.name==='wrt_carrier') break;
-          const target=d.name==='wrt_lock'?(state.planes||[]).map(p=>p.lock?.[0]).filter(id=>id!==undefined).find(id=>{const u=find(id);return u&&dist(u.pos,d.at)<2;}):null;
+          const target=d.name==='wrt_carrier_shadow'?1:d.name==='wrt_lock'?(state.planes||[]).map(p=>p.lock?.[0]).filter(id=>id!==undefined).find(id=>{const u=find(id);return u&&dist(u.pos,d.at)<2;}):null;
           fx.push({name:d.name,at:{...d.at},start:tick,ticks:d.ticks,target,until:tick+Math.max(1,d.ticks)});break;
         }
         case 'log': log(String(d)); break;
@@ -125,15 +125,16 @@
     const t = terrain(); ctx.fillStyle = '#4b5563';
     t.forEach((w, i) => { if (w) { const q = P({x: (i % 30) * 32000, y: Math.floor(i / 30) * 32000}); ctx.fillRect(q.x, q.y, W(32000), W(32000)); } });
     for (const f of fx) {
-      const point=f.target!==null&&f.target!==undefined?(find(f.target)?.pos||f.at):f.at;
+      const point=f.target===1?me.pos:f.target!==null&&f.target!==undefined?(find(f.target)?.pos||f.at):f.at;
       if(art){
-        let tag=f.name.replace(/^wrt_/,'');if(tag==='bomb')tag+='\x5ft'+f.ticks;
+        const tag=painter.effectTag(f.name,f.ticks);
         const q=P(point);painter.effect(ctx,tag,tick-f.start,q.x,q.y,pixel);continue;
       }
       if (f.name === 'wrt_warn') circle(point,R.bomber.radius,'rgba(248,113,113,.08)','#f87171');
       else if (f.name==='wrt_carrier_shadow')circle(point,R.carrier.knockRadius,'rgba(0,0,0,.25)','#9ca3af');
       else if (f.name==='wrt_knock_ring')circle(point,R.carrier.knockRadius,null,'#fde68a');
       else if (f.name==='wrt_bomb'||f.name==='wrt_kamikaze')circle(point,f.name==='wrt_bomb'?10000:R.fighter.kamikazeRadius,'rgba(251,146,60,.45)');
+      else if (f.name.startsWith('wrt_bomber_wave'))circle(point,R.bomber.radius,'rgba(251,146,60,.25)','#ffb955');
       else if (f.name==='wrt_lock')circle(point,8000,null,'#ff874b');
     }
     if(state.carrier&&tick>=state.carrier.land_at&&tick<state.carrier.until){
@@ -155,8 +156,7 @@
     for (const p of state.planes || []) {
       const host = carriers.get(p.key), at = host ? host.pos : p.pos;
       if(tick<p.start)continue;
-      if (p.kind === 'fighter' && p.phase === 'Run') { const q = P(at), a = p.heading * Math.PI / 4; ctx.strokeStyle = 'rgba(253,186,116,.8)'; ctx.beginPath(); ctx.moveTo(q.x, q.y); ctx.lineTo(q.x - Math.cos(a) * 22, q.y - Math.sin(a) * 22); ctx.stroke(); }
-      if(art){const q=P(at);painter.effect(ctx,p.kind+'_p'+p.heading,0,q.x,q.y,pixel);}
+      if(art){const q=P(at);painter.effect(ctx,painter.planeTag(p,tick-1),0,q.x,q.y,pixel);}
       else plane(at,p.kind,p.heading,p.kind==='bomber'?9000:p.kind==='rocket'?2500:5000);
       if (host) { const q = P(at); ctx.fillStyle = '#22c55e'; ctx.fillRect(q.x - 8, q.y + 8, 16 * Math.max(0, host.hp / host.max_hp), 2); }
     }

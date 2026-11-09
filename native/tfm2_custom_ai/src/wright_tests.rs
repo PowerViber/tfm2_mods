@@ -16,6 +16,47 @@ mod glue {
     }
 
     #[test]
+    fn dogfight_art_uses_authoritative_phases_and_stable_owner_clock() {
+        use crate::wright_art::{fighter_name,effect_name};
+        for h in 0..8 {
+            assert_eq!(fighter_name(h,"Patrol",104,100),format!("wrt_fighter_p{h}"));
+            assert_eq!(fighter_name(h,"Run",103,100),format!("wrt_fighter_run0_p{h}"));
+            assert_eq!(fighter_name(h,"Run",104,100),format!("wrt_fighter_run1_p{h}"));
+            assert_eq!(fighter_name(h,"Break",108,100),format!("wrt_fighter_break0_p{h}"));
+        }
+        assert_eq!(effect_name("wrt_warn",114),"wrt_warn_t114");
+        assert_eq!(effect_name("wrt_warn",72),"wrt_warn_t72");
+    }
+
+    #[test]
+    fn bomber_wave_presentation_is_centred_and_does_not_duplicate_damage() {
+        use crate::wright_core::{Core,Frame,Unit};
+        let center=Point::new(400_000,480_000);
+        let mut f=Frame{tick:100,alive:true,hp:1000,max_hp:1000,pos:Point::new(300_000,480_000),manual:true,order:Some(Order::Bomber(center)),..Frame::default()};
+        f.units.push(Unit{id:2,team:1,pos:center,hp:10000,max_hp:10000,champion:true,visible:true,targetable:true,..Unit::default()});
+        let mut core=Core::default();let mut waves=Vec::new();let mut hits=0;
+        for tick in 100..240 {
+            f.tick=tick;if tick>100{f.order=None;}
+            for e in core.step(&f) {
+                match e {
+                    Effect::Fx{name,at,ticks,..} if name.starts_with("wrt_bomber_wave")=>{assert_eq!(at,center);assert_eq!(ticks,14);waves.push(name);},
+                    Effect::Damage{target:2,..}=>hits+=1,
+                    _=>{}
+                }
+            }
+        }
+        assert_eq!(waves,vec!["wrt_bomber_wave1","wrt_bomber_wave2","wrt_bomber_wave3"]);assert_eq!(hits,3);
+    }
+
+    #[test]
+    fn descending_carrier_warning_attaches_to_wright_without_moving_him() {
+        let host=Host::new(vec![champ(0,(300_000,480_000),"tfm2_custom_wright")]);host.borrow_mut().record_view_effects=true;
+        let mut w=crate::wright::Wright::default();
+        with_sim(&host,|sim|w.apply(sim,0,vec![Effect::Fx{name:"wrt_carrier_shadow".into(),at:Point::new(300_000,480_000),ticks:60,ambient:false}]));
+        let h=host.borrow();assert_eq!(h.view_effects[0].2,mod_api_stable::InputTargetV1::target(0));assert!(h.moves.is_empty()&&h.damage.is_empty());
+    }
+
+    #[test]
     fn a_moving_rocket_target_gets_an_entity_attached_reticle() {
         let _g=crate::walls::TEST_LOCK.lock();let (x,y)=open_spot(90_000);
         let host=Host::new(vec![champ(0,(x,y),"tfm2_custom_wright"),champ(1,(x+40_000,y),"fighter")]);

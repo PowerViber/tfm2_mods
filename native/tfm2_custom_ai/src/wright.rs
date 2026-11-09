@@ -282,7 +282,7 @@ impl Wright {
                         let tag=crate::wright_art::effect_name(&name,ticks);
                         // Attach the one-shot reticle to its actual target. Its
                         // existing lifetime/phase continues while that unit moves.
-                        let target=if name=="wrt_lock" {
+                        let target=if name=="wrt_carrier_shadow" {Some(owner)}else if name=="wrt_lock" {
                             self.core.planes.iter().filter_map(|p|p.lock.map(|(id,_)|id)).filter(|id|{
                                 sim.is_visible(team,*id)&&sim.get_entity(*id).is_some_and(|u|{let p=u.pos();u.is_alive()&&p.0 as i64==at.x&&p.1 as i64==at.y})
                             }).min()

@@ -508,7 +508,10 @@ impl Core {
             if keep {
                 // every plane is drawn every tick at its heading (single-frame phases)
                 if f.tick >= p.start {
-                    out.push(Effect::Fx { name: format!("wrt_{}_p{}", p.kind.tag(), p.heading), at: p.pos, ticks: 1, ambient: false });
+                    let name=if p.kind==Kind::Fighter {
+                        crate::wright_art::fighter_name(p.heading as usize,match p.phase {Phase::Run=>"Run",Phase::Break=>"Break",Phase::Patrol=>"Patrol"},f.tick,p.born)
+                    }else{format!("wrt_{}_p{}",p.kind.tag(),p.heading)};
+                    out.push(Effect::Fx { name, at: p.pos, ticks: 1, ambient: false });
                 }
                 self.planes[i] = p;
             } else {
@@ -741,13 +744,9 @@ impl Core {
             p.next_bomb = f.tick + sec(d::BOMBER_WAVE_EVERY_TICKS);
             p.waves += 1;
             let last = p.waves >= d::BOMBER_WAVES;
-            // a row of bombs across the area
-            let n = d::BOMBER_BOMBS_PER_WAVE.max(1);
-            for i in 0..n {
-                let a = (p.waves * 37_000 + i * 360_000 / n) % 360_000;
-                let r = d::BOMBER_RADIUS * ((i * 7 + p.waves * 3) % 10) / 10;
-                out.push(Effect::Fx { name: "wrt_bomb".into(), at: center.around(r, a), ticks: 14, ambient: i > 0 });
-            }
+            // One bounded presentation composite covers this exact wave. Its
+            // seven decorative bombs aren't seven separate damage footprints.
+            out.push(Effect::Fx { name: format!("wrt_bomber_wave{}", p.waves), at: center, ticks: 14, ambient: false });
             let dmg = pct(d::BOMBER_WAVE_BASE, d::BOMBER_WAVE_AP_RATIO, f.ap);
             for u in f.units.iter().filter(|u| f.enemy(u) && !u.tower && u.pos.within(center, d::BOMBER_RADIUS + u.radius)) {
                 out.push(Effect::Damage { target: u.id, amount: dmg, direct: false });
