@@ -556,6 +556,262 @@
     },
     {
       "type": "Animation",
+      "name": "wrt_fighter_run0_p0",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "fighter_run0_p0",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_fighter_run0_p1",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "fighter_run0_p1",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_fighter_run0_p2",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "fighter_run0_p2",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_fighter_run0_p3",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "fighter_run0_p3",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_fighter_run0_p4",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "fighter_run0_p4",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_fighter_run0_p5",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "fighter_run0_p5",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_fighter_run0_p6",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "fighter_run0_p6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_fighter_run0_p7",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "fighter_run0_p7",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_fighter_run1_p0",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "fighter_run1_p0",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_fighter_run1_p1",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "fighter_run1_p1",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_fighter_run1_p2",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "fighter_run1_p2",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_fighter_run1_p3",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "fighter_run1_p3",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_fighter_run1_p4",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "fighter_run1_p4",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_fighter_run1_p5",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "fighter_run1_p5",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_fighter_run1_p6",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "fighter_run1_p6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_fighter_run1_p7",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "fighter_run1_p7",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_fighter_break0_p0",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "fighter_break0_p0",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_fighter_break0_p1",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "fighter_break0_p1",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_fighter_break0_p2",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "fighter_break0_p2",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_fighter_break0_p3",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "fighter_break0_p3",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_fighter_break0_p4",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "fighter_break0_p4",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_fighter_break0_p5",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "fighter_break0_p5",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_fighter_break0_p6",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "fighter_break0_p6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_fighter_break0_p7",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "fighter_break0_p7",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_fighter_break1_p0",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "fighter_break1_p0",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_fighter_break1_p1",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "fighter_break1_p1",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_fighter_break1_p2",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "fighter_break1_p2",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_fighter_break1_p3",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "fighter_break1_p3",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_fighter_break1_p4",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "fighter_break1_p4",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_fighter_break1_p5",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "fighter_break1_p5",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_fighter_break1_p6",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "fighter_break1_p6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_fighter_break1_p7",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "fighter_break1_p7",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "wrt_carrier",
       "anim": "asset/tfm2_custom/vfx/wright",
       "tag": "carrier",
@@ -596,6 +852,30 @@
     },
     {
       "type": "Animation",
+      "name": "wrt_bomber_wave1",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "bomber_wave1",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_bomber_wave2",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "bomber_wave2",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_bomber_wave3",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "bomber_wave3",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "wrt_kamikaze",
       "anim": "asset/tfm2_custom/vfx/wright",
       "tag": "kamikaze",
@@ -620,6 +900,22 @@
     },
     {
       "type": "Animation",
+      "name": "wrt_warn_t114",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "warn_t114",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_warn_t72",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "warn_t72",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "wrt_warn",
       "anim": "asset/tfm2_custom/vfx/wright",
       "tag": "warn",
@@ -632,7 +928,7 @@
       "anim": "asset/tfm2_custom/vfx/wright",
       "tag": "carrier_shadow",
       "z": -2,
-      "is_follow": false
+      "is_follow": true
     },
     {
       "type": "Animation",

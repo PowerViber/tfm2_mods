@@ -77,7 +77,7 @@ for left in (False,True):
             fs.append({'duration':(POSE_TICKS[pose][i] if complete else sum(POSE_TICKS[pose]))/60,'data':{'x':x,'y':y,'w':64,'h':56}})
         tag=pose+('_l' if left else '');body_anims[tag]={'frames':fs};body_manifest[tag]=fs
 body_atlas.save(OUT/'candidate-body.png')
-images=[];rectangles=[];anims={};meta={};COLS=12;CELL=160
+images=[];rectangles=[];anims={};meta={};CELL=256
 def add(tag,frames,ticks,kind='effect',z=6,follow=False):
     fs=[]
     for image,t in zip(frames,ticks):
@@ -88,21 +88,63 @@ def add(tag,frames,ticks,kind='effect',z=6,follow=False):
 def durations(total,n=8):return [total//n+(i<total%n) for i in range(n)]
 for name in ('fighter','bomber','chopper','repair','drone','rocket'):
     for i in range(8):add(name+'_p'+str(i),[Image.open(OUT/(name+'-heading-'+str(i)+'.png')).convert('RGBA')],[1])
+# Reuse the approved fighter and rocket palette. These are single-frame
+# renewals, selected from the plane's stable simulation clock, not extra FX.
+fighter=Image.open(OUT/'fighter-native.png').convert('RGBA')
+rocket=Image.open(OUT/'rocket-native.png').convert('RGBA')
+flame=rocket.getpixel((0,rocket.height//2))
+if flame[3]==0:flame=(255,134,36,255)
+for phase in ('run','break'):
+    for variant in range(2):
+        im=Image.new('RGBA',(48,40));draw=ImageDraw.Draw(im)
+        if phase=='run':
+            length=11+variant*4
+            draw.polygon([(13,18),(13-length,20),(13,22)],fill=flame)
+            draw.line((max(0,15-length),20,16,20),fill='#ffe5aa',width=1)
+            jet_body=fighter
+        else:
+            # Foreshortened wings read as banking; the centre stays registered.
+            draw.arc((3,8+variant,40,32+variant),80,170,fill=(213,224,231,130),width=1)
+            jet_body=fighter.resize((fighter.width,14),Image.Resampling.NEAREST)
+        im.alpha_composite(jet_body,((48-jet_body.width)//2,(40-jet_body.height)//2))
+        for heading in range(8):
+            add('fighter_'+phase+str(variant)+'_p'+str(heading),[im.rotate(-heading*45,Image.Resampling.NEAREST,expand=False)],[1])
 add('carrier',[Image.open(OUT/'carrier-native.png').convert('RGBA')],[1])
 radius=lambda n:round(n*2/UPP)+2
-blast=material('blast',(radius(RULES['bomber']['bombRadius']),radius(RULES['bomber']['bombRadius'])))
+# Old aliases remain compact: rocket impacts and shot-down aircraft aren't
+# 45k-area bomber waves. The wave gets one composite at its actual centre.
+blast=material('blast',(radius(10000),radius(10000)))
 for total in (14,16,18):add('bomb_t'+str(total),blast,durations(total))
 add('bomb',blast,durations(18))
+for wave in range(1,RULES['bomber']['waves']+1):
+    wave_frames=[];size=radius(RULES['bomber']['radius']);center=size//2
+    for frame_index in range(8):
+        im=Image.new('RGBA',(size,size));draw=ImageDraw.Draw(im)
+        draw.ellipse((1,1,size-2,size-2),outline=(255,211,156 if wave==3 else 80,round(200*(1-frame_index/10))),width=1)
+        for i in range(RULES['bomber']['bombsPerWave']):
+            angle=math.radians((wave*37+i*360/RULES['bomber']['bombsPerWave'])%360)
+            r=(size//2-13)*((i*7+wave*3)%10)/10
+            b=blast[(frame_index+i%3)%8]
+            im.alpha_composite(b,(round(center+math.cos(angle)*r-b.width/2),round(center+math.sin(angle)*r-b.height/2)))
+        wave_frames.append(im)
+    add('bomber_wave'+str(wave),wave_frames,durations(14),z=-1)
 add('kamikaze',material('blast',(radius(RULES['fighter']['kamikazeRadius']),radius(RULES['fighter']['kamikazeRadius']))),durations(24))
-add('carrier_land',material('pressure',(radius(RULES['carrier']['knockRadius']),96)),durations(30))
+add('carrier_land',material('pressure',(radius(RULES['carrier']['knockRadius']),)*2),durations(30))
 add('knock_ring',geometric('knock_ring',(radius(RULES['carrier']['knockRadius']),)*2),durations(24),z=-2)
-add('warn',geometric('warn',(radius(RULES['bomber']['orbitRadius']),)*2),durations(RULES['bomber']['warnTicks']),z=-2)
+warning_totals=[]
+for mark in (RULES['bomber']['warnTicks'],RULES['bomber']['readyMarkTicks']):
+    hold=RULES['bomber']['waves']*RULES['bomber']['waveEveryTicks'];total=mark+hold;warning_totals.append(total)
+    frames=geometric('warn',(radius(RULES['bomber']['radius']),)*2)
+    # Finish the ready-up, then retain the full footprint through all waves.
+    frames.append(frames[-1].copy())
+    add('warn_t'+str(total),frames,durations(mark)+[hold],z=-2)
+add('warn',geometric('warn',(radius(RULES['bomber']['radius']),)*2),durations(warning_totals[0]),z=-2)
 shadow=[]
 for i in range(8):
-    im=Image.new('RGBA',(150,150));d=ImageDraw.Draw(im);d.ellipse((2,2,147,147),outline=(160,168,181,160),width=1)
-    ship=Image.open(OUT/'carrier-native.png').convert('RGBA');mask=ship.getchannel('A').point(lambda a:round(a*(.2+.6*i/7)));silhouette=Image.new('RGBA',ship.size,(8,15,24));silhouette.putalpha(mask);im.alpha_composite(silhouette,((150-ship.width)//2,(150-ship.height)//2))
-    height=round(65*(1-i/8)**1.4);im.alpha_composite(ship,((150-ship.width)//2,(150-ship.height)//2-height));shadow.append(im)
-add('carrier_shadow',shadow,durations(RULES['carrier']['warnTicks']),z=-2)
+    side=radius(RULES['carrier']['knockRadius']);im=Image.new('RGBA',(side,side));d=ImageDraw.Draw(im);d.ellipse((1,1,side-2,side-2),outline=(160,168,181,160),width=1)
+    ship=Image.open(OUT/'carrier-native.png').convert('RGBA');mask=ship.getchannel('A').point(lambda a:round(a*(.2+.6*i/7)));silhouette=Image.new('RGBA',ship.size,(8,15,24));silhouette.putalpha(mask);im.alpha_composite(silhouette,((side-ship.width)//2,(side-ship.height)//2))
+    height=round(65*(1-i/8)**1.4);im.alpha_composite(ship,((side-ship.width)//2,(side-ship.height)//2-height));shadow.append(im)
+add('carrier_shadow',shadow,durations(RULES['carrier']['warnTicks']),z=-2,follow=True)
 add('lock',geometric('lock',(24,24)),durations(RULES['fighter']['lockTicks']),follow=True)
 add('mg',geometric('mg',(12,12)),[1]*8)
 add('repair_kit',material('repairkit',(28,36)),durations(20))
@@ -120,12 +162,12 @@ for i in sorted(range(len(images)),key=lambda i:(-images[i].height,-images[i].wi
 atlas=Image.new('RGBA',(1920,math.ceil((y+row_h)/64)*64));assert max(atlas.size)<=2048,atlas.size
 for im,r in zip(images,rectangles):atlas.alpha_composite(im,(r['x'],r['y']))
 atlas.save(OUT/'candidate-fx.png');decoded=(body_atlas.width*body_atlas.height+atlas.width*atlas.height)*4;assert decoded<=32*1024*1024
-manifest={'schema':1,'art_revision':'wright-art-1','complete_body':complete,'review_only':True,'units_per_pixel':UPP,'canvas':[64,56],'world_anchor':[32,28],'ground_anchor':[32,48],'pose_ticks':POSE_TICKS,'body':body_manifest,'effects':meta,'decoded_bytes':decoded,'sources':{p.name:sha(p) for p in sorted(OUT.glob('*-source-v1.png'))}}
+manifest={'schema':1,'art_revision':'wright-art-2','complete_body':complete,'review_only':True,'units_per_pixel':UPP,'canvas':[64,56],'world_anchor':[32,28],'ground_anchor':[32,48],'pose_ticks':POSE_TICKS,'body':body_manifest,'effects':meta,'decoded_bytes':decoded,'sources':{p.name:sha(p) for p in sorted(OUT.glob('*-source-v1.png'))},'geometry':{'bomber_radius':RULES['bomber']['radius'],'carrier_knock_radius':RULES['carrier']['knockRadius']},'selection':{'fighter_phase_ticks':4,'fighter_variants':2,'warning_totals':warning_totals}}
 manifest['animation_sources']={p.name:sha(p) for p in sorted(OUT.glob('animation-*-v1.png'))}
 if complete:manifest['extraction_scales']=scales
 (OUT/'art-manifest.json').write_text(json.dumps(manifest,indent=2)+'\n');(ROOT/'editor/wright-art.js').write_text('window.WRIGHT_ART='+json.dumps(manifest,separators=(',',':'))+';\n')
 rust=['//! Generated by tools/build-wright-art.py. Presentation only.',
-      '#![allow(dead_code)]','pub const ART_REVISION: &str = "wright-art-1";',
+      '#![allow(dead_code)]','pub const ART_REVISION: &str = "wright-art-2";',
       'pub fn frame(pose: &str, tick: usize, looping: bool) -> usize {',
       '    let durations: &[usize] = match pose {']
 for pose,ticks in POSE_TICKS.items():rust.append('        '+json.dumps(pose)+' => &'+str([n*1000 for n in ticks])+',')
@@ -133,17 +175,33 @@ rust+=['        _ => &[9000;8],','    };','    let total: usize=durations.iter()
        '    let mut elapsed=if looping {tick.saturating_mul(1000)%total}else{tick.saturating_mul(1000).min(total-1)};',
        '    for (i,d) in durations.iter().enumerate(){if elapsed<*d{return i;}elapsed-=d;}','    durations.len()-1','}',
        'pub fn effect_name(name: &str,ticks: u64) -> String {',
-       '    if name=="wrt_bomb" && matches!(ticks,14|16|18){format!("wrt_bomb_t{ticks}")}else{name.to_owned()}','}']
+       '    if name=="wrt_bomb" && matches!(ticks,14|16|18){format!("wrt_bomb_t{ticks}")}',
+       '    else if name=="wrt_warn" && ['+','.join(str(n) for n in warning_totals)+'].contains(&ticks){format!("wrt_warn_t{ticks}")}else{name.to_owned()}','}',
+       'pub fn fighter_name(heading: usize,phase: &str,tick:u64,born:u64)->String {',
+       '    let variant=(tick.saturating_sub(born)/'+str(manifest['selection']['fighter_phase_ticks'])+')%'+str(manifest['selection']['fighter_variants'])+';',
+       '    match phase {"Run"=>format!("wrt_fighter_run{variant}_p{heading}"),"Break"=>format!("wrt_fighter_break{variant}_p{heading}"),_=>format!("wrt_fighter_p{heading}")}', '}']
 (ROOT/'native/tfm2_custom_ai/src/wright_art.rs').write_text('\n'.join(rust)+'\n')
 font=ImageFont.truetype('C:/Windows/Fonts/segoeui.ttf',14)
-tags=['bomb','kamikaze','carrier_land','knock_ring','warn','carrier_shadow','lock','mg','repair_kit','repair_shield','burn','drone_up','taunt','airframes3']
-board=Image.new('RGB',(1200,math.ceil(len(tags)/3)*230),'#192b36');d=ImageDraw.Draw(board)
+tags=['fighter_run0_p0','fighter_break0_p0','bomber_wave1','bomber_wave3']+['warn_t'+str(n) for n in warning_totals]+['carrier_land','knock_ring','carrier_shadow','lock','mg','repair_kit','repair_shield','burn','taunt','airframes3']
+board=Image.new('RGB',(1500,math.ceil(len(tags)/3)*300),'#192b36');d=ImageDraw.Draw(board)
 for i,tag in enumerate(tags):
-    x,y=i%3*400,i//3*230;d.text((x+12,y+8),tag+' / native + enlarged',font=font,fill='#edc080');spec=meta[tag];f=spec['frames'][min(3,len(spec['frames'])-1)]['data'];im=atlas.crop((f['x'],f['y'],f['x']+f['w'],f['y']+f['h']));box=im.getbbox();im=im.crop(box) if box else im
+    x,y=i%3*500,i//3*300;d.text((x+12,y+8),tag+' / native + enlarged',font=font,fill='#edc080');spec=meta[tag];f=spec['frames'][min(3,len(spec['frames'])-1)]['data'];im=atlas.crop((f['x'],f['y'],f['x']+f['w'],f['y']+f['h']));box=im.getbbox();im=im.crop(box) if box else im
     board.paste(im,(x+12,y+50),im);big=im.resize((im.width*2,im.height*2),Image.Resampling.NEAREST)
     if big.width>220 or big.height>180:big.thumbnail((220,180),Image.Resampling.NEAREST)
-    board.paste(big,(x+165,y+40),big)
+    board.paste(big,(x+270,y+40),big)
 board.save(OUT/'effects-comparison.png')
+phase_boards=[]
+for variant in range(2):
+    board=Image.new('RGB',(900,480),'#203747');draw=ImageDraw.Draw(board);draw.rectangle((450,0,899,479),fill='#b6c4a4')
+    for row,phase in enumerate(('patrol','run','break')):
+        draw.text((12,row*160+8),phase+' / actual size + 3x / east and west',font=font,fill='#f6b857')
+        for heading,x in ((0,0),(4,450)):
+            tag='fighter_p'+str(heading) if phase=='patrol' else 'fighter_'+phase+str(variant)+'_p'+str(heading)
+            r=meta[tag]['frames'][0]['data'];im=atlas.crop((r['x'],r['y'],r['x']+r['w'],r['y']+r['h']))
+            board.paste(im,(x+60-im.width//2,row*160+90-im.height//2),im)
+            large=im.resize((im.width*3,im.height*3),Image.Resampling.NEAREST);board.paste(large,(x+230-large.width//2,row*160+90-large.height//2),large)
+    phase_boards.append(board)
+phase_boards[0].save(OUT/'jet-phases.gif',save_all=True,append_images=phase_boards[1:],duration=70,loop=0)
 if complete:
     contact=Image.new('RGB',(1200,len(body)*140+40),'#203747');d=ImageDraw.Draw(contact)
     d.text((12,8),'WRIGHT / complete whole-body poses / 2x / constant body scale',font=font,fill='#eef4fa')
