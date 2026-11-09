@@ -108,7 +108,7 @@ fn twin_water_dive_copies_committed_endpoint_and_arrival_clock_at_both_ranges() 
         f.order=Some(Order::Twin(Point::new(100_000,510_000)));
         run(&mut core,&mut f,1,&mut log);
         let target=Point::new(if far {900_000} else {200_000},480_000);
-        if far { core.pools.push(Pool{id:900,center:target,radius:d::WATER_POOL_RADIUS,until:1000,whirl:false}); }
+        if far { core.pools.push(Pool{id:900,center:target,radius:d::WATER_POOL_RADIUS,until:1000,whirl:false,whirl_until:0}); }
         f.order=Some(Order::Dive(target));
         let start=f.tick; let effects=core.step(&f);
         let (to,ticks)=effects.iter().find_map(|e|if let Effect::Glide{to,ticks}=e{Some((*to,*ticks))}else{None}).unwrap();
@@ -762,4 +762,95 @@ fn the_clone_and_the_twin_coexist_and_only_the_twin_rescues() {
     run(&mut core, &mut f, 30, &mut log);
     assert!(!log.iter().any(|x| matches!(x, Effect::Cleanse { .. })));
     assert!(!log.iter().any(|x| matches!(x, Effect::SpawnClone { .. } | Effect::Swap { .. })), "no twin or swap from the clone");
+}
+
+// ------------------------------------------------------------------ calmer whirlpools (thalassa-1.4)
+
+/// A pool below her, then an immediate surge onto `aim`; returns the surge tick's log.
+fn surge_at(core: &mut Core, f: &mut Frame, aim: Point, log: &mut Vec<Effect>) -> Vec<Effect> {
+    let here = f.pos;
+    cast_s1(core, f, here, log);
+    core.ready[0] = 0;
+    let mut out = vec![];
+    cast_s1(core, f, aim, &mut out);
+    log.extend(out.iter().cloned());
+    out
+}
+
+#[test]
+fn a_surge_bumps_at_most_two_champions_the_closest() {
+    let mut core = Core::default();
+    let aim = Point::new(340_000, 300_000);
+    let foes = vec![unit(7, 1, 352_000, 300_000), unit(8, 1, 342_000, 300_000), unit(9, 1, 340_000, 305_000), unit(10, 1, 340_000, 322_000)];
+    let mut f = frame(0, 300_000, 300_000, foes);
+    let mut log = vec![];
+    let out = surge_at(&mut core, &mut f, aim, &mut log);
+    let stunned: Vec<usize> = out.iter().filter_map(|e| if let Effect::Stun { target, .. } = e { Some(*target) } else { None }).collect();
+    assert_eq!(stunned.len(), d::TIDE_POOL_BUMP_MAX_CHAMPIONS as usize, "{stunned:?}");
+    assert!(stunned.contains(&8) && stunned.contains(&9), "the closest two: {stunned:?}");
+    for id in [7, 8, 9, 10] {
+        assert!(out.iter().any(|e| matches!(e, Effect::Damage { target, .. } if *target == id)), "{id} still takes the surge");
+    }
+}
+
+#[test]
+fn whirlpools_pull_once_on_the_surge_and_never_after() {
+    let mut core = Core::default();
+    let aim = Point::new(340_000, 300_000);
+    let mut f = frame(0, 300_000, 300_000, vec![unit(7, 1, 360_000, 300_000), unit(8, 1, 345_000, 330_000)]);
+    // terrain right at the surge center: the pull stops short of it
+    f.terrain[(300_000 / CELL * CELLS + 340_000 / CELL) as usize] = true;
+    let mut log = vec![];
+    let out = surge_at(&mut core, &mut f, aim, &mut log);
+    let pulls: Vec<Point> = out.iter().filter_map(|e| if let Effect::Pull { to, .. } = e { Some(*to) } else { None }).collect();
+    assert_eq!(pulls.len(), 2, "one pull per caught enemy");
+    assert!(pulls.iter().all(|p| !f.terrain_at(*p)), "{pulls:?}");
+    let mut later = vec![];
+    run(&mut core, &mut f, 300, &mut later);
+    assert!(!later.iter().any(|e| matches!(e, Effect::Pull { .. })), "no standing pull");
+}
+
+#[test]
+fn a_whirlpool_swirls_two_seconds_then_calms_into_a_pool() {
+    let mut core = Core::default();
+    let mut f = frame(0, 300_000, 300_000, vec![]);
+    let mut log = vec![];
+    surge_at(&mut core, &mut f, Point::new(340_000, 300_000), &mut log);
+    let w = *core.pools.iter().find(|p| p.whirl).expect("a whirlpool");
+    let born = w.whirl_until - d::TIDE_POOL_WHIRL_TICKS as u64;
+    log.clear();
+    let n = w.whirl_until - 1 - f.tick;
+    run(&mut core, &mut f, n, &mut log);
+    assert!(core.pools.iter().any(|p| p.id == w.id && p.whirl), "still swirling just before 2 s");
+    run(&mut core, &mut f, 2, &mut log);
+    let p = core.pools.iter().find(|p| p.id == w.id).expect("still a pool");
+    assert!(!p.whirl, "calm after 2 s");
+    assert_eq!(log.iter().filter(|e| matches!(e, Effect::PoolCalm { id } if *id == w.id)).count(), 1);
+    assert_eq!(p.until, born + d::WATER_POOL_TICKS as u64, "keeps its full life");
+}
+
+#[test]
+fn every_pool_slows_once_whirlpools_more() {
+    let slows = |log: &[Effect], id: usize| -> Vec<i64> { log.iter().filter_map(|e| if let Effect::Slow { target, percent, .. } = e { (*target == id).then_some(*percent) } else { None }).collect() };
+    let mut core = Core::default();
+    // 7 stands in two overlapping normal pools, 8 is out of every pool
+    let mut f = frame(0, 300_000, 300_000, vec![unit(7, 1, 310_000, 300_000), unit(8, 1, 600_000, 600_000)]);
+    let mut log = vec![];
+    let here = f.pos;
+    cast_s1(&mut core, &mut f, here, &mut log);
+    core.ready[0] = 0;
+    f.pos = Point::new(320_000, 300_000);
+    // on land? she is still in her pool, so this surges; use a plain second pool instead
+    core.pools.push(Pool { id: 77, center: Point::new(315_000, 300_000), radius: d::WATER_POOL_RADIUS, until: 5_000, whirl: false, whirl_until: 0 });
+    log.clear();
+    run(&mut core, &mut f, 10, &mut log);
+    assert_eq!(slows(&log, 7), vec![d::WATER_POOL_SLOW_PCT], "one 20% slow, not stacked");
+    assert!(slows(&log, 8).is_empty(), "no slow out of the pools");
+    // a fresh whirlpool: 30%
+    let mut core = Core::default();
+    let mut f = frame(0, 300_000, 300_000, vec![unit(7, 1, 345_000, 300_000)]);
+    surge_at(&mut core, &mut f, Point::new(340_000, 300_000), &mut log);
+    log.clear();
+    run(&mut core, &mut f, 10, &mut log);
+    assert!(slows(&log, 7).contains(&d::TIDE_POOL_SLOW_PCT), "{:?}", slows(&log, 7));
 }
