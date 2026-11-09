@@ -28,10 +28,10 @@ sec = lambda n: f'{n / 60:g} s'
 text = {
     'name': rules['name'],
     'skill': (f"Tidebound (passive): in water (her pools, or wet) she gains +{w['moveSpeedPct']}% move speed and +{w['rangePct']}% range, her harp bolts bounce to a second enemy "
-              f"for {w['bouncePct']}%, and she regenerates {w['regenPerMillePerSecond'] / 10:g}% max HP a second; at full HP it becomes a shield up to {w['overhealCapPct']}% max HP. "
+              f"for {w['bouncePct']}%, and she regenerates {w['regenPerMillePerSecond'] / 10:g}% max HP a second; at full HP it becomes a shield up to {w['overhealCapPct']}% max HP. Enemies in any of her pools are slowed {w['poolSlowPct']}% (not stacking). "
               f"Tide Pool ({sec(t['cooldownTicks'])}): on land, a pool forms below her. In water, the pool she stands in surges up to {t['range']} to the target and becomes a whirlpool "
-              f"({t['whirlScalePct']}% size) that slows {t['slowPct']}%, pulls inward and deals {t['base']} + {t['apRatio']}% AP; two or more champions caught bump and are stunned "
-              f"{sec(t['bumpStunTicks'])}. A new whirlpool forms below her."),
+              f"({t['whirlScalePct']}% size) that pulls enemies inward once and deals {t['base']} + {t['apRatio']}% AP, slowing {t['slowPct']}% while it swirls ({sec(t['whirlTicks'])}, then it "
+              f"calms into a pool); if two or more champions are caught, up to {t['bumpMaxChampions']} bump and are stunned {sec(t['bumpStunTicks'])}. A new whirlpool forms below her."),
     'skill2': (f"Dive ({sec(d['cooldownTicks'])}): in water, opens a pool up to {d['range']} away, dives into hers and surfaces from it. On land, a short slide that leaves her wet for "
                f"{sec(w['wetTicks'])}. Tide Twin ({sec(tw['cooldownTicks'])}): a water clone for {sec(tw['ticks'])} ({tw['hpPct']}% of her HP) that moves and fires harp bolts on its own at "
                f"{tw['copyPct']}%, and copies her Tide Pool and Dive to the same point when she casts them. When an ally or Thalassa is stunned within {tw['rescueRange']}, it flies to "

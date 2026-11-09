@@ -3811,3 +3811,8 @@ To check in game: close the game, Update/Check, confirm native 0.10.36 and champ
 - **Follow-up (`thalassa-1.2`):** the Tide Twin walks and fires its own bolts like someone playing her (skills only when she casts them); a twin spawned on water rescues Thalassa at any range, instantly.
 - **Follow-up (`thalassa-1.3`):** the trident leaves a clone of her at the landing (8 s, 25% HP) that fights on its own with bolts, Tide Pool and Dive at 50% damage; the far-pool Dive is removed.
 - **Pending:** live acceptance and balance.
+## Nov 9: round 158 (native 0.10.93, tfm2_custom 0.2.96): calmer whirlpools for Thalassa
+- **Reported in play:** bumps chained, and whirlpools held enemies so hard that she was too strong.
+- **Cause:** every whirlpool force-moved enemies inside 6 times a second (an engine CC each time, ignoring walls), and every surge stunned everyone it caught.
+- **Fix (`thalassa-1.4`):** a surge bumps at most 2 (the closest); it pulls once, never through walls; whirlpools swirl 2 s, then calm into pools; every pool slows 20% (whirlpools 30%, never stacked).
+- **Checks:** 1075 native tests, 42 Lab tests, 10 browser checks, 1406 art checks, Mod Manager load. Review: `docs/main-review-round-158.md`.

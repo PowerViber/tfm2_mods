@@ -270,7 +270,10 @@ impl Thalassa {
                 }
                 Effect::Pull { target, to, ticks } => {
                     if reach(owner, target) {
-                        crate::motion::glide(sim, target, (to.x, to.y), ticks, crate::motion::Kind::Knock);
+                        // the surge's single pull: never through walls, cages or onto terrain
+                        let from = sim.get_entity(target).map(|e| e.pos()).map_or((to.x, to.y), |p| (p.0 as i64, p.1 as i64));
+                        let to = crate::place::safe(&all, tick, from, (to.x, to.y));
+                        crate::motion::glide(sim, target, to, ticks, crate::motion::Kind::Knock);
                     }
                 }
                 Effect::Glide { to, ticks } => {
@@ -321,6 +324,15 @@ impl Thalassa {
                 Effect::PoolDown { id } => {
                     remove_prefix(sim, owner, &format!("{POOL_PREFIX}{id}:"));
                     self.pool_shown.remove(&id);
+                }
+                Effect::PoolCalm { id } => {
+                    // the swirl is over: republish it as a normal pool so other AIs stop reading a whirlpool
+                    remove_prefix(sim, owner, &format!("{POOL_PREFIX}{id}:"));
+                    if let Some(p) = self.core.pools.iter().find(|p| p.id == id) {
+                        let name = format!("{POOL_PREFIX}{id}:{}:{}:{}:{}:0", p.center.x, p.center.y, p.radius, p.until);
+                        sim.add_buff(owner, &crate::timed(&name, (p.until as usize).saturating_sub(tick) + 2));
+                    }
+                    crate::steve::note_map_buff(sim.seed());
                 }
                 Effect::SpawnClone { pos, ticks } => {
                     if let Some(old) = self.clone.take() {
