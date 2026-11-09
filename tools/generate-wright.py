@@ -32,9 +32,10 @@ text = {
               f"a scout drone ({dr['hpPct']}% of his HP) flies to the nearest enemy champion, hovers {sec(dr['hoverTicks'])} and taunts enemies within "
               f"{dr['tauntRadius']} onto it for {sec(dr['tauntTicks'])}. "
               f"Fighter Wing ({sec(fi['cooldownTicks'])}): launches {fi['perCast']} fighters for {sec(fi['ticks'])} (up to {fi['maxAlive']}, {fi['hpPct']}% of his HP "
-              f"each, can be shot down). They circle him and dogfight: they boost in on attack runs with a machine gun ({fi['gunBase']} + {fi['gunApRatio']}% AP every "
-              f"{sec(fi['gunEveryTicks'])}) and a lock-on rocket every {sec(fi['rocketEveryTicks'])} ({fi['rocketBase']} + {fi['rocketApRatio']}% AP), break away and "
-              f"come around again; with no champion near they clear minions and camps. They never damage turrets. When their time ends or they fall below "
+              f"each, can be shot down). They fly sorties from him: each picks the nearest enemy (champions first, then minions and creeps), flies to "
+              f"where it is, strafes once ({fi['sortieBase']} + {fi['sortieApRatio']}% AP; every {fi['rocketEvery']}rd sortie a rocket, {fi['rocketBase']} + "
+              f"{fi['rocketApRatio']}% AP with splash) and returns; no homing, so a moving target can dodge, and the closer he is, the faster they attack. "
+              f"They never damage turrets. When their time ends or they fall below "
               f"{fi['kamikazeHpPct']}% HP they kamikaze: {fi['kamikazeBase']} + {fi['kamikazeApRatio']}% AP, a knockback and a burn of "
               f"{fi['burnPermillePerSecond'] / 10:g}% max HP a second for {sec(fi['burnTicks'])}."),
     'skill2': (f"Carpet Bomber ({sec(bo['cooldownTicks'])}): marks {bo['waves']} overlapping circles advancing in a fixed line (radius {bo['radius']}, spacing {bo['spacing']}, furthest centre within {bo['range']}). After {sec(bo['warnTicks'])}, a bomber triggers one large explosion per circle, {sec(bo['waveEveryTicks'])} apart "

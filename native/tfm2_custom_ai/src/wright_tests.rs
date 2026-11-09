@@ -58,18 +58,23 @@ mod glue {
     }
 
     #[test]
-    fn a_moving_rocket_target_gets_an_entity_attached_reticle() {
+    fn sorties_fly_by_engine_glides_with_no_lock_reticle() {
         let _g=crate::walls::TEST_LOCK.lock();let (x,y)=open_spot(90_000);
         let host=Host::new(vec![champ(0,(x,y),"tfm2_custom_wright"),champ(1,(x+40_000,y),"fighter")]);
         host.borrow_mut().record_view_effects=true;
         let mut w=crate::wright::Wright::default();with_sim(&host,|sim|w.on_spawn(sim,0,0));
         for tick in 100..420 {
             host.borrow_mut().tick=tick;
-            host.borrow_mut().units[1].pos.1=y+(tick%10) as u64*100;
             with_sim(&host,|sim|{let mut f=w.frame(sim,0);f.manual=true;if tick==100{f.order=Some(Order::Fighters(Point::default()));}let effects=w.core.step(&f);w.apply(sim,0,effects);});
         }
-        let h=host.borrow();let locks:Vec<_>=h.view_effects.iter().filter(|v|v.0=="wrt_lock").collect();assert!(!locks.is_empty());
-        for lock in locks {assert_eq!(lock.2,mod_api_stable::InputTargetV1::target(1));assert_eq!(lock.3,d::FIGHTER_LOCK_TICKS as u64);}
+        // (the mock host records engine glides but doesn't move units, so a sortie never arrives here; the core tests
+        // cover the strike, this covers the host side)
+        let h=host.borrow();
+        let jets:Vec<usize>=h.spawned.iter().map(|s|s.0).collect();
+        assert!(!jets.is_empty());
+        assert!(jets.iter().all(|j|h.ccs[*j].iter().any(|c|c.0.kind==mod_api_stable::CcKindV1::ForceMove.code())),"sorties fly by engine glides");
+        assert!(!h.moves.iter().any(|m|jets.contains(&m.0)),"never a hand-set position");
+        assert!(!h.view_effects.iter().any(|v|v.0=="wrt_lock"),"no lock-on reticle");
     }
 
     #[test]

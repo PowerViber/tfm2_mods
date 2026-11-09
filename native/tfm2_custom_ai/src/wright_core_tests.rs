@@ -154,21 +154,93 @@ fn fighters_stay_out_capped_at_four_and_the_oldest_leaves() {
 }
 
 #[test]
-fn fighters_machine_gun_and_fire_lock_on_rockets() {
+fn jets_fly_sorties_one_strike_each_and_every_third_is_a_rocket() {
     let mut core = Core::default();
     let mut f = frame(0, 300_000, 300_000, vec![unit(7, 1, 330_000, 300_000)]);
     let mut log = vec![];
-    order(&mut core, &mut f, Order::Fighters(Point::default()), &mut log);
-    run(&mut core, &mut f, 400, &mut log);
-    let hits = damage(&log, 7);
-    let gun = ap(d::FIGHTER_GUN_BASE, d::FIGHTER_GUN_AP_RATIO);
+    let keys = spawns(&order(&mut core, &mut f, Order::Fighters(Point::default()), &mut log), Kind::Fighter);
+    log.clear();
+    // follow one jet: out, strike, home, repeat
+    let mut phases = vec![];
+    for _ in 0..600 {
+        run(&mut core, &mut f, 1, &mut log);
+        if let Some(p) = core.planes.iter().find(|p| p.key == keys[0]) {
+            if phases.last() != Some(&p.phase) {
+                phases.push(p.phase);
+            }
+        }
+    }
+    assert!(phases.windows(3).any(|w| w == [Phase::Run, Phase::Break, Phase::Patrol]), "out, back, home: {phases:?}");
+    let sorties = core.planes.iter().find(|p| p.key == keys[0]).unwrap().waves;
+    assert!(sorties >= 3, "{sorties}");
+    let gun = ap(d::FIGHTER_SORTIE_BASE, d::FIGHTER_SORTIE_AP_RATIO);
     let rocket = ap(d::FIGHTER_ROCKET_BASE, d::FIGHTER_ROCKET_AP_RATIO);
-    assert!(hits.iter().any(|h| *h == (gun, false)), "machine gun: {hits:?}");
-    assert!(hits.iter().any(|h| *h == (rocket, true)), "rocket: {hits:?}");
-    assert!(log.iter().any(|e| matches!(e, Effect::Fx { name, .. } if name == "wrt_lock")), "lock-on reticle first");
-    // guns on their own clock: at most one burst per fighter per interval
-    let bursts = hits.iter().filter(|h| h.0 == gun).count() as u64;
-    assert!(bursts <= 2 * (400 / d::FIGHTER_GUN_EVERY_TICKS as u64 + 1), "{bursts}");
+    let hits = damage(&log, 7);
+    let (guns, rockets) = (hits.iter().filter(|h| **h == (gun, false)).count(), hits.iter().filter(|h| **h == (rocket, true)).count());
+    let total: i64 = core.planes.iter().filter(|p| p.kind == Kind::Fighter).map(|p| p.waves).sum();
+    assert_eq!((guns + rockets) as i64, total, "exactly one strike per sortie");
+    assert_eq!(rockets as i64, core.planes.iter().filter(|p| p.kind == Kind::Fighter).map(|p| p.waves / d::FIGHTER_ROCKET_EVERY).sum::<i64>(), "every third");
+    assert!(!log.iter().any(|e| matches!(e, Effect::Fx { name, .. } if name == "wrt_lock")), "no lock-on");
+}
+
+#[test]
+fn the_closer_he_is_the_faster_they_strike() {
+    let strikes = |dist: i64| {
+        let mut core = Core::default();
+        let mut target = unit(7, 1, 300_000 + dist, 300_000);
+        target.hp = 100_000;
+        target.max_hp = 100_000;
+        let mut f = frame(0, 300_000, 300_000, vec![target]);
+        let mut log = vec![];
+        order(&mut core, &mut f, Order::Fighters(Point::default()), &mut log);
+        run(&mut core, &mut f, 600, &mut log);
+        damage(&log, 7).len()
+    };
+    let (near, far) = (strikes(20_000), strikes(70_000));
+    assert!(near > far * 3 / 2, "near {near} vs far {far}");
+}
+
+#[test]
+fn no_lock_a_target_that_moves_away_is_missed_and_the_jet_still_returns() {
+    let mut core = Core::default();
+    let mut f = frame(0, 300_000, 300_000, vec![unit(7, 1, 360_000, 300_000)]);
+    let mut log = vec![];
+    let keys = spawns(&order(&mut core, &mut f, Order::Fighters(Point::default()), &mut log), Kind::Fighter);
+    // wait until the first jet commits, then the target steps 40,000 away
+    for _ in 0..60 {
+        run(&mut core, &mut f, 1, &mut log);
+        if core.planes.iter().any(|p| p.key == keys[0] && p.phase == Phase::Run) {
+            break;
+        }
+    }
+    let spot = core.planes.iter().find(|p| p.key == keys[0]).unwrap().goal;
+    f.units[0].pos = Point::new(spot.x, spot.y + 40_000);
+    // a bystander stands on the spot: it takes the hit instead
+    f.units.push(unit(8, 1, spot.x + 2_000, spot.y));
+    log.clear();
+    for _ in 0..40 {
+        run(&mut core, &mut f, 1, &mut log);
+        if core.planes.iter().any(|p| p.key == keys[0] && p.phase == Phase::Break) {
+            break;
+        }
+    }
+    assert!(core.planes.iter().any(|p| p.key == keys[0] && p.phase == Phase::Break), "struck and heading home");
+    assert!(!damage(&log, 8).is_empty(), "the one on the spot is hit");
+    // nobody on the spot: a miss, and it still comes home
+    let mut core = Core::default();
+    let mut f = frame(0, 300_000, 300_000, vec![unit(7, 1, 360_000, 300_000)]);
+    let mut log = vec![];
+    order(&mut core, &mut f, Order::Fighters(Point::default()), &mut log);
+    for _ in 0..30 {
+        run(&mut core, &mut f, 1, &mut log);
+        if core.planes.iter().any(|p| p.phase == Phase::Run) {
+            break;
+        }
+    }
+    f.units[0].pos = Point::new(360_000, 340_000);
+    log.clear();
+    run(&mut core, &mut f, 30, &mut log);
+    assert!(log.iter().any(|e| matches!(e, Effect::Log(l) if l.contains("sortie missed"))));
 }
 
 #[test]
@@ -449,36 +521,17 @@ fn knockbacks_never_land_on_terrain() {
 // ------------------------------------------------------------------ jets
 
 #[test]
-fn jets_patrol_then_boost_in_strafe_and_break_away() {
+fn jets_wait_at_home_when_nothing_is_near() {
     let mut core = Core::default();
     let mut f = frame(0, 300_000, 300_000, vec![]);
     let mut log = vec![];
-    let keys = spawns(&order(&mut core, &mut f, Order::Fighters(Point::default()), &mut log), Kind::Fighter);
-    // patrol: always moving around him
-    run(&mut core, &mut f, 60, &mut log);
-    let moves = log.iter().filter(|e| matches!(e, Effect::PlaneMove { key, .. } if *key == keys[0])).count();
-    assert!(moves >= 8, "always moving: {moves}");
-    assert!(core.planes.iter().all(|p| p.phase == Phase::Patrol));
-    // a target: runs and breaks, guns only during runs
-    f.units.push(unit(7, 1, 360_000, 300_000));
-    let mut phases = vec![];
-    log.clear();
-    for _ in 0..360 {
-        run(&mut core, &mut f, 1, &mut log);
-        if let Some(p) = core.planes.iter().find(|p| p.key == keys[0]) {
-            if phases.last() != Some(&p.phase) {
-                phases.push(p.phase);
-            }
-        }
+    order(&mut core, &mut f, Order::Fighters(Point::default()), &mut log);
+    run(&mut core, &mut f, 120, &mut log);
+    for p in core.planes.iter().filter(|p| p.kind == Kind::Fighter) {
+        assert_eq!(p.phase, Phase::Patrol);
+        assert!(p.pos.within(f.pos, d::FIGHTER_HOME_RADIUS + 8_000), "at home: {:?}", p.pos);
     }
-    assert!(phases.contains(&Phase::Run) && phases.contains(&Phase::Break), "{phases:?}");
-    assert!(phases.windows(2).any(|w| w[0] == Phase::Break && w[1] != Phase::Break), "comes around again: {phases:?}");
-    let gun = ap(d::FIGHTER_GUN_BASE, d::FIGHTER_GUN_AP_RATIO);
-    assert!(damage(&log, 7).iter().any(|h| *h == (gun, false)), "strafes");
     assert!(log.iter().all(|e| !matches!(e, Effect::PlaneMove { to, .. } if f.terrain_at(*to))));
-    // the pair attacks offset: they don't start their runs on the same tick
-    let starts: Vec<u64> = core.planes.iter().filter(|p| p.kind == Kind::Fighter).map(|p| p.phase_until).collect();
-    assert!(starts.len() == 2);
 }
 
 #[test]

@@ -46,7 +46,7 @@ const root = path.resolve(__dirname, '..'), port = 7321;
     });
     check('The workshop stocks airframes up to 3', r.stock === 3);
     check('Fighter Wing spawns two real, targetable carriers', r.carriers >= 2);
-    check(`Jets patrol, boost in and break away (${r.phases})`, r.phases.includes('Run') && r.phases.includes('Break'));
+    check(`Jets fly sorties: out, strike, home (${r.phases})`, r.phases.includes('Run') && r.phases.includes('Break') && r.phases.includes('Patrol'));
     check('Jets attack on their own', r.fighterDamage);
     check('S2 readies up before the waves', r.readyUp);
     check(`S2 drops its waves and the last one stuns (${r.waves} damage)`, r.waves > 0 && r.stunned);

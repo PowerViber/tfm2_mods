@@ -3,9 +3,9 @@
 //!
 //!   passive Workshop: an airframe every 4 s (up to 3); S1-S3 each use one. Every 14 s a scout drone (a real unit) flies
 //!           to the nearest enemy champion, hovers and taunts enemies near it onto itself once.
-//!   S1      Fighter Wing: 2 fighters (real, targetable units) for 20 s, at most 4. They escort him and attack his target:
-//!           machine-gun bursts, a lock-on rocket every 4 s, and a kamikaze (knockback, burn) when their time ends or
-//!           they are nearly shot down.
+//!   S1      Fighter Wing: 2 fighters (real, targetable units) for 20 s, at most 4. They fly sorties from him: commit to
+//!           where an enemy is (champions first, then minions and creeps), strike once (every 3rd sortie a rocket) and
+//!           fly back; no homing. A kamikaze (knockback, burn) when their time ends or they are nearly shot down.
 //!   S2      Carpet Bomber: three large, overlapping explosions advance along a committed line; the last stuns.
 //!   S3      Repair Wing: a repair chopper circles him and a repair plane flies to the most hurt ally anywhere; both drop
 //!           kits (heal + capped shield) for 6 s, and the chopper repairs his fighters.
@@ -283,10 +283,6 @@ pub struct Plane {
     pub from_carrier: bool,
     pub target: Option<usize>,
     pub moving_until: u64,
-    pub next_gun: u64,
-    pub next_rocket: u64,
-    /// locked onto (target, fires at)
-    pub lock: Option<(usize, u64)>,
     pub next_kit: u64,
     pub next_bomb: u64,
     /// a fighter diving in (no longer has a carrier)
@@ -459,7 +455,6 @@ impl Core {
         let key = self.next_key;
         self.next_key += 1;
         let at = if kind.real() { free_spot(f, f.pos, at) } else { at.clamp_map() };
-        let stagger = (key as u64 % 4) * 15;
         self.planes.push(Plane {
             key,
             kind,
@@ -474,9 +469,6 @@ impl Core {
             from_carrier,
             target: None,
             moving_until: 0,
-            next_gun: f.tick + 12,
-            next_rocket: f.tick + 60 + stagger,
-            lock: None,
             next_kit: f.tick + 20,
             next_bomb: f.tick,
             kamikaze: false,
@@ -484,7 +476,7 @@ impl Core {
             hover_until: 0,
             goal: at,
             phase: Phase::Patrol,
-            phase_until: f.tick + (key as u64 % 2) * sec(d::FIGHTER_STAGGER_TICKS),
+            phase_until: f.tick + (key as u64 % 2) * 6,
             waves: 0,
             strikes: None,
         });
@@ -526,7 +518,7 @@ impl Core {
                 Kind::Drone => self.drone(f, &mut p, out),
                 Kind::Bomber => self.bomber(f, &mut p, out),
                 Kind::Chopper | Kind::Repair => self.repairer(f, &mut p, out),
-                Kind::Rocket => self.rocket(f, &mut p, out),
+                Kind::Rocket => false,
             };
             let Some(i) = self.planes.iter().position(|q| q.key == key) else { continue };
             if keep {
@@ -581,14 +573,15 @@ impl Core {
             .or_else(|| f.units.iter().filter(|u| !u.champion).filter(ok).min_by_key(|u| (u.pos.d2(p.pos), u.id)))
     }
 
-    /// A jet: patrols around him, boosts in on attack runs (guns while pointed at the target), breaks away and comes
-    /// around again. Always moving, always targetable.
+    /// A jet flies sorties from him: it waits at home (circling him), commits to where its target is, flies there, strikes
+    /// once (a gun burst; every few sorties a rocket) and flies back. No homing: a target that moves away is missed. The
+    /// closer he is to the fight, the shorter the round trip, so the faster they attack. Always targetable.
     fn fighter(&mut self, f: &Frame, p: &mut Plane, out: &mut Vec<Effect>) -> bool {
-        let speed = d::FIGHTER_SPEED;
+        let speed = d::FIGHTER_SORTIE_SPEED;
         if p.kamikaze {
-            // diving: straight at the target's current spot, then the blast
-            let goal = p.target.and_then(|t| f.units.iter().find(|u| u.id == t && u.hp > 0)).map_or(p.goal, |u| u.pos);
-            self.fly(f, p, goal, speed * 3, out);
+            // diving onto the spot it committed to, then the blast
+            let goal = p.goal;
+            self.fly(f, p, goal, speed, out);
             if p.pos.within(goal, 4_000) || f.tick >= p.until {
                 self.kamikaze_blast(f, p.pos, out);
                 return false;
@@ -596,12 +589,11 @@ impl Core {
             return true;
         }
         let low = f.planes.iter().find(|v| v.key == p.key).is_some_and(|v| v.max_hp > 0 && v.hp * 100 <= v.max_hp * d::FIGHTER_KAMIKAZE_HP_PCT);
-        let target = self.fighter_target(f, p).cloned();
-        p.target = target.as_ref().map(|u| u.id);
-        // time's up or nearly shot down: dive into the target (no target: it just leaves)
+        // time's up or nearly shot down: dive at the nearest enemy's spot (committed); no one near: it just leaves
         if f.tick >= p.until || low {
-            return match target {
-                Some(u) if u.pos.within(p.pos, 80_000) => {
+            let near = f.units.iter().filter(|u| f.enemy(u) && !u.tower && u.pos.within(p.pos, 80_000)).min_by_key(|u| (u.pos.d2(p.pos), u.id));
+            return match near {
+                Some(u) => {
                     p.kamikaze = true;
                     p.goal = u.pos;
                     p.until = f.tick + 40;
@@ -609,95 +601,76 @@ impl Core {
                     out.push(Effect::Log(format!("fighter {} kamikaze", p.key)));
                     true
                 }
-                _ => false,
+                None => false,
             };
         }
-        let boost = speed * d::FIGHTER_BOOST_PCT / 100;
-        match (&target, p.phase) {
-            (Some(u), Phase::Patrol) if f.tick >= p.phase_until => {
-                // start a run: boost in from where it is, aiming past the target
-                p.phase = Phase::Run;
-                p.phase_until = f.tick + sec(d::FIGHTER_RUN_TICKS);
-                p.goal = u.pos.toward(p.pos, -d::FIGHTER_OVERSHOOT);
-                if p.lock.is_none() && f.tick >= p.next_rocket {
-                    p.lock = Some((u.id, f.tick + sec(d::FIGHTER_LOCK_TICKS)));
-                    out.push(Effect::Fx { name: "wrt_lock".into(), at: u.pos, ticks: sec(d::FIGHTER_LOCK_TICKS), ambient: false });
-                }
-                self.fly(f, p, p.goal, boost, out);
-            }
-            (Some(u), Phase::Run) => {
-                // keep the line through the target (it's moving), guns while it's ahead and in range
-                let ahead = p.goal.d2(u.pos) < p.goal.d2(p.pos);
-                if ahead {
-                    p.goal = u.pos.toward(p.pos, -d::FIGHTER_OVERSHOOT);
-                }
-                if ahead && f.tick >= p.next_gun && p.pos.within(u.pos, d::FIGHTER_GUN_RANGE + u.radius) {
-                    p.next_gun = f.tick + sec(d::FIGHTER_GUN_EVERY_TICKS);
-                    out.push(Effect::Damage { target: u.id, amount: pct(d::FIGHTER_GUN_BASE, d::FIGHTER_GUN_AP_RATIO, f.ap), direct: false });
-                    out.push(Effect::Fx { name: "wrt_mg".into(), at: u.pos, ticks: 8, ambient: true });
-                }
-                self.fly(f, p, p.goal, boost, out);
-                if f.tick >= p.phase_until || p.pos.within(p.goal, 6_000) {
-                    // break away: bank around the target to a new side
+        match p.phase {
+            Phase::Run => {
+                // outbound to the committed spot
+                let goal = p.goal;
+                self.fly(f, p, goal, speed, out);
+                if p.pos.within(goal, 4_000) {
+                    self.strike(f, p, out);
                     p.phase = Phase::Break;
-                    p.phase_until = f.tick + sec(d::FIGHTER_BREAK_TICKS);
-                    let side = if p.key % 2 == 0 { 120_000 } else { -120_000 };
-                    let from = ((p.pos.y - u.pos.y) as f64).atan2((p.pos.x - u.pos.x) as f64).to_degrees().round() as i64 * 1000;
-                    p.goal = u.pos.around(d::FIGHTER_BREAK_RADIUS, from + side);
                 }
             }
-            (_, Phase::Break) => {
-                self.fly(f, p, p.goal, speed * 2, out);
-                if f.tick >= p.phase_until || p.pos.within(p.goal, 5_000) {
+            Phase::Break => {
+                // home to him
+                self.fly(f, p, f.pos, speed, out);
+                if p.pos.within(f.pos, d::FIGHTER_HOME_RADIUS + 4_000) {
                     p.phase = Phase::Patrol;
-                    p.phase_until = f.tick;
+                    p.phase_until = f.tick + sec(d::FIGHTER_REST_TICKS);
                 }
             }
-            _ => {
-                // patrol: fast laps around him
-                p.phase = Phase::Patrol;
-                p.angle_mdeg = (p.angle_mdeg + 5_000).rem_euclid(360_000);
-                let goal = f.pos.around(d::FIGHTER_ESCORT_RADIUS, p.angle_mdeg + if p.from_carrier { 60_000 } else { 0 });
-                self.fly(f, p, goal, speed * 2, out);
-            }
-        }
-        if let Some((t, at)) = p.lock {
-            if f.tick >= at {
-                p.lock = None;
-                p.next_rocket = f.tick + sec(d::FIGHTER_ROCKET_EVERY_TICKS);
-                if f.units.iter().any(|u| u.id == t && f.enemy(u) && !u.tower) {
-                    let key = self.next_key;
-                    self.next_key += 1;
-                    let mut r = *p;
-                    r.key = key;
-                    r.kind = Kind::Rocket;
-                    r.born = f.tick;
-                    r.start = f.tick;
-                    r.until = f.tick + 180;
-                    r.target = Some(t);
-                    r.lock = None;
-                    r.moving_until = 0;
-                    r.phase = Phase::Patrol;
-                    self.planes.push(r);
+            Phase::Patrol => {
+                let target = (f.tick >= p.phase_until).then(|| self.fighter_target(f, p).map(|u| (u.id, u.pos))).flatten();
+                match target {
+                    Some((id, at)) => {
+                        // launch: commit to where the target is now
+                        p.phase = Phase::Run;
+                        p.target = Some(id);
+                        p.goal = at;
+                        self.fly(f, p, at, speed, out);
+                    }
+                    None => {
+                        // at home: tight laps around him
+                        p.angle_mdeg = (p.angle_mdeg + 8_000).rem_euclid(360_000);
+                        let goal = f.pos.around(d::FIGHTER_HOME_RADIUS, p.angle_mdeg + if p.from_carrier { 60_000 } else { 0 });
+                        self.fly(f, p, goal, d::FIGHTER_SPEED * 2, out);
+                    }
                 }
             }
         }
         true
     }
 
-    fn rocket(&mut self, f: &Frame, p: &mut Plane, out: &mut Vec<Effect>) -> bool {
-        let Some(u) = p.target.and_then(|t| f.units.iter().find(|u| u.id == t && f.enemy(u))) else { return false };
-        if f.tick >= p.until {
-            return false;
+    /// One sortie's strike at its committed spot: the committed target if it's still there, else the nearest enemy
+    /// within the strike radius, else a miss. Every few sorties it's a rocket (a direct hit, with splash).
+    fn strike(&mut self, f: &Frame, p: &mut Plane, out: &mut Vec<Effect>) {
+        p.waves += 1;
+        let rocket = d::FIGHTER_ROCKET_EVERY > 0 && p.waves % d::FIGHTER_ROCKET_EVERY == 0;
+        let spot = p.goal;
+        let in_reach = |u: &&Unit| f.enemy(u) && !u.tower && u.pos.within(spot, d::FIGHTER_GUN_RANGE + u.radius);
+        let hit = p
+            .target
+            .and_then(|t| f.units.iter().find(|u| u.id == t))
+            .filter(in_reach)
+            .or_else(|| f.units.iter().filter(in_reach).min_by_key(|u| (u.pos.d2(spot), u.id)));
+        let Some(u) = hit else {
+            out.push(Effect::Log(format!("fighter {} sortie missed", p.key)));
+            return;
+        };
+        if rocket {
+            let dmg = pct(d::FIGHTER_ROCKET_BASE, d::FIGHTER_ROCKET_AP_RATIO, f.ap);
+            out.push(Effect::Damage { target: u.id, amount: dmg, direct: true });
+            for o in f.units.iter().filter(|o| o.id != u.id && f.enemy(o) && !o.tower && o.pos.within(u.pos, d::FIGHTER_ROCKET_SPLASH + o.radius)) {
+                out.push(Effect::Damage { target: o.id, amount: dmg / 2, direct: false });
+            }
+            out.push(Effect::Fx { name: "wrt_bomb".into(), at: u.pos, ticks: 16, ambient: false });
+        } else {
+            out.push(Effect::Damage { target: u.id, amount: pct(d::FIGHTER_SORTIE_BASE, d::FIGHTER_SORTIE_AP_RATIO, f.ap), direct: false });
+            out.push(Effect::Fx { name: "wrt_mg".into(), at: u.pos, ticks: 8, ambient: true });
         }
-        let goal = u.pos;
-        self.fly(f, p, goal, d::FIGHTER_ROCKET_SPEED, out);
-        if p.pos.within(goal, u.radius + 2_000) {
-            out.push(Effect::Damage { target: u.id, amount: pct(d::FIGHTER_ROCKET_BASE, d::FIGHTER_ROCKET_AP_RATIO, f.ap), direct: true });
-            out.push(Effect::Fx { name: "wrt_bomb".into(), at: goal, ticks: 16, ambient: false });
-            return false;
-        }
-        true
     }
 
     fn kamikaze_blast(&mut self, f: &Frame, at: Point, out: &mut Vec<Effect>) {

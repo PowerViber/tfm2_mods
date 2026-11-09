@@ -59,6 +59,10 @@ for i in range(4):check('native stock '+str(i),any(b['name']=='wrt_airframes:'+s
 decoded=(body.width*body.height+fx.width*fx.height)*4;check('decoded artwork budget',decoded==manifest['decoded_bytes'] and decoded<=32*1024*1024)
 before_rules=json.loads(subprocess.check_output(['rtk','proxy','git','show',BASE+':rules/wright.json'],cwd=ROOT))
 before_rules['revision']='wright-3';before_rules['bomber'].pop('bombsPerWave');before_rules['bomber']['spacing']=40000
+# wright-4 (Reihan): jets fly sorties from him (no lock-on, no dogfight runs); lockTicks stays for the unused lock art
+before_rules['revision']='wright-4'
+for k in ('gunEveryTicks','gunBase','gunApRatio','rocketEveryTicks','rocketSpeed','boostPct','runTicks','breakTicks','breakRadius','overshoot','staggerTicks'):before_rules['fighter'].pop(k)
+before_rules['fighter'].update(gunRange=15000,sortieBase=20,sortieApRatio=25,rocketEvery=3,rocketSplash=8000,homeRadius=8000,sortieSpeed=4800,restTicks=12)
 check('only intended canonical bomber geometry changes',before_rules==json.loads((ROOT/'rules/wright.json').read_text()))
 for rel in ('mods/tfm2_custom/champions/tfm2_custom_wright#sheet.png','mods/tfm2_custom/champions/tfm2_custom_wright#anim.fanim'):
     before=subprocess.check_output(['rtk','proxy','git','show',BASE+':'+rel],cwd=ROOT);after=(ROOT/rel).read_bytes()

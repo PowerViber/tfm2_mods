@@ -3821,3 +3821,9 @@ To check in game: close the game, Update/Check, confirm native 0.10.36 and champ
 - **Kit:** fighters (machine gun, lock-on rockets, kamikaze with knockback and burn) that can be shot down, a carpet bomber, a repair chopper plus a global repair plane, a taunting scout drone, and a Sky Carrier that drops from the sky (knockback, no damage) and launches fighters, bombers and choppers.
 - **Built:** the native kit, the Lab (`editor/wright.html`) and tests. Guide: `docs/wright-guide.md`.
 - **Waiting on:** Codex's art (`docs/wright-art-handoff.md`), then the release.- **Lab review (`wright-2`):** jets dogfight (patrol, boost in, strafe, break away; always targetable, 15% HP; clear minions; never hit turrets); S2 is Nana-style (1 s ready-up, 3 waves, the last stuns); the Sky Carrier drops on him (100,000 knockback, no damage), follows him, takes 80% of his damage from its pool for 10 s and readies bombers for S2. The "jets hit friendlies" report didn't reproduce; the Lab now marks every hit.
+## Nov 9: round 159 (native 0.10.94, tfm2_custom 0.2.97): Wright released
+- **Jets (`wright-4`, Reihan):** they fly sorties from him: commit to an enemy's spot (champions, then minions and creeps), strike once (every 3rd sortie a rocket) and return; no homing, so a moving target can dodge; the closer he is, the faster they attack. The lock-on rocket is gone.
+- **Codex's art** with bigger areas and the bomber as three advancing warned explosions.
+- **Checks:** 1109 native tests, 25 Lab tests, 12 browser checks, the art verifier's checks, Mod Manager load. Review: `docs/main-review-round-159.md`.
+- **Pending:** live acceptance and balance.
+

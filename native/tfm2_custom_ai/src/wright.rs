@@ -280,13 +280,8 @@ impl Wright {
                 Effect::Fx { name, at, ticks, ambient } => {
                     if !ambient || self.fx_ok(tick as u64, true) {
                         let tag=crate::wright_art::effect_name(&name,ticks);
-                        // Attach the one-shot reticle to its actual target. Its
-                        // existing lifetime/phase continues while that unit moves.
-                        let target=if name=="wrt_carrier_shadow" {Some(owner)}else if name=="wrt_lock" {
-                            self.core.planes.iter().filter_map(|p|p.lock.map(|(id,_)|id)).filter(|id|{
-                                sim.is_visible(team,*id)&&sim.get_entity(*id).is_some_and(|u|{let p=u.pos();u.is_alive()&&p.0 as i64==at.x&&p.1 as i64==at.y})
-                            }).min()
-                        }else{None};
+                        // The carrier's shadow follows him while it falls.
+                        let target=if name=="wrt_carrier_shadow" {Some(owner)}else{None};
                         if let Some(id)=target {crate::fx_unit(sim,&tag,owner,id,ticks);}
                         else {crate::fx_point(sim,&tag,owner,at.x,at.y,ticks);}
                     }

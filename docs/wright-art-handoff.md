@@ -31,7 +31,7 @@ Timed effects (frames add up to the time):
 | `bomb` | a bomb blast (10,000 radius) | |
 | `kamikaze` | a fighter's crash blast (15,000 radius) | |
 | `mg` | machine-gun tracers/impacts on a target | |
-| `lock` | the lock-on reticle (0.5 s) | |
+| `lock` | the lock-on reticle (0.5 s), **no longer used** since `wright-4` (jets fly sorties, no lock-on); kept registered so the art pipeline stays valid | |
 | `repair_kit` | a repair kit landing on an ally | |
 | `drone_up` | the drone taking off from him | |
 | `taunt` | the drone's taunt pulse | |

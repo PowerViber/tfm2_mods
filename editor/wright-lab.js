@@ -61,7 +61,7 @@
         case 'pose': visual.pose=d.name;visual.start=tick;visual.until=tick+d.ticks;break;
         case 'fx': {
           if (/_p\d+$/.test(d.name)||d.name==='wrt_carrier') break;
-          const target=d.name==='wrt_carrier_shadow'?1:d.name==='wrt_lock'?(state.planes||[]).map(p=>p.lock?.[0]).filter(id=>id!==undefined).find(id=>{const u=find(id);return u&&dist(u.pos,d.at)<2;}):null;
+          const target=d.name==='wrt_carrier_shadow'?1:null;
           fx.push({name:d.name,at:{...d.at},start:tick,ticks:d.ticks,target,until:tick+Math.max(1,d.ticks)});break;
         }
         case 'log': log(String(d)); break;
@@ -154,6 +154,8 @@
       ctx.strokeStyle = h.ally ? `rgba(255,0,255,${k})` : `rgba(239,68,68,${k})`; ctx.beginPath(); ctx.arc(q.x, q.y, W(u.radius) + 4, 0, 7); ctx.stroke();
       ctx.fillStyle = `rgba(254,202,202,${k})`; ctx.fillText('-' + h.amount, q.x + 10, q.y - 12 - (1 - k) * 18); }
     for (const p of state.planes || []) {
+      // a sortie's committed spot (no homing): a small cross where it will strike
+      if (p.kind === 'fighter' && p.phase === 'Run' && p.goal) { const g = P(p.goal); ctx.strokeStyle = 'rgba(253,224,71,.85)'; ctx.beginPath(); ctx.moveTo(g.x - 5, g.y - 5); ctx.lineTo(g.x + 5, g.y + 5); ctx.moveTo(g.x + 5, g.y - 5); ctx.lineTo(g.x - 5, g.y + 5); ctx.stroke(); }
       const host = carriers.get(p.key), at = host ? host.pos : p.pos;
       if(tick<p.start)continue;
       if(art){const q=P(at);painter.effect(ctx,painter.planeTag(p,tick-1),0,q.x,q.y,pixel);}
