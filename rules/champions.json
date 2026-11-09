@@ -5188,6 +5188,65 @@
      "summary": "Trident of the Deep (100 s): a slow trident with global range, steerable 25 degrees in total. The first enemy champion hit is stunned 3 s (4 s if thrown from water) and enemies around take 150 + 90% AP. It leaves a pool where it lands (from water it flies faster and the pool is a whirlpool) and a clone of her there for 8 s (25% of her HP) that fights on its own with harp bolts, Tide Pool and Dive at 50% damage."
     }
    ]
+  },
+  {
+   "id": "tfm2_custom_wright",
+   "name": "Wright",
+   "family": "original",
+   "role": "Magician",
+   "native": true,
+   "basicAttack": {
+    "name": "Rivet gun",
+    "kind": "ranged",
+    "range": 52000
+   },
+   "skills": [
+    {
+     "slot": "skill",
+     "name": "Workshop / Fighter Wing",
+     "kinds": [
+      "Summon",
+      "Projectile",
+      "Cc"
+     ],
+     "intents": [
+      "Poke",
+      "Clear",
+      "Vision"
+     ],
+     "summary": "Workshop (passive): builds an airframe every 4 s (up to 3); each skill uses one. Every 14 s a scout drone (15% of his HP) flies to the nearest enemy champion, hovers 4 s and taunts enemies within 20000 onto it for 0.75 s. Fighter Wing (6 s): launches 2 fighters for 20 s (up to 4, 10% of his HP each, can be shot down). They escort him and attack: machine gun every 0.5 s for 10 + 15% AP, a lock-on rocket every 4 s for 35 + 40% AP. When their time ends or they fall below 25% HP they kamikaze: 30 + 35% AP, a knockback and a burn of 2% max HP a second for 3 s."
+    },
+    {
+     "slot": "skill2",
+     "name": "Carpet Bomber / Repair Wing",
+     "kinds": [
+      "Aoe",
+      "Zone",
+      "Heal",
+      "Shield"
+     ],
+     "intents": [
+      "Engage",
+      "Protect",
+      "Clear"
+     ],
+     "summary": "Carpet Bomber (10 s): a bomber circles the target area for 6 s, carpet-bombing its path: 8 + 10% AP per bomb (at most 2 hits a second per enemy) and a 15% slow. Repair Wing (14 s): a repair chopper circles him and a repair plane flies to the most hurt ally anywhere, both for 6 s. Every 1 s each drops a kit: 1% max HP and a 15 + 10% AP shield (up to 60 + 40% AP). The chopper also repairs his fighters."
+    },
+    {
+     "slot": "ult",
+     "name": "Sky Carrier",
+     "kinds": [
+      "Summon",
+      "Aoe",
+      "Cc"
+     ],
+     "intents": [
+      "Engage",
+      "Objective"
+     ],
+     "summary": "Sky Carrier (90 s): a carrier drops from the sky on the target. The impact knocks enemies away, the closer the farther (up to 80000), and slows them 15%. It hovers for 8 s, launching a fighter every 1 s (up to 6), a carpet-bomb pass every 3 s and a repair chopper every 3 s."
+    }
+   ]
   }
  ]
 }

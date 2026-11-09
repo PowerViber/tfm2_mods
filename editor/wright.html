@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Wright Lab</title>
+<style>
+body{margin:0;background:#151a22;color:#e2e8f0;font:13px/1.4 system-ui,sans-serif;display:flex;gap:12px;padding:12px}
+canvas{background:#2a3340;border:1px solid #4a5a6e;border-radius:6px;outline:none}
+#side{width:330px;display:flex;flex-direction:column;gap:8px}
+button{background:#33475e;color:#eef4fa;border:1px solid #5b7896;border-radius:4px;padding:5px 8px;cursor:pointer}
+button:hover{background:#3f5a77}
+.row{display:flex;flex-wrap:wrap;gap:6px}
+#log{height:240px;overflow:auto;background:#0f141b;border:1px solid #334155;border-radius:4px;padding:6px;font:11px monospace;white-space:pre-wrap}
+.keys{font-size:12px;color:#a9bdd3}
+label{display:flex;gap:6px;align-items:center}
+#hud{font-size:12px;display:grid;grid-template-columns:1fr 1fr;gap:2px 8px}
+.stat{display:grid;grid-template-columns:1fr 60px;gap:2px 6px;font-size:12px}
+.stat input{width:56px}
+</style></head>
+<body>
+<canvas id="arena" width="900" height="900" tabindex="0"></canvas>
+<div id="side">
+  <h2 style="margin:0">Wright Lab</h2>
+  <div style="color:#94a3b8">Placeholder shapes until Codex's art lands. The rules are the game's own core.</div>
+  <div id="status">Loading…</div>
+  <div class="keys">Mouse aims · WASD move · <b>1</b> Fighter Wing · <b>2</b> Carpet Bomber · <b>3</b> Repair Wing · <b>4</b> Sky Carrier · <b>F</b> rivet the nearest enemy (fighters join that target)</div>
+  <div class="row">
+    <button id="play">Pause</button><button id="step">Step</button><button id="reset">Reset</button>
+  </div>
+  <div class="row">
+    <button id="hurtAlly">Hurt the far ally</button><button id="hurtMe">Hurt Wright</button><button id="group">Group the enemies</button>
+  </div>
+  <label><input type="checkbox" id="zoom" checked> Follow camera (zoomed)</label>
+  <label><input type="checkbox" id="auto"> Athlete AI plays him</label>
+  <label><input type="checkbox" id="moving" checked> Enemies walk and shoot planes</label>
+  <label><input type="checkbox" id="walls"> Terrain column</label>
+  <details><summary>Athlete attributes</summary><div class="stat" id="stats"></div></details>
+  <div id="hud"></div>
+  <div id="log"></div>
+</div>
+<script src="wright-data.js"></script>
+<script src="wright-lab.js"></script>
+</body></html>

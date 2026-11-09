@@ -244,6 +244,7 @@ STATIC['/rally-white.png']='../mods/tfm2_custom/vfx/rally-white#sheet.png';
 STATIC['/rally-white.fanim']='../mods/tfm2_custom/vfx/rally-white#anim.fanim';
 for(const f of ['grimhald.html','grimhald-review.html','grimhald-lab.js','grimhald-data.js','grimhald-art.json','grimhald.wasm'])STATIC['/'+f]=f;
 for(const f of ['thalassa.html','thalassa-lab.js','thalassa-data.js','thalassa.wasm','thalassa-review.html','thalassa-art.js','thalassa-renderer.js'])STATIC['/'+f]=f;
+for(const f of ['wright.html','wright-lab.js','wright-data.js','wright.wasm'])STATIC['/'+f]=f;
 STATIC['/thalassa-body.png']='../mods/tfm2_custom/champions/tfm2_custom_thalassa#sheet.png';
 STATIC['/thalassa-vfx.png']='../mods/tfm2_custom/vfx/thalassa#sheet.png';
 STATIC['/thalassa-links.png']='../mods/tfm2_custom/vfx/thalassa_links#sheet.png';

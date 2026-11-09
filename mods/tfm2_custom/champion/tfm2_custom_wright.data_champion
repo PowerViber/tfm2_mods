@@ -1,0 +1,636 @@
+{
+  "id": "tfm2_custom_wright",
+  "category": "Magician",
+  "tags": [
+    "AP",
+    "Magic",
+    "Range",
+    "CC",
+    "Dot",
+    "Shield"
+  ],
+  "sprite": "asset/tfm2_custom/champions/tfm2_custom_wright",
+  "anim_prefix": "",
+  "stat": {
+    "attack": 28,
+    "magic_power": 60,
+    "hp": 880,
+    "defence": 20,
+    "magic_resistance": 26,
+    "move_speed": 980,
+    "hp_regen": 3,
+    "stack": 0,
+    "crit_chance": 0
+  },
+  "growth": {
+    "attack": 3,
+    "magic_power": 26,
+    "hp": 92,
+    "defence": 4,
+    "magic_resistance": 5,
+    "move_speed": 9,
+    "hp_regen": 0,
+    "stack": 0,
+    "crit_chance": 0
+  },
+  "attack": {
+    "action_name": "attack",
+    "cancelable": true,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 22,
+    "cooltime": 80,
+    "start_timing": 12,
+    "range": 52000,
+    "casting_type": "Targeting",
+    "casting_target": "Enemy",
+    "attack_type": "BaseAttack",
+    "effect": {
+      "type": "TargetProjectile",
+      "speed": 8000,
+      "name": "tfm2_custom_wright_rivet",
+      "y_offset": 0,
+      "applied_target": "Enemy",
+      "applied_effects": [
+        {
+          "effect": {
+            "type": "ApAttack",
+            "damage": 18,
+            "attack_ratio": 55
+          },
+          "casting_type": "Targeting"
+        }
+      ]
+    }
+  },
+  "skill": {
+    "action_name": "skill1",
+    "cancelable": false,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 6,
+    "cooltime": 5184000,
+    "start_timing": 3,
+    "range": 1,
+    "casting_type": "Targeting",
+    "casting_target": "EnemyChampionInCC",
+    "attack_type": "Skill",
+    "effect": {
+      "type": "Combine",
+      "effects": []
+    },
+    "description": "#asset/base/text/champion?description.tfm2_custom_wright.skill"
+  },
+  "skill2": {
+    "action_name": "skill2",
+    "cancelable": false,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 6,
+    "cooltime": 5184000,
+    "start_timing": 3,
+    "range": 1,
+    "casting_type": "Targeting",
+    "casting_target": "EnemyChampionInCC",
+    "attack_type": "Skill",
+    "effect": {
+      "type": "Combine",
+      "effects": []
+    },
+    "description": "#asset/base/text/champion?description.tfm2_custom_wright.skill2"
+  },
+  "ult": {
+    "action_name": "ult",
+    "cancelable": false,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 6,
+    "cooltime": 5184000,
+    "start_timing": 3,
+    "range": 1,
+    "casting_type": "Targeting",
+    "casting_target": "EnemyChampionInCC",
+    "attack_type": "Skill",
+    "effect": {
+      "type": "Combine",
+      "effects": []
+    },
+    "description": "#asset/base/text/champion?description.tfm2_custom_wright.ult"
+  },
+  "passive": {
+    "passive_ref": "tfm2_custom_ai:wright",
+    "params": {}
+  },
+  "passive_ult": {
+    "passive_ref": "tfm2_custom_ai:ult_learned",
+    "params": {}
+  },
+  "view_buffs": [
+    {
+      "type": "Animated",
+      "name": "wrt_burn",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "burn",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "wrt_shielded",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "repair_shield",
+      "z": 4
+    }
+  ],
+  "view_effects": [
+    {
+      "type": "Animation",
+      "name": "wrt_carrier",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "carrier",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_carrier_shadow",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "carrier_shadow",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_carrier_land",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "carrier_land",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_mg",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "mg",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_lock",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "lock",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_kamikaze",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "kamikaze",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_bomb",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "bomb",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_warn",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "warn",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_repair_kit",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "repair_kit",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_knock_ring",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "knock_ring",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_drone_up",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "drone_up",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_taunt",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "taunt",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_fighter_p0",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "fighter_p0",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_fighter_p1",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "fighter_p1",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_fighter_p2",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "fighter_p2",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_fighter_p3",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "fighter_p3",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_fighter_p4",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "fighter_p4",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_fighter_p5",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "fighter_p5",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_fighter_p6",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "fighter_p6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_fighter_p7",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "fighter_p7",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_bomber_p0",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "bomber_p0",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_bomber_p1",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "bomber_p1",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_bomber_p2",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "bomber_p2",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_bomber_p3",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "bomber_p3",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_bomber_p4",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "bomber_p4",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_bomber_p5",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "bomber_p5",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_bomber_p6",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "bomber_p6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_bomber_p7",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "bomber_p7",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_chopper_p0",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "chopper_p0",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_chopper_p1",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "chopper_p1",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_chopper_p2",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "chopper_p2",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_chopper_p3",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "chopper_p3",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_chopper_p4",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "chopper_p4",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_chopper_p5",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "chopper_p5",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_chopper_p6",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "chopper_p6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_chopper_p7",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "chopper_p7",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_repair_p0",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "repair_p0",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_repair_p1",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "repair_p1",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_repair_p2",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "repair_p2",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_repair_p3",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "repair_p3",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_repair_p4",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "repair_p4",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_repair_p5",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "repair_p5",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_repair_p6",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "repair_p6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_repair_p7",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "repair_p7",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_drone_p0",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "drone_p0",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_drone_p1",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "drone_p1",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_drone_p2",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "drone_p2",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_drone_p3",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "drone_p3",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_drone_p4",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "drone_p4",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_drone_p5",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "drone_p5",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_drone_p6",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "drone_p6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_drone_p7",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "drone_p7",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_rocket_p0",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "rocket_p0",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_rocket_p1",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "rocket_p1",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_rocket_p2",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "rocket_p2",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_rocket_p3",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "rocket_p3",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_rocket_p4",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "rocket_p4",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_rocket_p5",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "rocket_p5",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_rocket_p6",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "rocket_p6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_rocket_p7",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "rocket_p7",
+      "z": 6,
+      "is_follow": false
+    }
+  ],
+  "view_projectiles": [
+    {
+      "type": "Animated",
+      "name": "tfm2_custom_wright_rivet",
+      "anim": "asset/tfm2_custom/vfx/wright",
+      "tag": "rivet",
+      "z": 2,
+      "repeat": true
+    }
+  ]
+}

@@ -5,7 +5,7 @@
 //! "rooted", which is why his dash never ran in the game.
 use mod_api_stable::{
     AttackTypeV1, BuffV1, CcKindV1, CcV1, EntityHandleV1 as E, EntityKindV1 as K, SimCtxV1, SimVtableV1, StablePassive,
-    StableSim, StatV1,
+    StableSim, StatV1, UnitAttackV1,
 };
 use std::{cell::RefCell, ffi::c_void, mem::size_of};
 
@@ -29,6 +29,8 @@ pub(crate) struct Host {
     /// (attacker, target, amount, attack type code)
     pub damage: Vec<(usize, usize, usize, u32)>,
     pub moves: Vec<(usize, (u64, u64))>,
+    /// units spawned through `spawn_unit`: (id, sprite name, stat)
+    pub spawned: Vec<(usize, String, StatV1)>,
 }
 impl Host {
     pub fn new(units: Vec<Unit>) -> RefCell<Host> {
@@ -63,6 +65,33 @@ unsafe extern "C" fn pos(p: *const c_void, e: E, x: *mut u64, y: *mut u64) -> bo
     (*x, *y) = u.pos;
     true
 }
+unsafe extern "C" fn spawn_unit(
+    p: *mut c_void,
+    n: *const u8,
+    len: usize,
+    _owner: usize,
+    team: usize,
+    x: u64,
+    y: u64,
+    _ticks: u64,
+    s: *const StatV1,
+    _a: *const UnitAttackV1,
+) -> usize {
+    let mut g = h(p).borrow_mut();
+    let id = g.units.len();
+    let name = String::from_utf8_lossy(std::slice::from_raw_parts(n, len)).into_owned();
+    g.units.push(Unit { kind: K::Minion, team, pos: (x, y), hp: (*s).hp, name: "summon", targetable: true });
+    g.buffs.push(vec![]);
+    g.ccs.push(vec![]);
+    g.spawned.push((id, name, *s));
+    id
+}
+unsafe extern "C" fn set_hp(p: *mut c_void, e: E, hp: usize) -> bool {
+    let mut g = h(p).borrow_mut();
+    let Some(u) = g.units.get_mut(id(e)) else { return false };
+    u.hp = hp;
+    true
+}
 unsafe extern "C" fn set_pos(p: *mut c_void, e: E, x: u64, y: u64) -> bool {
     let mut g = h(p).borrow_mut();
     let i = id(e);
@@ -74,7 +103,8 @@ unsafe extern "C" fn set_pos(p: *mut c_void, e: E, x: u64, y: u64) -> bool {
 unsafe extern "C" fn hp(p: *const c_void, e: E, hp: *mut usize, max: *mut usize) -> bool {
     let Some(u) = unit(p, e) else { return false };
     *hp = u.hp;
-    *max = 2000;
+    // spawned units report their own max HP; everyone else 2000
+    *max = h(p).borrow().spawned.iter().find(|s| s.0 == id(e)).map_or(2000, |s| s.2.hp);
     true
 }
 unsafe extern "C" fn radius(_: *const c_void, _: E) -> usize { 10_000 }
@@ -179,6 +209,8 @@ pub(crate) fn with_sim<T>(host: &RefCell<Host>, f: impl FnOnce(&mut StableSim) -
         t.is_visible = Some(visible);
         t.entity_pos = Some(pos);
         t.entity_set_pos = Some(set_pos);
+        t.spawn_unit = Some(spawn_unit);
+        t.entity_set_hp = Some(set_hp);
         t.entity_hp = Some(hp);
         t.entity_radius = Some(radius);
         t.entity_stat = Some(stat);

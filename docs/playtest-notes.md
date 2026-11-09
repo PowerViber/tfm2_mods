@@ -3816,3 +3816,8 @@ To check in game: close the game, Update/Check, confirm native 0.10.36 and champ
 - **Cause:** every whirlpool force-moved enemies inside 6 times a second (an engine CC each time, ignoring walls), and every surge stunned everyone it caught.
 - **Fix (`thalassa-1.4`):** a surge bumps at most 2 (the closest); it pulls once, never through walls; whirlpools swirl 2 s, then calm into pools; every pool slows 20% (whirlpools 30%, never stacked).
 - **Checks:** 1075 native tests, 42 Lab tests, 10 browser checks, 1406 art checks, Mod Manager load. Review: `docs/main-review-round-158.md`.
+## Nov 9: Wright (in progress, not released)
+- Reihan designed a summoner: a modern aircraft engineer whose workshop builds airframes for his planes.
+- **Kit:** fighters (machine gun, lock-on rockets, kamikaze with knockback and burn) that can be shot down, a carpet bomber, a repair chopper plus a global repair plane, a taunting scout drone, and a Sky Carrier that drops from the sky (knockback, no damage) and launches fighters, bombers and choppers.
+- **Built:** the native kit, the Lab (`editor/wright.html`) and tests. Guide: `docs/wright-guide.md`.
+- **Waiting on:** Codex's art (`docs/wright-art-handoff.md`), then the release.
