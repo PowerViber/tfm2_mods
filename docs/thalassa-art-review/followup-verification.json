@@ -1,0 +1,83 @@
+{
+  "checks": 16,
+  "passed": [
+    "30 Hz runs exactly 60 simulation ticks/sec",
+    "60 Hz runs exactly 60 simulation ticks/sec",
+    "120 Hz runs exactly 60 simulation ticks/sec",
+    "144 Hz runs exactly 60 simulation ticks/sec",
+    "240 Hz runs exactly 60 simulation ticks/sec",
+    "pause, background and single-step clock do not accumulate catch-up",
+    "catch-up work is bounded after a stalled frame",
+    "water Dive reaches the approved 75000 range",
+    "water Dive retains its existing distance-based duration",
+    "twin and owner arrive at the same committed destination",
+    "both real carriers move during the dive",
+    "all ordinary pool gameplay radii equal current whirlpool radius",
+    "native/Lab link geometry and headings match",
+    "link renewal is bounded to six one-tick segments",
+    "link responds to movement at either endpoint",
+    "link and pool assets load without browser errors"
+  ],
+  "display_rates": [
+    {
+      "rate": 30,
+      "ticks": 120
+    },
+    {
+      "rate": 60,
+      "ticks": 120
+    },
+    {
+      "rate": 120,
+      "ticks": 120
+    },
+    {
+      "rate": 144,
+      "ticks": 120
+    },
+    {
+      "rate": 240,
+      "ticks": 120
+    }
+  ],
+  "dive": {
+    "from": {
+      "x": 300000,
+      "y": 480000
+    },
+    "began": 18,
+    "until": 45,
+    "to": {
+      "x": 375000,
+      "y": 480000
+    },
+    "clone": {
+      "x": 375000,
+      "y": 480000
+    },
+    "pools": [
+      {
+        "center": {
+          "x": 300000,
+          "y": 480000
+        },
+        "id": 1,
+        "radius": 35000,
+        "until": 613,
+        "whirl": false
+      },
+      {
+        "center": {
+          "x": 375000,
+          "y": 480000
+        },
+        "id": 2,
+        "radius": 35000,
+        "until": 618,
+        "whirl": false
+      }
+    ]
+  },
+  "link_parity_cases": 9,
+  "live_game_acceptance": "pending"
+}

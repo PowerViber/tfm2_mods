@@ -44,6 +44,11 @@ mod raze;
 mod contender;
 mod rally;
 mod grimhald;
+mod thalassa;
+#[allow(dead_code)] mod thalassa_core;
+mod thalassa_data;
+#[allow(dead_code)] mod thalassa_art;
+#[cfg(test)] mod thalassa_tests;
 mod motion;
 #[cfg(test)] mod motion_guard_tests;
 mod grimhald_cage;
@@ -173,6 +178,7 @@ const ACTIVE: &str = "gojo_void_active";
 const MOD_POWER: &[(&str, [i32; 7])] = &[
     ("_rally", rally_core::data::MOD_POWER),
     ("_grimhald", grimhald_data::MOD_POWER),
+    ("_thalassa", thalassa_data::MOD_POWER),
     ("_contender", [30, 0, 5, 10, 10, 0, 10]),
     //               atk  ap  hp  def  mr  ms  as
     ("_minato",     [ 25,  0,  5, 10, 10,  0, 10]),   // round 75 (was nothing); hp 10 -> 5 round 140
@@ -389,7 +395,7 @@ pub(crate) fn set_snapshot_cache_for_test(on: bool) {
 /// A view effect at a point / on a unit (named `<champion id>_<tag>` in the data's view_effects).
 /// Round 91: the native version, written in the game log and the champions' logs (gundam_log.txt / isliid_log.txt) so a
 /// game shows which build ran.
-pub(crate) const VERSION: &str = "0.10.91";
+pub(crate) const VERSION: &str = "0.10.92";
 
 static LOGGED: std::sync::Mutex<Option<std::collections::HashSet<String>>> = std::sync::Mutex::new(None);
 
@@ -2004,6 +2010,7 @@ fn init(host: &StableHost) -> StableMod {
         ),
     );
     let mut decl = StableMod::new(MOD_ID);
+    decl.add_native_passive(format!("{MOD_ID}:thalassa"), perf::Timed { name: "thalassa", inner: thalassa::Thalassa::default() });
     decl.add_native_passive(format!("{MOD_ID}:grimhald"), perf::Timed { name: "grimhald", inner: grimhald::Grimhald::default() });
     decl.add_native_passive(format!("{MOD_ID}:rally"), perf::Timed { name: "rally", inner: rally::Rally::default() });
     decl.add_native_effect(format!("{MOD_ID}:rally_basic"), rally::BasicImpact);

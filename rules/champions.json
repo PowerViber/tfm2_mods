@@ -5131,6 +5131,63 @@
      "summary": "Warden's Verdict (90 s): throws his axe up to 480000 (half the map), with at most 10 degrees of total steering. Landing: 80 + 100% Attack and 1.1 s knock-up in 40000. If it knocked anyone up, a pentagon wall (62000) rises around the axe and he leaps into it: for 8 s every champion inside is caged. They can attack and cast, but nothing takes them out and nobody gets in; inside sees only inside. If it hits nobody, the axe returns. In the cage the axe stays planted at the centre and he fights unarmed: +25% damage, +80% attack speed, 12% lifesteal and 15% damage reduction; each punch knocks back 4000. Enemies inside lose 20% armour and magic resistance and are slowed 15%. Each kill while unarmed adds 2 s to the buff and the axe's aura (the cage falls on time)."
     }
    ]
+  },
+  {
+   "id": "tfm2_custom_thalassa",
+   "name": "Thalassa",
+   "family": "original",
+   "role": "Magician",
+   "native": true,
+   "basicAttack": {
+    "name": "Harp bolt",
+    "kind": "ranged",
+    "range": 55000
+   },
+   "skills": [
+    {
+     "slot": "skill",
+     "name": "Tide Pool",
+     "kinds": [
+      "Zone",
+      "Aoe",
+      "Cc"
+     ],
+     "intents": [
+      "Clear",
+      "Engage",
+      "Objective"
+     ],
+     "summary": "Tidebound (passive): in water (her pools, or wet) she gains +20% move speed and +20% range, her harp bolts bounce to a second enemy for 50%, and she regenerates 1% max HP a second; at full HP it becomes a shield up to 10% max HP. Tide Pool (8 s): on land, a pool forms below her. In water, the pool she stands in surges up to 60000 to the target and becomes a whirlpool (100% size) that slows 30%, pulls inward and deals 60 + 70% AP; two or more champions caught bump and are stunned 1 s. A new whirlpool forms below her."
+    },
+    {
+     "slot": "skill2",
+     "name": "Dive / Tide Twin",
+     "kinds": [
+      "Dash",
+      "Summon",
+      "Shield"
+     ],
+     "intents": [
+      "Escape",
+      "Protect",
+      "Poke"
+     ],
+     "summary": "Dive (10 s): in water, opens a pool up to 75000 away, dives into hers and surfaces from it. On land, a short slide that leaves her wet for 1.5 s. Tide Twin (18 s): a water clone for 12 s (20% of her HP) that moves and fires harp bolts on its own at 50%, and copies her Tide Pool and Dive to the same point when she casts them. When an ally or Thalassa is stunned within 40000, it flies to them and becomes a pool: cleanse, 80 + 50% AP shield and 1.5 s crowd-control immunity. Spawned on water, it rescues Thalassa at any range, instantly, and a tide link lets her swap places with it once when engaged, leaving a whirlpool."
+    },
+    {
+     "slot": "ult",
+     "name": "Trident of the Deep",
+     "kinds": [
+      "Projectile",
+      "Cc"
+     ],
+     "intents": [
+      "Engage",
+      "Poke"
+     ],
+     "summary": "Trident of the Deep (100 s): a slow trident with global range, steerable 25 degrees in total. The first enemy champion hit is stunned 3 s (4 s if thrown from water) and enemies around take 150 + 90% AP. It leaves a pool where it lands (from water it flies faster and the pool is a whirlpool) and a clone of her there for 8 s (25% of her HP) that fights on its own with harp bolts, Tide Pool and Dive at 50% damage."
+    }
+   ]
   }
  ]
 }

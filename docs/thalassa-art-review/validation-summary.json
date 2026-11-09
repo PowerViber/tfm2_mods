@@ -1,0 +1,172 @@
+{
+  "scope": "Thalassa rules-1.1 authorized feedback: twin Dive, live link, pool footprint, Dive range, trident speed, Lab clock; no installation or actual-game acceptance",
+  "rules_revision": "thalassa-1.1",
+  "previous_art_only_evidence": {
+    "scope": "Thalassa art and presentation; no installation, real-career migration or actual-game acceptance",
+    "baseline": "68f3d8048bcbed7500921743f740e3821b580c60",
+    "native_serial": {
+      "passed": 1052,
+      "failed": 0,
+      "ignored": 13,
+      "command": "cargo +stable-x86_64-pc-windows-gnu test --release -- --test-threads=1",
+      "warnings": "Four pre-existing Windows native-bridge test-helper dead-code warnings"
+    },
+    "initial_native_parallel": {
+      "passed": 1050,
+      "failed": 2,
+      "ignored": 13,
+      "failures": [
+        "levi::tests::apex_plans_a_clear_line_down_the_corridor",
+        "walls::area_tests::batching_preserves_bush_locations_order_edges_and_missing_cells (poisoned lock)"
+      ],
+      "note": "Parallel isolation remains unverified; no unrelated gameplay source was changed"
+    },
+    "lab_tests": {
+      "passed": 22,
+      "failed": 0
+    },
+    "legacy_browser": {
+      "passed": 8
+    },
+    "art_browser": {
+      "passed": 34,
+      "manual_equivalence_frames": 954,
+      "native_wasm_parity_frames": 954
+    },
+    "art_checks": 742,
+    "manager_champion_load": true,
+    "manager_files_compared": 864,
+    "magnus_128_piece_p95_us": {
+      "five_runs": [
+        729,
+        711,
+        750,
+        702,
+        654
+      ],
+      "median": 711,
+      "target": 4000
+    },
+    "reserved_release": {
+      "native": "0.10.92",
+      "champion_pack": "0.2.95",
+      "packaging": "pending"
+    },
+    "live_game_acceptance": "pending"
+  },
+  "native_serial": {
+    "passed": 1056,
+    "failed": 0,
+    "ignored": 13,
+    "warnings": "Four pre-existing native-bridge test-helper dead-code warnings",
+    "final_cosmetic_cleanup": "29 targeted Thalassa native tests passed after final cleanup"
+  },
+  "thalassa_native": {
+    "passed": 29,
+    "failed": 0
+  },
+  "lab_tests": {
+    "passed": 25,
+    "failed": 0
+  },
+  "legacy_browser": {
+    "passed": 8
+  },
+  "art_browser": {
+    "passed": 34,
+    "manual_equivalence_frames": 1154,
+    "native_wasm_parity_frames": 1154
+  },
+  "feedback_browser": {
+    "checks": 16,
+    "passed": [
+      "30 Hz runs exactly 60 simulation ticks/sec",
+      "60 Hz runs exactly 60 simulation ticks/sec",
+      "120 Hz runs exactly 60 simulation ticks/sec",
+      "144 Hz runs exactly 60 simulation ticks/sec",
+      "240 Hz runs exactly 60 simulation ticks/sec",
+      "pause, background and single-step clock do not accumulate catch-up",
+      "catch-up work is bounded after a stalled frame",
+      "water Dive reaches the approved 75000 range",
+      "water Dive retains its existing distance-based duration",
+      "twin and owner arrive at the same committed destination",
+      "both real carriers move during the dive",
+      "all ordinary pool gameplay radii equal current whirlpool radius",
+      "native/Lab link geometry and headings match",
+      "link renewal is bounded to six one-tick segments",
+      "link responds to movement at either endpoint",
+      "link and pool assets load without browser errors"
+    ],
+    "display_rates": [
+      {
+        "rate": 30,
+        "ticks": 120
+      },
+      {
+        "rate": 60,
+        "ticks": 120
+      },
+      {
+        "rate": 120,
+        "ticks": 120
+      },
+      {
+        "rate": 144,
+        "ticks": 120
+      },
+      {
+        "rate": 240,
+        "ticks": 120
+      }
+    ],
+    "dive": {
+      "from": {
+        "x": 300000,
+        "y": 480000
+      },
+      "began": 18,
+      "until": 45,
+      "to": {
+        "x": 375000,
+        "y": 480000
+      },
+      "clone": {
+        "x": 375000,
+        "y": 480000
+      },
+      "pools": [
+        {
+          "center": {
+            "x": 300000,
+            "y": 480000
+          },
+          "id": 1,
+          "radius": 35000,
+          "until": 613,
+          "whirl": false
+        },
+        {
+          "center": {
+            "x": 375000,
+            "y": 480000
+          },
+          "id": 2,
+          "radius": 35000,
+          "until": 618,
+          "whirl": false
+        }
+      ]
+    },
+    "link_parity_cases": 9,
+    "live_game_acceptance": "pending"
+  },
+  "art_checks": 1415,
+  "decoded_art_bytes": 27361280,
+  "manager_champion_load": true,
+  "manager_files_compared": 866,
+  "release_packaging": "pending",
+  "real_installation": "not performed",
+  "real_career_migration": "not performed",
+  "live_game_acceptance": "pending",
+  "wasm_sha256": "b6c939f6a37058610a95496109c2a26c1e3495a97cb3dee437776407d8c92bc5"
+}

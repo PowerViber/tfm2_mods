@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Thalassa — pearl-and-seafoam art review</title>
+<style>
+:root{color-scheme:dark;font:16px/1.55 system-ui;background:#10232b;color:#e6f2ee}body{max-width:1180px;margin:24px auto;padding:0 20px}h1{font-size:30px}h2{font-size:23px}p{max-width:950px}a{color:#8be4d7}section{background:#19323d;padding:20px;border-radius:12px;margin:20px 0}button,select{font:inherit;padding:7px 12px;border:1px solid #54777c;border-radius:6px;background:#24434e;color:inherit}label{margin-right:12px;display:inline-block}.badge{color:#f6d28c}img{max-width:100%;image-rendering:pixelated}.stage{height:270px;margin:15px 0;display:flex;align-items:center;justify-content:center;gap:70px;background:#203a43;border:1px solid #54777c}.stage.light{background:#aec3a2}.stage>div{text-align:center}.stage small{display:block;color:#a9cbca}.stage.light small{color:#203a43}.stage img{display:block;margin:auto}.sheet{display:block;width:100%;height:auto}.fx{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}.fx figure{margin:0;background:#203a43;min-height:180px;display:flex;flex-direction:column;align-items:center;justify-content:center}.fx figcaption{font-size:14px;margin-top:10px}.fx img{max-height:148px}code{color:#b4eadd}.note{color:#b6d3d5}
+</style>
+<h1>Thalassa · pearl and seafoam</h1>
+<p class="badge">Appearance and effects approved · complete packaged animation inspection · live acceptance pending</p>
+<p>Silver-white hair, a true teal mermaid tail, navy-and-pearl clothing and a held gold harp. These four original whole-body concepts establish the look before the 37-frame animation set is completed.</p>
+<p><a href="thalassa.html">Playable shared-core Lab</a> · <a href="https://github.com/PowerViber/tfm2_mods/pull/70">PR #70</a></p>
+<section><h2>Complete packaged animations</h2>
+<label>Pose <select id="animation"></select></label><label>Facing <select id="animationFacing"><option value="right">Right</option><option value="left">Left</option></select></label>
+<label><input id="animate" type="checkbox" checked> Play</label><label>Frame <input id="frame" type="range" min="0" max="3" value="0"><output id="frameLabel">0</output></label>
+<button id="animationTerrain">Light / dark terrain</button>
+<canvas id="animationCanvas" width="1000" height="240" style="width:100%;height:auto;margin-top:12px;image-rendering:pixelated"></canvas>
+<p class="note">Left: actual size. Centre: 3×. Right: approved-pixel-derived water twin at 3×. All 37 whole-body frames, including the real visible roster idle, come from the packaged atlases.</p>
+<img class="sheet" data-review="complete-body-contact.png" alt="Complete 37-frame body contact sheet">
+</section>
+<section><h2>Actual-size pose inspection</h2>
+<label>Pose <select id="pose"><option value="idle">Idle</option><option value="movement">Movement concept</option><option value="harp_attack">Harp attack</option><option value="trident_cast">Trident casting</option></select></label>
+<label>Facing <select id="facing"><option value="right">Right</option><option value="left">Left</option></select></label>
+<button id="terrain">Light / dark terrain</button>
+<div class="stage" id="stage"><div><img id="native" width="64" height="56"><small>1× · native 64×56</small></div><div><img id="large" width="192" height="168"><small>3× · nearest-neighbour</small></div></div>
+<p class="note">One scale for every pose. The tail’s ground contact is fixed 20 pixels below frame centre. These are static concept poses, not a completed walk animation.</p>
+<img class="sheet" data-review="body-comparison.png" alt="Four approved body concepts, both facings, light and dark terrain and stock champion scale references">
+</section>
+<section><h2>Skill-effect direction</h2>
+<p>Pool radius 25,000 and whirlpool radius 35,000, using the established 950 world units per pixel. Animation phases and cleanup will follow the existing native clocks after approval.</p>
+<img class="sheet" data-review="effects-comparison.png" alt="Sixteen approved native-size and two-times effect proposals">
+<h2>Individual effects</h2><div class="fx" id="effects"></div>
+</section>
+<section><h2>Delivery gates</h2><p>The user approved the body appearance and effect direction. Source images, approval quotations and extraction hashes are retained. Installation and actual-game acceptance remain separate.</p><p class="note">Built-in imagegen supplied the source drawings. Mechanical extraction and packing are reproducible; image generation is not.</p></section>
+<script src="thalassa-art.js"></script><script src="thalassa-renderer.js"></script>
+<script>
+const root=location.pathname.startsWith('/editor/')?'../docs/thalassa-art-review/':'thalassa-review-assets/';
+for(const im of document.querySelectorAll('[data-review]'))im.src=root+im.dataset.review;
+function draw(){const p=document.querySelector('#pose').value,l=document.querySelector('#facing').value==='left'?'_LEFT':'';const src=root+'body-'+p+(l?'-left':'')+'.png';for(const id of ['native','large']){const im=document.querySelector('#'+id);im.src=src;im.alt=p+' '+(l?'left':'right');}}
+document.querySelector('#pose').onchange=draw;document.querySelector('#facing').onchange=draw;document.querySelector('#terrain').onclick=()=>document.querySelector('#stage').classList.toggle('light');draw();
+fetch(root+'effects-proposal.json').then(r=>r.json()).then(data=>{for(const e of data.effects){const f=document.createElement('figure'),im=document.createElement('img'),c=document.createElement('figcaption');im.src=root+'effect-'+e.tag+'.png';im.width=e.size[0]*2;im.height=e.size[1]*2;im.alt=e.tag;c.textContent=e.tag.replaceAll('_',' ')+' · '+e.size.join('×');f.append(im,c);document.querySelector('#effects').append(f);}});
+const painter=new ThalassaPainter(), cv=document.querySelector('#animationCanvas'),cx=cv.getContext('2d');
+const animation=document.querySelector('#animation'),slider=document.querySelector('#frame');
+for(const p of Object.keys(THALASSA_ART.frame_counts))animation.add(new Option(p,p));
+animation.onchange=()=>{slider.max=THALASSA_ART.frame_counts[animation.value]-1;slider.value=0;};
+slider.oninput=()=>document.querySelector('#animate').checked=false;
+let light=false;document.querySelector('#animationTerrain').onclick=()=>light=!light;
+function loop(now){cx.fillStyle=light?'#aec3a2':'#203a43';cx.fillRect(0,0,1000,240);const pose=animation.value,left=document.querySelector('#animationFacing').value==='left',play=document.querySelector('#animate').checked;
+if(painter.loaded){const t=now*60/1000;const i=play?painter.frame(THALASSA_ART.body[pose],t):Number(slider.value);slider.value=i;document.querySelector('#frameLabel').value=i;
+for(const [x,scale,twin] of [[120,1,false],[440,3,false],[790,3,true]]){cx.strokeStyle=light?'#779288':'#46656b';cx.beginPath();cx.moveTo(x-100,100+20*scale);cx.lineTo(x+100,100+20*scale);cx.stroke();painter.body(cx,pose,t,x,100,scale,left,twin,true,i);}}
+requestAnimationFrame(loop);}painter.ready.then(()=>requestAnimationFrame(loop));
+window.thalassaArtReview={painter};
+</script>
+</html>

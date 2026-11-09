@@ -1,0 +1,14 @@
+
+==============================  TFM2 Mod Manager  ==============================
+ repo: C:\Users\arian\.codex\worktrees\thalassa-art\tfm2_mods [codex/thalassa-art] 3849991 feat(thalassa): add packaged-art Lab review and parity verification
+ game: C:\Users\arian\.codex\worktrees\thalassa-art\tfm2_mods\backups\thalassa-art-manager-9nwbr731
+ installed: native 0.10.91  champions 0.2.93
+ log: C:\Users\arian\.codex\worktrees\thalassa-art\tfm2_mods\logs\manager-20261108_193453.txt
+================================================================================
+Game folder: C:\Users\arian\.codex\worktrees\thalassa-art\tfm2_mods\backups\thalassa-art-manager-9nwbr731
+  native (tfm2_custom_ai): repo 0.10.91  game 0.10.91
+  champions (tfm2_custom): repo 0.2.93  game 0.2.93
+  753 champion files compared, 0 differ, 0 missing; native DLL identical
+
+  UP TO DATE: the game has exactly the repo's mods.
+Log saved: C:\Users\arian\.codex\worktrees\thalassa-art\tfm2_mods\logs\manager-20261108_193453.txt

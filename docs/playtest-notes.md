@@ -3802,3 +3802,12 @@ To check in game: close the game, Update/Check, confirm native 0.10.36 and champ
   - `motion.flag` restores the old movement; `motion_trace.flag` logs every move.
   - A guard test stops new hand-slid motion.
 - Review: `docs/main-review-round-156.md`.
+
+## Nov 8: round 157 (native 0.10.92, tfm2_custom 0.2.95): Thalassa released
+- Reihan designed a mermaid harpist (mage carry, can support).
+- **Kit:** water pools and whirlpools, a dive between pools, a water twin that echoes her skills and rescues stunned allies, and a global steerable trident that V1 can parry.
+- **Art:** Codex's approved pearl-and-seafoam body and effects, with a live Tide Link. Retune `thalassa-1.1`: pools 35,000, Dive 75,000, trident speed 2,000.
+- **Checks:** 1071 native tests, 38 Lab tests, 9 browser checks, 1406 art checks, Mod Manager load. Review: `docs/main-review-round-157.md`.
+- **Follow-up (`thalassa-1.2`):** the Tide Twin walks and fires its own bolts like someone playing her (skills only when she casts them); a twin spawned on water rescues Thalassa at any range, instantly.
+- **Follow-up (`thalassa-1.3`):** the trident leaves a clone of her at the landing (8 s, 25% HP) that fights on its own with bolts, Tide Pool and Dive at 50% damage; the far-pool Dive is removed.
+- **Pending:** live acceptance and balance.
