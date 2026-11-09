@@ -3,12 +3,12 @@
 You designed a mermaid who fights with a harp: a mage carry for mid or bot who can also support. Her water mode comes from pools she makes herself. Her twin copies her skills and rescues stunned allies, and her trident crosses the whole map. We fixed five review findings, Codex drew the art and tuned the playback, and this round puts her in the game.
 
 ## Thalassa, the mermaid harpist
-She is an Original-family mage with magic damage, no mastery and Mod Power `[0, 25, 5, 5, 10, 0, 10]`. She keeps Flash and farms with Tide Pool and her harp bolts. The full kit is in `docs/thalassa-guide.md`; every number lives in `rules/thalassa.json` (revision `thalassa-1.3`).
+She is an Original-family mage with magic damage, no mastery and Mod Power `[0, 25, 5, 5, 10, 0, 10]`. She keeps Flash and farms with Tide Pool and her harp bolts. The full kit is in `docs/thalassa-guide.md`; every number lives in `rules/thalassa.json` (revision `thalassa-1.4`).
 
 | | Skill | In short |
 |---|---|---|
 | Passive | Tidebound | In water: +20% move speed and range, harp bolts bounce to a second enemy, 1% max HP regen per second. At full HP the regen becomes a shield, up to 10% of her HP. No penalty on land. |
-| S1 | Tide Pool | On land, a pool (radius 35,000) forms below her. In water, her pool surges up to 60,000 into a whirlpool that slows, pulls and damages. 2+ enemy champions caught bump and are stunned 1 s, and a new whirlpool forms below her. |
+| S1 | Tide Pool | On land, a pool (radius 35,000) forms below her. In water, her pool surges up to 60,000 into a whirlpool that damages and pulls once; up to 2 of the champions caught bump and are stunned 1 s, and a new whirlpool forms below her. A whirlpool swirls 2 s, then calms into a pool. Every pool slows enemies 20% (a swirling whirlpool 30%). |
 | S2 | Dive | In water, she opens a pool up to 75,000 away and dives across. On land, a short slide that leaves her wet. |
 | S3 | Tide Twin | A 12 s twin that can be killed. It walks and fires its own bolts (50%) like someone playing her, and copies Tide Pool and Dive only when she casts them (not the ult). An ally (or she) stunned near it gets a rescue pool: cleanse, shield, CC immunity. Spawned on water, it rescues Thalassa at any range instantly, and she can swap with it once when engaged, leaving a whirlpool. |
 | Ult | Trident of the Deep | A slow trident with global range, steerable 25° in total. It stuns the first champion hit 3 s (4 s from water) and leaves a pool where it lands, plus a clone of her that fights on its own for 8 s. V1 can parry it. |
@@ -44,16 +44,24 @@ You suggested that instead of her going to the landing, the trident leaves a clo
 - **Balance call:** a second body with her S1/S2 anywhere on the map is strong mainly through crowd control (whirlpool bumps). So its **damage is 50%** of hers while its crowd control stays full, it's short and fragile, and her **far-pool Dive is removed**: Dive is 75,000 again even into her own pools, so she isn't global twice. If it still feels strong, lower its damage or HP first.
 - It's a second hidden carrier unit drawn with her body frames (no new art); its moves are engine glides.
 
+## Your playtest: calmer whirlpools (`thalassa-1.4`)
+You saw bumps happen too often and the whirlpool pull holding enemies so hard it made her too strong.
+- **Why:** every whirlpool force-moved every enemy inside toward its center 6 times a second. Each force-move is a real engine crowd control, so enemies were nearly permanently held and interrupted, and the pull ignored walls. Her surge, the twin's and the trident clone's surges could each stun every champion caught.
+- **Bumps:** a surge still needs 2+ champions caught, but stuns **at most 2**, the closest to its center. Damage still hits everyone caught.
+- **Pull:** **once, on the surge**, never through walls (it also passes the wall check in the bridge). No standing pull.
+- **Whirlpools:** swirl for **2 s**, then calm into a normal pool for the rest of their 10 s (other AIs see it as a pool again).
+- **Every pool slows enemies 20%**, a swirling whirlpool 30%: one slow, the strongest, never stacked.
+
 ## Shipped this round
 - Native **0.10.92** (DLL rebuilt for Windows; it reports 0.10.92 and carries her passive) and **tfm2_custom 0.2.95**, which needs 0.10.92 or later.
 - 0.2.94 is left for PR #69. Other packs are unchanged.
 - README row and pack description.
 
 ## Verification
-- `cargo test --release` in `native/tfm2_custom_ai`: 1071 passed, 0 failed, 0 warnings.
-  - This includes 42 Thalassa tests: 7 for the twin follow-up (own bolts, no echo, kiting, leash and return, skills only with her, the global self-rescue, allies' range) and 6 for the trident's clone (8 s at the landing, replaced by a new trident, its own surge and bump at half damage, its own dives in and out, bolts and leash, coexisting with the twin without rescuing): core, mock host, V1 parry, overheal, placement.
+- `cargo test --release` in `native/tfm2_custom_ai`: 1075 passed, 0 failed, 0 warnings.
+  - This includes 46 Thalassa tests: 4 for the calmer whirlpools (2 bumps per surge, the closest; one pull on the surge and never after, never onto terrain; 2 s swirl then a pool; every pool slows once, whirlpools more), 7 for the twin follow-up (own bolts, no echo, kiting, leash and return, skills only with her, the global self-rescue, allies' range) and 6 for the trident's clone (8 s at the landing, replaced by a new trident, its own surge and bump at half damage, its own dives in and out, bolts and leash, coexisting with the twin without rescuing): core, mock host, V1 parry, overheal, placement.
   - One run had a Rally tick-budget comparison fail once. It passed alone and on two full reruns. It looks like a flaky test sharing global test state; nothing in it touches Thalassa.
-- `native/thalassa_lab` tests: 38 passed. `node tools/test-thalassa-lab.cjs`: 9 browser checks passed, including the twin walking and attacking with no input and the trident's clone fighting on its own while she stays put.
+- `native/thalassa_lab` tests: 42 passed. `node tools/test-thalassa-lab.cjs`: 10 browser checks passed, including whirlpools calming after 2 s, the twin walking and attacking with no input and the trident's clone fighting on its own while she stays put.
 - Codex's art verifier: 1406 checks passed, covering:
   - approved source hashes;
   - frame counts and mirrored facings;

@@ -70,6 +70,7 @@
         case 'water': log(d.on ? 'Water mode ON' : 'Water mode off'); break;
         case 'spawn_clone': clone = {pos: {...d.pos}, hp: 200, until: tick + d.ticks}; log('Tide Twin appears'); break;
         case 'clone_move': if (clone) {if(d.to.x!==clone.pos.x)visual.cloneLeft=d.to.x<clone.pos.x;if(waterDive){visual.fx.push({tag:'dive_in',at:{...clone.pos},start:tick,until:tick+18});visual.cloneExitAt=tick+d.ticks;}glide(clone, d.to, d.ticks);} break;
+        case 'pool_calm': log('A whirlpool calms into a pool'); break;
         case 'spawn_echo': echo = {pos: {...d.pos}, hp: 250, until: tick + d.ticks}; log('The trident leaves a clone of her'); break;
         case 'echo_move': if (echo) { if (d.to.x !== echo.pos.x) visual.echoLeft = d.to.x < echo.pos.x; glide(echo, d.to, d.ticks); } break;
         case 'remove_echo': echo = null; break;

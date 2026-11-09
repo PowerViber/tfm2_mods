@@ -192,6 +192,8 @@ pub enum Effect {
     Water { on: bool },
     PoolUp { id: u32, center: Point, radius: i64, until: u64, whirl: bool },
     PoolDown { id: u32 },
+    /// a whirlpool's swirl is over: it is a normal pool for the rest of its life
+    PoolCalm { id: u32 },
     SpawnClone { pos: Point, ticks: u64 },
     /// her clone flies or dives over `ticks` (an engine glide of its hidden carrier; its body is drawn as an effect)
     CloneMove { to: Point, ticks: u64 },
@@ -221,6 +223,9 @@ pub struct Pool {
     pub radius: i64,
     pub until: u64,
     pub whirl: bool,
+    /// a whirlpool swirls until this tick, then calms into a normal pool
+    #[serde(default)]
+    pub whirl_until: u64,
 }
 impl Pool {
     pub fn holds(&self, p: Point) -> bool {
@@ -352,7 +357,7 @@ impl Core {
         self.expire(f, &mut out);
         self.run_cast(f, &mut out);
         self.passive(f, &mut out);
-        self.run_whirlpools(f, &mut out);
+        self.run_pool_slow(f, &mut out);
         self.run_twin(f, &mut out);
         self.run_echo(f, &mut out);
         self.run_trident(f, &mut out);
@@ -374,7 +379,7 @@ impl Core {
         self.next_pool += 1;
         let until = f.tick + sec(d::WATER_POOL_TICKS);
         let center = center.clamp_map();
-        self.pools.push(Pool { id, center, radius, until, whirl });
+        self.pools.push(Pool { id, center, radius, until, whirl, whirl_until: if whirl { f.tick + sec(d::TIDE_POOL_WHIRL_TICKS) } else { 0 } });
         out.push(Effect::PoolUp { id, center, radius, until, whirl });
         out.push(Effect::Fx { name: "tls_pool_rise".into(), at: center, ticks: 18, ambient: false });
         id
@@ -388,6 +393,10 @@ impl Core {
             }
             keep
         });
+        for p in self.pools.iter_mut().filter(|p| p.whirl && f.tick >= p.whirl_until) {
+            p.whirl = false;
+            out.push(Effect::PoolCalm { id: p.id });
+        }
     }
 
     fn passive(&mut self, f: &Frame, out: &mut Vec<Effect>) {
@@ -467,11 +476,16 @@ impl Core {
         for u in &caught {
             out.push(Effect::Damage { target: u.id, amount: dmg, from_clone: power < 100 });
             out.push(Effect::Slow { target: u.id, percent: d::TIDE_POOL_SLOW_PCT, ticks: 30 });
-            out.push(Effect::Pull { target: u.id, to: u.pos.toward(center, (u.pos.dist(center) as i64 / 2).max(1)), ticks: 10 });
+            // the surge's one pull inward (whirlpools no longer keep pulling), never onto terrain
+            let to = free_spot(f, u.pos, u.pos.toward(center, (u.pos.dist(center) as i64 / 2).max(1)));
+            out.push(Effect::Pull { target: u.id, to, ticks: 10 });
         }
-        if caught.iter().filter(|u| u.champion).count() >= d::TIDE_POOL_BUMP_MIN_CHAMPIONS as usize {
+        let mut champs: Vec<&&Unit> = caught.iter().filter(|u| u.champion).collect();
+        if champs.len() >= d::TIDE_POOL_BUMP_MIN_CHAMPIONS as usize {
             out.push(Effect::Fx { name: "tls_bump".into(), at: center, ticks: 20, ambient: false });
-            for u in caught.iter().filter(|u| u.champion) {
+            // at most bumpMaxChampions per surge: the closest to the center
+            champs.sort_by_key(|u| (u.pos.d2(center), u.id));
+            for u in champs.iter().take(d::TIDE_POOL_BUMP_MAX_CHAMPIONS as usize) {
                 out.push(Effect::Stun { target: u.id, ticks: sec(d::TIDE_POOL_BUMP_STUN_TICKS) });
             }
         }
@@ -507,17 +521,20 @@ impl Core {
         }
     }
 
-    /// Whirlpools keep slowing and drawing in the enemies inside them.
-    fn run_whirlpools(&mut self, f: &Frame, out: &mut Vec<Effect>) {
-        if f.tick % sec(d::TIDE_POOL_PULL_EVERY_TICKS).max(1) != 0 {
+    /// Every pool slows the enemies standing in it (a swirling whirlpool more); one slow, the strongest, never stacked.
+    fn run_pool_slow(&mut self, f: &Frame, out: &mut Vec<Effect>) {
+        if f.tick % 10 != 0 {
             return;
         }
-        for p in self.pools.iter().filter(|p| p.whirl) {
-            for u in f.units.iter().filter(|u| f.enemy(u) && !u.tower && u.pos.within(p.center, p.radius + u.radius)) {
-                out.push(Effect::Slow { target: u.id, percent: d::TIDE_POOL_SLOW_PCT, ticks: sec(d::TIDE_POOL_PULL_EVERY_TICKS) + 2 });
-                if !u.pos.within(p.center, 4_000) {
-                    out.push(Effect::Pull { target: u.id, to: u.pos.toward(p.center, d::TIDE_POOL_PULL_STEP.min(u.pos.dist(p.center) as i64)), ticks: 4 });
-                }
+        for u in f.units.iter().filter(|u| f.enemy(u) && !u.tower) {
+            let slow = self
+                .pools
+                .iter()
+                .filter(|p| u.pos.within(p.center, p.radius + u.radius))
+                .map(|p| if p.whirl { d::TIDE_POOL_SLOW_PCT } else { d::WATER_POOL_SLOW_PCT })
+                .max();
+            if let Some(percent) = slow {
+                out.push(Effect::Slow { target: u.id, percent, ticks: 12 });
             }
         }
     }
