@@ -1,0 +1,29 @@
+{
+  "date": "2026-11-10",
+  "body": {
+    "approved": true,
+    "quote": "Approve Wright\u2019s body"
+  },
+  "fleet": {
+    "approved": true,
+    "quote": "Approve the fleet and carrier"
+  },
+  "effects": {
+    "approved": true,
+    "quote": "Approve these effects"
+  },
+  "sources": {
+    "blast-source-v1.png": "ca1f1dce7fc58cfda9efd36dbdaef4409695bad24a20d26b2747cb03d4929f35",
+    "body-source-v1.png": "416c4556a12bc61b7d43bed87a92fd24f21b6aecfe05820f28d31f034a6dddc1",
+    "bomber-source-v1.png": "d9be19304714a0a60be701022509c3d88dbbda97b9b950508e398402138e9cb2",
+    "carrier-source-v1.png": "fa8981f52631344d688fdf7acbeacf69c6515d858e7e541c09e6eba7c5123f9a",
+    "chopper-source-v1.png": "1ff375b3ab92106059acf4da1d03dcbd6ef898a365c13b1861faafc458ed512e",
+    "drone-source-v1.png": "537d356cbd862b23cbd155d1b3a461e1e6d448212b7b5279b2a11006bed03032",
+    "fighter-source-v1.png": "f2e1b921099cb302bea5ae61f2e0568bfc3a8f0cbd5fd0e761d94dd4ad340212",
+    "pressure-source-v1.png": "a6caa65defa6c5c49753c66b7bcab0855cb1700ffe9cff18a617f6a60bac394b",
+    "repair-source-v1.png": "9c562492c35274b71035dad6b39ca10062f13524365d755a98c91ca81f0e6874",
+    "repairkit-source-v1.png": "2eed7619be183b4d52936d325ea5b6b06f0f98babf1e795d9b7a86db9262a193",
+    "rocket-source-v1.png": "9832d3316b904b1e12253baeb4c7bdbc5f84442be684e358a2bacd8d37513e0a"
+  },
+  "scope": "Appearance sources and completing their animations; not release packaging, installation or actual-game acceptance"
+}

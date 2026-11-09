@@ -1,0 +1,29 @@
+{
+  "checks": 818,
+  "body_frames": 72,
+  "both_facings": true,
+  "fx_tags": 70,
+  "decoded_bytes": 5505024,
+  "atlases": [
+    [
+      512,
+      1008
+    ],
+    [
+      1920,
+      448
+    ]
+  ],
+  "combat_baseline": "2635f714c89d761df822e174ffad7c3984799bef",
+  "native_adapter_exception": "Immediate failed-spawn and dead-owner carrier cleanup; successful mechanics unchanged",
+  "hashes": {
+    "mods/tfm2_custom/champions/tfm2_custom_wright#sheet.png": "4fab99927bdbf4428b207dea5f44dc14b831182b7284bc7c61542b316276696d",
+    "mods/tfm2_custom/champions/tfm2_custom_wright#anim.fanim": "b5ce90b301dd140d4f9391e824eb5a69c7248009d95b2d3087465502c4caf269",
+    "mods/tfm2_custom/vfx/wright#sheet.png": "5132cd1c5a57bcdd78a646a567d26b51feb6af2c7eb07cd782345c33ef1f7239",
+    "mods/tfm2_custom/vfx/wright#anim.fanim": "cfe0b05133c035c4349046da9956514b95a3c4a9a64712e32da01b2ab9591c8c",
+    "docs/wright-art-review/art-manifest.json": "862642d648dfa786ddd2fbb9a9ffe6e42722885a774a949a512630b1259b3971",
+    "editor/wright-art.js": "7d62b8bdebc8fcbb368fd9e2a4332c7712604d772b8cad78e5cb30bc0bb9206c",
+    "native/tfm2_custom_ai/src/wright_art.rs": "ed5c49ea302f941308a8c697f510173a6c9e06cfce1be8d01ff75e446c7817f6"
+  },
+  "live_game_acceptance": "pending"
+}
