@@ -1,9 +1,9 @@
 {
-  "checks": 1024,
+  "checks": 1088,
   "body_frames": 72,
   "both_facings": true,
-  "fx_tags": 107,
-  "decoded_bytes": 9928704,
+  "fx_tags": 113,
+  "decoded_bytes": 11894784,
   "atlases": [
     [
       512,
@@ -11,19 +11,19 @@
     ],
     [
       1920,
-      1024
+      1280
     ]
   ],
-  "combat_baseline": "57a75b8f8bf89d042acee94352cc98fdfb2759d2",
-  "presentation_changes": "Core FX only: one centred composite per bomber wave and stable-clock jet phase tags; adapter attaches the drop warning to its owner. Baseline combat traces checked separately.",
+  "combat_baseline": "1f96d4805670a16f18c018b4001bb66fff715749",
+  "scope": "Intentional wright-3 bomber change: three fixed advancing centres and one large explosion each. Other skills and approved bodies preserved; full current native/WASM parity and non-bomber baseline checked separately.",
   "hashes": {
     "mods/tfm2_custom/champions/tfm2_custom_wright#sheet.png": "4fab99927bdbf4428b207dea5f44dc14b831182b7284bc7c61542b316276696d",
     "mods/tfm2_custom/champions/tfm2_custom_wright#anim.fanim": "b5ce90b301dd140d4f9391e824eb5a69c7248009d95b2d3087465502c4caf269",
-    "mods/tfm2_custom/vfx/wright#sheet.png": "691e1351b9c5aab0f081e86db18c0ec11360d40d961ba736a785a6e475b37b46",
-    "mods/tfm2_custom/vfx/wright#anim.fanim": "9d922b82898f6a68e548493759f9c2c20aaed8bbb79a34b1c1e2b2dad04fa9fb",
-    "docs/wright-art-review/art-manifest.json": "2269df93d25c2ed06f6b54f277a4c363e10498ca95843deb7b8f6e6dd1f14b64",
-    "editor/wright-art.js": "fb3cce4d2f4c0d50c0d1f72a237a37359562cb5402d0305a2e948c6078a9b21f",
-    "native/tfm2_custom_ai/src/wright_art.rs": "9088fdc4a5d172d9c22268e7281235fea63e6678b04cfaa98101164316c2860d"
+    "mods/tfm2_custom/vfx/wright#sheet.png": "a611a4381751f6a13d1d842c056c1c72f334289571478e0994052482362a81e9",
+    "mods/tfm2_custom/vfx/wright#anim.fanim": "4e5f6352f8677619a6d95f25fc8b3c185ff5c6b986a34c183c333911af02fc6c",
+    "docs/wright-art-review/art-manifest.json": "284a44a52fc403abf3942b954bf4f32053ab4748d910f43ea10490b070d7888a",
+    "editor/wright-art.js": "31906c5b812894d638e735dc0c49272422ebdc004692e22ffd481becb2fde170",
+    "native/tfm2_custom_ai/src/wright_art.rs": "fb383f0b0940c0cf4cb941e04b8af9d781205e3766b3599f417594b9840381c0"
   },
   "live_game_acceptance": "pending"
 }

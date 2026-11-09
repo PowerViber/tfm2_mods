@@ -1,7 +1,7 @@
 {
-  "checks": 58,
+  "checks": 63,
   "passed": [
-    "review images decode",
+    "source review images decode",
     "idle eight-frame inspection",
     "idle left binding",
     "idle right binding",
@@ -43,9 +43,14 @@
     "pause resets accumulator and stalls have bounded catch-up",
     "complete combat/host trace identical with art on/off",
     "complete native/WASM states and command arrays",
-    "updated-main baseline complete combat states and nonvisual commands unchanged",
+    "non-bomber baseline complete combat states and nonvisual commands unchanged",
     "native/WASM jet phase names agree with Lab renderer",
     "manual mechanics independent of thirteen-stat profile",
+    "three fixed advancing centres",
+    "three individually timed ground warnings",
+    "all review images including actual-core bomber animation decode",
+    "each isolated footprint delivers one large blast",
+    "only third footprint receives the final stun",
     "WASD moves actor",
     "arena focus loss clears held movement",
     "step pauses and advances once",
@@ -62,9 +67,9 @@
   ],
   "complete_trace_frames": 2010,
   "native_wasm_parity_frames": 2010,
-  "combat_baseline": "57a75b8f8bf89d042acee94352cc98fdfb2759d2",
-  "baseline_combat_frames": 2010,
-  "trace_sha256": "be203cdb5ce27900e63b0d0ea7786de4670b1d2c362a2841905293a6c64d8b7b",
+  "combat_baseline": "1f96d4805670a16f18c018b4001bb66fff715749",
+  "baseline_non_bomber_frames": 2010,
+  "trace_sha256": "d36a8865cf371341a879ea1ef96e9cae634f625d8669a51e15e1220508fd7bbe",
   "display_rates": [
     {
       "rate": 30,
@@ -88,18 +93,18 @@
     }
   ],
   "cold_browser_load_ms": [
-    88.55780004523695,
-    65.06650010123849,
-    82.25149987265468,
-    86.61610004492104,
-    67.72370007820427
+    401.11570013687015,
+    389.8181999102235,
+    222.73709997534752,
+    263.3243999443948,
+    200.18330006860197
   ],
   "sustained_draw_ms_per_16_plane_scene": [
-    0.394,
-    0.4022000000476837,
-    0.3974000000953674,
-    0.44770000004768373,
-    0.4025
+    0.7208000001907349,
+    0.8087999999523163,
+    0.7762999999523162,
+    0.7885999999046326,
+    0.6391000001430511
   ],
   "performance_scope": "Five cold browser contexts and five sustained canvas scenes; not native-host FPS",
   "live_game_acceptance": "pending",

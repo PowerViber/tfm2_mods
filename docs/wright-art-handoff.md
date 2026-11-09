@@ -50,3 +50,13 @@ View buffs: `burn` (`wrt_burn`, the kamikaze burn on a target) and `repair_shiel
 - Boosted and banking fighter variants reuse approved pixels/palette, select phases from the authoritative plane state and advance from its stable birth tick. They replace the ordinary one-tick aircraft layer; no duplicate aircraft, extra emission or new movement rule is introduced.
 - The body, numerical `wright-2` rules, 15% fighter HP and carrier guard model are unchanged. Callback-stage calibration, turret targeting, DLL packaging and live acceptance remain separate pending gates.
 
+## Superseding bomber correction: wright-3 / wright-art-3
+
+Reihan clarified that “like Nana's ult” means **three large, overlapping explosions advancing forward in a line**, not three repeated hits at one point. The earlier seven-small-blast composite is retired for current casts. Each strike now uses one large approved explosion drawing at its own committed centre.
+
+- Aim selects the middle/direction; nominal spacing is 40,000, radius 45,000, and the furthest centre remains within the existing 110,000 range. Map-edge clipping shortens spacing along the original ray; it never folds the line into repeated clamped centres. A zero-length invalid line spends no resources.
+- Separate ground markers warn strikes 1/2/3 from acceptance. Normal deadlines are 60/78/96 ticks; ready-carrier bomber deadlines are 18/36/54. Native aliases and Lab selection share the generated manifest. Legacy warning/bomb aliases remain for older presentation.
+- The first two explosions retain slow; the third retains stun. Per-strike damage, radius, timings, costs and all other skills are unchanged. This is an intentional bomber geometry change, so old bomber combat traces are not claimed identical.
+- Current rules revision is `wright-3`; Lab transport remains v1. Old recordings require their original rules. The Lab review includes an actual-core animated sequence and the three independent footprints.
+- The user-confirmed advancing pattern is the design authority. [Nana's published guide](https://www.oneesports.gg/mobile-legends/nana-best-build-guide/) describes three strikes; our spacing, range handling and final-strike stun are TFM2 adaptations, not a claim of exact MLBB mechanics or reviewed video footage.
+
