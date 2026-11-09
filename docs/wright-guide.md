@@ -27,6 +27,6 @@ Wright is an Original-family **summoner mage**, designed by Reihan. He plays mid
 - **Art:** `docs/wright-art-handoff.md`.
 
 ## Known limits
-- Placeholder shapes in the Lab until Codex's art lands; the game skips him until his body sheet exists.
+- Approved original body, fleet and effects are integrated, with actual-asset inspection at `editor/wright-review.html`. See `docs/wright-art-review/README.md` for approvals, hashes and evidence. The new release DLL and actual-game acceptance remain separate; the existing packaged DLL is not a Wright release.
 - The drone gives no extra vision yet (the host has no proven vision hook); it scouts by being there and taunting.
 - Fighter HP (10% of his) is a starting value: in the Lab, two enemies shooting them make them kamikaze within a couple of seconds. Tune `fighter.hpPct` after playing.

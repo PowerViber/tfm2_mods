@@ -1,0 +1,9 @@
+{
+  "scope": "Disposable fixture comparison only; no real installation, game or career migration",
+  "exit_code": 0,
+  "files_compared": 871,
+  "different_or_missing": [],
+  "isolated_appdata": true,
+  "packaged_dll_sha256": "97ce14369d999da605a80dbe0618fec3bf192c9595cf606564ae25a00565a628",
+  "release_packaging": "pending; this check does not prove DLL registration or live rendering"
+}
