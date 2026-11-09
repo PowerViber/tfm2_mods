@@ -1,0 +1,99 @@
+{
+  "checks": 52,
+  "passed": [
+    "review images decode",
+    "idle eight-frame inspection",
+    "idle left binding",
+    "idle right binding",
+    "run eight-frame inspection",
+    "run left binding",
+    "run right binding",
+    "attack eight-frame inspection",
+    "attack left binding",
+    "attack right binding",
+    "skill1 eight-frame inspection",
+    "skill1 left binding",
+    "skill1 right binding",
+    "skill2 eight-frame inspection",
+    "skill2 left binding",
+    "skill2 right binding",
+    "skill3 eight-frame inspection",
+    "skill3 left binding",
+    "skill3 right binding",
+    "ult eight-frame inspection",
+    "ult left binding",
+    "ult right binding",
+    "hit eight-frame inspection",
+    "hit left binding",
+    "hit right binding",
+    "dead eight-frame inspection",
+    "dead left binding",
+    "dead right binding",
+    "actual packaged atlases load",
+    "thirteen athlete controls retained",
+    "30 Hz gives 60 ticks/sec",
+    "60 Hz gives 60 ticks/sec",
+    "120 Hz gives 60 ticks/sec",
+    "144 Hz gives 60 ticks/sec",
+    "240 Hz gives 60 ticks/sec",
+    "pause resets accumulator and stalls have bounded catch-up",
+    "complete combat/host trace identical with art on/off",
+    "complete native/WASM states and command arrays",
+    "manual mechanics independent of thirteen-stat profile",
+    "WASD moves actor",
+    "arena focus loss clears held movement",
+    "step pauses and advances once",
+    "escort preview starts",
+    "rockets preview starts",
+    "kamikaze preview starts",
+    "bomber preview starts",
+    "repair preview starts",
+    "drone preview starts",
+    "carrier preview starts",
+    "low-HP fixture changes actual Lab carrier HP only",
+    "death clears fleet and chooses body death pose",
+    "no browser errors"
+  ],
+  "complete_trace_frames": 2010,
+  "native_wasm_parity_frames": 2010,
+  "trace_sha256": "1ac9eb02d4e8146e85271fea6f7eb44a13ed3c1a281c86c1b495161c9e59bdc7",
+  "display_rates": [
+    {
+      "rate": 30,
+      "ticks": 120
+    },
+    {
+      "rate": 60,
+      "ticks": 120
+    },
+    {
+      "rate": 120,
+      "ticks": 120
+    },
+    {
+      "rate": 144,
+      "ticks": 120
+    },
+    {
+      "rate": 240,
+      "ticks": 120
+    }
+  ],
+  "cold_browser_load_ms": [
+    153.04209990426898,
+    118.21339977905154,
+    121.38919997960329,
+    132.09250010550022,
+    126.20049994438887
+  ],
+  "sustained_draw_ms_per_16_plane_scene": [
+    0.22470000004768373,
+    0.21470000004768372,
+    0.22609999990463256,
+    0.21,
+    0.2002000000476837
+  ],
+  "performance_scope": "Five cold browser contexts and five sustained canvas scenes; not native-host FPS",
+  "live_game_acceptance": "pending",
+  "errors": []
+}

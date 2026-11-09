@@ -1,0 +1,227 @@
+{
+  "scope": "Unchanged Magnus release core; excludes native host, rendering and crowded-game FPS",
+  "five_runs": [
+    [
+      {
+        "pieces": 32,
+        "finalArmy": 32,
+        "p95StepUs": 1848,
+        "maxStepUs": 7523,
+        "p95PlanningUs": 2190,
+        "commands": [
+          0,
+          3,
+          0,
+          6,
+          0
+        ]
+      },
+      {
+        "pieces": 64,
+        "finalArmy": 64,
+        "p95StepUs": 831,
+        "maxStepUs": 8764,
+        "p95PlanningUs": 980,
+        "commands": [
+          1,
+          0,
+          0,
+          7,
+          0
+        ]
+      },
+      {
+        "pieces": 128,
+        "finalArmy": 128,
+        "p95StepUs": 1400,
+        "maxStepUs": 9780,
+        "p95PlanningUs": 2017,
+        "commands": [
+          0,
+          3,
+          1,
+          4,
+          0
+        ]
+      }
+    ],
+    [
+      {
+        "pieces": 32,
+        "finalArmy": 32,
+        "p95StepUs": 977,
+        "maxStepUs": 3816,
+        "p95PlanningUs": 1183,
+        "commands": [
+          0,
+          3,
+          0,
+          6,
+          0
+        ]
+      },
+      {
+        "pieces": 64,
+        "finalArmy": 64,
+        "p95StepUs": 473,
+        "maxStepUs": 4567,
+        "p95PlanningUs": 638,
+        "commands": [
+          1,
+          0,
+          0,
+          7,
+          0
+        ]
+      },
+      {
+        "pieces": 128,
+        "finalArmy": 128,
+        "p95StepUs": 949,
+        "maxStepUs": 6941,
+        "p95PlanningUs": 1060,
+        "commands": [
+          0,
+          3,
+          1,
+          4,
+          0
+        ]
+      }
+    ],
+    [
+      {
+        "pieces": 32,
+        "finalArmy": 32,
+        "p95StepUs": 1126,
+        "maxStepUs": 5140,
+        "p95PlanningUs": 1354,
+        "commands": [
+          0,
+          3,
+          0,
+          6,
+          0
+        ]
+      },
+      {
+        "pieces": 64,
+        "finalArmy": 64,
+        "p95StepUs": 510,
+        "maxStepUs": 4323,
+        "p95PlanningUs": 685,
+        "commands": [
+          1,
+          0,
+          0,
+          7,
+          0
+        ]
+      },
+      {
+        "pieces": 128,
+        "finalArmy": 128,
+        "p95StepUs": 1014,
+        "maxStepUs": 6954,
+        "p95PlanningUs": 1154,
+        "commands": [
+          0,
+          3,
+          1,
+          4,
+          0
+        ]
+      }
+    ],
+    [
+      {
+        "pieces": 32,
+        "finalArmy": 32,
+        "p95StepUs": 1089,
+        "maxStepUs": 4807,
+        "p95PlanningUs": 1390,
+        "commands": [
+          0,
+          3,
+          0,
+          6,
+          0
+        ]
+      },
+      {
+        "pieces": 64,
+        "finalArmy": 64,
+        "p95StepUs": 522,
+        "maxStepUs": 6634,
+        "p95PlanningUs": 694,
+        "commands": [
+          1,
+          0,
+          0,
+          7,
+          0
+        ]
+      },
+      {
+        "pieces": 128,
+        "finalArmy": 128,
+        "p95StepUs": 940,
+        "maxStepUs": 6650,
+        "p95PlanningUs": 1033,
+        "commands": [
+          0,
+          3,
+          1,
+          4,
+          0
+        ]
+      }
+    ],
+    [
+      {
+        "pieces": 32,
+        "finalArmy": 32,
+        "p95StepUs": 1161,
+        "maxStepUs": 4443,
+        "p95PlanningUs": 1261,
+        "commands": [
+          0,
+          3,
+          0,
+          6,
+          0
+        ]
+      },
+      {
+        "pieces": 64,
+        "finalArmy": 64,
+        "p95StepUs": 472,
+        "maxStepUs": 4744,
+        "p95PlanningUs": 530,
+        "commands": [
+          1,
+          0,
+          0,
+          7,
+          0
+        ]
+      },
+      {
+        "pieces": 128,
+        "finalArmy": 128,
+        "p95StepUs": 847,
+        "maxStepUs": 6799,
+        "p95PlanningUs": 1121,
+        "commands": [
+          0,
+          3,
+          1,
+          4,
+          0
+        ]
+      }
+    ]
+  ],
+  "median_128_piece_p95_us": 949,
+  "target_us": 4000
+}

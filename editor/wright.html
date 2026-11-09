@@ -18,7 +18,9 @@ label{display:flex;gap:6px;align-items:center}
 <canvas id="arena" width="900" height="900" tabindex="0"></canvas>
 <div id="side">
   <h2 style="margin:0">Wright Lab</h2>
-  <div style="color:#94a3b8">Placeholder shapes until Codex's art lands. The rules are the game's own core.</div>
+  <div style="color:#94a3b8">Approved artwork. The rules are the game's own core; host movement, enemy fire and mitigation are simulated. Shield/burn/taunt indicators are visual receipts, not proof of native host behaviour.</div>
+  <a href="wright-review.html" style="color:#8cdbf5">Artwork and animation review</a>
+  <label><input type="checkbox" id="art" checked> Approved artwork (presentation only)</label>
   <div id="status">Loading…</div>
   <div class="keys">Mouse aims · WASD move · <b>1</b> Fighter Wing · <b>2</b> Carpet Bomber · <b>3</b> Repair Wing · <b>4</b> Sky Carrier (on Wright; while it hovers, <b>2</b> uses a ready bomber) · <b>F</b> rivet the nearest enemy (fighters join that target)</div>
   <div class="row">
@@ -27,14 +29,19 @@ label{display:flex;gap:6px;align-items:center}
   <div class="row">
     <button id="hurtAlly">Hurt the far ally</button><button id="hurtMe">Hurt Wright</button><button id="group">Group the enemies</button>
   </div>
+  <div class="row"><select id="demo"><option value="escort">Fighter escort</option><option value="rockets">Lock-on rockets</option><option value="kamikaze">Kamikaze inspection</option><option value="bomber">Carpet bomber</option><option value="repair">Local/global repair</option><option value="drone">Scout taunt (skip 14 s)</option><option value="carrier">Carrier drop and fleet</option></select><button id="demoRun">Run preview</button><button id="damagePlanes">Low fighter HP (Lab)</button></div>
   <label><input type="checkbox" id="zoom" checked> Follow camera (zoomed)</label>
   <label><input type="checkbox" id="auto"> Athlete AI plays him</label>
-  <label><input type="checkbox" id="moving" checked> Enemies walk and shoot planes</label>
+  <label><input type="checkbox" id="moving" checked> Enemies walk</label>
+  <label><input type="checkbox" id="incomingFire" checked> Incoming fire (Lab model; disable for art inspection)</label>
   <label><input type="checkbox" id="walls"> Terrain column</label>
   <details><summary>Athlete attributes</summary><div class="stat" id="stats"></div></details>
   <div id="hud"></div>
   <div id="log"></div>
 </div>
 <script src="wright-data.js"></script>
+<script src="wright-clock.js"></script>
+<script src="wright-art.js"></script>
+<script src="wright-renderer.js"></script>
 <script src="wright-lab.js"></script>
 </body></html>

@@ -28,7 +28,7 @@ Wright is an Original-family **summoner mage**, designed by Reihan. He plays mid
 - **Art:** `docs/wright-art-handoff.md`.
 
 ## Known limits
-- Placeholder shapes in the Lab until Codex's art lands; the game skips him until his body sheet exists.
+- Approved original body, fleet and effects are integrated, with actual-asset inspection at `editor/wright-review.html`. See `docs/wright-art-review/README.md` for approvals, hashes and evidence. The new release DLL and actual-game acceptance remain separate; the existing packaged DLL is not a Wright release.
 - The drone gives no extra vision yet (the host has no proven vision hook); it scouts by being there and taunting.
 - **Summons and turrets:** no summon ever damages a turret; jets and the drone are units turrets can shoot (the game decides turret targeting, so confirm in play).
 - The guard trusts `on_damaged` to report the damage after the 80% reduction; confirm the pool drains right in play.

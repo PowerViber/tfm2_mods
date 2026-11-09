@@ -4,7 +4,7 @@ const assert = require('assert'), path = require('path'), {spawn} = require('chi
 const {chromium} = require('playwright');
 const root = path.resolve(__dirname, '..'), port = 7321;
 (async () => {
-  const server = spawn('node', ['server.js', '--port', String(port)], {cwd: path.join(root, 'editor'), stdio: 'ignore'});
+  const server = spawn('node', ['server.js', '--port', String(port), '--no-open'], {cwd: path.join(root, 'editor'), stdio: 'ignore'});
   await new Promise(r => setTimeout(r, 1500));
   const browser = await chromium.launch(), page = await browser.newPage({viewport: {width: 1300, height: 950}}), errors = [];
   page.on('pageerror', e => errors.push(e.message));

@@ -244,7 +244,13 @@ impl Wright {
                     Some(id) => {
                         self.carriers.insert(key, id);
                     }
-                    None => crate::mod_log(sim, "wright_log.txt", &format!("plane{tick}"), &format!("{}: the host refused the carrier", kind.tag())),
+                    None => {
+                        // A known rejected spawn is not an unreported receipt.
+                        // Remove it immediately instead of letting the core's
+                        // one-tick receipt grace produce an invisible attack.
+                        self.core.planes.retain(|p|p.key!=key);
+                        crate::mod_log(sim,"wright_log.txt",&format!("plane{tick}"),&format!("{}: the host refused the carrier",kind.tag()));
+                    }
                 },
                 Effect::PlaneMove { key, to, ticks } => {
                     if let Some(&c) = self.carriers.get(&key) {
@@ -273,7 +279,16 @@ impl Wright {
                 }
                 Effect::Fx { name, at, ticks, ambient } => {
                     if !ambient || self.fx_ok(tick as u64, true) {
-                        crate::fx_point(sim, &name, owner, at.x, at.y, ticks);
+                        let tag=crate::wright_art::effect_name(&name,ticks);
+                        // Attach the one-shot reticle to its actual target. Its
+                        // existing lifetime/phase continues while that unit moves.
+                        let target=if name=="wrt_lock" {
+                            self.core.planes.iter().filter_map(|p|p.lock.map(|(id,_)|id)).filter(|id|{
+                                sim.is_visible(team,*id)&&sim.get_entity(*id).is_some_and(|u|{let p=u.pos();u.is_alive()&&p.0 as i64==at.x&&p.1 as i64==at.y})
+                            }).min()
+                        }else{None};
+                        if let Some(id)=target {crate::fx_unit(sim,&tag,owner,id,ticks);}
+                        else {crate::fx_point(sim,&tag,owner,at.x,at.y,ticks);}
                     }
                 }
                 Effect::Pose { name, ticks } => sim.apply_cc(owner, &named(CcKindV1::Animation, ticks, name)),
@@ -322,6 +337,10 @@ impl StablePassive for Wright {
         self.owner = Some(id);
         let f = self.frame(sim, id);
         if !f.alive {
+            self.clear(sim);
+            self.core.respawn(f.tick);
+            self.attack_target=None;
+            for count in 0..=d::WORKSHOP_MAX_STOCK {sim.entity_remove_buff(id,&format!("wrt_airframes:{count}"));}
             return;
         }
         let effects = self.core.step(&f);

@@ -70,6 +70,13 @@ champ['view_effects'] = [dict(type='Animation', name='wrt_' + e, anim=VFX, tag=e
 champ['view_buffs'] = [dict(type='Animated', name='wrt_burn', anim=VFX, tag='burn', z=4),
                        dict(type='Animated', name='wrt_shielded', anim=VFX, tag='repair_shield', z=4)]
 champ['view_projectiles'] = [dict(type='Animated', name=ID + '_rivet', anim=VFX, tag='rivet', z=2, repeat=True)]
+art_path=ROOT/'docs/wright-art-review/art-manifest.json'
+if art_path.exists():
+    art=json.loads(art_path.read_text())
+    if not art['review_only']:
+        champ['view_effects']=[dict(type='Animation',name='wrt_'+tag,anim=VFX,tag=tag,z=spec['z'],is_follow=spec.get('follow',False))
+                               for tag,spec in art['effects'].items() if spec['kind']=='effect']
+        champ['view_buffs'] += [dict(type='Animated',name='wrt_airframes:'+str(i),anim=VFX,tag='airframes'+str(i),z=7) for i in range(4)]
 data = json.dumps(champ, indent=2) + '\n'
 
 roster = dict(id=ID, name=rules['name'], family='original', role='Magician', native=True,

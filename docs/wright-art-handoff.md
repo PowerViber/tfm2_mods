@@ -42,3 +42,8 @@ View buffs: `burn` (`wrt_burn`, the kamikaze burn on a target) and `repair_shiel
 1. `python3 tools/generate-wright.py --check` passes (update its effect list if a tag is renamed).
 2. Mod Manager `the_repos_champions_all_load` passes.
 3. Release: the next unused native / tfm2_custom versions in all four places, the DLL, and a review doc.
+
+## Note for Codex after the `wright-2` Lab review
+- The rules changed: the bomber's area is now `bomber.radius` 45,000 (replacing `orbitRadius` 40,000 and `bombRadius` 10,000), and the carrier's knockback ring is `carrier.knockRadius` 100,000 (was 70,000). The carrier now hovers over Wright.
+- `tools/build-wright-art.py` still reads `bomber.bombRadius` and `bomber.orbitRadius`. The shipped sheets were built with the old sizes, so `warn`, `bomb` and `knock_ring` are drawn smaller than the new areas. Please update the script to the new keys and rebuild those effects.
+
