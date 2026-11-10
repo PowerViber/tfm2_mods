@@ -160,6 +160,8 @@
       if(tick<p.start)continue;
       if(art){const q=P(at);painter.effect(ctx,painter.planeTag(p,tick-1),0,q.x,q.y,pixel);}
       else plane(at,p.kind,p.heading,p.kind==='bomber'?9000:p.kind==='rocket'?2500:5000);
+      // round 160: a jet's ammo pips (3 strikes per trip, then home to rearm)
+      if (p.kind === 'fighter' && !p.kamikaze) { const q = P(at); for (let i = 0; i < (p.ammo ?? 0); i++) { ctx.fillStyle = '#fde047'; ctx.fillRect(q.x - 6 + i * 5, q.y - 12, 3, 3); } }
       if (host) { const q = P(at); ctx.fillStyle = '#22c55e'; ctx.fillRect(q.x - 8, q.y + 8, 16 * Math.max(0, host.hp / host.max_hp), 2); }
     }
     if(art)for(const [map,tag] of [[visual.shields,'repair_shield'],[visual.burns,'burn']]){

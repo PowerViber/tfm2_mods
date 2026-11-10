@@ -32,9 +32,10 @@ text = {
               f"a scout drone ({dr['hpPct']}% of his HP) flies to the nearest enemy champion, hovers {sec(dr['hoverTicks'])} and taunts enemies within "
               f"{dr['tauntRadius']} onto it for {sec(dr['tauntTicks'])}. "
               f"Fighter Wing ({sec(fi['cooldownTicks'])}): launches {fi['perCast']} fighters for {sec(fi['ticks'])} (up to {fi['maxAlive']}, {fi['hpPct']}% of his HP "
-              f"each, can be shot down). They fly sorties from him: each picks the nearest enemy (champions first, then minions and creeps), flies to "
-              f"where it is, strafes once ({fi['sortieBase']} + {fi['sortieApRatio']}% AP; every {fi['rocketEvery']}rd sortie a rocket, {fi['rocketBase']} + "
-              f"{fi['rocketApRatio']}% AP with splash) and returns; no homing, so a moving target can dodge, and the closer he is, the faster they attack. "
+              f"each, can be shot down). Each jet carries {fi['ammo']} strikes: it picks enemies near itself (champions first, then minions and creeps, "
+              f"up to {fi['aggroRange']} from him), flies to where each one is and strikes ({fi['sortieBase']} + {fi['sortieApRatio']}% AP; every {fi['rocketEvery']}rd "
+              f"strike a rocket, {fi['rocketBase']} + {fi['rocketApRatio']}% AP with splash), then flies back to him to rearm for {sec(fi['rearmTicks'])}. No homing; "
+              f"afterburners give {fi['afterburnerPct'] / 100:g}x speed on the final approach. "
               f"They never damage turrets. When their time ends or they fall below "
               f"{fi['kamikazeHpPct']}% HP they kamikaze: {fi['kamikazeBase']} + {fi['kamikazeApRatio']}% AP, a knockback and a burn of "
               f"{fi['burnPermillePerSecond'] / 10:g}% max HP a second for {sec(fi['burnTicks'])}."),

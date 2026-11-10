@@ -67,12 +67,17 @@ expected['revision']='thalassa-1.2';expected['twin'].update(walkSpeed=990,leash=
 expected['revision']='thalassa-1.3';expected['ult'].update(echoTicks=480,echoHpPct=25,echoDamagePct=50,echoLeash=80000,echoLowHpPct=40)
 # thalassa-1.4: whirlpools pull once on the surge, swirl 2 s, bump at most 2; every pool slows 20%
 expected['revision']='thalassa-1.4';[expected['tidePool'].pop(k) for k in ('pullStep','pullEveryTicks')];expected['tidePool'].update(bumpMaxChampions=2,whirlTicks=120);expected['water'].update(poolSlowPct=20)
+# thalassa-1.5 (round 160 nerf): AP growth 26 -> 12, Mod Power AP 25 -> 10, bounce 30% (same type), twin/echo 40%, ult 120 + 70%
+expected['revision']='thalassa-1.5';expected['growth']['magic_power']=12;expected['modPower'][1]=10;expected['water']['bouncePct']=30
+expected['twin']['copyPct']=40;expected['ult'].update(base=120,apRatio=70,echoDamagePct=40)
 check(rules==expected,'only authorized canonical rule changes')
 for tag,ani in links.items():check(len(ani['frames'])==1 and ani['frames'][0]['duration']==1/60,tag+' one-tick tracked link')
 check(Image.open(REVIEW/'effect-pool.png').size==Image.open(REVIEW/'effect-whirlpool.png').size==(74,74),'equal pool and whirlpool footprints')
 original=json.loads(subprocess.check_output(['rtk','proxy','git','show',baseline+':mods/tfm2_custom/champion/tfm2_custom_thalassa.data_champion'],cwd=ROOT))
 for key in ('stat','growth','attack','skill','skill2','ult','passive','passive_ult'):
-    check(champ[key]==original[key],key+' unchanged gameplay definition')
+    want=json.loads(json.dumps(original[key]))
+    if key=='growth':want['magic_power']=12  # round 160 nerf
+    check(champ[key]==want,key+' unchanged gameplay definition (round 160 growth nerf aside)')
 paths=[Path(str(body_base)+'#sheet.png'),Path(str(body_base)+'#anim.fanim'),Path(str(fx_base)+'#sheet.png'),Path(str(fx_base)+'#anim.fanim'),Path(str(link_base)+'#sheet.png'),Path(str(link_base)+'#anim.fanim'),REVIEW/'art-manifest.json',ROOT/'editor/thalassa-art.js',ROOT/'native/tfm2_custom_ai/src/thalassa_art.rs']
 before={p:sha(p) for p in paths}
 subprocess.run([sys.executable,str(ROOT/'tools/pack-thalassa-art.py')],cwd=ROOT,check=True,capture_output=True)

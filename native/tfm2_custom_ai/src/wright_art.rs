@@ -32,6 +32,12 @@ pub fn effect_name(name: &str,ticks: u64) -> String {
         ("wrt_warn1",18)=>"wrt_warn1_t18".to_owned(),
         ("wrt_warn2",36)=>"wrt_warn2_t36".to_owned(),
         ("wrt_warn3",54)=>"wrt_warn3_t54".to_owned(),
+        // round 160 (waves every 36 ticks): until Codex rebuilds the warnings for the new timing and 30,000 radius, use the
+        // closest existing art so no warning is ever invisible (an unregistered name would show nothing)
+        ("wrt_warn2",96)=>"wrt_warn3_t96".to_owned(),
+        ("wrt_warn3",132)=>"wrt_warn_t114".to_owned(),
+        ("wrt_warn2",54)=>"wrt_warn3_t54".to_owned(),
+        ("wrt_warn3",90)=>"wrt_warn3_t96".to_owned(),
         _=>name.to_owned(),
     }
 }

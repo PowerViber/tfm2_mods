@@ -63,13 +63,22 @@ before_rules['revision']='wright-3';before_rules['bomber'].pop('bombsPerWave');b
 before_rules['revision']='wright-4'
 for k in ('gunEveryTicks','gunBase','gunApRatio','rocketEveryTicks','rocketSpeed','boostPct','runTicks','breakTicks','breakRadius','overshoot','staggerTicks'):before_rules['fighter'].pop(k)
 before_rules['fighter'].update(gunRange=15000,sortieBase=20,sortieApRatio=25,rocketEvery=3,rocketSplash=8000,homeRadius=8000,sortieSpeed=4800,restTicks=12)
+# wright-5 (round 160 nerf): AP growth 26 -> 12, Mod Power AP 25 -> 10; jets carry 3 strikes and rearm, cruise slower with
+# afterburners, reach farther, hit softer; the bomber is smaller and slower
+before_rules['revision']='wright-5';before_rules['growth']['magic_power']=12;before_rules['modPower'][1]=10
+for k in ('sortieSpeed','restTicks'):before_rules['fighter'].pop(k)
+before_rules['fighter'].update(sortieBase=12,sortieApRatio=14,rocketBase=24,rocketApRatio=26,kamikazeBase=20,kamikazeApRatio=22,burnPermillePerSecond=10,aggroRange=110000,ammo=3,rearmTicks=120,cruiseSpeed=2400,afterburnerPct=150,afterburnerRange=25000,retargetRange=40000)
+before_rules['bomber'].update(radius=30000,spacing=28000,waveEveryTicks=36,waveBase=30,waveApRatio=25)
 check('only intended canonical bomber geometry changes',before_rules==json.loads((ROOT/'rules/wright.json').read_text()))
 for rel in ('mods/tfm2_custom/champions/tfm2_custom_wright#sheet.png','mods/tfm2_custom/champions/tfm2_custom_wright#anim.fanim'):
     before=subprocess.check_output(['rtk','proxy','git','show',BASE+':'+rel],cwd=ROOT);after=(ROOT/rel).read_bytes()
     if not rel.endswith('.wasm'):before=before.replace(b'\r\n',b'\n');after=after.replace(b'\r\n',b'\n')
     check(rel+' unchanged combat/transport',before==after)
 before=json.loads(subprocess.check_output(['rtk','proxy','git','show',BASE+':'+champ_path],cwd=ROOT))
-for key in ('stat','growth','attack','skill','skill2','ult','passive','passive_ult'):check(key+' unchanged definition',before[key]==champ[key])
+for key in ('stat','growth','attack','skill','skill2','ult','passive','passive_ult'):
+    want=json.loads(json.dumps(before[key]))
+    if key=='growth':want['magic_power']=12  # round 160 nerf
+    check(key+' unchanged definition (round 160 growth nerf aside)',want==champ[key])
 files=[Path(str(b)+s) for b in (body_base,fx_base) for s in ('#sheet.png','#anim.fanim')]+[OUT/'art-manifest.json',ROOT/'editor/wright-art.js',ROOT/'native/tfm2_custom_ai/src/wright_art.rs']
 hashes={p:sha(p) for p in files};subprocess.run([sys.executable,str(ROOT/'tools/build-wright-art.py'),'--integrate'],cwd=ROOT,capture_output=True,check=True)
 for p,digest in hashes.items():check(str(p.relative_to(ROOT))+' reproducible',sha(p)==digest)

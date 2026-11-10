@@ -3826,6 +3826,15 @@ To check in game: close the game, Update/Check, confirm native 0.10.36 and champ
 - **Codex's art** with bigger areas and the bomber as three advancing warned explosions.
 - **Checks:** 1109 native tests, 25 Lab tests, 12 browser checks, the art verifier's checks, Mod Manager load. Review: `docs/main-review-round-159.md`.
 - **Pending:** live acceptance and balance.
+## Nov 10: round 160 (native 0.10.95, tfm2_custom 0.2.98): heavy nerfs for Thalassa, Wright and Grimhald
+- **Reported in play:** Thalassa and Wright dominated with huge damage; Grimhald hit hard and was very tanky.
+- **Causes:** 26 AP per level plus +25% Mod Power AP for both mages (about 368 AP at level 10; Magnus has 140); Thalassa's bounce preferred champions after minion hits; Grimhald had +20% HP Mod Power, above-bruiser base HP, and stacked damage and sustain in the cage.
+- **Fixes:**
+  - Both mages: 12 AP per level and +10% Mod Power AP.
+  - Thalassa: same-type 30% bounce, trident 120 + 70%, twin and clone 40%.
+  - Wright: jets carry 3 strikes and rearm, cruise at 2,400 with 1.5x afterburners, reach 110,000, and hit softer; the bomber is smaller and slower.
+  - Grimhald: Mod Power `[15,0,5,10,10,0,5]`, 1,080 + 100 HP, Bloodrage up to +24%, cage buffs 15/50/8/10; the cage drops when no enemy champion is inside.
+- **Checks:** 1117 native tests, the Lab and browser tests for all three, Mod Manager load. Review: `docs/main-review-round-160.md`.
 
 ## Nov 10: Kratos (in progress, not released)
 - Reihan designed **Kratos** (God of War, a new family): an Attack engage bruiser for top, jungle or support. Two weapons (the axe freezes at 3 Frost, the Blades burn and reach farther), swapped only by S3, each swap a 5% shield (10% cap); Heimdall's Sight (1.5 s immunity, first hit per champion dodged); Leviathan Rampage (cleave, sweep, frost-fire smash; cleanse, immunity, 25% reduction); Spartan Guard / Chain Dash with a 3 s link (Guard → Dash reaches 90,000; Dash → Guard is stronger), the dash crossing any wall; Fenrir's Charge (Ornn-like, recast slams it back).

@@ -199,3 +199,18 @@ mod glue {
         assert!(!host.borrow().buffs[0].iter().any(|b| b.name() == crate::wright::GUARD), "off again");
     }
 }
+
+/// Round 160: every warning the bomber can emit (both marks, all three waves) maps to a registered view effect, so the
+/// ready-up is never invisible in the game.
+#[test]
+fn every_bomber_warning_resolves_to_registered_art() {
+    use crate::wright_data as d;
+    let champ: serde_json::Value = serde_json::from_str(include_str!("../../../mods/tfm2_custom/champion/tfm2_custom_wright.data_champion")).unwrap();
+    let names: Vec<&str> = champ["view_effects"].as_array().unwrap().iter().filter_map(|e| e["name"].as_str()).collect();
+    for mark in [d::BOMBER_WARN_TICKS, d::BOMBER_READY_MARK_TICKS] {
+        for i in 0..d::BOMBER_WAVES {
+            let tag = crate::wright_art::effect_name(&format!("wrt_warn{}", i + 1), (mark + i * d::BOMBER_WAVE_EVERY_TICKS) as u64);
+            assert!(names.contains(&tag.as_str()), "{tag} is not registered");
+        }
+    }
+}

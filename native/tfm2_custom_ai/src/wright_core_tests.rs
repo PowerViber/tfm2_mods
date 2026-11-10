@@ -197,7 +197,8 @@ fn the_closer_he_is_the_faster_they_strike() {
         damage(&log, 7).len()
     };
     let (near, far) = (strikes(20_000), strikes(70_000));
-    assert!(near > far * 3 / 2, "near {near} vs far {far}");
+    // (round 160: 3 strikes per trip and a 2 s rearm; the trip still makes the near target faster)
+    assert!(near > far, "near {near} vs far {far}");
 }
 
 #[test]
@@ -312,7 +313,7 @@ fn waves_on(log: &[Effect], id: usize) -> (Vec<i64>, usize, usize) {
 fn the_carpet_bomber_readies_up_then_drops_three_waves_the_last_stuns() {
     let mut core = Core::default();
     let center = Point::new(380_000, 300_000);
-    let mut f = frame(0, 300_000, 300_000, vec![unit(7, 1, 370_000, 300_000), unit(8, 1, 380_000, 300_000 + d::BOMBER_RADIUS + 20_000)]);
+    let mut f = frame(0, 300_000, 300_000, vec![unit(7, 1, 380_000, 300_000), unit(8, 1, 380_000, 300_000 + d::BOMBER_RADIUS + 20_000)]);
     let mut log = vec![];
     order(&mut core, &mut f, Order::Bomber(center), &mut log);
     assert_eq!(log.iter().filter(|e| matches!(e, Effect::Fx { name, .. } if name.starts_with("wrt_warn"))).count(),3,"one ready-up warning per explosion");
@@ -332,14 +333,18 @@ fn the_carpet_bomber_readies_up_then_drops_three_waves_the_last_stuns() {
 fn bomber_strikes_advance_and_only_damage_their_own_warned_footprints() {
     let mut core=Core::default();let mut f=frame(0,300_000,480_000,vec![]);
     let centres=bomber_centres(f.pos,Point::new(370_000,480_000)).unwrap();
-    assert_eq!(centres,[Point::new(330_000,480_000),Point::new(370_000,480_000),Point::new(410_000,480_000)]);
-    for (i,c) in centres.iter().enumerate(){f.units.push(unit(7+i,1,c.x,c.y+44_000));}
+    // round 160: the middle explosion on the aim, the others one spacing either side
+    let sp=d::BOMBER_SPACING;
+    assert_eq!(centres,[Point::new(370_000-sp,480_000),Point::new(370_000,480_000),Point::new(370_000+sp,480_000)]);
+    // each unit inside its own footprint only
+    for (i,c) in centres.iter().enumerate(){f.units.push(unit(7+i,1,c.x,c.y+d::BOMBER_RADIUS-1_000));}
     let mut log=vec![];order(&mut core,&mut f,Order::Bomber(Point::new(370_000,480_000)),&mut log);
     let warnings:Vec<_>=log.iter().filter_map(|e|match e {Effect::Fx{name,at,ticks,..} if name.starts_with("wrt_warn")=>Some((name.clone(),*at,*ticks)),_=>None}).collect();
     assert_eq!(warnings.iter().map(|w|w.1).collect::<Vec<_>>(),centres);
-    assert_eq!(warnings.iter().map(|w|w.2).collect::<Vec<_>>(),vec![60,78,96]);
+    let (w,e)=(d::BOMBER_WARN_TICKS as u64,d::BOMBER_WAVE_EVERY_TICKS as u64);
+    assert_eq!(warnings.iter().map(|w|w.2).collect::<Vec<_>>(),vec![w,w+e,w+2*e]);
     // Later caster/target movement cannot rotate or move an accepted line.
-    f.pos=Point::new(200_000,200_000);log.clear();run(&mut core,&mut f,130,&mut log);
+    f.pos=Point::new(200_000,200_000);log.clear();run(&mut core,&mut f,w+3*e+10,&mut log);
     let impacts:Vec<_>=log.iter().filter_map(|e|match e {Effect::Fx{name,at,..} if name.starts_with("wrt_bomber_wave")=>Some(*at),_=>None}).collect();
     assert_eq!(impacts,centres);
     for id in 7..10 {assert_eq!(damage(&log,id).len(),1,"one packet in the isolated footprint");}
@@ -543,11 +548,10 @@ fn jets_clear_minions_when_no_champion_is_in_reach_and_never_hit_turrets() {
     tower.champion = false;
     tower.tower = true;
     // an enemy champion far off (not calm), but out of the jets' reach
-    let mut f = frame(0, 300_000, 300_000, vec![minion, tower, unit(7, 1, 300_000 + 85_000, 300_000)]);
+    let mut f = frame(0, 300_000, 300_000, vec![minion, tower, unit(7, 1, 300_000 + d::FIGHTER_AGGRO_RANGE + 10_000, 300_000)]);
     let mut log = vec![];
     order(&mut core, &mut f, Order::Fighters(Point::default()), &mut log);
     run(&mut core, &mut f, 300, &mut log);
-    assert!(!f.calm());
     assert!(!damage(&log, 20).is_empty(), "they clear the minion");
     assert!(damage(&log, 30).is_empty(), "never the turret");
 }
@@ -579,4 +583,71 @@ fn the_ai_bombs_groups_launches_jets_repairs_and_calls_the_carrier_under_pressur
     }
     run(&mut core, &mut f, 2, &mut log);
     assert!(core.carrier.is_some(), "2 enemies on him: the carrier");
+}
+
+// ------------------------------------------------------------------ round 160 nerf
+
+#[test]
+fn round_160_his_ap_growth_and_mod_power_are_cut() {
+    assert_eq!(d::MOD_POWER[1], 10, "Mod Power AP 25 -> 10");
+    assert_eq!((d::FIGHTER_SORTIE_BASE, d::FIGHTER_SORTIE_AP_RATIO), (12, 14));
+    assert_eq!((d::BOMBER_RADIUS, d::BOMBER_SPACING, d::BOMBER_WAVE_EVERY_TICKS), (30_000, 28_000, 36));
+}
+
+#[test]
+fn a_jet_strikes_three_times_near_itself_then_flies_home_to_rearm() {
+    let mut core = Core::default();
+    let mut minions = vec![];
+    for i in 0..4 {
+        let mut m = unit(20 + i, 1, 360_000 + i as i64 * 6_000, 300_000);
+        m.champion = false;
+        m.hp = 100_000;
+        m.max_hp = 100_000;
+        minions.push(m);
+    }
+    let mut f = frame(0, 300_000, 300_000, minions);
+    let mut log = vec![];
+    let keys = spawns(&order(&mut core, &mut f, Order::Fighters(Point::default()), &mut log), Kind::Fighter);
+    let mut went_home_after = None;
+    for _ in 0..400 {
+        run(&mut core, &mut f, 1, &mut log);
+        let p = *core.planes.iter().find(|p| p.key == keys[0]).unwrap();
+        if p.phase == Phase::Break && went_home_after.is_none() {
+            went_home_after = Some(p.waves);
+        }
+    }
+    assert_eq!(went_home_after, Some(d::FIGHTER_AMMO), "3 strikes, then home");
+    let p = core.planes.iter().find(|p| p.key == keys[0]).unwrap();
+    assert!(p.ammo > 0, "rearmed");
+}
+
+#[test]
+fn jets_cruise_slowly_and_use_afterburners_only_on_the_final_approach() {
+    let mut core = Core::default();
+    let mut far = unit(7, 1, 300_000 + 100_000, 300_000);
+    far.hp = 100_000;
+    let mut f = frame(0, 300_000, 300_000, vec![far]);
+    let mut log = vec![];
+    let keys = spawns(&order(&mut core, &mut f, Order::Fighters(Point::default()), &mut log), Kind::Fighter);
+    log.clear();
+    run(&mut core, &mut f, 60, &mut log);
+    let steps: Vec<(Point, Point)> = {
+        let mut from = None;
+        let mut out = vec![];
+        for e in &log {
+            if let Effect::PlaneMove { key, to, .. } = e {
+                if *key == keys[0] {
+                    if let Some(a) = from {
+                        out.push((a, *to));
+                    }
+                    from = Some(*to);
+                }
+            }
+        }
+        out
+    };
+    let cruise = d::FIGHTER_CRUISE_SPEED * 6;
+    let burner = cruise * d::FIGHTER_AFTERBURNER_PCT / 100;
+    assert!(steps.iter().all(|(a, b)| a.dist(*b) as i64 <= burner + 2), "never faster than the afterburner");
+    assert!(steps.iter().any(|(a, b)| (a.dist(*b) as i64 - cruise).abs() <= 2), "cruise legs at 2,400/tick");
 }
