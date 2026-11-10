@@ -32,6 +32,8 @@ const EXT_OK = /\.(tfm2db|data|bak)$/i;
 const gx = require('./extract-gamedata.js');
 const GAME_DIR = gx.findGameDir(argVal('--game', null)) || path.resolve(HERE, '..', 'Teamfight Manager 2');
 const MODS_DIR = path.join(GAME_DIR, 'mods');
+try { require('./extract-game-world.js').ensureWorld(GAME_DIR); }
+catch (error) { console.warn('Game-reference Labs: '+error.message); }
 let BUNDLE = null;
 function bundleIndex() {
   const p = path.join(GAME_DIR, 'bundle.game_data');
@@ -245,6 +247,11 @@ STATIC['/rally-white.fanim']='../mods/tfm2_custom/vfx/rally-white#anim.fanim';
 for(const f of ['grimhald.html','grimhald-review.html','grimhald-lab.js','grimhald-data.js','grimhald-art.json','grimhald.wasm'])STATIC['/'+f]=f;
 for(const f of ['thalassa.html','thalassa-lab.js','thalassa-data.js','thalassa.wasm','thalassa-review.html','thalassa-art.js','thalassa-renderer.js'])STATIC['/'+f]=f;
 for(const f of ['kratos.html','kratos-lab.js','kratos-data.js','kratos.wasm','kratos-clock.js','kratos-renderer.js','kratos-review.html'])STATIC['/'+f]=f;
+for(const f of ['game-world.js','lab-scenarios.js'])STATIC['/'+f]=f;
+const gameReferenceDir=path.join(HERE,'game-reference');
+for(const file of fs.existsSync(gameReferenceDir)?fs.readdirSync(gameReferenceDir):[]){
+  if(/^[a-zA-Z0-9_.-]+\.(png|json)$/.test(file))STATIC['/game-reference/'+file]='game-reference/'+file;
+}
 for(const [url,file] of Object.entries({'kratos-body.png':'champions/tfm2_custom_kratos#sheet.png','kratos-weapons.png':'vfx/kratos_weapons#sheet.png','kratos-effects.png':'vfx/kratos#sheet.png'}))STATIC['/'+url]='../mods/tfm2_custom/'+file;
 for(const file of fs.existsSync(path.join(HERE,'../docs/kratos-art-review'))?fs.readdirSync(path.join(HERE,'../docs/kratos-art-review')):[]){
   if(/^[a-zA-Z0-9_.-]+\.(png|gif|json|fanim|txt|md)$/.test(file))STATIC['/kratos-review-assets/'+file]='../docs/kratos-art-review/'+file;
