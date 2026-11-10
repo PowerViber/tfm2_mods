@@ -35,6 +35,12 @@ pub(crate) struct Host {
     pub view_effects: Vec<(String,usize,mod_api_stable::InputTargetV1,u64)>,
     pub record_view_effects: bool,
     pub reject_spawns: bool,
+    /// (unit, amount, ticks) for every `entity_add_shield`
+    pub shields: Vec<(usize, usize, usize)>,
+    /// (caster, target, amount) for every `heal`
+    pub heals: Vec<(usize, usize, usize)>,
+    /// units `entity_clear_cc` cleansed
+    pub cleansed: Vec<usize>,
 }
 impl Host {
     pub fn new(units: Vec<Unit>) -> RefCell<Host> {
@@ -188,6 +194,27 @@ unsafe extern "C" fn champ_at(p: *const c_void, i: usize) -> usize {
     h(p).borrow().units.iter().enumerate().filter(|u| u.1.kind == K::Champion).nth(i).map_or(usize::MAX, |u| u.0)
 }
 unsafe extern "C" fn level(_: *const c_void, _: E) -> usize { 9 }
+unsafe extern "C" fn add_shield(p: *mut c_void, e: E, amount: usize, ticks: usize) -> bool {
+    h(p).borrow_mut().shields.push((id(e), amount, ticks));
+    true
+}
+unsafe extern "C" fn heal(p: *mut c_void, caster: usize, target: usize, amount: usize) {
+    let mut g = h(p).borrow_mut();
+    g.heals.push((caster, target, amount));
+    if let Some(u) = g.units.get_mut(target) {
+        u.hp = (u.hp + amount).min(2000);
+    }
+}
+unsafe extern "C" fn clear_cc(p: *mut c_void, e: E) -> usize {
+    let mut g = h(p).borrow_mut();
+    let i = id(e);
+    g.cleansed.push(i);
+    let n = g.ccs.get(i).map_or(0, |v| v.len());
+    if let Some(v) = g.ccs.get_mut(i) {
+        v.clear();
+    }
+    n
+}
 unsafe extern "C" fn shield(_: *const c_void, _: E) -> usize { 0 }
 unsafe extern "C" fn effect(
     p: *mut c_void, name: *const u8, len: usize, owner: usize, target: *const mod_api_stable::InputTargetV1, _: u64, _: u64, time: u64,
@@ -236,6 +263,9 @@ pub(crate) fn with_sim<T>(host: &RefCell<Host>, f: impl FnOnce(&mut StableSim) -
         t.champion_id_at = Some(champ_at);
         t.entity_level = Some(level);
         t.entity_shield = Some(shield);
+        t.entity_add_shield = Some(add_shield);
+        t.heal = Some(heal);
+        t.entity_clear_cc = Some(clear_cc);
         t.play_view_effect = Some(effect);
         let mut raw =
             SimCtxV1 { size: size_of::<SimCtxV1>(), sim: &t, frame: std::ptr::null(), state: host as *const _ as *mut c_void };

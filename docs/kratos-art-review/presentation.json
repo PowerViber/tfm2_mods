@@ -1,0 +1,737 @@
+{
+  "version": 1,
+  "revision": "kratos-art-2",
+  "units_per_pixel": 1000,
+  "body_canvas": [
+    64,
+    64
+  ],
+  "body_anchor": [
+    32,
+    52
+  ],
+  "weapon_canvas": [
+    96,
+    96
+  ],
+  "weapon_anchor": [
+    48,
+    68
+  ],
+  "weapon_prefix": "krt_weapon_",
+  "pose_ticks": {
+    "idle": [
+      9,
+      9,
+      9,
+      9,
+      9,
+      9,
+      9,
+      9
+    ],
+    "run": [
+      6,
+      6,
+      6,
+      6,
+      6,
+      6,
+      6,
+      6
+    ],
+    "attack": [
+      2,
+      2,
+      2,
+      3,
+      3,
+      2,
+      2,
+      2
+    ],
+    "sight": [
+      1,
+      1,
+      2,
+      2,
+      2,
+      2,
+      1,
+      1
+    ],
+    "guard": [
+      1,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      1
+    ],
+    "chain": [
+      1,
+      1,
+      2,
+      2,
+      2,
+      2,
+      1,
+      1
+    ],
+    "cleave": [
+      5,
+      5,
+      4,
+      2,
+      2,
+      4,
+      6,
+      8
+    ],
+    "sweep": [
+      5,
+      5,
+      4,
+      2,
+      2,
+      4,
+      6,
+      8
+    ],
+    "smash": [
+      5,
+      5,
+      4,
+      2,
+      2,
+      4,
+      6,
+      8
+    ],
+    "ult": [
+      2,
+      2,
+      2,
+      3,
+      3,
+      2,
+      2,
+      2
+    ],
+    "hit": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+    ],
+    "dead": [
+      6,
+      6,
+      6,
+      6,
+      6,
+      6,
+      6,
+      6
+    ]
+  },
+  "aliases": {
+    "skill1": "sight",
+    "skill2": "cleave",
+    "skill3": "guard"
+  },
+  "source_groups": {
+    "body-motion": [
+      "idle",
+      "run",
+      "attack"
+    ],
+    "body-defense": [
+      "sight",
+      "guard",
+      "chain"
+    ],
+    "body-rampage": [
+      "cleave",
+      "sweep",
+      "smash"
+    ],
+    "body-fenrir": [
+      "ult",
+      "hit",
+      "dead"
+    ]
+  },
+  "review_only": false,
+  "complete_body": true,
+  "body_approved": true,
+  "effects_approved": true,
+  "source_sha256": {
+    "body-defense-source-v1.png": "217f45106ad7dc115e87444d366b4bc1155c34d8f72b452879fbfb30acc350e3",
+    "body-fenrir-source-v1.png": "875e043769814b6cd283bcf08f13a96cf3035525dd6d76e17bf7dcd9563e2921",
+    "body-motion-source-v1.png": "5a4c031c11072dde302cc5f4d976ac2de25f41cab1e3e7aa66ed0ca80b9ff2da",
+    "body-rampage-source-v1.png": "0b1c059b8df50f43236efddd4ee2c7487070d2fa2b188d9b7da2e80a3a50d012",
+    "body-source-v1.png": "6544b3e3df361e6ae9eb258df0091ce83e94c60c602b566a8318f4e2cbab57f4",
+    "effects-source-v1.png": "32c6e893fa345d9641dd36c156aed942d6e9dbae8178d36682fcfbe70a0e4f07",
+    "fenrir-run-source-v1.png": "fc4cc84b72aa174e1004c1841301dda8426f7439389fbe4b2b974226946415de",
+    "fenrir-source-v1.png": "d00800aaf9900dd23197e8e39eddf755f925123658d93542e99ea07634c1f52d",
+    "props-source-v1.png": "7c779f78140edce212553f8f3f5aca934ca0cd4a25b6cd77b28a8dad99825e4a"
+  },
+  "effects": {
+    "cleave": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false
+    },
+    "cleave_l": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false
+    },
+    "sweep": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false
+    },
+    "sweep_l": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false
+    },
+    "smash": {
+      "kind": "effect",
+      "z": -2,
+      "follow": false
+    },
+    "sight": {
+      "kind": "effect",
+      "z": 6,
+      "follow": true
+    },
+    "guard": {
+      "kind": "effect",
+      "z": 5,
+      "follow": true
+    },
+    "freeze": {
+      "kind": "effect",
+      "z": 4,
+      "follow": false
+    },
+    "fenrir_spawn": {
+      "kind": "effect",
+      "z": -2,
+      "follow": false
+    },
+    "fenrir_slam": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false
+    },
+    "chain_hit": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false
+    },
+    "dash_trail": {
+      "kind": "effect",
+      "z": 3,
+      "follow": false
+    },
+    "swap_axe": {
+      "kind": "effect",
+      "z": 5,
+      "follow": true
+    },
+    "swap_blades": {
+      "kind": "effect",
+      "z": 5,
+      "follow": true
+    },
+    "knock_up": {
+      "kind": "effect",
+      "z": 4,
+      "follow": false
+    },
+    "fenrir_fade": {
+      "kind": "effect",
+      "z": 2,
+      "follow": false
+    },
+    "burn": {
+      "kind": "buff",
+      "z": 4,
+      "follow": true
+    },
+    "frozen": {
+      "kind": "buff",
+      "z": 4,
+      "follow": true
+    },
+    "sight_aura": {
+      "kind": "buff",
+      "z": 6,
+      "follow": true
+    },
+    "guard_aura": {
+      "kind": "buff",
+      "z": 5,
+      "follow": true
+    },
+    "frost1": {
+      "kind": "buff",
+      "z": 4,
+      "follow": true
+    },
+    "frost2": {
+      "kind": "buff",
+      "z": 4,
+      "follow": true
+    },
+    "chain": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false
+    },
+    "chain_short_p0": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false
+    },
+    "chain_short_p1": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false
+    },
+    "chain_short_p2": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false
+    },
+    "chain_short_p3": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false
+    },
+    "chain_short_p4": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false
+    },
+    "chain_short_p5": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false
+    },
+    "chain_short_p6": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false
+    },
+    "chain_short_p7": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false
+    },
+    "chain_long_p0": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false
+    },
+    "chain_long_p1": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false
+    },
+    "chain_long_p2": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false
+    },
+    "chain_long_p3": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false
+    },
+    "chain_long_p4": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false
+    },
+    "chain_long_p5": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false
+    },
+    "chain_long_p6": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false
+    },
+    "chain_long_p7": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false
+    },
+    "fenrir_p0": {
+      "kind": "effect",
+      "z": 5,
+      "follow": false
+    },
+    "fenrir_p0_f1": {
+      "kind": "effect",
+      "z": 5,
+      "follow": false
+    },
+    "fenrir_p0_f2": {
+      "kind": "effect",
+      "z": 5,
+      "follow": false
+    },
+    "fenrir_p0_f3": {
+      "kind": "effect",
+      "z": 5,
+      "follow": false
+    },
+    "fenrir_p0_f4": {
+      "kind": "effect",
+      "z": 5,
+      "follow": false
+    },
+    "fenrir_p0_f5": {
+      "kind": "effect",
+      "z": 5,
+      "follow": false
+    },
+    "fenrir_p0_f6": {
+      "kind": "effect",
+      "z": 5,
+      "follow": false
+    },
+    "fenrir_p0_f7": {
+      "kind": "effect",
+      "z": 5,
+      "follow": false
+    },
+    "fenrir_p1": {
+      "kind": "effect",
+      "z": 5,
+      "follow": false
+    },
+    "fenrir_p1_f1": {
+      "kind": "effect",
+      "z": 5,
+      "follow": false
+    },
+    "fenrir_p1_f2": {
+      "kind": "effect",
+      "z": 5,
+      "follow": false
+    },
+    "fenrir_p1_f3": {
+      "kind": "effect",
+      "z": 5,
+      "follow": false
+    },
+    "fenrir_p1_f4": {
+      "kind": "effect",
+      "z": 5,
+      "follow": false
+    },
+    "fenrir_p1_f5": {
+      "kind": "effect",
+      "z": 5,
+      "follow": false
+    },
+    "fenrir_p1_f6": {
+      "kind": "effect",
+      "z": 5,
+      "follow": false
+    },
+    "fenrir_p1_f7": {
+      "kind": "effect",
+      "z": 5,
+      "follow": false
+    },
+    "fenrir_p2": {
+      "kind": "effect",
+      "z": 5,
+      "follow": false
+    },
+    "fenrir_p2_f1": {
+      "kind": "effect",
+      "z": 5,
+      "follow": false
+    },
+    "fenrir_p2_f2": {
+      "kind": "effect",
+      "z": 5,
+      "follow": false
+    },
+    "fenrir_p2_f3": {
+      "kind": "effect",
+      "z": 5,
+      "follow": false
+    },
+    "fenrir_p2_f4": {
+      "kind": "effect",
+      "z": 5,
+      "follow": false
+    },
+    "fenrir_p2_f5": {
+      "kind": "effect",
+      "z": 5,
+      "follow": false
+    },
+    "fenrir_p2_f6": {
+      "kind": "effect",
+      "z": 5,
+      "follow": false
+    },
+    "fenrir_p2_f7": {
+      "kind": "effect",
+      "z": 5,
+      "follow": false
+    },
+    "fenrir_p3": {
+      "kind": "effect",
+      "z": 5,
+      "follow": false
+    },
+    "fenrir_p3_f1": {
+      "kind": "effect",
+      "z": 5,
+      "follow": false
+    },
+    "fenrir_p3_f2": {
+      "kind": "effect",
+      "z": 5,
+      "follow": false
+    },
+    "fenrir_p3_f3": {
+      "kind": "effect",
+      "z": 5,
+      "follow": false
+    },
+    "fenrir_p3_f4": {
+      "kind": "effect",
+      "z": 5,
+      "follow": false
+    },
+    "fenrir_p3_f5": {
+      "kind": "effect",
+      "z": 5,
+      "follow": false
+    },
+    "fenrir_p3_f6": {
+      "kind": "effect",
+      "z": 5,
+      "follow": false
+    },
+    "fenrir_p3_f7": {
+      "kind": "effect",
+      "z": 5,
+      "follow": false
+    },
+    "fenrir_p4": {
+      "kind": "effect",
+      "z": 5,
+      "follow": false
+    },
+    "fenrir_p4_f1": {
+      "kind": "effect",
+      "z": 5,
+      "follow": false
+    },
+    "fenrir_p4_f2": {
+      "kind": "effect",
+      "z": 5,
+      "follow": false
+    },
+    "fenrir_p4_f3": {
+      "kind": "effect",
+      "z": 5,
+      "follow": false
+    },
+    "fenrir_p4_f4": {
+      "kind": "effect",
+      "z": 5,
+      "follow": false
+    },
+    "fenrir_p4_f5": {
+      "kind": "effect",
+      "z": 5,
+      "follow": false
+    },
+    "fenrir_p4_f6": {
+      "kind": "effect",
+      "z": 5,
+      "follow": false
+    },
+    "fenrir_p4_f7": {
+      "kind": "effect",
+      "z": 5,
+      "follow": false
+    },
+    "fenrir_p5": {
+      "kind": "effect",
+      "z": 5,
+      "follow": false
+    },
+    "fenrir_p5_f1": {
+      "kind": "effect",
+      "z": 5,
+      "follow": false
+    },
+    "fenrir_p5_f2": {
+      "kind": "effect",
+      "z": 5,
+      "follow": false
+    },
+    "fenrir_p5_f3": {
+      "kind": "effect",
+      "z": 5,
+      "follow": false
+    },
+    "fenrir_p5_f4": {
+      "kind": "effect",
+      "z": 5,
+      "follow": false
+    },
+    "fenrir_p5_f5": {
+      "kind": "effect",
+      "z": 5,
+      "follow": false
+    },
+    "fenrir_p5_f6": {
+      "kind": "effect",
+      "z": 5,
+      "follow": false
+    },
+    "fenrir_p5_f7": {
+      "kind": "effect",
+      "z": 5,
+      "follow": false
+    },
+    "fenrir_p6": {
+      "kind": "effect",
+      "z": 5,
+      "follow": false
+    },
+    "fenrir_p6_f1": {
+      "kind": "effect",
+      "z": 5,
+      "follow": false
+    },
+    "fenrir_p6_f2": {
+      "kind": "effect",
+      "z": 5,
+      "follow": false
+    },
+    "fenrir_p6_f3": {
+      "kind": "effect",
+      "z": 5,
+      "follow": false
+    },
+    "fenrir_p6_f4": {
+      "kind": "effect",
+      "z": 5,
+      "follow": false
+    },
+    "fenrir_p6_f5": {
+      "kind": "effect",
+      "z": 5,
+      "follow": false
+    },
+    "fenrir_p6_f6": {
+      "kind": "effect",
+      "z": 5,
+      "follow": false
+    },
+    "fenrir_p6_f7": {
+      "kind": "effect",
+      "z": 5,
+      "follow": false
+    },
+    "fenrir_p7": {
+      "kind": "effect",
+      "z": 5,
+      "follow": false
+    },
+    "fenrir_p7_f1": {
+      "kind": "effect",
+      "z": 5,
+      "follow": false
+    },
+    "fenrir_p7_f2": {
+      "kind": "effect",
+      "z": 5,
+      "follow": false
+    },
+    "fenrir_p7_f3": {
+      "kind": "effect",
+      "z": 5,
+      "follow": false
+    },
+    "fenrir_p7_f4": {
+      "kind": "effect",
+      "z": 5,
+      "follow": false
+    },
+    "fenrir_p7_f5": {
+      "kind": "effect",
+      "z": 5,
+      "follow": false
+    },
+    "fenrir_p7_f6": {
+      "kind": "effect",
+      "z": 5,
+      "follow": false
+    },
+    "fenrir_p7_f7": {
+      "kind": "effect",
+      "z": 5,
+      "follow": false
+    }
+  },
+  "atlases": {
+    "body": "body-preview",
+    "weapons": "weapons-preview",
+    "effects": "effects-preview",
+    "assembled": "assembled-preview"
+  },
+  "decoded_bytes": 29360128,
+  "frame_counts": {
+    "idle": 8,
+    "run": 8,
+    "attack": 8,
+    "sight": 8,
+    "guard": 8,
+    "chain": 8,
+    "cleave": 8,
+    "sweep": 8,
+    "smash": 8,
+    "ult": 8,
+    "hit": 8,
+    "dead": 8
+  },
+  "method": "Original whole-body imagegen sources; alpha extraction, rigid props and deterministic atlas packing. AI generation itself is not deterministic.",
+  "selection": {
+    "fenrir_phase_ticks": 3,
+    "fenrir_variants": 8,
+    "chain_split_range": 56000
+  },
+  "fenrir_canvas": [
+    160,
+    160
+  ],
+  "candidate_source_sha256": {
+    "sight-eyes-source-v2.png": "8dbe33ad0752f7a95258074302e457c80715475c94702a0b5c31c49daa976d53"
+  }
+}

@@ -1,0 +1,4996 @@
+{
+  "anims": {
+    "krt_weapon_axe_idle_r0": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 0,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_idle_r1": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 0,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_idle_r2": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 0,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_idle_r3": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 0,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_idle_r4": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 0,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_idle_r5": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 0,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_idle_r6": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 0,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_idle_r7": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 0,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_idle_r0": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 98,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_idle_r1": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 98,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_idle_r2": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 98,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_idle_r3": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 98,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_idle_r4": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 98,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_idle_r5": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 98,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_idle_r6": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 98,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_idle_r7": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 98,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_idle_l0": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 196,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_idle_l1": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 196,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_idle_l2": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 196,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_idle_l3": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 196,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_idle_l4": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 196,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_idle_l5": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 196,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_idle_l6": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 196,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_idle_l7": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 196,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_idle_l0": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 294,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_idle_l1": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 294,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_idle_l2": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 294,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_idle_l3": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 294,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_idle_l4": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 294,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_idle_l5": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 294,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_idle_l6": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 294,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_idle_l7": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 294,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_run_r0": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 392,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_run_r1": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 490,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_run_r2": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 588,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_run_r3": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 490,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_run_r4": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 686,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_run_r5": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 686,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_run_r6": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 392,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_run_r7": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 392,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_run_r0": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 784,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_run_r1": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 882,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_run_r2": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 0,
+            "y": 98,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_run_r3": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 98,
+            "y": 98,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_run_r4": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 196,
+            "y": 98,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_run_r5": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 294,
+            "y": 98,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_run_r6": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 392,
+            "y": 98,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_run_r7": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 784,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_run_l0": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 490,
+            "y": 98,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_run_l1": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 588,
+            "y": 98,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_run_l2": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 686,
+            "y": 98,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_run_l3": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 588,
+            "y": 98,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_run_l4": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 784,
+            "y": 98,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_run_l5": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 784,
+            "y": 98,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_run_l6": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 490,
+            "y": 98,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_run_l7": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 490,
+            "y": 98,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_run_l0": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 882,
+            "y": 98,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_run_l1": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 0,
+            "y": 196,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_run_l2": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 98,
+            "y": 196,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_run_l3": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 196,
+            "y": 196,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_run_l4": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 294,
+            "y": 196,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_run_l5": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 392,
+            "y": 196,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_run_l6": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 490,
+            "y": 196,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_run_l7": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 882,
+            "y": 98,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_attack_r0": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 588,
+            "y": 196,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_attack_r1": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 686,
+            "y": 196,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_attack_r2": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 784,
+            "y": 196,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_attack_r3": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 882,
+            "y": 196,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_attack_r4": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 0,
+            "y": 294,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_attack_r5": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 98,
+            "y": 294,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_attack_r6": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 196,
+            "y": 294,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_attack_r7": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 588,
+            "y": 196,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_attack_r0": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 294,
+            "y": 294,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_attack_r1": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 392,
+            "y": 294,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_attack_r2": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 490,
+            "y": 294,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_attack_r3": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 588,
+            "y": 294,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_attack_r4": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 686,
+            "y": 294,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_attack_r5": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 784,
+            "y": 294,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_attack_r6": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 882,
+            "y": 294,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_attack_r7": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 294,
+            "y": 294,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_attack_l0": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 0,
+            "y": 392,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_attack_l1": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 98,
+            "y": 392,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_attack_l2": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 196,
+            "y": 392,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_attack_l3": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 294,
+            "y": 392,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_attack_l4": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 392,
+            "y": 392,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_attack_l5": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 490,
+            "y": 392,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_attack_l6": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 588,
+            "y": 392,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_attack_l7": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 0,
+            "y": 392,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_attack_l0": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 686,
+            "y": 392,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_attack_l1": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 784,
+            "y": 392,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_attack_l2": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 882,
+            "y": 392,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_attack_l3": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 0,
+            "y": 490,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_attack_l4": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 98,
+            "y": 490,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_attack_l5": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 196,
+            "y": 490,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_attack_l6": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 294,
+            "y": 490,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_attack_l7": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 686,
+            "y": 392,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_sight_r0": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 0,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_sight_r1": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 0,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_sight_r2": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 0,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_sight_r3": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 0,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_sight_r4": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 0,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_sight_r5": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 0,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_sight_r6": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 0,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_sight_r7": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 0,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_sight_r0": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 98,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_sight_r1": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 98,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_sight_r2": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 98,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_sight_r3": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 98,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_sight_r4": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 98,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_sight_r5": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 98,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_sight_r6": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 98,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_sight_r7": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 98,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_sight_l0": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 196,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_sight_l1": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 196,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_sight_l2": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 196,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_sight_l3": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 196,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_sight_l4": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 196,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_sight_l5": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 196,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_sight_l6": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 196,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_sight_l7": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 196,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_sight_l0": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 294,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_sight_l1": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 294,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_sight_l2": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 294,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_sight_l3": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 294,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_sight_l4": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 294,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_sight_l5": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 294,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_sight_l6": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 294,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_sight_l7": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 294,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_guard_r0": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 392,
+            "y": 490,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_guard_r1": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 392,
+            "y": 490,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_guard_r2": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 392,
+            "y": 490,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_guard_r3": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 392,
+            "y": 490,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_guard_r4": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 392,
+            "y": 490,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_guard_r5": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 392,
+            "y": 490,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_guard_r6": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 392,
+            "y": 490,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_guard_r7": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 392,
+            "y": 490,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_guard_r0": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 392,
+            "y": 490,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_guard_r1": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 392,
+            "y": 490,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_guard_r2": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 392,
+            "y": 490,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_guard_r3": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 392,
+            "y": 490,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_guard_r4": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 392,
+            "y": 490,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_guard_r5": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 392,
+            "y": 490,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_guard_r6": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 392,
+            "y": 490,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_guard_r7": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 392,
+            "y": 490,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_guard_l0": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 490,
+            "y": 490,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_guard_l1": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 490,
+            "y": 490,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_guard_l2": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 490,
+            "y": 490,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_guard_l3": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 490,
+            "y": 490,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_guard_l4": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 490,
+            "y": 490,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_guard_l5": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 490,
+            "y": 490,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_guard_l6": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 490,
+            "y": 490,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_guard_l7": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 490,
+            "y": 490,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_guard_l0": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 490,
+            "y": 490,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_guard_l1": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 490,
+            "y": 490,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_guard_l2": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 490,
+            "y": 490,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_guard_l3": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 490,
+            "y": 490,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_guard_l4": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 490,
+            "y": 490,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_guard_l5": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 490,
+            "y": 490,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_guard_l6": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 490,
+            "y": 490,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_guard_l7": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 490,
+            "y": 490,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_chain_r0": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 588,
+            "y": 490,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_chain_r1": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 686,
+            "y": 490,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_chain_r2": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 784,
+            "y": 490,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_chain_r3": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 882,
+            "y": 490,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_chain_r4": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 0,
+            "y": 588,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_chain_r5": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 98,
+            "y": 588,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_chain_r6": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 196,
+            "y": 588,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_chain_r7": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 588,
+            "y": 490,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_chain_r0": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 294,
+            "y": 588,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_chain_r1": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 392,
+            "y": 588,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_chain_r2": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 490,
+            "y": 588,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_chain_r3": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 588,
+            "y": 588,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_chain_r4": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 686,
+            "y": 588,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_chain_r5": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 784,
+            "y": 588,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_chain_r6": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 882,
+            "y": 588,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_chain_r7": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 294,
+            "y": 588,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_chain_l0": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 0,
+            "y": 686,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_chain_l1": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 98,
+            "y": 686,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_chain_l2": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 196,
+            "y": 686,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_chain_l3": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 294,
+            "y": 686,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_chain_l4": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 392,
+            "y": 686,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_chain_l5": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 490,
+            "y": 686,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_chain_l6": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 588,
+            "y": 686,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_chain_l7": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 0,
+            "y": 686,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_chain_l0": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 686,
+            "y": 686,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_chain_l1": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 784,
+            "y": 686,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_chain_l2": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 882,
+            "y": 686,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_chain_l3": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 0,
+            "y": 784,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_chain_l4": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 98,
+            "y": 784,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_chain_l5": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 196,
+            "y": 784,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_chain_l6": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 294,
+            "y": 784,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_chain_l7": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 686,
+            "y": 686,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_cleave_r0": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 588,
+            "y": 490,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_cleave_r1": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 392,
+            "y": 784,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_cleave_r2": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 490,
+            "y": 784,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_cleave_r3": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 588,
+            "y": 784,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_cleave_r4": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 686,
+            "y": 784,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_cleave_r5": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 784,
+            "y": 784,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_cleave_r6": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 882,
+            "y": 784,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_cleave_r7": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 0,
+            "y": 882,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_cleave_r0": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 588,
+            "y": 490,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_cleave_r1": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 392,
+            "y": 784,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_cleave_r2": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 490,
+            "y": 784,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_cleave_r3": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 588,
+            "y": 784,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_cleave_r4": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 686,
+            "y": 784,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_cleave_r5": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 784,
+            "y": 784,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_cleave_r6": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 882,
+            "y": 784,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_cleave_r7": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 0,
+            "y": 882,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_cleave_l0": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 0,
+            "y": 686,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_cleave_l1": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 98,
+            "y": 882,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_cleave_l2": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 196,
+            "y": 882,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_cleave_l3": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 294,
+            "y": 882,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_cleave_l4": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 392,
+            "y": 882,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_cleave_l5": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 490,
+            "y": 882,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_cleave_l6": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 588,
+            "y": 882,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_cleave_l7": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 686,
+            "y": 882,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_cleave_l0": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 0,
+            "y": 686,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_cleave_l1": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 98,
+            "y": 882,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_cleave_l2": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 196,
+            "y": 882,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_cleave_l3": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 294,
+            "y": 882,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_cleave_l4": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 392,
+            "y": 882,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_cleave_l5": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 490,
+            "y": 882,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_cleave_l6": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 588,
+            "y": 882,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_cleave_l7": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 686,
+            "y": 882,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_sweep_r0": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 294,
+            "y": 588,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_sweep_r1": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 784,
+            "y": 882,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_sweep_r2": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 882,
+            "y": 882,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_sweep_r3": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 0,
+            "y": 980,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_sweep_r4": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 98,
+            "y": 980,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_sweep_r5": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 196,
+            "y": 980,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_sweep_r6": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 294,
+            "y": 980,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_sweep_r7": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 392,
+            "y": 980,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_sweep_r0": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 294,
+            "y": 588,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_sweep_r1": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 784,
+            "y": 882,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_sweep_r2": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 882,
+            "y": 882,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_sweep_r3": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 0,
+            "y": 980,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_sweep_r4": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 98,
+            "y": 980,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_sweep_r5": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 196,
+            "y": 980,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_sweep_r6": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 294,
+            "y": 980,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_sweep_r7": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 392,
+            "y": 980,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_sweep_l0": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 686,
+            "y": 686,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_sweep_l1": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 490,
+            "y": 980,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_sweep_l2": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 588,
+            "y": 980,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_sweep_l3": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 686,
+            "y": 980,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_sweep_l4": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 784,
+            "y": 980,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_sweep_l5": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 882,
+            "y": 980,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_sweep_l6": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 0,
+            "y": 1078,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_sweep_l7": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 98,
+            "y": 1078,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_sweep_l0": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 686,
+            "y": 686,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_sweep_l1": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 490,
+            "y": 980,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_sweep_l2": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 588,
+            "y": 980,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_sweep_l3": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 686,
+            "y": 980,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_sweep_l4": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 784,
+            "y": 980,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_sweep_l5": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 882,
+            "y": 980,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_sweep_l6": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 0,
+            "y": 1078,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_sweep_l7": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 98,
+            "y": 1078,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_smash_r0": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 196,
+            "y": 1078,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_smash_r1": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 294,
+            "y": 1078,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_smash_r2": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 392,
+            "y": 1078,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_smash_r3": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 490,
+            "y": 1078,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_smash_r4": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 588,
+            "y": 1078,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_smash_r5": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 686,
+            "y": 1078,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_smash_r6": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 784,
+            "y": 1078,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_smash_r7": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 882,
+            "y": 1078,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_smash_r0": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 196,
+            "y": 1078,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_smash_r1": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 294,
+            "y": 1078,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_smash_r2": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 392,
+            "y": 1078,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_smash_r3": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 490,
+            "y": 1078,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_smash_r4": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 588,
+            "y": 1078,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_smash_r5": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 686,
+            "y": 1078,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_smash_r6": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 784,
+            "y": 1078,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_smash_r7": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 882,
+            "y": 1078,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_smash_l0": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 0,
+            "y": 1176,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_smash_l1": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 98,
+            "y": 1176,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_smash_l2": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 196,
+            "y": 1176,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_smash_l3": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 294,
+            "y": 1176,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_smash_l4": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 392,
+            "y": 1176,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_smash_l5": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 490,
+            "y": 1176,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_smash_l6": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 588,
+            "y": 1176,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_smash_l7": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 686,
+            "y": 1176,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_smash_l0": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 0,
+            "y": 1176,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_smash_l1": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 98,
+            "y": 1176,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_smash_l2": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 196,
+            "y": 1176,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_smash_l3": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 294,
+            "y": 1176,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_smash_l4": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 392,
+            "y": 1176,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_smash_l5": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 490,
+            "y": 1176,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_smash_l6": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 588,
+            "y": 1176,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_smash_l7": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 686,
+            "y": 1176,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_ult_r0": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 0,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_ult_r1": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 0,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_ult_r2": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 0,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_ult_r3": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 0,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_ult_r4": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 0,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_ult_r5": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 0,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_ult_r6": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 0,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_ult_r7": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 0,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_ult_r0": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 98,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_ult_r1": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 98,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_ult_r2": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 98,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_ult_r3": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 98,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_ult_r4": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 98,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_ult_r5": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 98,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_ult_r6": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 98,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_ult_r7": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 98,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_ult_l0": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 196,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_ult_l1": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 196,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_ult_l2": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 196,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_ult_l3": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 196,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_ult_l4": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 196,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_ult_l5": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 196,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_ult_l6": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 196,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_ult_l7": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 196,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_ult_l0": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 294,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_ult_l1": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 294,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_ult_l2": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 294,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_ult_l3": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 294,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_ult_l4": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 294,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_ult_l5": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 294,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_ult_l6": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 294,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_ult_l7": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 294,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_hit_r0": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 0,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_hit_r1": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 0,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_hit_r2": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 0,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_hit_r3": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 0,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_hit_r4": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 0,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_hit_r5": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 0,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_hit_r6": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 0,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_hit_r7": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 0,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_hit_r0": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 98,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_hit_r1": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 98,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_hit_r2": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 98,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_hit_r3": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 98,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_hit_r4": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 98,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_hit_r5": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 98,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_hit_r6": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 98,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_hit_r7": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 98,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_hit_l0": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 196,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_hit_l1": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 196,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_hit_l2": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 196,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_hit_l3": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 196,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_hit_l4": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 196,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_hit_l5": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 196,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_hit_l6": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 196,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_hit_l7": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 196,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_hit_l0": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 294,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_hit_l1": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 294,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_hit_l2": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 294,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_hit_l3": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 294,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_hit_l4": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 294,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_hit_l5": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 294,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_hit_l6": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 294,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_hit_l7": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 294,
+            "y": 0,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_dead_r0": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 784,
+            "y": 1176,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_dead_r1": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 784,
+            "y": 1176,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_dead_r2": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 784,
+            "y": 1176,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_dead_r3": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 784,
+            "y": 1176,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_dead_r4": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 784,
+            "y": 1176,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_dead_r5": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 784,
+            "y": 1176,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_dead_r6": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 784,
+            "y": 1176,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_dead_r7": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 784,
+            "y": 1176,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_dead_r0": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 784,
+            "y": 1176,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_dead_r1": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 784,
+            "y": 1176,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_dead_r2": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 784,
+            "y": 1176,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_dead_r3": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 784,
+            "y": 1176,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_dead_r4": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 784,
+            "y": 1176,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_dead_r5": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 784,
+            "y": 1176,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_dead_r6": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 784,
+            "y": 1176,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_dead_r7": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 784,
+            "y": 1176,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_dead_l0": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 784,
+            "y": 1176,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_dead_l1": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 784,
+            "y": 1176,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_dead_l2": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 784,
+            "y": 1176,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_dead_l3": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 784,
+            "y": 1176,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_dead_l4": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 784,
+            "y": 1176,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_dead_l5": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 784,
+            "y": 1176,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_dead_l6": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 784,
+            "y": 1176,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_axe_dead_l7": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 784,
+            "y": 1176,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_dead_l0": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 784,
+            "y": 1176,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_dead_l1": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 784,
+            "y": 1176,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_dead_l2": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 784,
+            "y": 1176,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_dead_l3": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 784,
+            "y": 1176,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_dead_l4": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 784,
+            "y": 1176,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_dead_l5": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 784,
+            "y": 1176,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_dead_l6": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 784,
+            "y": 1176,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    },
+    "krt_weapon_blades_dead_l7": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 784,
+            "y": 1176,
+            "w": 96,
+            "h": 96
+          }
+        }
+      ]
+    }
+  }
+}

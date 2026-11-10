@@ -1,0 +1,42 @@
+{
+  "rules": "kratos-2",
+  "decoded_bytes": 29360128,
+  "frame_entries_checked": 817,
+  "atlases": {
+    "body": {
+      "size": [
+        1024,
+        1024
+      ],
+      "sha256": "26041882805824a675c887841d80d9d9d51c319ef55492c10a9cea6956a37cc6"
+    },
+    "weapons": {
+      "size": [
+        1024,
+        2048
+      ],
+      "sha256": "5b55bf733ddf3fa33f5f515a2f9892d6b9a052d506f4465d71e7037f40e1e7fc"
+    },
+    "effects": {
+      "size": [
+        2048,
+        2048
+      ],
+      "sha256": "d92ad2b96e09b8b5158c1d8de721a24b3cacabba4d241d2a961e27dbccdc400e"
+    }
+  },
+  "body_and_weapon_pixels_unchanged": true,
+  "approved_effects_integrated": true,
+  "native_wasm": [
+    {
+      "fixture": "backups/kratos-art-tests/parity.json",
+      "complete_outputs_equal": 405
+    },
+    {
+      "fixture": "backups/kratos-skill-tests/parity.json",
+      "complete_outputs_equal": 431
+    }
+  ],
+  "packaged_dll": "unchanged baseline; separate release build pending",
+  "actual_game_acceptance": "pending"
+}

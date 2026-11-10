@@ -3836,3 +3836,13 @@ To check in game: close the game, Update/Check, confirm native 0.10.36 and champ
   - Grimhald: Mod Power `[15,0,5,10,10,0,5]`, 1,080 + 100 HP, Bloodrage up to +24%, cage buffs 15/50/8/10; the cage drops when no enemy champion is inside.
 - **Checks:** 1117 native tests, the Lab and browser tests for all three, Mod Manager load. Review: `docs/main-review-round-160.md`.
 
+## Nov 10: Kratos (in progress, not released)
+- Reihan designed **Kratos** (God of War, a new family): an Attack engage bruiser for top, jungle or support. Two weapons (the axe freezes at 3 Frost, the Blades burn and reach farther), swapped only by S3, each swap a 5% shield (10% cap); Heimdall's Sight (1.5 s immunity, first hit per champion dodged); Leviathan Rampage (cleave, sweep, frost-fire smash; cleanse, immunity, 25% reduction); Spartan Guard / Chain Dash with a 3 s link (Guard → Dash reaches 90,000; Dash → Guard is stronger), the dash crossing any wall; Fenrir's Charge (Ornn-like, recast slams it back).
+- **Guardrails:** CC immunity never stacks and is capped at 3 s in any 6 s; his skills and Fenrir never hit towers (his basic attacks do).
+- **Built:** the native kit, the Lab on the real 5v5 map (`editor/kratos.html`) and tests (26 Kratos native tests, 10 browser checks). Guide: `docs/kratos-guide.md`.
+- **Waiting on:** Codex's art (`docs/kratos-art-handoff.md`), then the release.
+## Nov 10: round 161 (native 0.10.96, tfm2_custom 0.2.99): Kratos released
+- **Kratos** joins the game with Codex's approved art and Reihan's kratos-2 skill pass: a long 1.8 s Rampage, Fenrir from up to 320,000 with an aimed redirect, Dash → Guard taunts.
+- **Fenrir's redirect is twice as fast** (`kratos-3`, Reihan: "like Ornn's ult"): 4,800 a tick on the way back, about 1.1 s for 320,000.
+- **Checks:** 1,152 native tests, 0 warnings; DLL reports 0.10.96; Mod Manager load. Codex's browser tests need the local game-reference cache (Reihan's PC). Review: `docs/main-review-round-161.md`.
+- **Pending:** live acceptance (taunt targeting, wolf alignment, wall hop, Sight's heal refund) and balance; watch the long immune Rampage and the 320,000 Fenrir.

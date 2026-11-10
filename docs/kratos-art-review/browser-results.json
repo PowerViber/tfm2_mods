@@ -1,0 +1,69 @@
+{
+  "checks": 27,
+  "passed": [
+    "Editor route kratos-review.html",
+    "Editor route kratos-clock.js",
+    "Editor route kratos-renderer.js",
+    "Editor route kratos.wasm",
+    "Editor route kratos-body.png",
+    "Editor route kratos-weapons.png",
+    "Editor route kratos-effects.png",
+    "Editor route kratos-review-assets/presentation.json",
+    "Editor route kratos-review-assets/body-preview.fanim",
+    "Editor route kratos-review-assets/weapons-preview.fanim",
+    "Editor route kratos-review-assets/effects-preview.fanim",
+    "Actual packaged body and weapon assets loaded",
+    "Arena retains square pixels alongside the tall inspector",
+    "30/60/120/144/240 Hz all run exactly 600 ticks in ten seconds",
+    "Pause/background reset adds no catch-up ticks",
+    "Step advances once and remains paused",
+    "Focused WASD supplies movement",
+    "Focus loss clears held movement",
+    "Typing in an attribute does not cast",
+    "24 development + 12 holdout scenarios have identical complete core traces with artwork off/on",
+    "All thirteen manual 20/80 comparisons agree across three fixtures each",
+    "Recorded inputs replay with every original core output identical",
+    "Older rules are explicitly rejected for replay",
+    "Owner defeat clears the Lab wolf and shows the complete death pose",
+    "Full pose/effect review loads with the actual packed atlases",
+    "Direct /editor/ route loads the same packaged artwork",
+    "No browser errors: "
+  ],
+  "scenario_counts": {
+    "development": 24,
+    "holdout": 12,
+    "manual_stat_pairs": 39
+  },
+  "trace_sha256": "b03f9c595fb8809bbd0560742672b3c23d57d9fd0643c65bd2057454729277ed",
+  "warm_render_ms": [
+    {
+      "p50": 0.09999990463256836,
+      "p95": 0.20000004768371582
+    },
+    {
+      "p50": 0.09999990463256836,
+      "p95": 0.20000004768371582
+    },
+    {
+      "p50": 0.09999990463256836,
+      "p95": 0.2999999523162842
+    },
+    {
+      "p50": 0.09999990463256836,
+      "p95": 0.20000004768371582
+    },
+    {
+      "p50": 0.09999990463256836,
+      "p95": 0.20000004768371582
+    }
+  ],
+  "cold_navigation_and_art_ms": [
+    432.54110000000037,
+    496.65300000000025,
+    395.3783999999996,
+    367.91430000000037,
+    383.46330000000125
+  ],
+  "performance_scope": "Browser rendering only, 12 bodies + Fenrir, five matched runs; not a native/host benchmark or Magnus 128-piece acceptance.",
+  "native_observation": "pending"
+}
