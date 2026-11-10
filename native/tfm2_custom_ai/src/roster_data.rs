@@ -7,7 +7,7 @@ use mod_api_stable::SkillSlotV1 as Slot;
 pub const KINDS: [&str; 12] = ["Dash", "Blink", "Projectile", "Line", "Aoe", "Zone", "Summon", "Heal", "Shield", "Cc", "Buff", "Construct"];
 #[cfg(test)]
 pub const INTENTS: [&str; 7] = ["Clear", "Engage", "Escape", "Protect", "Objective", "Poke", "Vision"];
-pub static FAMILIES: [FamilyDef; 14] = [
+pub static FAMILIES: [FamilyDef; 15] = [
     FamilyDef { key: "base", name: "Teamfight Manager 2", about: "The base game roster. No cross-franchise rules." },
     FamilyDef { key: "minecraft", name: "Minecraft", about: "Builds and breaks blocks; constructions are walls every other champion must path around." },
     FamilyDef { key: "naruto", name: "Naruto", about: "Flying Thunder God seals: teleports to marked targets." },
@@ -22,6 +22,7 @@ pub static FAMILIES: [FamilyDef; 14] = [
     FamilyDef { key: "ultrakill", name: "ULTRAKILL", about: "Parries: any committed strike, teleport strikes included, can be parried." },
     FamilyDef { key: "valorant", name: "VALORANT", about: "Credits instead of items; smokes block sight." },
     FamilyDef { key: "original", name: "Original", about: "Made for this mod suite; mastery ranks change how the athlete plays, never raw power." },
+    FamilyDef { key: "gow", name: "God of War", about: "Two god-slaying weapons, frost and fire; Spartan rage and Norse beasts." },
 ];
 pub static FAMILY_RULES: [FamilyRule; 5] = [
     FamilyRule { id: "sandevistan_vs_infinity", from: "cyberpunk", to: "jjk", rule: "While Sandevistan is on, David's basic attacks ignore Infinity's damage cut, and 3 hits within 3 s shatter it for its usual 15 s. The gravity smash shatters it too, except inside Gojo's own open domain." },
@@ -30,7 +31,7 @@ pub static FAMILY_RULES: [FamilyRule; 5] = [
     FamilyRule { id: "smoke_blocks_sight", from: "valorant", to: "*", rule: "Nobody outside Omen's Dark Cover sees in; someone inside sees only 15000 and nothing outside. Every champion's targeting respects it." },
     FamilyRule { id: "stopped_time", from: "jojo", to: "*", rule: "ZA WARUDO stops every caught champion, whatever its franchise; only DIO moves." },
 ];
-pub static CHAMPIONS: [ChampionDef; 83] = [
+pub static CHAMPIONS: [ChampionDef; 84] = [
     ChampionDef { id: "android", name: "Android", family: 0, role: "Melee", native: false, basic: BasicAttack { name: "Basic attack", range: 25000, reach: Range::Melee }, skills: &[
         SkillDef { slot: Slot::Skill, name: "Skill 1", kinds: 4 | 8 | 16 | 512, intents: 1 | 2 | 16 | 32 },
         SkillDef { slot: Slot::Skill2, name: "Skill 2", kinds: 256 | 512, intents: 2 | 4 | 8 },
@@ -462,5 +463,10 @@ pub static CHAMPIONS: [ChampionDef; 83] = [
         SkillDef { slot: Slot::Skill, name: "Workshop / Fighter Wing", kinds: 64 | 4 | 512, intents: 32 | 1 | 64 },
         SkillDef { slot: Slot::Skill2, name: "Carpet Bomber / Repair Wing", kinds: 16 | 32 | 128 | 256, intents: 2 | 8 | 1 },
         SkillDef { slot: Slot::Ult, name: "Sky Carrier", kinds: 64 | 16 | 512, intents: 2 | 16 },
+    ] },
+    ChampionDef { id: "tfm2_custom_kratos", name: "Kratos", family: 14, role: "Melee", native: true, basic: BasicAttack { name: "Leviathan Axe / Blades of Chaos", range: 22000, reach: Range::Melee }, skills: &[
+        SkillDef { slot: Slot::Skill, name: "Frost & Flame / Heimdall's Sight", kinds: 1024 | 512, intents: 2 | 8 },
+        SkillDef { slot: Slot::Skill2, name: "Leviathan Rampage / Spartan Guard / Chain Dash", kinds: 1 | 16 | 8 | 256 | 512, intents: 2 | 4 | 8 | 1 },
+        SkillDef { slot: Slot::Ult, name: "Fenrir's Charge", kinds: 8 | 1 | 512, intents: 2 },
     ] },
 ];

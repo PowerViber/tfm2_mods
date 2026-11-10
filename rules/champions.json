@@ -80,6 +80,10 @@
   "original": {
    "name": "Original",
    "about": "Made for this mod suite; mastery ranks change how the athlete plays, never raw power."
+  },
+  "gow": {
+   "name": "God of War",
+   "about": "Two god-slaying weapons, frost and fire; Spartan rage and Norse beasts."
   }
  },
  "familyRules": [
@@ -5245,6 +5249,64 @@
       "Objective"
      ],
      "summary": "Sky Carrier (90 s): a carrier drops from the sky on Wright, knocking enemies away (the closer, the farther, up to 100000) and slowing them 15%, with no damage. It hovers over him for 10 s and takes 80% of the damage he takes (until its pool of 100% of his HP runs out). It launches a fighter every 1 s (up to 6) and a repair chopper every 3 s, and readies a bomber every 3 s (up to 3): while it's up, Carpet Bomber uses a ready bomber, with no airframe or cooldown."
+    }
+   ]
+  },
+  {
+   "id": "tfm2_custom_kratos",
+   "name": "Kratos",
+   "family": "gow",
+   "role": "Melee",
+   "native": true,
+   "basicAttack": {
+    "name": "Leviathan Axe / Blades of Chaos",
+    "kind": "melee",
+    "range": 22000
+   },
+   "skills": [
+    {
+     "slot": "skill",
+     "name": "Frost & Flame / Heimdall's Sight",
+     "kinds": [
+      "Buff",
+      "Cc"
+     ],
+     "intents": [
+      "Engage",
+      "Protect"
+     ],
+     "summary": "Frost & Flame (passive): he holds the Leviathan Axe or the Blades of Chaos and changes weapons only through his third skill. Axe hits add Frost (at 3 stacks the target freezes 0.6 s, then can't freeze again for 3 s); Blade hits burn for 8 + 15% Attack a second for 3 s and his basic attacks reach 30000 instead of 22000. Spartan Armor: every weapon swap gives a shield of 5% of his max HP for 5 s, up to 10%. Heimdall's Sight (13 s): for 1.5 s he can't be crowd-controlled and dodges the first hit from each enemy champion."
+    },
+    {
+     "slot": "skill2",
+     "name": "Leviathan Rampage / Spartan Guard / Chain Dash",
+     "kinds": [
+      "Dash",
+      "Aoe",
+      "Line",
+      "Shield",
+      "Cc"
+     ],
+     "intents": [
+      "Engage",
+      "Escape",
+      "Protect",
+      "Clear"
+     ],
+     "summary": "Leviathan Rampage (9 s): three advancing swings over about 1.1 s, stopped by walls: an axe cleave (35 + 50% Attack, Frost, 20% slow), a Blades sweep (35 + 50% Attack, burn) and a frost-and-fire smash (radius 22000, 70 + 110% Attack, knock-up 0.5 s). It cleanses him, and during it he can't be crowd-controlled and takes 25% less damage. Spartan Guard (12 s, swaps to the axe): cleanses, a shield of 15% max HP for 3 s and 1 s of crowd-control immunity. Chain Dash (10 s, swaps to the Blades): throws the Blades 55000; on a champion, minion or creep he dashes to it through any wall and strikes (30 + 50% Attack). Guard then Dash within 3 s: the Dash reaches 90000. Dash then Guard: 1.8 s of immunity and a 25% shield. Crowd-control immunity lasts at most 3 s in any 6 s."
+    },
+    {
+     "slot": "ult",
+     "name": "Fenrir's Charge",
+     "kinds": [
+      "Line",
+      "Dash",
+      "Cc"
+     ],
+     "intents": [
+      "Engage"
+     ],
+     "summary": "Fenrir's Charge (90 s): Fenrir appears 110000 away and charges back to Kratos, hitting enemies on the way (80 + 80% Attack, 40% slow for 1.5 s). Recast within 3 s: Kratos leaps into the wolf (up to 15000) and slams it back (100 + 100% Attack, knock-up 1 s). His skills and Fenrir never hit towers."
     }
    ]
   }
