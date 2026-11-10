@@ -86,6 +86,7 @@ window.GameScenario=class {
         const priority=t=>u.tower?(t.provokedTeam===u.team&&tick<t.provokedUntil?-2:t.kind==='minion'?-1:0):u.job==='objective'&&t.kind==='objective'?-2:t.kind==='minion'&&!u.champion?-1:0;
         return priority(a)-priority(b)||Math.hypot(a.pos.x-u.pos.x,a.pos.y-u.pos.y)-Math.hypot(b.pos.x-u.pos.x,b.pos.y-u.pos.y)||a.id-b.id;
       })[0];
+      if(tick<(u.tauntUntil||0))target=living.find(t=>t.id===u.tauntTarget&&t.team!==u.team);
       if(u.job==='enemy-jungle'&&!['countergank','morgard','serpen'].includes(this.kind))target=null;
       if(u.job==='enemy-jungle'&&this.kind==='countergank'&&tick-this.time<120)target=null;
       if(u.pending&&tick>=u.pending.release){

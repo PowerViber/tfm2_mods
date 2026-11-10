@@ -8,7 +8,7 @@
     "CC",
     "Tank"
   ],
-  "revision": "kratos-1",
+  "revision": "kratos-2",
   "stat": {
     "attack": 80,
     "magic_power": 0,
@@ -60,17 +60,17 @@
   },
   "rampage": {
     "cooldownTicks": 540,
-    "range": 26000,
-    "stageTicks": 22,
-    "travel": 28000,
-    "swingRadius": 16000,
+    "range": 80000,
+    "stageTicks": 36,
+    "travel": 108000,
+    "swingRadius": 26000,
     "cleaveBase": 35,
     "cleaveAdRatio": 50,
     "slowPct": 20,
     "slowTicks": 60,
     "sweepBase": 35,
     "sweepAdRatio": 50,
-    "smashRadius": 22000,
+    "smashRadius": 32000,
     "smashBase": 70,
     "smashAdRatio": 110,
     "knockUpTicks": 30,
@@ -82,7 +82,9 @@
     "shieldTicks": 180,
     "immuneTicks": 60,
     "linkedShieldPct": 25,
-    "linkedImmuneTicks": 108
+    "linkedImmuneTicks": 108,
+    "tauntRange": 36000,
+    "tauntTicks": 45
   },
   "dash": {
     "cooldownTicks": 600,
@@ -98,16 +100,17 @@
   },
   "fenrir": {
     "cooldownTicks": 5400,
-    "distance": 110000,
+    "distance": 320000,
+    "throughDistance": 160000,
     "speed": 2400,
-    "width": 12000,
+    "width": 24000,
     "base": 80,
     "adRatio": 80,
     "slowPct": 40,
     "slowTicks": 90,
     "recastTicks": 180,
     "dashMax": 15000,
-    "returnDistance": 80000,
+    "returnDistance": 320000,
     "returnBase": 100,
     "returnAdRatio": 100,
     "knockUpTicks": 60

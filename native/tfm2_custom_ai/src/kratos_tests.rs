@@ -221,12 +221,12 @@ fn heimdalls_sight_gives_immunity_and_dodges_the_first_hit_per_champion() {
 #[test]
 fn rampage_plays_three_advancing_swings_and_hits_each_enemy_once_per_swing() {
     let mut c = Core::default();
-    let mut f = frame(0, vec![unit(FOE, 2, 412_000, 400_000)]);
-    let out = run_order(&mut c, &mut f, Some(Order::Rampage(Point::new(412_000, 400_000))), 0, 3 * d::RAMPAGE_STAGE_TICKS as u64 + 5);
+    let mut f = frame(0, vec![unit(FOE, 2, 478_000, 400_000)]);
+    let out = run_order(&mut c, &mut f, Some(Order::Rampage(Point::new(478_000, 400_000))), 0, 3 * d::RAMPAGE_STAGE_TICKS as u64 + 5);
     assert!(out.contains(&Effect::Cleanse));
     assert_eq!(immune(&out), Some(3 * d::RAMPAGE_STAGE_TICKS as u64));
     assert!(out.contains(&Effect::Reduce { percent: d::RAMPAGE_REDUCE_PCT, ticks: 3 * d::RAMPAGE_STAGE_TICKS as u64 }));
-    assert!(c.rampage.is_none(), "over in about 1.1 s");
+    assert!(c.rampage.is_none(), "over in 1.8 s");
     let hits = out.iter().filter(|e| matches!(e, Effect::Damage { target: FOE, direct: false, .. })).count();
     assert_eq!(hits, 3, "{out:?}");
     let knock = out.iter().filter(|e| matches!(e, Effect::KnockUp { target: FOE, ticks } if *ticks == d::RAMPAGE_KNOCK_UP_TICKS as u64)).count();
@@ -358,8 +358,8 @@ fn chained_immunity_never_exceeds_three_seconds_in_six_and_cleanses_still_work()
     let mut out = order(&mut c, &f, Order::Sight); // 90
     f.tick = 89;
     out.extend(order(&mut c, &f, Order::Rampage(Point::new(412_000, 400_000)))); // +66 -> 155
-    out.extend(run(&mut c, &mut f, 90, 160));
-    f.tick = 160;
+    out.extend(run(&mut c, &mut f, 90, 200));
+    f.tick = 200;
     let g = order(&mut c, &f, Order::Guard);
     assert!(g.contains(&Effect::Cleanse), "the cleanse always works");
     out.extend(g);
@@ -381,9 +381,10 @@ fn chained_immunity_never_exceeds_three_seconds_in_six_and_cleanses_still_work()
     let mut f = frame(10, vec![unit(FOE, 2, 412_000, 400_000)]);
     order(&mut c, &f, Order::Rampage(Point::new(412_000, 400_000)));
     f.tick = 11;
-    // Sight to 90 already covers the Rampage's 10..76: nothing is added
-    assert_eq!(c.immune_until(11), d::SIGHT_TICKS as u64);
-    assert_eq!(c.immune_in(0, 1000), d::SIGHT_TICKS as u64);
+    // Overlap extends only to the later endpoint, rather than adding durations.
+    let end=(10+3*d::RAMPAGE_STAGE_TICKS) as u64;
+    assert_eq!(c.immune_until(11), end.max(d::SIGHT_TICKS as u64));
+    assert_eq!(c.immune_in(0, 1000), end.max(d::SIGHT_TICKS as u64));
 }
 
 // ------------------------------------------------------------------ Fenrir
@@ -395,11 +396,11 @@ fn fenrir_charges_in_from_far_away_and_slows() {
     let mut out = order(&mut c, &f, Order::Fenrir(Point::new(500_000, 400_000)));
     let w = c.fenrir.clone().unwrap();
     assert_eq!(w.from.x, 400_000 + d::FENRIR_DISTANCE);
-    out.extend(run(&mut c, &mut f, 1, 60));
+    out.extend(run(&mut c, &mut f, 1, 140));
     assert_eq!(damage_to(&out, FOE), d::FENRIR_BASE + d::FENRIR_AD_RATIO);
     assert!(out.iter().any(|e| matches!(e, Effect::Slow { target: FOE, percent, .. } if *percent == d::FENRIR_SLOW_PCT)));
     // no recast: it fades after the window
-    out = run(&mut c, &mut f, 60, d::FENRIR_RECAST_TICKS as u64 + 5);
+    out = run(&mut c, &mut f, 140, d::FENRIR_RECAST_TICKS as u64 + 5);
     assert!(c.fenrir.is_none());
     assert!(out.iter().any(|e| matches!(e, Effect::Fx { name, .. } if name == "krt_fenrir_fade")));
 }
@@ -408,9 +409,9 @@ fn fenrir_charges_in_from_far_away_and_slows() {
 fn fenrir_recast_leaps_in_and_slams_it_back_with_a_knock_up() {
     let mut c = Core::default();
     let mut f = frame(0, vec![unit(FOE, 2, 440_000, 400_000)]);
-    let mut out = run_order(&mut c, &mut f, Some(Order::Fenrir(Point::new(500_000, 400_000))), 0, 50);
-    assert!(c.fenrir.as_ref().is_some_and(|w| w.pos.within(f.pos, 1_000)), "it reached him");
-    out.extend(run_order(&mut c, &mut f, Some(Order::Slam), 50, 120));
+    let mut out = run_order(&mut c, &mut f, Some(Order::Fenrir(Point::new(500_000, 400_000))), 0, 135);
+    assert!(c.fenrir.as_ref().is_some_and(|w| w.pos.within(f.pos, 8_000)), "it ran through him");
+    out.extend(run_order(&mut c, &mut f, Some(Order::Slam), 135, 300));
     let knock = out.iter().filter(|e| matches!(e, Effect::KnockUp { target: FOE, ticks } if *ticks == d::FENRIR_KNOCK_UP_TICKS as u64)).count();
     assert_eq!(knock, 1, "{out:?}");
     assert_eq!(damage_to(&out, FOE), d::FENRIR_BASE + d::FENRIR_AD_RATIO + d::FENRIR_RETURN_BASE + d::FENRIR_RETURN_AD_RATIO);
@@ -429,6 +430,42 @@ fn fenrir_never_hits_towers() {
     let mut out = order(&mut c, &f, Order::Fenrir(Point::new(500_000, 400_000)));
     out.extend(run(&mut c, &mut f, 1, 200));
     assert_eq!(damage_to(&out, 20), 0);
+}
+
+// ------------------------------------------------------------------ the athlete
+
+#[test]
+fn fenrir_never_parks_at_kratos_and_aimed_return_can_turn_ninety_degrees() {
+    let mut c=Core::default();let mut f=frame(0,vec![unit(FOE,2,400_000,460_000)]);
+    order(&mut c,&f,Order::Fenrir(Point::new(500_000,400_000)));
+    let mut prev=c.fenrir.as_ref().unwrap().pos;
+    for tick in 1..135 {f.tick=tick;c.step(&f);let p=c.fenrir.as_ref().unwrap().pos;assert_ne!(p,prev,"wolf parked at {tick}");prev=p;}
+    f.tick=135;let mut out=order(&mut c,&f,Order::SlamAim(Point::new(400_000,700_000)));
+    out.extend(run(&mut c,&mut f,136,320));
+    assert_eq!(damage_to(&out,FOE),d::FENRIR_RETURN_BASE+d::FENRIR_RETURN_AD_RATIO);
+    assert_eq!(out.iter().filter(|e|matches!(e,Effect::KnockUp{target,..}if *target==FOE)).count(),1);
+    assert!(c.fenrir.is_none());
+}
+
+#[test]
+fn linked_guard_taunts_only_after_a_connected_dash_and_only_enemy_champions() {
+    let mut c=Core::default();let mut f=frame(0,vec![unit(FOE,2,430_000,400_000),minion(30,430_000,400_000),tower(31,430_000,400_000),unit(32,1,430_000,400_000)]);
+    run_order(&mut c,&mut f,Some(Order::Dash(Point::new(430_000,400_000))),0,25);f.tick=25;
+    let out=order(&mut c,&f,Order::Guard);
+    let taunts:Vec<_>=out.iter().filter_map(|e|if let Effect::Taunt{target,ticks}=e{Some((*target,*ticks))}else{None}).collect();
+    assert_eq!(taunts,vec![(FOE,d::GUARD_TAUNT_TICKS as u64)]);
+    let mut miss=Core::default();let empty=frame(0,vec![]);order(&mut miss,&empty,Order::Dash(Point::new(450_000,400_000)));
+    let out=order(&mut miss,&frame(20,vec![unit(FOE,2,420_000,400_000)]),Order::Guard);
+    assert!(!out.iter().any(|e|matches!(e,Effect::Taunt{..})),"a missed throw cannot arm the taunt");
+}
+
+#[test]
+fn rampage_and_linked_guard_do_not_reach_through_a_wall() {
+    let mut f=frame(0,vec![unit(FOE,2,450_000,400_000)]);f.pos=Point::new(415_000,400_000);f.terrain=wall_grid(&[(13,12)]);
+    let mut c=Core::default();let out=run_order(&mut c,&mut f,Some(Order::Rampage(Point::new(500_000,400_000))),0,120);
+    assert_eq!(damage_to(&out,FOE),0);assert!(f.pos.x<416_000);
+    c.link=Some((Link::Dash,500));c.dash_connected=true;f.tick=120;
+    let out=order(&mut c,&f,Order::Guard);assert!(!out.iter().any(|e|matches!(e,Effect::Taunt{..})));
 }
 
 // ------------------------------------------------------------------ the athlete
@@ -458,7 +495,9 @@ fn the_athlete_farms_only_when_calm() {
     f.manual = false;
     // an enemy champion near: no farming Rampage on the wave (he may engage the champion instead)
     c.step(&f);
-    assert_ne!(c.last_skill, "rampage");
+    // Its longer reach can now engage that visible champion. This is an engage,
+    // not an attempt to farm a wave while ignoring nearby danger.
+    assert!(c.last_skill!="rampage"||c.rampage.as_ref().is_some_and(|r|r.aim.x>r.at.x&&r.aim.y==r.at.y));
 }
 
 #[test]
@@ -511,6 +550,17 @@ mod glue {
         let blades = g.buffs[0].iter().find(|b| b.name() == "krt_blades").expect("blades buff");
         assert_eq!(blades.range as i64, d::BASIC_BLADES_RANGE - d::BASIC_AXE_RANGE);
         assert!(g.shields.iter().any(|s| s.0 == 0 && s.1 == 2000 * d::PASSIVE_SWAP_SHIELD_PCT as usize / 100), "swap shield: {:?}", g.shields);
+    }
+
+    #[test]
+    fn connected_guard_uses_native_taunt_with_kratos_as_its_target() {
+        let (x,y)=open_spot(80_000);
+        let host=Host::new(vec![champ(0,(x,y),"tfm2_custom_kratos"),champ(1,(x+5_000,y),"foe"),champ(0,(x+8_000,y),"ally")]);
+        let mut k=Kratos::default();host.borrow_mut().tick=100;
+        let f=with_sim(&host,|s|k.frame(s,0));k.core.link=Some((crate::kratos_core::Link::Dash,200));k.core.dash_connected=true;
+        let mut out=vec![];k.core.execute(&f,crate::kratos_core::Order::Guard,&mut out);with_sim(&host,|s|k.apply(s,0,out));
+        let h=host.borrow();assert!(h.ccs[1].iter().any(|c|c.0.kind==CcKindV1::Taunt.code()&&c.0.target==0&&c.0.tick==d::GUARD_TAUNT_TICKS as u64));
+        assert!(!h.ccs[2].iter().any(|c|c.0.kind==CcKindV1::Taunt.code()));
     }
 
     #[test]

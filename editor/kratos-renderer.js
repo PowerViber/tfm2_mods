@@ -59,7 +59,8 @@ window.KratosPainter = class {
     if (this.manifest.atlases) {
       const h=((Math.round(angle/(Math.PI/4))%8)+8)%8;
       const phase=Math.floor(tick/3)%8, name='fenrir_p'+h+(phase?'_f'+phase:'');
-      return this.animation(ctx,'effects',this.anims.effects[name]?name:'fenrir_p'+h,0,x,y,scale,false,[40,40]);
+      const size=this.manifest.fenrir_canvas||[80,80];
+      return this.animation(ctx,'effects',this.anims.effects[name]?name:'fenrir_p'+h,0,x,y,scale,false,size.map(v=>v/2));
     }
     return this.sprite(ctx, 'fenrir-east', x, y, scale, false, angle);
   }

@@ -11,7 +11,7 @@
 //!   single strikes (the Chain Dash) can be parried by V1.
 use crate::kratos_core::{Core, Effect, Frame, Point, Unit};
 use crate::kratos_data as d;
-use mod_api_stable::{AttackTypeV1, BuffV1, CcKindV1, CcV1, StablePassive, StableSim};
+use mod_api_stable::{AttackTypeV1, BuffV1, CcKindV1, CcV1, EntityKindV1, StablePassive, StableSim};
 
 pub(crate) const OWN_CC: &str = "krt_";
 const BLADES: &str = "krt_blades";
@@ -189,6 +189,11 @@ impl Kratos {
                 Effect::KnockUp { target, ticks } => {
                     if reach(owner, target) && not_tower(sim, target) {
                         sim.apply_cc(target, &named(CcKindV1::Airborne, ticks, "krt_knockup"));
+                    }
+                }
+                Effect::Taunt {target,ticks} => {
+                    if reach(owner,target) && not_tower(sim,target) && sim.get_entity(target).is_some_and(|u|u.kind()==Some(EntityKindV1::Champion)) {
+                        let mut cc=named(CcKindV1::Taunt,ticks,"krt_taunt");cc.target=owner;sim.apply_cc(target,&cc);
                     }
                 }
                 Effect::Frost { target, stacks, ticks } => {

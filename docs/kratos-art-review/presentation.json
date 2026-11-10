@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "revision": "kratos-art-1",
-  "units_per_pixel": 950,
+  "revision": "kratos-art-2",
+  "units_per_pixel": 1000,
   "body_canvas": [
     64,
     64
@@ -81,34 +81,34 @@
       1
     ],
     "cleave": [
-      3,
-      3,
-      3,
+      5,
+      5,
+      4,
       2,
-      3,
-      3,
-      3,
-      2
+      2,
+      4,
+      6,
+      8
     ],
     "sweep": [
-      3,
-      3,
-      3,
+      5,
+      5,
+      4,
       2,
-      3,
-      3,
-      3,
-      2
+      2,
+      4,
+      6,
+      8
     ],
     "smash": [
-      3,
-      3,
-      3,
+      5,
+      5,
+      4,
       2,
-      3,
-      3,
-      3,
-      2
+      2,
+      4,
+      6,
+      8
     ],
     "ult": [
       2,
@@ -211,7 +211,7 @@
     },
     "sight": {
       "kind": "effect",
-      "z": 5,
+      "z": 6,
       "follow": true
     },
     "guard": {
@@ -276,7 +276,7 @@
     },
     "sight_aura": {
       "kind": "buff",
-      "z": 5,
+      "z": 6,
       "follow": true
     },
     "guard_aura": {
@@ -706,7 +706,7 @@
     "effects": "effects-preview",
     "assembled": "assembled-preview"
   },
-  "decoded_bytes": 16777216,
+  "decoded_bytes": 29360128,
   "frame_counts": {
     "idle": 8,
     "run": 8,
@@ -726,5 +726,12 @@
     "fenrir_phase_ticks": 3,
     "fenrir_variants": 8,
     "chain_split_range": 56000
+  },
+  "fenrir_canvas": [
+    160,
+    160
+  ],
+  "candidate_source_sha256": {
+    "sight-eyes-source-v2.png": "8dbe33ad0752f7a95258074302e457c80715475c94702a0b5c31c49daa976d53"
   }
 }

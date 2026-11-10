@@ -17,5 +17,12 @@
   "source_sha256": {
     "body-source-v1.png": "6544b3e3df361e6ae9eb258df0091ce83e94c60c602b566a8318f4e2cbab57f4",
     "fenrir-source-v1.png": "d00800aaf9900dd23197e8e39eddf755f925123658d93542e99ea07634c1f52d"
+  },
+  "effects_v2": {
+    "approved": true,
+    "answer": "Approve the revised effects",
+    "date": "2026-11-10",
+    "source_sha256": "8dbe33ad0752f7a95258074302e457c80715475c94702a0b5c31c49daa976d53",
+    "scope": "Larger upright Fenrir, twin chain geometry and floating Heimdall eyes; approved actual-size comparison."
   }
 }

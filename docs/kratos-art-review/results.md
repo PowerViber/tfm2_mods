@@ -1,5 +1,7 @@
 # Kratos art and Lab verification — 2026-11-10
 
+**Historical kratos-1 art-pass evidence:** the [approved kratos-2 skill revision](../kratos-skill-review/README.md) now changes the requested movement, geometry, timing, recast aiming and taunt. Statements below about unchanged gameplay and 16 MiB refer to the earlier art-only pass. Current owned art is 28 MiB; current checks and limitations are in the linked skill review.
+
 **Map/situations follow-up:** the [installed battlefield review](../kratos-game-world-review/README.md) supersedes the earlier backdrop/placement assumptions below. Levi's wall grid agrees, but the corrected source registration uses a 160-pixel border and 1,000 world units per art pixel. Original stock actors and eight mid-game situations are now included; 23 additional browser checks pass. Earlier measurements below describe the original art/fixture workload, not the new full scenario host.
 
 Implementation began at PR #74 head `740a8e9`. Current main `ad6dda3` was merged as `ef036bc` to preserve round-160 balance changes and resolve the generated roster conflicts. Kratos’s rules/core/data/WASM are unchanged from the original PR head. The new native code selects presentation only.

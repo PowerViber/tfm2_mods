@@ -52,6 +52,17 @@ impl Point {
     pub fn clamp_map(self) -> Point {
         Point::new(self.x.clamp(1_000, MAP - 1_000), self.y.clamp(1_000, MAP - 1_000))
     }
+    /// Intersect a direction with the map bounds without bending its heading.
+    pub fn ray_end(self, aim: Point, length: i64) -> Point {
+        let end = self.toward(aim, length);
+        let mut k = 1.0_f64;
+        for (start, finish) in [(self.x, end.x), (self.y, end.y)] {
+            let delta = finish - start;
+            if finish < 1_000 && delta != 0 { k = k.min((1_000 - start) as f64 / delta as f64); }
+            if finish > MAP - 1_000 && delta != 0 { k = k.min((MAP - 1_000 - start) as f64 / delta as f64); }
+        }
+        Point::new(self.x + ((end.x-self.x) as f64*k).round() as i64, self.y + ((end.y-self.y) as f64*k).round() as i64).clamp_map()
+    }
     pub fn on_map(self) -> bool {
         (0..=MAP).contains(&self.x) && (0..=MAP).contains(&self.y)
     }
@@ -114,6 +125,8 @@ pub enum Order {
     Fenrir(Point),
     /// the ult's recast: leap into Fenrir and slam it back
     Slam,
+    /// Aimed recast; legacy `slam` retains its original default direction.
+    SlamAim(Point),
 }
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
@@ -198,6 +211,7 @@ pub enum Effect {
     /// the axe's freeze (a stun)
     Freeze { target: usize, ticks: u64 },
     KnockUp { target: usize, ticks: u64 },
+    Taunt { target: usize, ticks: u64 },
     /// Frost stacks shown on the target (0 clears)
     Frost { target: usize, stacks: i64, ticks: u64 },
     /// the burn's look on the target
@@ -264,6 +278,7 @@ pub struct Fenrir {
     pub recast_until: u64,
     /// the slam lands when his leap ends
     pub slam_at: Option<u64>,
+    pub slam_aim: Option<Point>,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize)]
@@ -296,6 +311,7 @@ pub struct Core {
     pub rampage: Option<Rampage>,
     pub link: Option<(Link, u64)>,
     pub dash: Option<DashPlan>,
+    pub dash_connected: bool,
     pub fenrir: Option<Fenrir>,
     /// he's moving himself until (no new casts but the Rampage's redirect)
     pub busy_until: u64,
@@ -317,6 +333,7 @@ impl Default for Core {
             rampage: None,
             link: None,
             dash: None,
+            dash_connected: false,
             fenrir: None,
             busy_until: 0,
             rejection: String::new(),
@@ -524,7 +541,7 @@ impl Core {
         if f.stunned && !matches!(o, Order::Redirect(_)) {
             return reject(self, "crowd-controlled");
         }
-        if (in_rampage || f.tick < self.busy_until) && !matches!(o, Order::Redirect(_) | Order::Slam) {
+        if (in_rampage || f.tick < self.busy_until) && !matches!(o, Order::Redirect(_)) {
             return reject(self, "mid-move");
         }
         match o {
@@ -578,6 +595,12 @@ impl Core {
                 };
                 out.push(Effect::Shield { amount: f.max_hp * shield / 100, ticks: t(d::GUARD_SHIELD_TICKS) });
                 self.immune_effect(f.tick, t(immune), out);
+                if linked && self.dash_connected {
+                    for u in f.enemy_champions().filter(|u| u.pos.within(f.pos, d::GUARD_TAUNT_RANGE + u.radius) && f.clip(f.pos,u.pos)==u.pos) {
+                        out.push(Effect::Taunt {target:u.id,ticks:t(d::GUARD_TAUNT_TICKS)});
+                    }
+                }
+                self.dash_connected=false;
                 out.push(Effect::Fx { name: "krt_guard".into(), at: f.pos, ticks: t(d::GUARD_SHIELD_TICKS), ambient: false });
                 out.push(Effect::Pose { name: "skill2", ticks: 14 });
                 self.link = if linked { None } else { Some((Link::Guard, f.tick + t(d::LINK_WINDOW_TICKS))) };
@@ -589,6 +612,7 @@ impl Core {
                     return reject(self, "Chain Dash is on cooldown");
                 }
                 self.ready[DASH] = f.tick + t(d::DASH_COOLDOWN_TICKS);
+                self.dash_connected=false;
                 let linked = self.link_active(Link::Guard, f.tick);
                 let range = if linked { d::DASH_LINKED_RANGE } else { d::DASH_RANGE };
                 self.swap_to(f, Weapon::Blades, out);
@@ -611,13 +635,20 @@ impl Core {
                 }
                 self.ready[FENRIR] = f.tick + t(d::FENRIR_COOLDOWN_TICKS);
                 let aim = if aim == f.pos { Point::new(f.pos.x + 1, f.pos.y) } else { aim };
-                let spawn = f.pos.toward(aim, d::FENRIR_DISTANCE).clamp_map();
-                let ticks = (spawn.dist(f.pos) as i64 / d::FENRIR_SPEED.max(1)).max(1) as u64;
+                let far = f.pos.ray_end(aim, d::FENRIR_DISTANCE);
+                let mut spawn = far;
+                // The spirit crosses walls in flight, but appears on open ground.
+                for i in 0..=160 {
+                    let candidate=far.toward(f.pos,(i*2_000).min(far.dist(f.pos) as i64));
+                    if !f.terrain_at(candidate) {spawn=candidate;break;}
+                }
+                let through = f.pos.ray_end(spawn, -d::FENRIR_THROUGH_DISTANCE);
+                let ticks = (spawn.dist(through) / d::FENRIR_SPEED.max(1) as f64).ceil().max(1.0) as u64;
                 self.fenrir = Some(Fenrir {
                     cast: f.tick,
                     pos: spawn,
                     from: spawn,
-                    to: f.pos,
+                    to: through,
                     origin: spawn,
                     leg: 0,
                     leg_start: f.tick,
@@ -625,21 +656,22 @@ impl Core {
                     hit: vec![],
                     recast_until: f.tick + t(d::FENRIR_RECAST_TICKS),
                     slam_at: None,
+                    slam_aim: None,
                 });
                 out.push(Effect::Fx { name: "krt_fenrir_spawn".into(), at: spawn, ticks: 24, ambient: false });
                 out.push(Effect::Pose { name: "ult", ticks: 18 });
                 self.last_skill = "fenrir";
             }
-            Order::Slam => {
+            Order::Slam | Order::SlamAim(_) => {
                 let Some(w) = self.fenrir.as_ref() else { return reject(self, "Fenrir isn't out") };
                 if w.leg != 0 || w.slam_at.is_some() || f.tick >= w.recast_until {
                     return reject(self, "the recast window is over");
                 }
                 let gap = w.pos.dist(f.pos) as i64;
-                if gap > d::FENRIR_DASH_MAX + 8_000 {
+                if gap > d::FENRIR_DASH_MAX + d::FENRIR_WIDTH {
                     return reject(self, "Fenrir is too far to leap into");
                 }
-                let land = f.clip(f.pos, f.pos.toward(w.pos, (gap - 6_000).clamp(0, d::FENRIR_DASH_MAX)));
+                let land = f.clip(f.pos, f.pos.toward(w.pos, (gap - d::FENRIR_WIDTH).clamp(0, d::FENRIR_DASH_MAX)));
                 let ticks = ((land.dist(f.pos) as i64) / d::DASH_SPEED).max(4) as u64;
                 if land != f.pos {
                     out.push(Effect::Glide { to: land, ticks });
@@ -647,6 +679,7 @@ impl Core {
                 self.busy_until = f.tick + ticks;
                 if let Some(w) = self.fenrir.as_mut() {
                     w.slam_at = Some(f.tick + ticks);
+                    w.slam_aim = match o { Order::SlamAim(aim) if aim!=w.pos => Some(w.pos.toward(aim,AIM_FAR)), _=>None };
                 }
                 out.push(Effect::Pose { name: "ult", ticks: ticks + 10 });
             }
@@ -728,6 +761,7 @@ impl Core {
             self.dash = None;
             out.push(Effect::Fx { name: "krt_dash_trail".into(), at: f.pos, ticks: 12, ambient: false });
             if let Some(u) = f.unit(p.target).filter(|u| f.skill_target(u)).cloned() {
+                self.dash_connected=true;
                 out.push(Effect::Damage { target: u.id, amount: pct(d::DASH_BASE, d::DASH_AD_RATIO, f.attack), direct: true });
                 self.weapon_hit(f, &u, Weapon::Blades, out);
             }
@@ -774,7 +808,7 @@ impl Core {
 
     fn swing(&mut self, f: &Frame, r: &mut Rampage, out: &mut Vec<Effect>) {
         let stage = r.stage;
-        let ahead = r.at.toward(r.aim, d::RAMPAGE_SWING_RADIUS / 2);
+        let ahead = f.clip(r.at,r.at.toward(r.aim, d::RAMPAGE_SWING_RADIUS / 2));
         let (center, radius) = if stage == 2 { (r.at, d::RAMPAGE_SMASH_RADIUS) } else { (ahead, d::RAMPAGE_SWING_RADIUS) };
         let left = r.aim.x < r.at.x;
         let fx = match stage {
@@ -782,11 +816,11 @@ impl Core {
             1 => if left { "krt_sweep" } else { "krt_sweep_l" },
             _ => "krt_smash",
         };
-        out.push(Effect::Fx { name: fx.into(), at: center, ticks: 18, ambient: false });
+        out.push(Effect::Fx { name: fx.into(), at: center, ticks: t(d::RAMPAGE_STAGE_TICKS / 2), ambient: false });
         let targets: Vec<Unit> = f
             .units
             .iter()
-            .filter(|u| f.skill_target(u) && u.pos.within(center, radius + u.radius) && !r.hit[stage].contains(&u.id))
+            .filter(|u| f.skill_target(u) && u.pos.within(center, radius + u.radius) && !r.hit[stage].contains(&u.id) && f.clip(r.at,u.pos)==u.pos)
             .cloned()
             .collect();
         for u in targets {
@@ -821,9 +855,8 @@ impl Core {
             w.leg = 1;
             w.leg_start = f.tick;
             w.from = w.pos;
-            // back the way it came (Kratos hits it along its own charge line)
-            w.to = w.pos.toward(w.origin, d::FENRIR_RETURN_DISTANCE).clamp_map();
-            w.leg_ticks = ((w.from.dist(w.to) as i64) / d::FENRIR_SPEED.max(1)).max(1) as u64;
+            w.to = w.pos.ray_end(w.slam_aim.unwrap_or(w.origin), d::FENRIR_RETURN_DISTANCE);
+            w.leg_ticks = (w.from.dist(w.to) / d::FENRIR_SPEED.max(1) as f64).ceil().max(1.0) as u64;
             w.hit.clear();
             out.push(Effect::Fx { name: "krt_fenrir_slam".into(), at: w.pos, ticks: 18, ambient: false });
         }
@@ -853,7 +886,7 @@ impl Core {
         let h = heading(w.from, w.to);
         out.push(Effect::Fx { name: format!("krt_fenrir_p{h}"), at: w.pos, ticks: 1, ambient: false });
         let leg_done = elapsed >= w.leg_ticks;
-        let over = if w.leg == 0 { leg_done && f.tick >= w.recast_until && w.slam_at.is_none() } else { leg_done };
+        let over = leg_done || (w.leg == 0 && f.tick >= w.recast_until && w.slam_at.is_none());
         if over {
             out.push(Effect::Fx { name: "krt_fenrir_fade".into(), at: w.pos, ticks: 18, ambient: false });
         } else {
@@ -876,12 +909,15 @@ impl Core {
                 .map(|u| Order::Redirect(u.pos));
         }
         if let Some(w) = &self.fenrir {
-            if w.leg == 0 && w.slam_at.is_none() && f.tick < w.recast_until && w.pos.within(f.pos, d::FENRIR_DASH_MAX + 8_000) {
-                let end = w.pos.toward(w.origin, d::FENRIR_RETURN_DISTANCE);
-                let on_line = f.enemy_champions().filter(|u| u.pos.seg(w.pos, end).0 <= (d::FENRIR_WIDTH + u.radius) as f64).count();
-                let last = f.tick + 20 >= w.recast_until;
-                if on_line >= 2 || (on_line >= 1 && last) {
-                    return Some(Order::Slam);
+            if w.leg == 0 && w.slam_at.is_none() && f.tick < w.recast_until && w.pos.within(f.pos, d::FENRIR_DASH_MAX + d::FENRIR_WIDTH) {
+                let best=f.enemy_champions().map(|u| {
+                    let end=w.pos.ray_end(u.pos,d::FENRIR_RETURN_DISTANCE);
+                    let n=f.enemy_champions().filter(|v|v.pos.seg(w.pos,end).0<=(d::FENRIR_WIDTH+v.radius) as f64).count();
+                    (n,u)
+                }).max_by_key(|(n,u)|(*n,std::cmp::Reverse(u.id)));
+                let contact=w.pos.within(f.pos,d::FENRIR_WIDTH+4_000);
+                if let Some((n,u))=best.filter(|(n,_)|*n>=2||(*n>=1&&contact)) {
+                    let _=n;return Some(Order::SlamAim(u.pos));
                 }
             }
         }

@@ -5293,7 +5293,7 @@
       "Protect",
       "Clear"
      ],
-     "summary": "Leviathan Rampage (9 s): three advancing swings over about 1.1 s, stopped by walls: an axe cleave (35 + 50% Attack, Frost, 20% slow), a Blades sweep (35 + 50% Attack, burn) and a frost-and-fire smash (radius 22000, 70 + 110% Attack, knock-up 0.5 s). It cleanses him, and during it he can't be crowd-controlled and takes 25% less damage. Spartan Guard (12 s, swaps to the axe): cleanses, a shield of 15% max HP for 3 s and 1 s of crowd-control immunity. Chain Dash (10 s, swaps to the Blades): throws the Blades 55000; on a champion, minion or creep he dashes to it through any wall and strikes (30 + 50% Attack). Guard then Dash within 3 s: the Dash reaches 90000. Dash then Guard: 1.8 s of immunity and a 25% shield. Crowd-control immunity lasts at most 3 s in any 6 s."
+     "summary": "Leviathan Rampage (9 s): three heavy advancing swings, 108000 total travel over 1.8 s, stopped by walls: an axe cleave (35 + 50% Attack, Frost, 20% slow), a Blades sweep (35 + 50% Attack, burn) and a frost-and-fire smash (radius 32000, 70 + 110% Attack, knock-up 0.5 s). It cleanses him, and during it he can't be crowd-controlled and takes 25% less damage. Spartan Guard (12 s, swaps to the axe): cleanses, a shield of 15% max HP for 3 s and 1 s of crowd-control immunity. Chain Dash (10 s, swaps to the Blades): throws the Blades 55000; on a champion, minion or creep he dashes to it through any wall and strikes (30 + 50% Attack). Guard then Dash within 3 s: the Dash reaches 90000. Dash then Guard: 1.8 s of immunity and a 25% shield; after a connected Dash it also taunts enemy champions within 36000 for 0.75 s. Crowd-control immunity lasts at most 3 s in any 6 s."
     },
     {
      "slot": "ult",
@@ -5306,7 +5306,7 @@
      "intents": [
       "Engage"
      ],
-     "summary": "Fenrir's Charge (90 s): Fenrir appears 110000 away and charges back to Kratos, hitting enemies on the way (80 + 80% Attack, 40% slow for 1.5 s). Recast within 3 s: Kratos leaps into the wolf (up to 15000) and slams it back (100 + 100% Attack, knock-up 1 s). His skills and Fenrir never hit towers."
+     "summary": "Fenrir's Charge (90 s): the larger Fenrir appears up to 320000 away and keeps running through Kratos, hitting enemies on the way (80 + 80% Attack, 40% slow for 1.5 s). Recast within 3 s, while the wolf is close enough: Kratos leaps into it (up to 15000) and redirects it in the aimed direction for 320000 (100 + 100% Attack, knock-up 1 s). His skills and Fenrir never hit towers."
     }
    ]
   }

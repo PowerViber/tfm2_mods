@@ -1,5 +1,7 @@
 # Kratos Lab: installed battlefield and mid-game situations
 
+This is the map-correction baseline. The later [kratos-2 skill revision](../kratos-skill-review/README.md) intentionally changes Kratos mechanics and presentation; earlier unchanged-core claims below refer to the map-only pass. Map registration, extracted stock assets and scenarios remain in use.
+
 Verified on 2026-11-10. This follow-up replaces the approximate Lab backdrop registration and placeholder actors. **Kratos's native kit, AI, rules, core, WASM, approved pixels and packaged DLL are unchanged.** The browser host now supplies more useful situations; it is not the stock simulation engine.
 
 ## What was corrected

@@ -59,6 +59,6 @@ try{
  const cold=[];for(let i=0;i<5;i++){const p=await browser.newPage();const start=Date.now();await p.goto('http://127.0.0.1:7330/kratos.html');await p.waitForFunction(()=>window.kratosLab?.painter.loaded);await p.evaluate(async()=>{kratosLab.pause();await kratosLab.imagesReady;});cold.push(Date.now()-start);await p.close();}
  performance.cold_page_and_assets_ms=cold;
  check('No page errors: '+errors.join('; '),errors.length===0);
- const report={checks:checks.length,passed:checks,geometry:initial.geometry,scenarios:scenes,performance,source:manifest.source,scope:'Installed original assets and settings; modeled stock movement/attacks/mitigation/vision, not the native stock engine. Native Kratos core unchanged.'};
+ const report={checks:checks.length,passed:checks,geometry:initial.geometry,scenarios:scenes,performance,source:manifest.source,scope:'Installed original assets and settings; modeled stock movement/attacks/mitigation/vision, not the native stock engine. Kratos mechanics use the shared kratos-2 Rust/WASM core.'};
  fs.writeFileSync(path.join(out,'browser-results.json'),JSON.stringify(report,null,2)+'\n');console.log(checks.length+' checks passed');
 }finally{await browser.close();server.kill();}})().catch(e=>{console.error(e);server.kill();process.exitCode=1;});

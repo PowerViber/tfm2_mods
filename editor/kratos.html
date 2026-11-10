@@ -22,7 +22,7 @@ label{display:flex;gap:6px;align-items:center}
   <div class="note"><b>Installed game reference:</b> original layered map and stock sprites; exact exported lanes, camps and towers. All 900 collision cells match the wall artwork. 1 art pixel = 1,000 world units; the 160-pixel map border is preserved. <b>Combat/AI remain a Lab model.</b> <a href="kratos-review.html">Artwork review</a>.</div>
   <details><summary>Sources and host limitations</summary><p>The map document comes from the installed native map exporter; art and stats come from the installed bundle. Asset registration is verified; live renderer/camera parity remains unproven. Stock movement, attacks, shields, physical mitigation, visibility and tower aggro are modelled. Full stock skill AI and item builds are not emulated. Sight models avoidance; native Sight refunds damage through healing, with healing reduction unverified. Native wall crossing uses a glide plus hop. Champion radius is extracted; other unit collision radii are model values. Camps use extracted base HP. This is not actual-game acceptance.</p></details>
   <div id="status">Loading…</div>
-  <div class="keys">Mouse aims · WASD move · <b>1</b> Heimdall's Sight · <b>2</b> Leviathan Rampage (<b>R</b> redirects its next advance to the mouse) · <b>3</b> Spartan Guard (axe) · <b>E</b> Chain Dash (Blades) · <b>4</b> Fenrir's Charge, <b>4</b> again to leap in and slam · <b>F</b> basic attack the nearest enemy</div>
+  <div class="keys">Mouse aims · WASD move · <b>1</b> Heimdall's Sight · <b>2</b> Leviathan Rampage (<b>R</b> redirects its next advance to the mouse) · <b>3</b> Spartan Guard (axe) · <b>E</b> Chain Dash (Blades) · <b>4</b> Fenrir's Charge, <b>4</b> again near Fenrir to redirect him toward the mouse · <b>F</b> basic attack the nearest enemy</div>
   <div class="row"><button id="play">Pause</button><button id="step">Step</button><button id="reset">Reset</button></div>
   <div class="row"><select id="scenario"></select><label>Level <input id="level" type="number" min="1" max="12" value="8" style="width:42px"></label><button id="loadScenario">Load situation</button></div>
   <p class="note" id="scenarioNote"></p>
@@ -36,7 +36,7 @@ label{display:flex;gap:6px;align-items:center}
   <div class="row"><label>Zoom <input id="worldZoom" type="range" min="0.5" max="4" step="0.1" value="2"></label><button id="nativeSize">1× sprites</button><button id="follow">Follow Kratos</button></div>
   <div class="note">Wheel zooms · middle/Alt-drag pans · click the minimap to inspect a position · click a unit to select it · F attacks.</div>
   <canvas id="minimap" width="190" height="190" title="Click to move the inspection camera"></canvas>
-  <label><input type="checkbox" id="ranges" checked> Range overlays (Chain Dash 55,000 / 90,000, Rampage, Fenrir 110,000)</label>
+  <label><input type="checkbox" id="ranges" checked> Range overlays (Chain Dash 55,000 / 90,000, Rampage, Fenrir 320,000)</label>
   <label><input type="checkbox" id="art" checked> Map art</label>
   <label><input type="checkbox" id="bodies" checked> Candidate bodies and effects (presentation only)</label>
   <label><input type="checkbox" id="colliders"> Debug collision grid / unit radii</label>

@@ -1,0 +1,39 @@
+{
+  "checks": 12,
+  "passed": [
+    "kratos-2 rules and 36-tick heavy swings are loaded",
+    "Rampage advances over 100,000 units and reaches a distant foe",
+    "The first heavy impact waits until tick 18",
+    "Fenrir starts at least 250,000 units away on this map approach",
+    "Fenrir keeps moving through the approach instead of parking",
+    "The aimed recast redirects Fenrir south, perpendicular to his original charge",
+    "That return hits and knocks up an off-axis target once",
+    "Guard after a connected Dash taunts and the modeled opponent targets Kratos",
+    "Twin Chain Dash has two separate chain bands",
+    "Fenrir presentation uses the twice-sized 160px canvas",
+    "Approved effects load from the game-pack sheet and stay below 32 MiB decoded art",
+    "No page errors: "
+  ],
+  "result": {
+    "revision": "kratos-2",
+    "travel": 106000.64908443241,
+    "damage": 373,
+    "impactAt18": true,
+    "far": 318000,
+    "moving": true,
+    "turned": true,
+    "secondDamage": 200,
+    "knocked": true,
+    "taunted": true,
+    "forced": true,
+    "bands": 2,
+    "canvas": [
+      160,
+      160
+    ],
+    "heavy": 36,
+    "decoded": 29360128,
+    "approved": true
+  },
+  "scope": "Shared Rust/WASM mechanics and candidate presentation; stock opponent taunt is modeled host behavior, not live-engine acceptance."
+}

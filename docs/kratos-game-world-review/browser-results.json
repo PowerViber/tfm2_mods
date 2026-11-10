@@ -130,66 +130,66 @@
       {
         "ticks": 600,
         "step_ms": {
-          "p50": 0.40000009536743164,
-          "p95": 0.6999998092651367
+          "p50": 0.7999999523162842,
+          "p95": 2.299999952316284
         },
         "draw_ms": {
-          "p50": 0.39999985694885254,
-          "p95": 0.6000001430511475
+          "p50": 1,
+          "p95": 2.3000001907348633
         }
       },
       {
         "ticks": 600,
         "step_ms": {
-          "p50": 0.40000009536743164,
-          "p95": 0.6000001430511475
+          "p50": 0.7999999523162842,
+          "p95": 2
         },
         "draw_ms": {
-          "p50": 0.39999985694885254,
-          "p95": 0.6000001430511475
+          "p50": 1,
+          "p95": 2.1999998092651367
         }
       },
       {
         "ticks": 600,
         "step_ms": {
-          "p50": 0.40000009536743164,
-          "p95": 0.5999999046325684
+          "p50": 0.7000000476837158,
+          "p95": 1.6000001430511475
         },
         "draw_ms": {
-          "p50": 0.39999985694885254,
-          "p95": 0.6000001430511475
+          "p50": 0.8000001907348633,
+          "p95": 1.6999998092651367
         }
       },
       {
         "ticks": 600,
         "step_ms": {
-          "p50": 0.40000009536743164,
-          "p95": 0.6000001430511475
+          "p50": 0.7000000476837158,
+          "p95": 1.6000001430511475
         },
         "draw_ms": {
-          "p50": 0.39999985694885254,
-          "p95": 0.6000001430511475
+          "p50": 0.7999999523162842,
+          "p95": 1.4000000953674316
         }
       },
       {
         "ticks": 600,
         "step_ms": {
-          "p50": 0.39999985694885254,
-          "p95": 0.5999999046325684
+          "p50": 0.6999998092651367,
+          "p95": 1.6999998092651367
         },
         "draw_ms": {
-          "p50": 0.39999985694885254,
-          "p95": 0.6000001430511475
+          "p50": 0.7999999523162842,
+          "p95": 1.5
         }
       }
     ],
     "scope": "55 original stock actors + Kratos, 60-tick warmup then 600 ticks; settings-based host + unchanged core with AI; draw excludes DOM inspector. Browser timing, not native performance.",
     "cold_page_and_assets_ms": [
-      202,
-      165,
-      180,
-      215,
-      200
+      342,
+      428,
+      367,
+      352,
+      343
     ]
   },
   "source": {
@@ -202,5 +202,5 @@
     "tower_pairs_present_in_binary": false,
     "binary_schema_status": "Map binary recorded for provenance; raw wall/position patterns were not found and full bincode schema is not claimed decoded"
   },
-  "scope": "Installed original assets and settings; modeled stock movement/attacks/mitigation/vision, not the native stock engine. Native Kratos core unchanged."
+  "scope": "Installed original assets and settings; modeled stock movement/attacks/mitigation/vision, not the native stock engine. Kratos mechanics use the shared kratos-2 Rust/WASM core."
 }

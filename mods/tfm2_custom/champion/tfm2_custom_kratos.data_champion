@@ -2891,7 +2891,7 @@
       "name": "krt_sight",
       "anim": "asset/tfm2_custom/vfx/kratos",
       "tag": "sight",
-      "z": 5,
+      "z": 6,
       "is_follow": true
     },
     {

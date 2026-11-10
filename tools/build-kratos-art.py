@@ -177,6 +177,8 @@ def effects():
     result = {}
     bindings = {}
     for name, (source, w, h, total, z, follow) in specs.items():
+        if name in ('cleave','sweep'):w=h=round(RULES['rampage']['swingRadius']*2/1000);total=RULES['rampage']['stageTicks']//2
+        if name=='smash':w=h=round(RULES['rampage']['smashRadius']*2/1000)
         crop = mats[source].crop(mats[source].getbbox())
         frames = []
         for i in range(6):
@@ -200,26 +202,38 @@ def effects():
         result['frost'+str(count)]=[(im,60)]
         bindings['frost'+str(count)]={'kind':'buff','z':4,'follow':True}
     im=Image.new('RGBA',(24,10));d=ImageDraw.Draw(im)
-    for x in range(0,21,5):d.ellipse((x,3,x+5,7),outline='#c89d61',width=1)
+    for y in (2,7):
+        for x in range(0,21,5):d.ellipse((x,y,x+5,y+2),outline='#d5b275',width=1)
     result['chain']=[(im,12)];bindings['chain']={'kind':'effect','z':6,'follow':False}
     for mode,reach in [('short',RULES['dash']['range']),('long',RULES['dash']['linkedRange'])]:
-        length=round(reach/ART['units_per_pixel']);size=length+10
+        length=round(reach/1000);size=length+20
         for heading in range(8):
             chain=Image.new('RGBA',(size,size));d=ImageDraw.Draw(chain);y=size//2;x0=(size-length)//2
-            for x in range(x0,x0+length-3,4):d.ellipse((x,y-1,x+5,y+1),outline='#c89d61')
+            for offset in (-5,5):
+                for x in range(x0,x0+length-3,4):d.ellipse((x,y+offset-1,x+5,y+offset+1),outline='#d4b277')
             chain=chain.rotate(-45*heading,N,center=(size//2,size//2))
             tag='chain_'+mode+'_p'+str(heading);result[tag]=[(chain,12)];bindings[tag]={'kind':'effect','z':6,'follow':False}
     wolf_path=OUT/'fenrir-run-source-v1.png'
     runs=cells(wolf_path,4,2,True) if wolf_path.exists() else cells(OUT/'fenrir-source-v1.png',2,2,True)[:1]
-    wolf_scale=25/(runs[0].getbbox()[3]-runs[0].getbbox()[1])
+    wolf_scale=50/(runs[0].getbbox()[3]-runs[0].getbbox()[1])
     for heading in range(8):
         for phase,cell in enumerate(runs):
             wolf=cell.crop(cell.getbbox());wolf=opaque(wolf.resize((round(wolf.width*wolf_scale),round(wolf.height*wolf_scale)),N))
-            canvas=Image.new('RGBA',(80,80));canvas.alpha_composite(wolf,((80-wolf.width)//2,(80-wolf.height)//2))
-            canvas=canvas.rotate(-45*heading,N,center=(40,40))
+            canvas=Image.new('RGBA',(160,160));canvas.alpha_composite(wolf,((160-wolf.width)//2,(160-wolf.height)//2))
+            # Side-view animals must mirror for west; a 180-degree rotation
+            # would put their feet above their back.
+            if heading in (3,4,5):canvas=ImageOps.mirror(canvas);angle=heading*45-180
+            else:angle=(heading if heading<=2 else heading-8)*45
+            canvas=canvas.rotate(-angle,N,center=(80,80))
             tag='fenrir_p'+str(heading)+('_f'+str(phase) if phase else '')
             result[tag]=[(canvas,1)]
             bindings[tag]={'kind':'effect','z':5,'follow':False}
+    # New source is preview-only until its own approval, independent of v1 FX.
+    eye=opaque(Image.open(OUT/'sight-eyes-source-v2.png'));eye=eye.crop(eye.getbbox()).resize((36,9),N)
+    # Full-champion centred canvas places the eyes over the head, never at feet.
+    for name,total in [('sight',RULES['sight']['ticks']),('sight_aura',RULES['sight']['ticks'])]:
+        canvas=Image.new('RGBA',(64,80));canvas.alpha_composite(eye,((64-eye.width)//2,4))
+        result[name]=[(canvas,total)];bindings[name]={'kind':'buff' if name=='sight_aura' else 'effect','z':6,'follow':True}
     return result,bindings
 
 
@@ -246,7 +260,7 @@ def main():
     for alias,pose in ART['aliases'].items():
         for suffix in ('','_l'):base[alias+suffix]=base[pose+suffix]
     bs,bm=write_atlas('body-preview',base);ws,wm=write_atlas('weapons-preview',accessory)
-    fspec,bindings=effects();fs,fm=write_atlas('effects-preview',fspec)
+    fspec,bindings=effects();fs,fm=write_atlas('effects-preview',fspec,2048)
     ps,pm=write_atlas('assembled-preview',preview,2048)
     gallery=Image.new('RGB',(1024,len(body)*140),'#19313b');draw=ImageDraw.Draw(gallery)
     for row,pose in enumerate(body):
@@ -269,16 +283,28 @@ def main():
     board=Image.new('RGB',(1040,980),'#172936');d=ImageDraw.Draw(board)
     for row,(name,frames) in enumerate([(n,f) for n,f in fspec.items() if not n.startswith('fenrir_p')][:20]):
         x=(row%4)*260;y=(row//4)*190;d.text((x+8,y+8),name,fill='#ffbf81')
-        im=frames[1][0];board.paste(im,(x+10,y+50),im);big=im.resize((im.width*3,im.height*3),N);board.paste(big,(x+90,y+35),big)
+        im=frames[min(1,len(frames)-1)][0];board.paste(im,(x+10,y+50),im);big=im.resize((im.width*3,im.height*3),N);board.paste(big,(x+90,y+35),big)
     board.save(OUT/'effects-comparison.png')
+    v2=Image.new('RGB',(1040,400),'#203747');d=ImageDraw.Draw(v2)
+    for i,(label,im) in enumerate([('Floating Sight above the head',fspec['sight'][0][0]),('Two separate chain lines',fspec['chain_short_p0'][0][0]),('Fenrir 2x, facing west upright',fspec['fenrir_p4'][0][0])]):
+        x=i*345;d.rectangle((x,0,x+344,399),fill='#203747' if i!=1 else '#b6c4a4');d.text((x+8,8),label,fill='#ffbf81' if i!=1 else '#203747')
+        # Sight aligns to the same world origin as the actual body.
+        if i==0:
+            p=preview['axe_idle'][0][0];v2.paste(p,(x+32,76),p)
+        v2.paste(im,(x+80-im.width//2,124-im.height//2),im)
+        big=im.resize((im.width*2,im.height*2),N);v2.paste(big,(x+173-big.width//2,268-big.height//2),big)
+    v2.save(OUT/'skill-v2-comparison.png')
     all_sources={p.name:sha(p) for p in sorted(OUT.glob('*-source-v1.png'))}
     approved_body=all(APPROVAL.get(g,{}).get('approved',False) for g in ('body','fenrir')) and all(sha(OUT/n)==v for n,v in APPROVAL['source_sha256'].items())
     approved_effects=APPROVAL.get('effects',{}).get('approved',False) and APPROVAL.get('effects',{}).get('source_sha256')==sha(OUT/'effects-source-v1.png')
+    approved_effects=approved_effects and APPROVAL.get('effects_v2',{}).get('approved',False) and APPROVAL.get('effects_v2',{}).get('source_sha256')==sha(OUT/'sight-eyes-source-v2.png')
     manifest={**ART,'review_only':not approved_effects,'complete_body':True,'body_approved':approved_body,'effects_approved':approved_effects,'source_sha256':all_sources,'effects':bindings,
               'atlases':{'body':'body-preview','weapons':'weapons-preview','effects':'effects-preview','assembled':'assembled-preview'},
               'decoded_bytes':sum(im.width*im.height*4 for im in (bs,ws,fs)),
               'frame_counts':{p:len(f) for p,f in body.items()},'method':'Original whole-body imagegen sources; alpha extraction, rigid props and deterministic atlas packing. AI generation itself is not deterministic.'}
     manifest['selection']={'fenrir_phase_ticks':3,'fenrir_variants':len(runs) if 'runs' in locals() else (8 if (OUT/'fenrir-run-source-v1.png').exists() else 1),'chain_split_range':RULES['dash']['range']+1000}
+    manifest['fenrir_canvas']=[160,160]
+    manifest['candidate_source_sha256']={'sight-eyes-source-v2.png':sha(OUT/'sight-eyes-source-v2.png')}
     assert manifest['decoded_bytes']<=32*1024*1024
     (OUT/'art-manifest.json').write_text(json.dumps(manifest,indent=2)+'\n')
     (OUT/'presentation.json').write_text(json.dumps(manifest,indent=2)+'\n')

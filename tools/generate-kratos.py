@@ -36,7 +36,7 @@ text = {
               f"{p['swapShieldPct']}% of his max HP for {sec(p['swapShieldTicks'])}, up to {p['swapShieldCapPct']}%. "
               f"Heimdall's Sight ({sec(si['cooldownTicks'])}): for {sec(si['ticks'])} he can't be crowd-controlled and dodges the first hit "
               f"from each enemy champion."),
-    'skill2': (f"Leviathan Rampage ({sec(ra['cooldownTicks'])}): three advancing swings over about {sec(3 * ra['stageTicks'])}, stopped by walls: "
+    'skill2': (f"Leviathan Rampage ({sec(ra['cooldownTicks'])}): three heavy advancing swings, {ra['travel']} total travel over {sec(3 * ra['stageTicks'])}, stopped by walls: "
                f"an axe cleave ({ra['cleaveBase']} + {ra['cleaveAdRatio']}% Attack, Frost, {ra['slowPct']}% slow), a Blades sweep "
                f"({ra['sweepBase']} + {ra['sweepAdRatio']}% Attack, burn) and a frost-and-fire smash (radius {ra['smashRadius']}, "
                f"{ra['smashBase']} + {ra['smashAdRatio']}% Attack, knock-up {sec(ra['knockUpTicks'])}). It cleanses him, and during it he "
@@ -46,10 +46,10 @@ text = {
                f"Chain Dash ({sec(da['cooldownTicks'])}, swaps to the Blades): throws the Blades {da['range']}; on a champion, minion or creep "
                f"he dashes to it through any wall and strikes ({da['base']} + {da['adRatio']}% Attack). Guard then Dash within "
                f"{sec(li['windowTicks'])}: the Dash reaches {da['linkedRange']}. Dash then Guard: {sec(gu['linkedImmuneTicks'])} of immunity and "
-               f"a {gu['linkedShieldPct']}% shield. Crowd-control immunity lasts at most {sec(im['capTicks'])} in any {sec(im['windowTicks'])}."),
-    'ult': (f"Fenrir's Charge ({sec(fe['cooldownTicks'])}): Fenrir appears {fe['distance']} away and charges back to Kratos, hitting enemies "
+               f"a {gu['linkedShieldPct']}% shield; after a connected Dash it also taunts enemy champions within {gu['tauntRange']} for {sec(gu['tauntTicks'])}. Crowd-control immunity lasts at most {sec(im['capTicks'])} in any {sec(im['windowTicks'])}."),
+    'ult': (f"Fenrir's Charge ({sec(fe['cooldownTicks'])}): the larger Fenrir appears up to {fe['distance']} away and keeps running through Kratos, hitting enemies "
             f"on the way ({fe['base']} + {fe['adRatio']}% Attack, {fe['slowPct']}% slow for {sec(fe['slowTicks'])}). Recast within "
-            f"{sec(fe['recastTicks'])}: Kratos leaps into the wolf (up to {fe['dashMax']}) and slams it back ({fe['returnBase']} + "
+            f"{sec(fe['recastTicks'])}, while the wolf is close enough: Kratos leaps into it (up to {fe['dashMax']}) and redirects it in the aimed direction for {fe['returnDistance']} ({fe['returnBase']} + "
             f"{fe['returnAdRatio']}% Attack, knock-up {sec(fe['knockUpTicks'])}). His skills and Fenrir never hit towers."),
 }
 
@@ -79,7 +79,9 @@ champ['view_buffs'] = ([dict(type='Animated', name='krt_burn', anim=VFX, tag='bu
 art_path = ROOT / 'docs/kratos-art-review/art-manifest.json'
 if art_path.exists():
     art = json.loads(art_path.read_text())
-    if not art['review_only']:
+    # v2 keeps all existing effect aliases, even while the new raster is under
+    # review; the shipped v1 sheet remains valid until its replacement is approved.
+    if not art['review_only'] or art.get('body_approved'):
         champ['view_effects'] = [dict(type='Animation', name='krt_' + tag, anim=VFX, tag=tag, z=spec['z'], is_follow=spec.get('follow', False))
                                  for tag, spec in art['effects'].items() if spec['kind'] == 'effect']
 if not (ROOT / 'mods/tfm2_custom/vfx/kratos#sheet.png').exists():

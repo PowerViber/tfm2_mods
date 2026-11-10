@@ -105,6 +105,7 @@
         case 'slow': if (u) {u.slowUntil = tick + d.ticks;u.slowPct=d.percent;} break;
         case 'freeze': if (u) { u.stunUntil = tick + d.ticks; u.frozenUntil = tick + d.ticks; log(`#${d.target} frozen`); } break;
         case 'knock_up': if (u) { u.stunUntil = Math.max(u.stunUntil, tick + d.ticks); u.airborneUntil = tick + d.ticks; log(`#${d.target} knocked up ${(d.ticks / 60).toFixed(2)} s`); } break;
+        case 'taunt': if(u){u.tauntUntil=tick+d.ticks;u.tauntTarget=me.id;u.pending=null;log(`#${d.target} taunted toward Kratos for ${(d.ticks/60).toFixed(2)} s`);} break;
         case 'frost': if (u) { u.frost = d.stacks; u.frostUntil = tick + d.ticks; } break;
         case 'burn': if (u) u.burnUntil = tick + d.ticks; break;
         case 'weapon': me.blades = d.blades; log(`Weapon: ${d.blades ? 'Blades of Chaos' : 'Leviathan Axe'}`); break;
@@ -187,7 +188,7 @@
   }
   function order(kind) {
     const o = {kind};
-    if (['rampage', 'redirect', 'dash', 'fenrir'].includes(kind)) o.aim = rp(aim);
+    if (['rampage', 'redirect', 'dash', 'fenrir','slam_aim'].includes(kind)) o.aim = rp(aim);
     queue.push(o);
     if (Math.abs(aim.x - me.pos.x) > .01) me.left = aim.x < me.pos.x;
   }
@@ -216,8 +217,8 @@
     if (kind === 'dash-guard' && age === 0) order('dash');
     if (kind === 'dash-guard' && age === 35) order('guard');
     if (kind === 'fenrir' && age === 0) order('fenrir');
-    if (kind === 'fenrir' && age === 49) order('slam');
-    if (age >= 220) { demo = null; running = false; }
+    if (kind === 'fenrir' && state.fenrir?.leg===0&&!state.fenrir.slam_at&&dist(state.fenrir.pos,me.pos)<=R.fenrir.width+8000)order('slam_aim');
+    if (age >= (kind==='fenrir'?320:220)) { demo = null; running = false; }
   }
   function visualPose() {
     if (me.hp <= 0) return {name: 'dead', start: me.deadStart ?? tick};
@@ -273,7 +274,8 @@
     if (state.fenrir) { const w = state.fenrir, p = P(w.pos);
       if ($('bodies').checked && painter.loaded) painter.wolf(ctx, w.from, w.to, tick, p.x, p.y, W(world.geometry.units_per_pixel));
       else circle(w.pos, R.fenrir.width, 'rgba(203,213,225,.5)', '#f8fafc', 2);
-      line(w.from, w.to, 'rgba(248,250,252,.4)'); }
+      line(w.from, w.to, 'rgba(248,250,252,.4)');
+      if(!w.leg&&$('ranges').checked){line(w.pos,toward(w.pos,aim,R.fenrir.returnDistance),'rgba(102,218,255,.5)',2);circle(me.pos,R.fenrir.dashMax+R.fenrir.width,null,'rgba(102,218,255,.5)');}}
     let ownerDrawn=false;
     const drawOwner=()=>{const p=P(me.pos),v=visualPose();if($('bodies').checked&&painter.loaded)painter.body(ctx,v.name,tick,p.x,p.y,W(world.geometry.units_per_pixel),me.left,me.blades,v.start);else circle(me.pos,3500,me.blades?'#ea580c':'#38bdf8',null);ownerDrawn=true;};
     for (const u of units.filter(u => u.hp > 0||tick-(u.deadAt??-1000)<60).sort((a,b)=>a.pos.y-b.pos.y)) {
@@ -319,7 +321,9 @@
       ['CC immunity used', `${(used / 60).toFixed(2)} s of ${(R.immune.capTicks / 60)} s / 6 s`], ['Immune now', tick < me.immuneUntil ? 'yes' : 'no'],
       ['Link', state.link && tick < state.link[1] ? `${state.link[0]} (${((state.link[1] - tick) / 60).toFixed(1)} s)` : '—'], ['Rampage stage', state.rampage ? state.rampage.stage + 1 : '—'],
       ['Sight', cd(0).toFixed(1)], ['Rampage', cd(1).toFixed(1)], ['Guard', cd(2).toFixed(1)], ['Chain Dash', cd(3).toFixed(1)], ['Fenrir', cd(4).toFixed(1)],
-      ['Fenrir now', state.fenrir ? (state.fenrir.leg ? 'slammed back' : 'charging in (4: leap)') : '—'],
+      ['Fenrir now', state.fenrir ? (state.fenrir.leg ? 'redirected toward committed aim' : 'running through (4: aimed bump nearby)') : '—'],
+      ['Fenrir gap / catch reach',state.fenrir?`${Math.round(dist(state.fenrir.pos,me.pos))} / ${R.fenrir.dashMax+R.fenrir.width}`:'—'],
+      ['Dash → Guard taunt',`${R.guard.tauntRange} range · ${R.guard.tauntTicks/60}s · connected Dash required`],
       ['Presentation', painter.loaded ? (painter.manifest.complete_body ? 'Complete animation set' : 'Approved concepts; animations in progress') : 'Loading'],
       ['Visual pose', visualPose().name], ['Last rejection', lastRejection || '—'],
       ['Snapshot Attack / armour',`${me.stats?.attack??100} / ${me.stats?.defence??0}`],['Champion radius',me.radius],['Map scale',`${world.geometry.units_per_pixel} world / art pixel`],
@@ -343,7 +347,7 @@
     e.preventDefault(); if (e.repeat) return;
     if ('wasd'.includes(k) && k.length === 1) held.add(k);
     if (k === '1') order('sight'); if (k === '2') order('rampage'); if (k === 'r') order('redirect'); if (k === '3') order('guard'); if (k === 'e') order('dash');
-    if (k === '4') order(state.fenrir && !state.fenrir.leg ? 'slam' : 'fenrir'); if (k === 'f') basic();
+    if (k === '4') order(state.fenrir && !state.fenrir.leg ? 'slam_aim' : 'fenrir'); if (k === 'f') basic();
   });
   addEventListener('keyup', e => held.delete(e.key.toLowerCase()));
   const clearInput = () => { held.clear(); clock.reset(); };

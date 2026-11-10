@@ -19,6 +19,9 @@ def unpack(sheet,entry):
 
 def main():
     manifest=json.loads((OUT/'art-manifest.json').read_text())
+    if manifest['revision']=='kratos-art-2':
+        import runpy
+        runpy.run_path(str(ROOT/'tools/verify-kratos-rework.py'),run_name='__main__');return
     assert manifest['body_approved'] and manifest['effects_approved'] and not manifest['review_only']
     for name,value in manifest['source_sha256'].items():assert sha(OUT/name)==value,name
     total=0;frame_count=0;atlas_info={}

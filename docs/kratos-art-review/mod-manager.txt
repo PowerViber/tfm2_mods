@@ -1,14 +1,14 @@
 
 ==============================  TFM2 Mod Manager  ==============================
- repo: C:\Users\arian\.codex\worktrees\kratos-art\tfm2_mods [codex/kratos-art] ef036bc Merge current main and preserve round-160 balance changes
- game: C:\Users\arian\.codex\worktrees\kratos-art\tfm2_mods\backups\kratos-art-manager-m1ju3sni
+ repo: C:\Users\arian\.codex\worktrees\kratos-art\tfm2_mods [codex/kratos-art] ef6b275 lab: add stock actors and repeatable Kratos mid-game situations
+ game: C:\Users\arian\.codex\worktrees\kratos-art\tfm2_mods\backups\kratos-art-manager-dl6itr8u
  installed: native 0.10.95  champions 0.2.98
- log: C:\Users\arian\.codex\worktrees\kratos-art\tfm2_mods\logs\manager-20261110_145201.txt
+ log: C:\Users\arian\.codex\worktrees\kratos-art\tfm2_mods\logs\manager-20261110_163913.txt
 ================================================================================
-Game folder: C:\Users\arian\.codex\worktrees\kratos-art\tfm2_mods\backups\kratos-art-manager-m1ju3sni
+Game folder: C:\Users\arian\.codex\worktrees\kratos-art\tfm2_mods\backups\kratos-art-manager-dl6itr8u
   native (tfm2_custom_ai): repo 0.10.95  game 0.10.95
   champions (tfm2_custom): repo 0.2.98  game 0.2.98
   765 champion files compared, 0 differ, 0 missing; native DLL identical
 
   UP TO DATE: the game has exactly the repo's mods.
-Log saved: C:\Users\arian\.codex\worktrees\kratos-art\tfm2_mods\logs\manager-20261110_145201.txt
+Log saved: C:\Users\arian\.codex\worktrees\kratos-art\tfm2_mods\logs\manager-20261110_163913.txt

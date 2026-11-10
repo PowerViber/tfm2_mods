@@ -66,7 +66,7 @@ impl Presentation {
             for tick in 0..1000{assert!(frame(name,tick)<8);}
         }
         assert_eq!(art::durations("attack").iter().sum::<u64>(),18);
-        assert_eq!(art::durations("cleave").iter().sum::<u64>(),22);
+        assert_eq!(art::durations("cleave").iter().sum::<u64>(),crate::kratos_data::RAMPAGE_STAGE_TICKS as u64);
         assert_eq!(frame("attack",999),7);assert_eq!(frame("run",48),0);
     }
     #[test]fn three_rampage_phases_override_stance_without_touching_it(){

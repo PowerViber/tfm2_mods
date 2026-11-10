@@ -34,7 +34,7 @@
     "holdout": 12,
     "manual_stat_pairs": 39
   },
-  "trace_sha256": "16ddbaff6780bff2c0c082ec1e4256879dc0772089d544cc99720c2f98554682",
+  "trace_sha256": "b03f9c595fb8809bbd0560742672b3c23d57d9fd0643c65bd2057454729277ed",
   "warm_render_ms": [
     {
       "p50": 0.09999990463256836,
@@ -46,7 +46,7 @@
     },
     {
       "p50": 0.09999990463256836,
-      "p95": 0.20000004768371582
+      "p95": 0.2999999523162842
     },
     {
       "p50": 0.09999990463256836,
@@ -58,11 +58,11 @@
     }
   ],
   "cold_navigation_and_art_ms": [
-    244.00310000000172,
-    214.13880000000063,
-    224.43059999999969,
-    208.27479999999923,
-    225.708499999997
+    432.54110000000037,
+    496.65300000000025,
+    395.3783999999996,
+    367.91430000000037,
+    383.46330000000125
   ],
   "performance_scope": "Browser rendering only, 12 bodies + Fenrir, five matched runs; not a native/host benchmark or Magnus 128-piece acceptance.",
   "native_observation": "pending"
