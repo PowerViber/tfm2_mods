@@ -114,6 +114,7 @@
         case 'reduce': me.reduce = d.percent; me.reduceUntil = tick + d.ticks; break;
         case 'cleanse': me.stunUntil = 0; log('Cleansed'); break;
         case 'sight': me.sightUntil = tick + d.ticks; break;
+        case 'haste': me.hastePct = d.percent; me.hasteUntil = tick + d.ticks; log(`Speed +${d.percent}% for ${(d.ticks / 60).toFixed(1)} s`); break;
         case 'glide': glide(me, d.to, d.ticks); break;
         case 'hop': glides = glides.filter(g => g.who !== me); me.pos = scene?world.legal(d.to,me.radius):{...d.to}; log('Chain Dash: over the wall'); break;
         case 'pose': me.pose = d.name; me.poseStart = tick; me.poseUntil = tick + d.ticks; break;
@@ -162,7 +163,7 @@
     // his walk (blocked by the real walls)
     if (me.hp > 0 && tick >= me.stunUntil && (!scene||tick>=me.poseUntil&&tick>=(state.busy_until||0)) && !glides.some(g => g.who === me)) {
       const dir = {x: (held.has('d') - held.has('a')), y: (held.has('s') - held.has('w'))};
-      if (dir.x || dir.y) { const l = Math.hypot(dir.x, dir.y), v = (me.stats?.move_speed??R.stat.move_speed);const next = {x: me.pos.x + dir.x / l * v, y: me.pos.y + dir.y / l * v};me.pos=world.sweep(me.pos,next,me.radius); }
+      if (dir.x || dir.y) { const l = Math.hypot(dir.x, dir.y), v = (me.stats?.move_speed??R.stat.move_speed) * (tick < (me.hasteUntil || 0) ? 100 + me.hastePct : 100) / 100;const next = {x: me.pos.x + dir.x / l * v, y: me.pos.y + dir.y / l * v};me.pos=world.sweep(me.pos,next,me.radius); }
       else if(scene&&$('auto').checked){const target=units.filter(u=>u.team!==0&&u.hp>0&&u.champion&&visible(u)).sort((a,b)=>dist(me.pos,a.pos)-dist(me.pos,b.pos))[0];if(target&&dist(me.pos,target.pos)>R.basic.axeRange+me.radius+target.radius)world.move(me,target.pos,me.stats.move_speed);}
     }
     const moving = dist(before, me.pos) > 0;

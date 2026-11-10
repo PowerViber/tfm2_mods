@@ -3846,3 +3846,8 @@ To check in game: close the game, Update/Check, confirm native 0.10.36 and champ
 - **Fenrir's redirect is twice as fast** (`kratos-3`, Reihan: "like Ornn's ult"): 4,800 a tick on the way back, about 1.1 s for 320,000.
 - **Checks:** 1,152 native tests, 0 warnings; DLL reports 0.10.96; Mod Manager load. Codex's browser tests need the local game-reference cache (Reihan's PC). Review: `docs/main-review-round-161.md`.
 - **Pending:** live acceptance (taunt targeting, wolf alignment, wall hop, Sight's heal refund) and balance; watch the long immune Rampage and the 320,000 Fenrir.
+## Nov 10: round 162 (native 0.10.97, tfm2_custom 0.2.100): Kratos's Rampage stays on target, engage speed
+- Reihan: S2 kept running into turrets ("always moves to the front"); wanted engage speed.
+- **Rampage (`kratos-4`):** each advance stops at the enemy in front of him instead of running past; never walks him into enemy tower range unless he started inside it; the athlete won't Rampage a healthy foe under their tower (a foe below 30% is a dive).
+- **Engage speed:** +20% for 2 s on every weapon swap, +25% during Heimdall's Sight, and **Spartan Charge** (+20% for 2 s heading at a champion within 60,000, every 8 s). One buff, never stacking.
+- **Checks:** 1,159 native tests, 0 warnings; DLL reports 0.10.97; Mod Manager load. Review: `docs/main-review-round-162.md`.

@@ -8,7 +8,7 @@
     "CC",
     "Tank"
   ],
-  "revision": "kratos-3",
+  "revision": "kratos-4",
   "stat": {
     "attack": 80,
     "magic_power": 0,
@@ -74,7 +74,9 @@
     "smashBase": 70,
     "smashAdRatio": 110,
     "knockUpTicks": 30,
-    "reducePct": 25
+    "reducePct": 25,
+    "stickGap": 12000,
+    "towerRange": 85000
   },
   "guard": {
     "cooldownTicks": 720,
@@ -115,6 +117,15 @@
     "returnBase": 100,
     "returnAdRatio": 100,
     "knockUpTicks": 60
+  },
+  "speed": {
+    "chargePct": 20,
+    "chargeTicks": 120,
+    "chargeRange": 60000,
+    "chargeCooldownTicks": 480,
+    "sightPct": 25,
+    "swapPct": 20,
+    "swapTicks": 120
   },
   "immune": {
     "capTicks": 180,

@@ -226,6 +226,8 @@ pub enum Effect {
     Cleanse,
     /// Heimdall's Sight is up (the bridge's dodge window) for `ticks`
     Sight { ticks: u64 },
+    /// his one engage-speed buff (`krt_haste`): replaces any active one, never stacks
+    Haste { percent: i64, ticks: u64 },
     /// he moves himself to `to` over `ticks` (an engine glide)
     Glide { to: Point, ticks: u64 },
     /// a hop across terrain in one tick (a blink over the wall: only inside the Chain Dash)
@@ -315,6 +317,12 @@ pub struct Core {
     pub fenrir: Option<Fenrir>,
     /// he's moving himself until (no new casts but the Rampage's redirect)
     pub busy_until: u64,
+    /// the engage-speed buff in force: (percent, until)
+    pub haste: (i64, u64),
+    /// Spartan Charge can trigger again from
+    pub charge_ready: u64,
+    /// his position last frame (Spartan Charge: is he closing on a champion?)
+    pub last_pos: Option<Point>,
     pub rejection: String,
     pub last_skill: &'static str,
 }
@@ -336,6 +344,9 @@ impl Default for Core {
             dash_connected: false,
             fenrir: None,
             busy_until: 0,
+            haste: (0, 0),
+            charge_ready: 0,
+            last_pos: None,
             rejection: String::new(),
             last_skill: "",
         }
@@ -444,6 +455,7 @@ impl Core {
             }
         }
         self.run_burns(f, &mut out);
+        self.spartan_charge(f, &mut out);
         self.run_dash(f, &mut out);
         self.run_rampage(f, &mut out);
         self.run_fenrir(f, &mut out);
@@ -452,6 +464,78 @@ impl Core {
             self.execute(f, o, &mut out);
         }
         out
+    }
+
+    // ---------------------------------------------------------------- engage speed
+
+    /// Ask for `percent` move speed for `ticks`. One buff only: a weaker ask never lowers a stronger active one, an
+    /// equal one only extends it, a stronger one replaces it.
+    pub fn haste(&mut self, tick: u64, percent: i64, ticks: u64, out: &mut Vec<Effect>) {
+        let (now_pct, until) = self.haste;
+        let active = tick < until;
+        if active && now_pct > percent {
+            return;
+        }
+        let end = if active && now_pct == percent { until.max(tick + ticks) } else { tick + ticks };
+        self.haste = (percent, end);
+        out.push(Effect::Haste { percent, ticks: end - tick });
+    }
+
+    /// Spartan Charge: heading at a visible enemy champion within reach gives a short burst of speed (on a cooldown).
+    fn spartan_charge(&mut self, f: &Frame, out: &mut Vec<Effect>) {
+        let last = self.last_pos.replace(f.pos);
+        let Some(last) = last else { return };
+        if f.tick < self.charge_ready || last == f.pos {
+            return;
+        }
+        let closing = f
+            .enemy_champions()
+            .any(|u| u.pos.within(f.pos, d::SPEED_CHARGE_RANGE) && last.dist(u.pos) - f.pos.dist(u.pos) > 200.0);
+        if closing {
+            self.charge_ready = f.tick + t(d::SPEED_CHARGE_COOLDOWN_TICKS);
+            self.haste(f.tick, d::SPEED_CHARGE_PCT, t(d::SPEED_CHARGE_TICKS), out);
+        }
+    }
+
+    /// inside a living enemy tower's range
+    pub fn under_enemy_tower(f: &Frame, p: Point) -> bool {
+        f.units.iter().any(|u| u.tower && u.team != f.team && u.hp > 0 && u.pos.within(p, d::RAMPAGE_TOWER_RANGE))
+    }
+
+    /// One Rampage advance from `at` along `aim`: it stops at the enemy in front of him (champions first) so the swing
+    /// lands, at terrain, and short of an enemy tower's range unless he's already inside one.
+    pub fn rampage_step(f: &Frame, at: Point, aim: Point) -> Point {
+        let full = d::RAMPAGE_TRAVEL / 3;
+        let len = at.dist(aim).max(1.0);
+        let (dx, dy) = ((aim.x - at.x) as f64 / len, (aim.y - at.y) as f64 / len);
+        let ahead = |u: &&Unit| {
+            let (rx, ry) = ((u.pos.x - at.x) as f64, (u.pos.y - at.y) as f64);
+            let along = rx * dx + ry * dy;
+            let side = (rx * dy - ry * dx).abs();
+            (along > 0.0 && along <= (full + d::RAMPAGE_SWING_RADIUS) as f64 && side <= (d::RAMPAGE_SWING_RADIUS + u.radius) as f64).then_some(along)
+        };
+        let nearest = |champ: bool| {
+            f.units.iter().filter(|u| f.skill_target(u) && u.champion == champ).filter_map(|u| ahead(&u)).fold(None, |m: Option<f64>, a| Some(m.map_or(a, |m| m.min(a))))
+        };
+        let step = match nearest(true).or_else(|| nearest(false)) {
+            Some(along) => ((along as i64) - d::RAMPAGE_STICK_GAP).clamp(0, full),
+            None => full,
+        };
+        let goal = at.toward(aim, step);
+        let mut to = f.clip(at, goal);
+        if !Self::under_enemy_tower(f, at) && to != at {
+            let n = ((at.dist(to) as i64) / 2_000).max(1);
+            let mut last = at;
+            for i in 1..=n {
+                let p = Point::new(at.x + (to.x - at.x) * i / n, at.y + (to.y - at.y) * i / n);
+                if Self::under_enemy_tower(f, p) {
+                    break;
+                }
+                last = p;
+            }
+            to = last;
+        }
+        to
     }
 
     // ---------------------------------------------------------------- passive
@@ -526,6 +610,7 @@ impl Core {
             self.swap_shields.push((amount, f.tick + ticks));
             out.push(Effect::Shield { amount, ticks });
         }
+        self.haste(f.tick, d::SPEED_SWAP_PCT, t(d::SPEED_SWAP_TICKS), out);
         let tag = if w == Weapon::Axe { "krt_swap_axe" } else { "krt_swap_blades" };
         out.push(Effect::Fx { name: tag.into(), at: f.pos, ticks: 24, ambient: false });
     }
@@ -553,6 +638,7 @@ impl Core {
                 self.sight_until = f.tick + t(d::SIGHT_TICKS);
                 self.dodged.clear();
                 out.push(Effect::Sight { ticks: t(d::SIGHT_TICKS) });
+                self.haste(f.tick, d::SPEED_SIGHT_PCT, t(d::SIGHT_TICKS), out);
                 self.immune_effect(f.tick, t(d::SIGHT_TICKS), out);
                 out.push(Effect::Fx { name: "krt_sight".into(), at: f.pos, ticks: t(d::SIGHT_TICKS), ambient: false });
                 out.push(Effect::Pose { name: "skill1", ticks: 12 });
@@ -780,9 +866,8 @@ impl Core {
                 break;
             }
             if !r.swung && f.tick == begin {
-                // advance (stopped by terrain), then swing when the step ends
-                let goal = r.at.toward(r.aim, d::RAMPAGE_TRAVEL / 3);
-                let to = f.clip(r.at, goal);
+                // advance (stopped at the enemy in front, by terrain and short of tower range), then swing
+                let to = Self::rampage_step(f, r.at, r.aim);
                 if to != r.at {
                     out.push(Effect::Glide { to, ticks: move_ticks });
                 }
@@ -975,12 +1060,20 @@ impl Core {
                     }
                 }
             }
-            if self.ready(RAMPAGE, f.tick) && dist <= d::RAMPAGE_RANGE + u.radius {
+            // no Rampage into a tower: only when he's already under it or the target is nearly dead (a dive)
+            let tower_ok = |p: Point, low: bool| low || Self::under_enemy_tower(f, f.pos) || !Self::under_enemy_tower(f, p);
+            if self.ready(RAMPAGE, f.tick) && dist <= d::RAMPAGE_RANGE + u.radius && tower_ok(u.pos, u.hp * 100 < u.max_hp * 30) {
                 return Some(Order::Rampage(u.pos));
             }
         }
         if self.ready(RAMPAGE, f.tick) {
-            let around: Vec<&Unit> = f.units.iter().filter(|u| f.skill_target(u) && u.pos.within(f.pos, d::RAMPAGE_RANGE + u.radius)).collect();
+            let inside = Self::under_enemy_tower(f, f.pos);
+            let around: Vec<&Unit> = f
+                .units
+                .iter()
+                .filter(|u| f.skill_target(u) && u.pos.within(f.pos, d::RAMPAGE_RANGE + u.radius))
+                .filter(|u| inside || !Self::under_enemy_tower(f, u.pos) || (u.champion && u.hp * 100 < u.max_hp * 30))
+                .collect();
             // 2+ enemies in reach in a fight, or a calm farm on a wave or camp
             let fight = around.len() >= 2 && around.iter().any(|u| u.champion);
             let farm = f.calm() && around.iter().filter(|u| u.farmable).count() >= 2;
