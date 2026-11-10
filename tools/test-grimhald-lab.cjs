@@ -22,7 +22,7 @@ const root=path.resolve(__dirname,'..'),out=path.join(root,'docs/grimhald-art-re
   check('Walking cadence follows travel rather than the old fast timer',early.travelled===10300&&early.index===Math.floor(early.distance/10000)%6);
   const unchanged=await page.evaluate(()=>{const before=JSON.stringify(grimhaldLab.animation);for(let i=0;i<50;i++)grimhaldLab.render();return before===JSON.stringify(grimhaldLab.animation)});
   check('Repeated rendering cannot advance the gait',unchanged);
-  const walkRecording=await page.evaluate(()=>({version:1,rules_revision:'grimhald-2',frames:grimhaldLab.frames}));
+  const walkRecording=await page.evaluate(()=>({version:1,rules_revision:window.GRIMHALD_RULES.revision,frames:grimhaldLab.frames}));
   const replayGait=await page.evaluate(r=>{grimhaldLab.loadRecording(r);grimhaldLab.pause();for(let i=0;i<r.frames.length;i++)grimhaldLab.step();return grimhaldLab.animation},walkRecording);
   check('Recording reconstructs the same movement phase',replayGait.index===early.index&&replayGait.distance===early.distance&&replayGait.pose===early.pose);
   // Round 3: a unit beside the pillar can always walk away from it (it used to be frozen until the pillar fell)
@@ -83,7 +83,7 @@ const root=path.resolve(__dirname,'..'),out=path.join(root,'docs/grimhald-art-re
   check('Presentation toggle preserves complete combat trace',JSON.stringify(visualTraces[0])===JSON.stringify(visualTraces[1]));await page.check('#presentation');
   const alias=await page.evaluate(()=>grimhaldLab.outputs.flatMap(o=>o.effect_tags||[]).filter(Boolean));check('Shared core presentation selects directional ground fissures',alias.some(n=>n==='grh_fissure_d0'));
   // Exported frames replay through the same core without a second JS skill implementation.
-  const recording=await page.evaluate(()=>({version:1,rules_revision:'grimhald-2',frames:grimhaldLab.frames}));const expected=await page.evaluate(()=>grimhaldLab.outputs);
+  const recording=await page.evaluate(()=>({version:1,rules_revision:window.GRIMHALD_RULES.revision,frames:grimhaldLab.frames}));const expected=await page.evaluate(()=>grimhaldLab.outputs);
   await page.evaluate(r=>{grimhaldLab.loadRecording(r);grimhaldLab.pause();for(let i=0;i<r.frames.length;i++)grimhaldLab.step()},recording);
   check('Recording reproduces full outputs',JSON.stringify(expected)===JSON.stringify(await page.evaluate(()=>grimhaldLab.outputs)));
   await page.evaluate(()=>{try{grimhaldLab.loadRecording({version:1,rules_revision:'old',frames:[]})}catch(e){document.querySelector('#recordingInfo').dataset.error=e.message}});check('Incompatible recordings explain original-rules requirement',await page.locator('#recordingInfo').getAttribute('data-error').then(s=>s.includes('original')));
@@ -100,6 +100,6 @@ const root=path.resolve(__dirname,'..'),out=path.join(root,'docs/grimhald-art-re
   await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(Error(log)),10000);server.on('error',reject);server.stdout.on('data',d=>{log+=d;if(log.includes('Editor running at')){clearTimeout(timer);resolve()}});server.stderr.on('data',d=>log+=d)});
   await page.goto('http://127.0.0.1:'+port+'/editor/grimhald.html');await page.waitForFunction(()=>window.grimhaldLab);check('Actual editor server route and assets',await page.locator('#status').textContent().then(s=>s.includes('Paused')));
   check('No browser exceptions',errors.length===0);
-  const report={rules_revision:'grimhald-2',art_revision:'body-v6 complete animation and separate weapon',checks,passed,scenarios,parityFrames,errors,liveAcceptance:'pending; Lab host movement, damage mitigation and cage isolation are simulated'};fs.writeFileSync(path.join(out,'lab-results.json'),JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify({checks,scenarioCount,parityFrames,errors}));
+  const report={rules_revision:require(path.join(root,'rules/grimhald.json')).revision,art_revision:'body-v6 complete animation and separate weapon',checks,passed,scenarios,parityFrames,errors,liveAcceptance:'pending; Lab host movement, damage mitigation and cage isolation are simulated'};fs.writeFileSync(path.join(out,'lab-results.json'),JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify({checks,scenarioCount,parityFrames,errors}));
  }finally{await browser.close();if(server)server.kill()}
 })().catch(e=>{console.error(e);process.exitCode=1});

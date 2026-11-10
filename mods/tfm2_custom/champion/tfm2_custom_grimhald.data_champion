@@ -11,7 +11,7 @@
   "stat": {
     "attack": 80,
     "magic_power": 0,
-    "hp": 1180,
+    "hp": 1080,
     "defence": 30,
     "magic_resistance": 26,
     "move_speed": 1030,
@@ -22,7 +22,7 @@
   "growth": {
     "attack": 9,
     "magic_power": 0,
-    "hp": 110,
+    "hp": 100,
     "defence": 5,
     "magic_resistance": 4,
     "move_speed": 10,

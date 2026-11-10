@@ -294,8 +294,11 @@ pub struct Plane {
     /// a jet's dogfight phase: patrol, run (boosting in), break (banking away), until `phase_until`
     pub phase: Phase,
     pub phase_until: u64,
-    /// carpet waves dropped so far (the bomber)
+    /// carpet waves dropped so far (the bomber); strikes made so far (a jet)
     pub waves: i64,
+    /// a jet's strikes left before it must fly home to rearm
+    #[serde(default)]
+    pub ammo: i64,
     /// Accepted bomber geometry; other aircraft have no strike line.
     pub strikes: Option<[Point; 3]>,
 }
@@ -478,6 +481,7 @@ impl Core {
             phase: Phase::Patrol,
             phase_until: f.tick + (key as u64 % 2) * 6,
             waves: 0,
+            ammo: d::FIGHTER_AMMO,
             strikes: None,
         });
         if kind.real() {
@@ -577,7 +581,7 @@ impl Core {
     /// once (a gun burst; every few sorties a rocket) and flies back. No homing: a target that moves away is missed. The
     /// closer he is to the fight, the shorter the round trip, so the faster they attack. Always targetable.
     fn fighter(&mut self, f: &Frame, p: &mut Plane, out: &mut Vec<Effect>) -> bool {
-        let speed = d::FIGHTER_SORTIE_SPEED;
+        let speed = jet_speed(p.pos, p.goal);
         if p.kamikaze {
             // diving onto the spot it committed to, then the blast
             let goal = p.goal;
@@ -606,20 +610,38 @@ impl Core {
         }
         match p.phase {
             Phase::Run => {
-                // outbound to the committed spot
+                // outbound to the committed spot (afterburners on the final approach)
                 let goal = p.goal;
                 self.fly(f, p, goal, speed, out);
                 if p.pos.within(goal, 4_000) {
                     self.strike(f, p, out);
-                    p.phase = Phase::Break;
+                    p.ammo -= 1;
+                    // ammo left: the next enemy near the jet itself (still within its range of him); else home to rearm
+                    let next = (p.ammo > 0)
+                        .then(|| {
+                            f.units
+                                .iter()
+                                .filter(|u| f.enemy(u) && !u.tower && u.pos.within(p.pos, d::FIGHTER_RETARGET_RANGE) && u.pos.within(f.pos, d::FIGHTER_AGGRO_RANGE))
+                                .min_by_key(|u| (!u.champion, u.pos.d2(p.pos), u.id))
+                                .map(|u| (u.id, u.pos))
+                        })
+                        .flatten();
+                    match next {
+                        Some((id, at)) => {
+                            p.target = Some(id);
+                            p.goal = at;
+                        }
+                        None => p.phase = Phase::Break,
+                    }
                 }
             }
             Phase::Break => {
-                // home to him
-                self.fly(f, p, f.pos, speed, out);
+                // home to him at cruise speed
+                self.fly(f, p, f.pos, d::FIGHTER_CRUISE_SPEED, out);
                 if p.pos.within(f.pos, d::FIGHTER_HOME_RADIUS + 4_000) {
                     p.phase = Phase::Patrol;
-                    p.phase_until = f.tick + sec(d::FIGHTER_REST_TICKS);
+                    p.phase_until = f.tick + sec(d::FIGHTER_REARM_TICKS);
+                    p.ammo = d::FIGHTER_AMMO;
                 }
             }
             Phase::Patrol => {
@@ -630,7 +652,7 @@ impl Core {
                         p.phase = Phase::Run;
                         p.target = Some(id);
                         p.goal = at;
-                        self.fly(f, p, at, speed, out);
+                        self.fly(f, p, at, jet_speed(p.pos, at), out);
                     }
                     None => {
                         // at home: tight laps around him
@@ -1052,6 +1074,15 @@ impl Core {
             }
         }
         None
+    }
+}
+
+/// A jet's speed toward `goal`: cruise, with afterburners (1.5x) on the final approach.
+fn jet_speed(from: Point, goal: Point) -> i64 {
+    if from.within(goal, d::FIGHTER_AFTERBURNER_RANGE) {
+        d::FIGHTER_CRUISE_SPEED * d::FIGHTER_AFTERBURNER_PCT / 100
+    } else {
+        d::FIGHTER_CRUISE_SPEED
     }
 }
 

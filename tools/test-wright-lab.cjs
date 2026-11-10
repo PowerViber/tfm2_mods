@@ -27,7 +27,7 @@ const root = path.resolve(__dirname, '..'), port = 7321;
       L.units[1].pos = {x: L.me.pos.x + 80000, y: L.me.pos.y}; L.units[0].pos = {x: L.me.pos.x + 82000, y: L.me.pos.y + 6000};
       // (his jets are still fighting, so watch the stun: none during the ready-up, then the last wave's)
       const hp1 = L.units[1].hp; L.units[1].stunUntil = 0; L.setAim(L.units[1].pos); L.order('bomber'); run(40); out.readyUp = L.units[1].stunUntil === 0;
-      run(80); out.waves = hp1 - L.units[1].hp; out.stunned = L.units[1].stunUntil > 0;
+      run(140); out.waves = hp1 - L.units[1].hp; out.stunned = L.units[1].stunUntil > 0;
       // repair: the far ally gets the global repair plane
       const ally = L.units[2]; ally.hp = 250; run(300); L.order('repair'); run(400); out.allyRepaired = ally.hp > 250;
       // the carrier drops on Wright (knockback, no damage), follows him and takes 80% of his damage
