@@ -15,7 +15,7 @@ const root = path.resolve(__dirname, '..'), port = 7323;
     await page.waitForFunction(() => window.kratosLab);
     const r = await page.evaluate(() => {
       const L = kratosLab, out = {}, run = n => { for (let i = 0; i < n; i++) L.step(); };
-      L.pause(); L.reset(); document.querySelector('#moving').checked = false;
+      L.pause(); L.reset({fixture:true}); document.querySelector('#moving').checked = false;
       out.realWalls = L.walls.filter(Boolean).length;
       const foe = L.units.find(u => u.id === 2), tower = L.units.find(u => u.tower), towerHp = tower.hp;
       // S1: immunity + a dodge

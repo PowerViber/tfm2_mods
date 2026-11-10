@@ -1,5 +1,7 @@
 # Kratos art and Lab verification — 2026-11-10
 
+**Map/situations follow-up:** the [installed battlefield review](../kratos-game-world-review/README.md) supersedes the earlier backdrop/placement assumptions below. Levi's wall grid agrees, but the corrected source registration uses a 160-pixel border and 1,000 world units per art pixel. Original stock actors and eight mid-game situations are now included; 23 additional browser checks pass. Earlier measurements below describe the original art/fixture workload, not the new full scenario host.
+
 Implementation began at PR #74 head `740a8e9`. Current main `ad6dda3` was merged as `ef036bc` to preserve round-160 balance changes and resolve the generated roster conflicts. Kratos’s rules/core/data/WASM are unchanged from the original PR head. The new native code selects presentation only.
 
 ## Automated results

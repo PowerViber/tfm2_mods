@@ -18,16 +18,16 @@ try{
  check('30/60/120/144/240 Hz all run exactly 600 ticks in ten seconds',clocks.every(([,n])=>n===600));
  const noCatchup=await page.evaluate(()=>{const c=new KratosClock();let n=0;c.advance(0,true,()=>n++);c.advance(10000,false,()=>n++);c.reset();c.advance(20000,true,()=>n++);c.advance(20000+1000/60,true,()=>n++);return n;});
  check('Pause/background reset adds no catch-up ticks',noCatchup===1);
- await page.evaluate(()=>{kratosLab.reset();kratosLab.pause();});await page.locator('#step').click();await page.waitForTimeout(100);
+ await page.evaluate(()=>{kratosLab.reset({fixture:true});kratosLab.pause();});await page.locator('#step').click();await page.waitForTimeout(100);
  check('Step advances once and remains paused',await page.evaluate(()=>kratosLab.tick===1));
  await page.locator('#arena').focus();await page.keyboard.down('a');const moved=await page.evaluate(()=>{const L=kratosLab,x=L.me.pos.x;for(let i=0;i<3;i++)L.step();return L.me.pos.x<x;});
- check('Focused WASD supplies movement',moved);await page.locator('details').evaluate(e=>e.open=true);await page.locator('#stats input').first().focus();
+ check('Focused WASD supplies movement',moved);await page.locator('details:has(#stats)').evaluate(e=>e.open=true);await page.locator('#stats input').first().focus();
  check('Focus loss clears held movement',await page.evaluate(()=>kratosLab.held.length===0));
  await page.keyboard.press('1');check('Typing in an attribute does not cast',await page.evaluate(()=>kratosLab.state.sight_until===0));
  const result=await page.evaluate(()=>{
    const L=kratosLab,run=n=>{for(let i=0;i<n;i++)L.step();};
    const scenario=(seed,art,profile)=>{
-    L.pause();L.reset();document.querySelector('#auto').checked=false;document.querySelector('#moving').checked=false;document.querySelector('#bodies').checked=art;
+    L.pause();L.reset({fixture:true});document.querySelector('#auto').checked=false;document.querySelector('#moving').checked=false;document.querySelector('#bodies').checked=art;
     [...document.querySelectorAll('#stats input')].forEach((e,i)=>e.value=profile?.[i]??50);
     const foe=L.units.find(u=>u.id===2);foe.pos={x:L.me.pos.x+9000+seed%3*2000,y:L.me.pos.y+seed%2*3000};
     L.setAim({x:L.me.pos.x+90000,y:L.me.pos.y});const trace=[];
@@ -48,14 +48,14 @@ try{
    document.querySelector('#record').click();L.pause();document.querySelector('#moving').checked=false;L.order('rampage');run(100);document.querySelector('#record').click();
    const rec=JSON.parse(JSON.stringify(window.kratosRecording));L.loadRecording(rec);run(rec.frames.length);const replayOK=L.replayIndex===rec.frames.length;
    let oldRejected=false;try{L.loadRecording({...rec,rules_revision:'kratos-old'});}catch(e){oldRejected=e.message.includes('original');}
-   L.reset();L.pause();document.querySelector('#bodies').checked=true;L.startDemo('fenrir');L.pause();run(52);
+   L.reset({fixture:true});L.pause();document.querySelector('#bodies').checked=true;L.startDemo('fenrir');L.pause();run(52);
    return{drawEqual,manualEqual,replayOK,oldRejected,sample,frames:rec.frames.length};
  });
  check('24 development + 12 holdout scenarios have identical complete core traces with artwork off/on',result.drawEqual);
  check('All thirteen manual 20/80 comparisons agree across three fixtures each',result.manualEqual);
  check('Recorded inputs replay with every original core output identical',result.replayOK&&result.frames===100);
  check('Older rules are explicitly rejected for replay',result.oldRejected);
- const cleanup=await page.evaluate(()=>{const L=kratosLab;L.reset();L.pause();L.order('fenrir');L.step();document.querySelector('#defeat').click();L.step();return L.visualPose().name==='dead'&&!L.state.fenrir;});
+ const cleanup=await page.evaluate(()=>{const L=kratosLab;L.reset({fixture:true});L.pause();L.order('fenrir');L.step();document.querySelector('#defeat').click();L.step();return L.visualPose().name==='dead'&&!L.state.fenrir;});
  check('Owner defeat clears the Lab wolf and shows the complete death pose',cleanup);
  await page.evaluate(()=>{const L=kratosLab;L.startDemo('fenrir');L.pause();for(let i=0;i<52;i++)L.step();});
  fs.writeFileSync(path.join(tmp,'parity.json'),JSON.stringify(result.sample));

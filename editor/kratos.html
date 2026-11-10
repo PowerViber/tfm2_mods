@@ -2,7 +2,7 @@
 <html lang="en"><head><meta charset="utf-8"><title>Kratos Lab</title>
 <style>
 body{margin:0;background:#151a22;color:#e2e8f0;font:13px/1.4 system-ui,sans-serif;display:flex;gap:12px;padding:12px}
-canvas{background:#2a3340;border:1px solid #4a5a6e;border-radius:6px;outline:none;image-rendering:pixelated;align-self:flex-start;flex-shrink:0;width:min(900px,calc(100vw - 390px));min-width:360px;height:auto;aspect-ratio:1}canvas:focus{border-color:#f5bc6a;box-shadow:0 0 0 2px #f5bc6a}
+canvas{background:#2a3340;border:1px solid #4a5a6e;border-radius:6px;outline:none;image-rendering:pixelated;align-self:flex-start;flex-shrink:0}#arena{width:min(900px,calc(100vw - 390px));min-width:360px;height:auto;aspect-ratio:1}canvas:focus{border-color:#f5bc6a;box-shadow:0 0 0 2px #f5bc6a}
 #side{width:340px;display:flex;flex-direction:column;gap:8px}
 button{background:#5b2a2a;color:#fbeeee;border:1px solid #9a4a4a;border-radius:4px;padding:5px 8px;cursor:pointer}
 button:hover{background:#753636}
@@ -19,18 +19,29 @@ label{display:flex;gap:6px;align-items:center}
 <canvas id="arena" width="900" height="900" tabindex="0"></canvas>
 <div id="side">
   <h2 style="margin:0">Kratos Lab</h2>
-  <div class="note"><b>Map:</b> the game's 5v5 wall grid and map art (<code>editor/levi-map.js</code>, read off the game's wall layer; art from <code>Claude outputs/map/art</code>) at gameplay scale: ranges, artwork and bodies share one scale. The core gets the same wall grid. <b>Simulated host:</b> enemy/minion/tower behaviour, attacks, glides, shields and mitigation. Sight models avoidance here; the native adapter currently heals damage back, and healing-reduction behaviour is unverified. Native wall crossing uses a glide + hop, pending actual-game validation. Artwork is candidate presentation, not live acceptance. <a href="kratos-review.html">Artwork / pose review</a>.</div>
+  <div class="note"><b>Installed game reference:</b> original layered map and stock sprites; exact exported lanes, camps and towers. All 900 collision cells match the wall artwork. 1 art pixel = 1,000 world units; the 160-pixel map border is preserved. <b>Combat/AI remain a Lab model.</b> <a href="kratos-review.html">Artwork review</a>.</div>
+  <details><summary>Sources and host limitations</summary><p>The map document comes from the installed native map exporter; art and stats come from the installed bundle. Asset registration is verified; live renderer/camera parity remains unproven. Stock movement, attacks, shields, physical mitigation, visibility and tower aggro are modelled. Full stock skill AI and item builds are not emulated. Sight models avoidance; native Sight refunds damage through healing, with healing reduction unverified. Native wall crossing uses a glide plus hop. Champion radius is extracted; other unit collision radii are model values. Camps use extracted base HP. This is not actual-game acceptance.</p></details>
   <div id="status">Loading…</div>
   <div class="keys">Mouse aims · WASD move · <b>1</b> Heimdall's Sight · <b>2</b> Leviathan Rampage (<b>R</b> redirects its next advance to the mouse) · <b>3</b> Spartan Guard (axe) · <b>E</b> Chain Dash (Blades) · <b>4</b> Fenrir's Charge, <b>4</b> again to leap in and slam · <b>F</b> basic attack the nearest enemy</div>
   <div class="row"><button id="play">Pause</button><button id="step">Step</button><button id="reset">Reset</button></div>
+  <div class="row"><select id="scenario"></select><label>Level <input id="level" type="number" min="1" max="12" value="8" style="width:42px"></label><button id="loadScenario">Load situation</button></div>
+  <p class="note" id="scenarioNote"></p>
+  <div class="row"><select id="stockChampion"></select><button id="spawnStock">Replace selected champion</button></div>
+  <label>Assigned role <select id="role"><option>top</option><option>jungle</option><option selected>mid</option><option>bot</option><option>support</option></select></label>
   <div class="row"><button id="stunMe">Stun Kratos (enemy CC)</button><button id="wallDemo">Place a foe across a wall</button><button id="group">Group the enemies</button></div>
   <div class="row"><button id="defeat">Defeat owner (Lab cleanup)</button></div>
   <div class="row"><select id="demo"><option value="rampage">Three-stage Rampage</option><option value="sight">Sight / repeated incoming hits</option><option value="linked-dash">Guard → wall-crossing Dash</option><option value="dash-guard">Dash → empowered Guard</option><option value="fenrir">Fenrir arrival / return slam</option></select><button id="preview">Play preview</button></div>
   <div class="row"><button id="record">Start recording</button><button id="saveRecording">Save recording</button><label>Load replay <input type="file" id="loadRecording" accept=".json"></label></div>
   <label><input type="checkbox" id="zoom" checked> Follow camera (zoomed); off = full-map overview</label>
+  <div class="row"><label>Zoom <input id="worldZoom" type="range" min="0.5" max="4" step="0.1" value="2"></label><button id="nativeSize">1× sprites</button><button id="follow">Follow Kratos</button></div>
+  <div class="note">Wheel zooms · middle/Alt-drag pans · click the minimap to inspect a position · click a unit to select it · F attacks.</div>
+  <canvas id="minimap" width="190" height="190" title="Click to move the inspection camera"></canvas>
   <label><input type="checkbox" id="ranges" checked> Range overlays (Chain Dash 55,000 / 90,000, Rampage, Fenrir 110,000)</label>
   <label><input type="checkbox" id="art" checked> Map art</label>
   <label><input type="checkbox" id="bodies" checked> Candidate bodies and effects (presentation only)</label>
+  <label><input type="checkbox" id="colliders"> Debug collision grid / unit radii</label>
+  <label><input type="checkbox" id="labels" checked> Unit names</label>
+  <label><input type="checkbox" id="overviewActors"> Spectator actor overview (AI still uses modelled vision)</label>
   <label><input type="checkbox" id="auto"> Athlete AI plays him</label>
   <label><input type="checkbox" id="moving" checked> Enemies walk and attack (Lab model)</label>
   <details><summary>Athlete attributes</summary><div class="stat" id="stats"></div></details>
@@ -38,7 +49,8 @@ label{display:flex;gap:6px;align-items:center}
   <div id="log"></div>
 </div>
 <script src="kratos-data.js"></script>
-<script src="levi-map.js"></script>
+<script src="game-world.js"></script>
+<script src="lab-scenarios.js"></script>
 <script src="kratos-clock.js"></script>
 <script src="kratos-renderer.js"></script>
 <script src="kratos-lab.js"></script>

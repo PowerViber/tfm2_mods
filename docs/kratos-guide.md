@@ -30,11 +30,11 @@ Kratos is a **God of War**-family **engage bruiser (diver)**, designed by Reihan
 ## Code
 - `native/tfm2_custom_ai/src/kratos_core.rs` (core), `kratos.rs` (bridge), `kratos_tests.rs` (core + mock-host glue tests). Generator: `tools/generate-kratos.py` (data, tooltips, roster, the **God of War** family).
 - Moves are engine glides through `crate::motion`; the Chain Dash's hop over a wall is the one hand-set position (a blink across terrain, allowlisted in `motion_guard_tests.rs`). Shields use `entity_add_shield`; CC immunity and the Rampage's reduction are named buffs (`krt_immune`, `krt_reduce`); his own CCs are named `krt_` so he never reads himself as stunned.
-- **Lab:** `native/kratos_lab` → `editor/kratos.html`, on the **real 5v5 map** (`editor/levi-map.js`: the wall grid read off the game's wall layer, and the map art), one world-to-screen scale for bodies and every range overlay, a full-map overview and a zoom. Enemies, minions, the camp and tower behaviour are a labelled Lab model. Browser test: `node tools/test-kratos-lab.cjs`.
+- **Lab:** `native/kratos_lab` → `editor/kratos.html`, using the installed map layers, native-exported collision/object coordinates and original stock champion/minion/creep/structure sprites. The corrected registration is 1 art pixel = 1,000 world units, with a 160-pixel border around the playable source rectangle; all 900 wall cells agree. Choose lane, gank, being-ganked, camp, tower or objective situations, replace stock champions, and inspect through full-map/follow/1× views. Stock movement, combat, mitigation and visibility remain labelled host models; full stock skills/items are not emulated. See [battlefield evidence and reproduction](kratos-game-world-review/README.md). Tests: `node tools/test-kratos-lab.cjs` and `node tools/test-kratos-situations.cjs`.
 - **Art:** `docs/kratos-art-handoff.md` (Codex).
 
 ## Known limits
-- **Art pending:** the data points at his own body sheet, so (like Wright before his art) the game skips him until Codex's sheet exists; no VFX are registered until the VFX sheet lands (`generate-kratos.py` adds them then).
+- **Release packaging pending:** approved body, weapon and Fenrir/effect assets are integrated and champion-load checks pass. The packaged native DLL is still inherited from main; build/version a new release separately before claiming installed-game readiness.
 - **Dodges** refund the hit through `heal` from `on_damaged`; a heal-reduction debuff on him would shrink the refund. Confirm in play.
 - The engine's own handling of a glide that meets terrain is unverified; the dash plans its glides to stop at the wall and hops over it.
 - Balance is unplayed; numbers are starting values.

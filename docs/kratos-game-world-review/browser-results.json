@@ -1,0 +1,206 @@
+{
+  "checks": 23,
+  "passed": [
+    "Default is a levelled mid-game lane snapshot, not a coloured-dot fixture",
+    "All 60 stock champion choices are available from installed definitions",
+    "All scenario actors have their original extracted sprite loaded",
+    "Map is 960,000 square with 160px art border and 1,000 world units per pixel",
+    "All 900 terrain cells agree with the installed wall pixels",
+    "Ordinary swept walking stops outside a wall including champion radius",
+    "Navigation routes around a wall instead of walking through it",
+    "laning: real structures/camps, bounded actors, legal host movement and 240 shared-core ticks",
+    "gank: real structures/camps, bounded actors, legal host movement and 240 shared-core ticks",
+    "countergank: real structures/camps, bounded actors, legal host movement and 240 shared-core ticks",
+    "camp: real structures/camps, bounded actors, legal host movement and 240 shared-core ticks",
+    "morgard: real structures/camps, bounded actors, legal host movement and 240 shared-core ticks",
+    "serpen: real structures/camps, bounded actors, legal host movement and 240 shared-core ticks",
+    "defend: real structures/camps, bounded actors, legal host movement and 240 shared-core ticks",
+    "dive: real structures/camps, bounded actors, legal host movement and 240 shared-core ticks",
+    "A stock replacement uses the extracted body and real stat definition",
+    "Native-size inspection uses exactly 1 screen pixel per art pixel in the canvas",
+    "Minimap inspection pans without moving Kratos",
+    "Hidden current positions and HP are withheld from the core",
+    "All eight situations preserve complete core and modeled host observations with artwork off/on",
+    "All 77 local map/sprite PNGs match their extracted source hashes",
+    "Missing installed reference fails explicitly instead of using an approximate map",
+    "No page errors: "
+  ],
+  "geometry": {
+    "width": 960000,
+    "height": 960000,
+    "cell": 32000,
+    "columns": 30,
+    "rows": 30,
+    "units_per_pixel": 1000,
+    "art_padding_pixels": 160,
+    "art_size_pixels": 1280,
+    "registration": {
+      "cells_checked": 900,
+      "matching": 900,
+      "blocked": 90,
+      "source_padding_pixels": 160,
+      "source_pixels_per_cell": 32
+    },
+    "registration_scope": "Game-exported coordinates and 900/900 collision-cell artwork samples; not a live-engine camera proof"
+  },
+  "scenarios": [
+    {
+      "kind": "laning",
+      "elapsed": 240,
+      "legal": true,
+      "realTowers": true,
+      "camp": true,
+      "units": 55,
+      "alive": true,
+      "scene": "Trade against Knight around an arriving wave. Clear before rotating; tower and jungle routes retain real positions."
+    },
+    {
+      "kind": "gank",
+      "elapsed": 240,
+      "legal": true,
+      "realTowers": true,
+      "camp": true,
+      "units": 55,
+      "alive": true,
+      "scene": "Approach the mid-laner from river with an allied laner. Enemy jungle remains away; judge follow-up and your exit."
+    },
+    {
+      "kind": "countergank",
+      "elapsed": 240,
+      "legal": true,
+      "realTowers": true,
+      "camp": true,
+      "units": 55,
+      "alive": true,
+      "scene": "Knight holds the lane while Ninja approaches from the side after two seconds. Peel, disengage or turn with your ally."
+    },
+    {
+      "kind": "camp",
+      "elapsed": 240,
+      "legal": true,
+      "realTowers": true,
+      "camp": true,
+      "units": 55,
+      "alive": true,
+      "scene": "Assigned Rhino clear with the rest of the battlefield alive. Skill farming is enabled for the jungle role."
+    },
+    {
+      "kind": "morgard",
+      "elapsed": 240,
+      "legal": true,
+      "realTowers": true,
+      "camp": true,
+      "units": 55,
+      "alive": true,
+      "scene": "Two teams contest the real Morgard pit, with the objective at 60% base HP. Compare damage, zoning and peel."
+    },
+    {
+      "kind": "serpen",
+      "elapsed": 240,
+      "legal": true,
+      "realTowers": true,
+      "camp": true,
+      "units": 55,
+      "alive": true,
+      "scene": "Contest the real Serpen pit at 60% base HP. Watch the approaches and decide whether to finish or turn."
+    },
+    {
+      "kind": "defend",
+      "elapsed": 240,
+      "legal": true,
+      "realTowers": true,
+      "camp": true,
+      "units": 55,
+      "alive": true,
+      "scene": "An enemy wave approaches your real mid tower. Use the wave, protect your laner and punish an overstep."
+    },
+    {
+      "kind": "dive",
+      "elapsed": 240,
+      "legal": true,
+      "realTowers": true,
+      "camp": true,
+      "units": 55,
+      "alive": true,
+      "scene": "Enter an enemy tower with an allied wave. The model prioritises minions unless you damage a protected champion."
+    }
+  ],
+  "performance": {
+    "runs": [
+      {
+        "ticks": 600,
+        "step_ms": {
+          "p50": 0.40000009536743164,
+          "p95": 0.6999998092651367
+        },
+        "draw_ms": {
+          "p50": 0.39999985694885254,
+          "p95": 0.6000001430511475
+        }
+      },
+      {
+        "ticks": 600,
+        "step_ms": {
+          "p50": 0.40000009536743164,
+          "p95": 0.6000001430511475
+        },
+        "draw_ms": {
+          "p50": 0.39999985694885254,
+          "p95": 0.6000001430511475
+        }
+      },
+      {
+        "ticks": 600,
+        "step_ms": {
+          "p50": 0.40000009536743164,
+          "p95": 0.5999999046325684
+        },
+        "draw_ms": {
+          "p50": 0.39999985694885254,
+          "p95": 0.6000001430511475
+        }
+      },
+      {
+        "ticks": 600,
+        "step_ms": {
+          "p50": 0.40000009536743164,
+          "p95": 0.6000001430511475
+        },
+        "draw_ms": {
+          "p50": 0.39999985694885254,
+          "p95": 0.6000001430511475
+        }
+      },
+      {
+        "ticks": 600,
+        "step_ms": {
+          "p50": 0.39999985694885254,
+          "p95": 0.5999999046325684
+        },
+        "draw_ms": {
+          "p50": 0.39999985694885254,
+          "p95": 0.6000001430511475
+        }
+      }
+    ],
+    "scope": "55 original stock actors + Kratos, 60-tick warmup then 600 ticks; settings-based host + unchanged core with AI; draw excludes DOM inspector. Browser timing, not native performance.",
+    "cold_page_and_assets_ms": [
+      202,
+      165,
+      180,
+      215,
+      200
+    ]
+  },
+  "source": {
+    "bundle_size": 1156606899,
+    "bundle_mtime_ms": 1793860064560.298,
+    "map_sha256": "7a753de8001586b95dc9b1d4c385fda2d7de4a7e03863ee28a063d8879c186e3",
+    "map_source": "Native StableMapCustomizer export; collision registration verified against the installed wall artwork",
+    "map_binary_sha256": "6fee0c2b22905b5387976529d218f407efc5ca4ef9edb63d3f520a78eb8e9ca0",
+    "wall_binary_offset": -1,
+    "tower_pairs_present_in_binary": false,
+    "binary_schema_status": "Map binary recorded for provenance; raw wall/position patterns were not found and full bincode schema is not claimed decoded"
+  },
+  "scope": "Installed original assets and settings; modeled stock movement/attacks/mitigation/vision, not the native stock engine. Native Kratos core unchanged."
+}
