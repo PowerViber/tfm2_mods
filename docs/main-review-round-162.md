@@ -1,4 +1,4 @@
-# Round 162: Kratos's Rampage stays on target, plus engage speed (native 0.10.97, tfm2_custom 0.2.99 → 0.2.100)
+# Round 162: Kratos's Rampage stays on target, plus engage speed (native 0.10.97, tfm2_custom 0.2.100)
 
 Reihan, after merging round 161: Kratos is balanced overall, but **S2 usually runs into the turret** ("it always moves to the front"), and he wanted a speed buff for engaging.
 
