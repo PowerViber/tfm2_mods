@@ -428,7 +428,8 @@ impl Core {
         }
     }
 
-    /// Her accepted harp bolts: in water each bounces to a second enemy; the clone echoes them.
+    /// Her accepted harp bolts: in water each bounces to a second enemy of the same type (round 160: a minion hit only
+    /// bounces to minions and creeps, a champion hit only to champions; waves are no longer free poke).
     fn bounce(&mut self, f: &Frame, out: &mut Vec<Effect>) {
         let base = pct(d::BASIC_BASE, d::BASIC_AP_RATIO, f.ap);
         for &t in &f.basic_hits {
@@ -437,8 +438,8 @@ impl Core {
                 if let Some(next) = f
                     .units
                     .iter()
-                    .filter(|u| u.id != t && f.enemy(u) && !u.tower && u.pos.within(target.pos, d::WATER_BOUNCE_RANGE + u.radius))
-                    .min_by_key(|u| (!u.champion, u.pos.d2(target.pos), u.id))
+                    .filter(|u| u.id != t && u.champion == target.champion && f.enemy(u) && !u.tower && u.pos.within(target.pos, d::WATER_BOUNCE_RANGE + u.radius))
+                    .min_by_key(|u| (u.pos.d2(target.pos), u.id))
                 {
                     out.push(Effect::Damage { target: next.id, amount: base * d::WATER_BOUNCE_PCT / 100, from_clone: false });
                     out.push(Effect::Fx { name: "tls_bounce".into(), at: next.pos, ticks: 10, ambient: true });

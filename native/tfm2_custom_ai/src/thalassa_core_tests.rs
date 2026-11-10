@@ -144,7 +144,8 @@ fn trident_moves_at_revised_speed_with_same_water_bonus_and_damage() {
         let before=core.trident.unwrap();run(&mut core,&mut f,1,&mut log);let after=core.trident.unwrap();
         let speed=if water {2600}else{2000};
         assert_eq!(after.speed,speed);assert_eq!(after.at.x-before.at.x,speed);
-        assert_eq!(d::ULT_BASE,150);assert_eq!(d::ULT_AP_RATIO,90);
+        // round 160 nerf: 150 + 90% -> 120 + 70%
+        assert_eq!(d::ULT_BASE,120);assert_eq!(d::ULT_AP_RATIO,70);
     }
 }
 
@@ -853,4 +854,42 @@ fn every_pool_slows_once_whirlpools_more() {
     log.clear();
     run(&mut core, &mut f, 10, &mut log);
     assert!(slows(&log, 7).contains(&d::TIDE_POOL_SLOW_PCT), "{:?}", slows(&log, 7));
+}
+
+// ------------------------------------------------------------------ round 160 nerf
+
+#[test]
+fn round_160_her_ap_growth_and_mod_power_are_cut() {
+    assert_eq!(d::MOD_POWER[1], 10, "Mod Power AP 25 -> 10");
+    assert_eq!(d::WATER_BOUNCE_PCT, 30);
+    assert_eq!((d::TWIN_COPY_PCT, d::ULT_ECHO_DAMAGE_PCT), (40, 40));
+}
+
+#[test]
+fn a_minion_hit_never_bounces_onto_a_champion_and_a_champion_hit_never_onto_a_minion() {
+    let mut core = Core::default();
+    let mut minion = unit(20, 1, 330_000, 300_000);
+    minion.champion = false;
+    let mut minion2 = unit(21, 1, 345_000, 300_000);
+    minion2.champion = false;
+    // the champion is closer to the minion than the other minion
+    let champ = unit(7, 1, 335_000, 300_000);
+    let champ2 = unit(8, 1, 330_000, 312_000);
+    let mut f = frame(0, 300_000, 300_000, vec![minion, minion2, champ, champ2]);
+    let mut log = vec![];
+    let here = f.pos;
+    cast_s1(&mut core, &mut f, here, &mut log);
+    assert!(core.in_water);
+    let bounced = |log: &[Effect]| -> Vec<(usize, i64)> {
+        log.iter().filter_map(|e| if let Effect::Damage { target, amount, from_clone: false } = e { Some((*target, *amount)) } else { None }).collect()
+    };
+    let per = (d::BASIC_BASE + d::BASIC_AP_RATIO * 100 / 100) * d::WATER_BOUNCE_PCT / 100;
+    log.clear();
+    f.basic_hits = vec![20];
+    run(&mut core, &mut f, 1, &mut log);
+    assert_eq!(bounced(&log), vec![(21, per)], "minion -> minion only");
+    log.clear();
+    f.basic_hits = vec![7];
+    run(&mut core, &mut f, 1, &mut log);
+    assert_eq!(bounced(&log), vec![(8, per)], "champion -> champion only");
 }

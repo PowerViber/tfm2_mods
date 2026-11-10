@@ -955,8 +955,23 @@ impl Core {
                     self.ult = Ult::Caged { center: to, until: cage_until };
                 }
             }
-            Ult::Caged { until, .. } => {
-                if f.tick >= until {
+            Ult::Caged { center, until } => {
+                // round 160 (Reihan): the walls drop as soon as no living enemy champion is inside (all dead, or none
+                // left caged), not only when the timer runs out
+                let empty = !f.units.iter().any(|u| u.champion && u.team != f.team && u.hp > 0 && u.caged_by == Some(f.owner));
+                if f.tick >= until || empty {
+                    if f.tick < until {
+                        for e in edges(center, d::ULT_CAGE_RADIUS).iter() {
+                            out.push(Effect::WallDown { a: e.a, b: e.b });
+                        }
+                        out.push(Effect::Fx { name: "grh_land".into(), at: center, ticks: 24, ambient: false });
+                        out.push(Effect::Log("cage empty: the walls drop".into()));
+                        // his planted-axe buff ends with it, keeping only the time his kills earned
+                        if let Some(mut p) = self.planted {
+                            p.until = f.tick + p.until.saturating_sub(until);
+                            self.planted = Some(p);
+                        }
+                    }
                     out.push(Effect::CageDown);
                     self.ult = Ult::Idle;
                 }

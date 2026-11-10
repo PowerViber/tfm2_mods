@@ -118,7 +118,9 @@ fn pentagon_inside_clamp_and_push() {
 #[test]
 fn bloodrage_scales_with_missing_hp_and_caps_at_30_percent() {
     let mut core = Core::default();
-    for (hp, dmg, ms, tier) in [(1000, 0, 0, 0u8), (500, 25, 15, 2), (300, 35, 21, 3), (100, 35, 21, 3)] {
+    // round 160: up to +35% (was +50%); damage = missing HP% x perMissingPctDamage, floored at 30% HP
+    let per = d::PASSIVE_PER_MISSING_PCT_DAMAGE;
+    for (hp, dmg, ms, tier) in [(1000, 0, 0, 0u8), (500, 50 * per / 100, 15, 2), (300, 70 * per / 100, 21, 3), (100, 70 * per / 100, 21, 3)] {
         let mut f = frame(0, 100_000, 100_000, vec![]);
         f.hp = hp;
         let out = core.step(&f);
@@ -481,12 +483,19 @@ fn caged(core: &mut Core, units: Vec<Unit>) -> (Frame, Vec<Effect>) {
     let mut f = frame(0, 200_000, 200_000, units);
     f.order = Some(Order::Ult(Point::new(400_000, 200_000)));
     let mut log = vec![];
-    run(core, &mut f, (d::ULT_WINDUP_TICKS + d::ULT_FLIGHT_TICKS + d::ULT_LEAP_TICKS + 4) as u64, &mut log);
-    let cage = log.iter().find_map(|e| if let Effect::CageUp { cage } = e { Some(*cage) } else { None }).expect("cage");
-    f.cage = Some(cage);
-    for u in f.units.iter_mut().filter(|u| u.champion && inside(cage.center, cage.radius, u.pos, 0)) {
-        u.caged_by = Some(ME);
+    // like the bridge: champions inside are marked as caged when the cage rises (round 160: an empty cage falls)
+    for _ in 0..(d::ULT_WINDUP_TICKS + d::ULT_FLIGHT_TICKS + d::ULT_LEAP_TICKS + 4) {
+        run(core, &mut f, 1, &mut log);
+        if f.cage.is_none() {
+            if let Some(cage) = log.iter().find_map(|e| if let Effect::CageUp { cage } = e { Some(*cage) } else { None }) {
+                f.cage = Some(cage);
+                for u in f.units.iter_mut().filter(|u| u.champion && inside(cage.center, cage.radius, u.pos, 0)) {
+                    u.caged_by = Some(ME);
+                }
+            }
+        }
     }
+    assert!(f.cage.is_some(), "cage");
     (f, log)
 }
 
@@ -586,4 +595,37 @@ fn relocating_onto_him_is_refused_and_the_pillar_stays() {
     let after = core.pillar.expect("still standing");
     assert_eq!(after.center, before.center);
     assert!(!after.relocated, "the recast isn't spent");
+}
+
+// ------------------------------------------------------------------ round 160
+
+#[test]
+fn round_160_his_hp_mod_power_and_cage_buffs_are_cut() {
+    assert_eq!(d::MOD_POWER, [15, 0, 5, 10, 10, 0, 5]);
+    assert_eq!((d::UNARMED_DAMAGE_PCT, d::UNARMED_ATTACK_SPEED_PCT, d::UNARMED_LIFESTEAL_PCT, d::UNARMED_DAMAGE_REDUCTION_PCT), (15, 50, 8, 10));
+    assert_eq!(d::PASSIVE_PER_MISSING_PCT_DAMAGE, 35);
+}
+
+#[test]
+fn the_cage_drops_as_soon_as_no_enemy_champion_is_inside() {
+    let mut core = Core::default();
+    let (mut f, mut log) = caged(&mut core, vec![unit(5, 1, 400_000, 200_000), unit(6, 1, 405_000, 205_000)]);
+    let cage = f.cage.unwrap();
+    // both alive inside: it holds
+    run(&mut core, &mut f, 30, &mut log);
+    assert!(!log.contains(&Effect::CageDown), "still holding");
+    // one dies: still one inside
+    f.units[0].hp = 0;
+    run(&mut core, &mut f, 2, &mut log);
+    assert!(!log.contains(&Effect::CageDown));
+    // the last one dies: the walls drop now, long before the timer
+    f.units[1].hp = 0;
+    let n = log.len();
+    run(&mut core, &mut f, 1, &mut log);
+    assert!(f.tick < cage.until);
+    assert!(log[n..].contains(&Effect::CageDown), "empty cage falls");
+    assert_eq!(log[n..].iter().filter(|e| matches!(e, Effect::WallDown { .. })).count(), 5, "all five walls drop");
+    // his planted-axe buff ends with it (no kills credited here)
+    run(&mut core, &mut f, 2, &mut log);
+    assert!(core.planted.is_none());
 }
