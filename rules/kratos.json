@@ -8,7 +8,7 @@
     "CC",
     "Tank"
   ],
-  "revision": "kratos-2",
+  "revision": "kratos-3",
   "stat": {
     "attack": 80,
     "magic_power": 0,
@@ -111,6 +111,7 @@
     "recastTicks": 180,
     "dashMax": 15000,
     "returnDistance": 320000,
+    "returnSpeed": 4800,
     "returnBase": 100,
     "returnAdRatio": 100,
     "knockUpTicks": 60

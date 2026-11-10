@@ -644,3 +644,23 @@ mod glue {
         assert!(g.buffs[2].iter().any(|b| b.name() == "v1_parry"), "V1 parried the chain strike");
     }
 }
+
+#[test]
+fn slammed_fenrir_flies_back_faster_than_it_charged_in_and_still_hits_once() {
+    // Reihan: the redirect is fast, like Ornn's ram after the headbutt
+    assert!(d::FENRIR_RETURN_SPEED > d::FENRIR_SPEED);
+    let mut c = Core::default();
+    // a foe well along the return line (east of him, the way the wolf came from)
+    let mut f = frame(0, vec![unit(FOE, 2, 400_000 + 200_000, 400_000 + 60_000)]);
+    run_order(&mut c, &mut f, Some(Order::Fenrir(Point::new(500_000, 400_000))), 0, 135);
+    let mut out = run_order(&mut c, &mut f, Some(Order::SlamAim(Point::new(600_000, 460_000))), 135, 160);
+    let w = c.fenrir.clone().expect("the return leg is running");
+    assert_eq!(w.leg, 1);
+    let expected = (w.from.dist(w.to) / d::FENRIR_RETURN_SPEED as f64).ceil() as u64;
+    assert_eq!(w.leg_ticks, expected);
+    let charge_ticks = (w.from.dist(w.to) / d::FENRIR_SPEED as f64).ceil() as u64;
+    assert!(w.leg_ticks * 2 <= charge_ticks + 1, "return {} vs charge {} ticks over the same distance", w.leg_ticks, charge_ticks);
+    out.extend(run(&mut c, &mut f, 160, 400));
+    assert_eq!(out.iter().filter(|e| matches!(e, Effect::KnockUp { target: FOE, .. })).count(), 1, "hit once on the fast return");
+    assert_eq!(damage_to(&out, FOE), d::FENRIR_RETURN_BASE + d::FENRIR_RETURN_AD_RATIO);
+}

@@ -5306,7 +5306,7 @@
      "intents": [
       "Engage"
      ],
-     "summary": "Fenrir's Charge (90 s): the larger Fenrir appears up to 320000 away and keeps running through Kratos, hitting enemies on the way (80 + 80% Attack, 40% slow for 1.5 s). Recast within 3 s, while the wolf is close enough: Kratos leaps into it (up to 15000) and redirects it in the aimed direction for 320000 (100 + 100% Attack, knock-up 1 s). His skills and Fenrir never hit towers."
+     "summary": "Fenrir's Charge (90 s): the larger Fenrir appears up to 320000 away and keeps running through Kratos, hitting enemies on the way (80 + 80% Attack, 40% slow for 1.5 s). Recast within 3 s, while the wolf is close enough: Kratos leaps into it (up to 15000) and redirects it in the aimed direction for 320000 at 2x its charge speed (100 + 100% Attack, knock-up 1 s). His skills and Fenrir never hit towers."
     }
    ]
   }

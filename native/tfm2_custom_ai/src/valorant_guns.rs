@@ -11,6 +11,7 @@ pub fn judge_percent(distance: i64) -> i64 {
                 / (JUDGE_FAR_RANGE - JUDGE_NEAR_RANGE)
     }
 }
+#[cfg(test)]
 pub fn basic_raw(gun: Gun, attack: i64, distance: i64) -> i64 {
     let n = attack * (100 + gun.modifiers().0 as i64) / 100;
     current_basic_raw(gun, n, distance)
@@ -110,6 +111,7 @@ impl Gun {
             SPEED_MODIFIERS[self.idx()] as i32,
         )
     }
+    #[cfg(test)]
     pub fn upgrade(credits: i64, close_fighters: usize, current: Self) -> Self {
         let want = if credits >= 5500 {
             Self::Operator

@@ -3841,3 +3841,8 @@ To check in game: close the game, Update/Check, confirm native 0.10.36 and champ
 - **Guardrails:** CC immunity never stacks and is capped at 3 s in any 6 s; his skills and Fenrir never hit towers (his basic attacks do).
 - **Built:** the native kit, the Lab on the real 5v5 map (`editor/kratos.html`) and tests (26 Kratos native tests, 10 browser checks). Guide: `docs/kratos-guide.md`.
 - **Waiting on:** Codex's art (`docs/kratos-art-handoff.md`), then the release.
+## Nov 10: round 161 (native 0.10.96, tfm2_custom 0.2.99): Kratos released
+- **Kratos** joins the game with Codex's approved art and Reihan's kratos-2 skill pass: a long 1.8 s Rampage, Fenrir from up to 320,000 with an aimed redirect, Dash → Guard taunts.
+- **Fenrir's redirect is twice as fast** (`kratos-3`, Reihan: "like Ornn's ult"): 4,800 a tick on the way back, about 1.1 s for 320,000.
+- **Checks:** 1,152 native tests, 0 warnings; DLL reports 0.10.96; Mod Manager load. Codex's browser tests need the local game-reference cache (Reihan's PC). Review: `docs/main-review-round-161.md`.
+- **Pending:** live acceptance (taunt targeting, wolf alignment, wall hop, Sight's heal refund) and balance; watch the long immune Rampage and the 320,000 Fenrir.

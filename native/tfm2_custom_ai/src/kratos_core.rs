@@ -856,7 +856,8 @@ impl Core {
             w.leg_start = f.tick;
             w.from = w.pos;
             w.to = w.pos.ray_end(w.slam_aim.unwrap_or(w.origin), d::FENRIR_RETURN_DISTANCE);
-            w.leg_ticks = (w.from.dist(w.to) / d::FENRIR_SPEED.max(1) as f64).ceil().max(1.0) as u64;
+            // slammed, it flies back much faster than it charged in (like Ornn's ram)
+            w.leg_ticks = (w.from.dist(w.to) / d::FENRIR_RETURN_SPEED.max(1) as f64).ceil().max(1.0) as u64;
             w.hit.clear();
             out.push(Effect::Fx { name: "krt_fenrir_slam".into(), at: w.pos, ticks: 18, ambient: false });
         }

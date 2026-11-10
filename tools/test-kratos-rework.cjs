@@ -1,5 +1,6 @@
 // kratos-2: real browser checks of the changed shared mechanics and candidate art.
 const fs=require('fs'),path=require('path'),os=require('os'),assert=require('assert'),{spawn}=require('child_process');
+const KRATOS_REVISION=JSON.parse(fs.readFileSync(path.join(__dirname,'../rules/kratos.json'),'utf8')).revision;
 const {chromium}=require(require.resolve('playwright',{paths:[process.cwd(),path.join(os.homedir(),'.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules')]}));
 const root=path.resolve(__dirname,'..'),out=path.join(root,'docs/kratos-skill-review'),tmp=path.join(root,'backups/kratos-skill-tests');fs.mkdirSync(out,{recursive:true});fs.mkdirSync(tmp,{recursive:true});
 const server=spawn('node',['server.js','--port','7333','--no-open'],{cwd:path.join(root,'editor'),stdio:'ignore'});
@@ -16,7 +17,7 @@ try{
   const M=L.painter.manifest,anims=L.painter.anims.effects,rect=anims.chain_short_p0.frames[0].data,c=document.createElement('canvas');c.width=rect.w;c.height=rect.h;const ctx=c.getContext('2d');ctx.drawImage(L.painter.images.effects,rect.x,rect.y,rect.w,rect.h,0,0,rect.w,rect.h);const a=ctx.getImageData(0,0,c.width,c.height).data;let bands=0,was=false;for(let y=0;y<c.height;y++){let row=false;for(let x=0;x<c.width;x++)row||=a[(y*c.width+x)*4+3]>0;if(row&&!was)bands++;was=row;}
   return{revision:R.revision,travel,damage,impactAt18:before===1000&&after<1000,far,moving,turned,secondDamage,knocked,taunted,forced,bands,canvas:M.fenrir_canvas,heavy:M.pose_ticks.cleave.reduce((a,b)=>a+b,0),decoded:M.decoded_bytes,approved:M.effects_approved&&L.painter.images.effects.src.endsWith('/kratos-effects.png'),trace};
  });
- check('kratos-2 rules and 36-tick heavy swings are loaded',r.revision==='kratos-2'&&r.heavy===36);
+ check(`current rules (${r.revision}) and 36-tick heavy swings are loaded`,r.revision===KRATOS_REVISION&&r.heavy===36);
  check('Rampage advances over 100,000 units and reaches a distant foe',r.travel>100000&&r.damage>=350);
  check('The first heavy impact waits until tick 18',r.impactAt18);
  check('Fenrir starts at least 250,000 units away on this map approach',r.far>=250000);

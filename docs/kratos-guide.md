@@ -1,6 +1,6 @@
 # Kratos, the God of War
 
-Kratos is a **God of War**-family **engage bruiser (diver)**, designed by Reihan (Nov 10–11). He plays top, jungle or support (not bot, and not really mid): he dives, survives and locks people down, but doesn't one-shot. His damage is physical and scales on Attack; he has no mastery, the bruiser Mod Power line `[15, 0, 5, 10, 10, 0, 5]`, and he keeps Flash. Every number lives in `rules/kratos.json` (revision `kratos-2`); these are starting values to tune in the Lab and in play.
+Kratos is a **God of War**-family **engage bruiser (diver)**, designed by Reihan (Nov 10–11). He plays top, jungle or support (not bot, and not really mid): he dives, survives and locks people down, but doesn't one-shot. His damage is physical and scales on Attack; he has no mastery, the bruiser Mod Power line `[15, 0, 5, 10, 10, 0, 5]`, and he keeps Flash. Every number lives in `rules/kratos.json` (revision `kratos-3`); these are starting values to tune in the Lab and in play.
 
 ## Kit
 | | Skill | What it does |
@@ -11,7 +11,7 @@ Kratos is a **God of War**-family **engage bruiser (diver)**, designed by Reihan
 | S3a | **Spartan Guard** (12 s, swaps to the axe) | **Cleanses**, a **shield of 15% max HP** for 3 s and **1 s** of CC immunity. |
 | S3b | **Chain Dash** (10 s, swaps to the Blades) | Throws the Blades in a line (**55,000**). On a champion, minion or creep (**never a tower**) he **dashes to it, over any wall or terrain**, landing on open ground, and strikes for 30 + 50% Attack (V1 can parry it). A miss means no dash (the cooldown and the swap still happen). |
 | S3 link | **Guard / Dash** within 3 s | Guard then Dash reaches **90,000**. Dash then Guard gives **1.8 s** immunity and **25%** shielding; after a connected Dash it also **taunts enemy champions within 36,000 for 0.75 s**. A missed throw does not arm the taunt. |
-| Ult | **Fenrir Charge** (90 s) | Twice-sized wolf appears up to **320,000** away and runs through Kratos, dealing the existing 80 + 80% Attack and 40% slow. Press **4 again nearby**, aiming with the mouse, to leap in and **redirect in any direction up to 320,000**: existing 100 + 100% Attack and 1 s knock-up. No parked phase; one hit per enemy per leg; no tower hits. |
+| Ult | **Fenrir Charge** (90 s) | Twice-sized wolf appears up to **320,000** away and runs through Kratos, dealing the existing 80 + 80% Attack and 40% slow. Press **4 again nearby**, aiming with the mouse, to leap in and **redirect in any direction up to 320,000**, and it flies back **twice as fast** as it charged in (4,800 a tick, like Ornn's ram after the headbutt; `fenrir.returnSpeed`): existing 100 + 100% Attack and 1 s knock-up. No parked phase; one hit per enemy per leg; no tower hits. |
 
 **CC-immunity cap:** Sight, the Rampage and Guard share one clock. Windows **never stack** (an overlap only lasts to the longer end), and he is immune for **at most 3 s in any 6 s**; past that the immunity is refused but the rest of the skill (dodges, damage reduction, shields, cleanses) still works.
 
@@ -34,15 +34,9 @@ Kratos is a **God of War**-family **engage bruiser (diver)**, designed by Reihan
 - **Art:** `docs/kratos-art-handoff.md` (Codex).
 
 ## Known limits
-- **Release packaging pending:** approved body, weapon and Fenrir/effect assets are integrated and champion-load checks pass. The packaged native DLL is still inherited from main; build/version a new release separately before claiming installed-game readiness.
+- **Released in round 161** (native 0.10.96, tfm2_custom 0.2.99). Live acceptance is still pending.
 - **Dodges** refund the hit through `heal` from `on_damaged`; a heal-reduction debuff on him would shrink the refund. Confirm in play.
 - The engine's own handling of a glide that meets terrain is unverified; the dash plans its glides to stop at the wall and hops over it.
-- Balance is unplayed; numbers are starting values.
+- Balance is unplayed; numbers are starting values. See `docs/main-review-round-161.md` for the level-10 comparison.
 
-## After the art lands
-1. `python3 tools/generate-kratos.py --check` passes (update its effect list if a tag is renamed).
-2. Mod Manager `the_repos_champions_all_load` passes.
-3. Release: the next unused native / tfm2_custom versions in all four places, the DLL, and a review doc.
-
-
-The latest skill revision and approved eye/twin-chain/larger-wolf artwork are documented in [kratos-2 review](kratos-skill-review/README.md). New reach, timing and taunt values are prototypes. A new release DLL and live acceptance remain separate.
+The kratos-2 skill revision and approved eye/twin-chain/larger-wolf artwork are documented in [kratos-2 review](kratos-skill-review/README.md); kratos-3 (round 161) only makes Fenrir's redirect twice as fast.

@@ -49,7 +49,7 @@ text = {
                f"a {gu['linkedShieldPct']}% shield; after a connected Dash it also taunts enemy champions within {gu['tauntRange']} for {sec(gu['tauntTicks'])}. Crowd-control immunity lasts at most {sec(im['capTicks'])} in any {sec(im['windowTicks'])}."),
     'ult': (f"Fenrir's Charge ({sec(fe['cooldownTicks'])}): the larger Fenrir appears up to {fe['distance']} away and keeps running through Kratos, hitting enemies "
             f"on the way ({fe['base']} + {fe['adRatio']}% Attack, {fe['slowPct']}% slow for {sec(fe['slowTicks'])}). Recast within "
-            f"{sec(fe['recastTicks'])}, while the wolf is close enough: Kratos leaps into it (up to {fe['dashMax']}) and redirects it in the aimed direction for {fe['returnDistance']} ({fe['returnBase']} + "
+            f"{sec(fe['recastTicks'])}, while the wolf is close enough: Kratos leaps into it (up to {fe['dashMax']}) and redirects it in the aimed direction for {fe['returnDistance']} at {fe['returnSpeed'] / fe['speed']:g}x its charge speed ({fe['returnBase']} + "
             f"{fe['returnAdRatio']}% Attack, knock-up {sec(fe['knockUpTicks'])}). His skills and Fenrir never hit towers."),
 }
 
