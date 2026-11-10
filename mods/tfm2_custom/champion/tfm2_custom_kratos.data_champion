@@ -105,13 +105,3523 @@
   },
   "passive": {
     "passive_ref": "tfm2_custom_ai:kratos",
-    "params": {}
+    "params": {
+      "weapon_layer": 1
+    }
   },
   "passive_ult": {
     "passive_ref": "tfm2_custom_ai:ult_learned",
     "params": {}
   },
-  "view_buffs": [],
-  "view_effects": [],
+  "view_buffs": [
+    {
+      "type": "Animated",
+      "name": "krt_burn",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "burn",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "krt_frozen",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "frozen",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "krt_sight",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "sight_aura",
+      "z": 5
+    },
+    {
+      "type": "Animated",
+      "name": "krt_guard",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "guard_aura",
+      "z": 5
+    },
+    {
+      "type": "Animated",
+      "name": "krt_frost:1",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "frost1",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "krt_frost:2",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "frost2",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_idle_r0",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_idle_r0",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_idle_r1",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_idle_r1",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_idle_r2",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_idle_r2",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_idle_r3",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_idle_r3",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_idle_r4",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_idle_r4",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_idle_r5",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_idle_r5",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_idle_r6",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_idle_r6",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_idle_r7",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_idle_r7",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_idle_l0",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_idle_l0",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_idle_l1",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_idle_l1",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_idle_l2",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_idle_l2",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_idle_l3",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_idle_l3",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_idle_l4",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_idle_l4",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_idle_l5",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_idle_l5",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_idle_l6",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_idle_l6",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_idle_l7",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_idle_l7",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_run_r0",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_run_r0",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_run_r1",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_run_r1",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_run_r2",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_run_r2",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_run_r3",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_run_r3",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_run_r4",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_run_r4",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_run_r5",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_run_r5",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_run_r6",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_run_r6",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_run_r7",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_run_r7",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_run_l0",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_run_l0",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_run_l1",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_run_l1",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_run_l2",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_run_l2",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_run_l3",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_run_l3",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_run_l4",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_run_l4",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_run_l5",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_run_l5",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_run_l6",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_run_l6",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_run_l7",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_run_l7",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_attack_r0",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_attack_r0",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_attack_r1",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_attack_r1",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_attack_r2",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_attack_r2",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_attack_r3",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_attack_r3",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_attack_r4",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_attack_r4",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_attack_r5",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_attack_r5",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_attack_r6",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_attack_r6",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_attack_r7",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_attack_r7",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_attack_l0",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_attack_l0",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_attack_l1",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_attack_l1",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_attack_l2",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_attack_l2",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_attack_l3",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_attack_l3",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_attack_l4",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_attack_l4",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_attack_l5",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_attack_l5",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_attack_l6",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_attack_l6",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_attack_l7",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_attack_l7",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_sight_r0",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_sight_r0",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_sight_r1",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_sight_r1",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_sight_r2",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_sight_r2",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_sight_r3",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_sight_r3",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_sight_r4",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_sight_r4",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_sight_r5",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_sight_r5",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_sight_r6",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_sight_r6",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_sight_r7",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_sight_r7",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_sight_l0",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_sight_l0",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_sight_l1",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_sight_l1",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_sight_l2",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_sight_l2",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_sight_l3",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_sight_l3",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_sight_l4",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_sight_l4",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_sight_l5",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_sight_l5",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_sight_l6",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_sight_l6",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_sight_l7",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_sight_l7",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_guard_r0",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_guard_r0",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_guard_r1",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_guard_r1",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_guard_r2",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_guard_r2",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_guard_r3",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_guard_r3",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_guard_r4",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_guard_r4",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_guard_r5",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_guard_r5",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_guard_r6",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_guard_r6",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_guard_r7",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_guard_r7",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_guard_l0",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_guard_l0",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_guard_l1",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_guard_l1",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_guard_l2",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_guard_l2",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_guard_l3",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_guard_l3",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_guard_l4",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_guard_l4",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_guard_l5",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_guard_l5",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_guard_l6",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_guard_l6",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_guard_l7",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_guard_l7",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_chain_r0",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_chain_r0",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_chain_r1",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_chain_r1",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_chain_r2",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_chain_r2",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_chain_r3",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_chain_r3",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_chain_r4",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_chain_r4",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_chain_r5",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_chain_r5",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_chain_r6",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_chain_r6",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_chain_r7",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_chain_r7",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_chain_l0",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_chain_l0",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_chain_l1",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_chain_l1",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_chain_l2",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_chain_l2",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_chain_l3",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_chain_l3",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_chain_l4",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_chain_l4",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_chain_l5",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_chain_l5",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_chain_l6",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_chain_l6",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_chain_l7",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_chain_l7",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_cleave_r0",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_cleave_r0",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_cleave_r1",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_cleave_r1",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_cleave_r2",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_cleave_r2",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_cleave_r3",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_cleave_r3",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_cleave_r4",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_cleave_r4",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_cleave_r5",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_cleave_r5",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_cleave_r6",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_cleave_r6",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_cleave_r7",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_cleave_r7",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_cleave_l0",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_cleave_l0",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_cleave_l1",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_cleave_l1",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_cleave_l2",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_cleave_l2",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_cleave_l3",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_cleave_l3",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_cleave_l4",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_cleave_l4",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_cleave_l5",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_cleave_l5",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_cleave_l6",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_cleave_l6",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_cleave_l7",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_cleave_l7",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_sweep_r0",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_sweep_r0",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_sweep_r1",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_sweep_r1",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_sweep_r2",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_sweep_r2",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_sweep_r3",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_sweep_r3",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_sweep_r4",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_sweep_r4",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_sweep_r5",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_sweep_r5",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_sweep_r6",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_sweep_r6",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_sweep_r7",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_sweep_r7",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_sweep_l0",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_sweep_l0",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_sweep_l1",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_sweep_l1",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_sweep_l2",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_sweep_l2",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_sweep_l3",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_sweep_l3",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_sweep_l4",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_sweep_l4",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_sweep_l5",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_sweep_l5",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_sweep_l6",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_sweep_l6",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_sweep_l7",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_sweep_l7",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_smash_r0",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_smash_r0",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_smash_r1",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_smash_r1",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_smash_r2",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_smash_r2",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_smash_r3",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_smash_r3",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_smash_r4",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_smash_r4",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_smash_r5",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_smash_r5",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_smash_r6",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_smash_r6",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_smash_r7",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_smash_r7",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_smash_l0",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_smash_l0",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_smash_l1",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_smash_l1",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_smash_l2",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_smash_l2",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_smash_l3",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_smash_l3",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_smash_l4",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_smash_l4",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_smash_l5",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_smash_l5",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_smash_l6",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_smash_l6",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_smash_l7",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_smash_l7",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_ult_r0",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_ult_r0",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_ult_r1",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_ult_r1",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_ult_r2",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_ult_r2",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_ult_r3",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_ult_r3",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_ult_r4",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_ult_r4",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_ult_r5",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_ult_r5",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_ult_r6",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_ult_r6",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_ult_r7",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_ult_r7",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_ult_l0",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_ult_l0",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_ult_l1",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_ult_l1",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_ult_l2",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_ult_l2",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_ult_l3",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_ult_l3",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_ult_l4",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_ult_l4",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_ult_l5",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_ult_l5",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_ult_l6",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_ult_l6",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_ult_l7",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_ult_l7",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_hit_r0",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_hit_r0",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_hit_r1",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_hit_r1",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_hit_r2",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_hit_r2",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_hit_r3",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_hit_r3",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_hit_r4",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_hit_r4",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_hit_r5",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_hit_r5",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_hit_r6",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_hit_r6",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_hit_r7",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_hit_r7",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_hit_l0",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_hit_l0",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_hit_l1",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_hit_l1",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_hit_l2",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_hit_l2",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_hit_l3",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_hit_l3",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_hit_l4",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_hit_l4",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_hit_l5",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_hit_l5",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_hit_l6",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_hit_l6",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_hit_l7",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_hit_l7",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_dead_r0",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_dead_r0",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_dead_r1",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_dead_r1",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_dead_r2",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_dead_r2",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_dead_r3",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_dead_r3",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_dead_r4",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_dead_r4",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_dead_r5",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_dead_r5",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_dead_r6",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_dead_r6",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_dead_r7",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_dead_r7",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_dead_l0",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_dead_l0",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_dead_l1",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_dead_l1",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_dead_l2",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_dead_l2",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_dead_l3",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_dead_l3",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_dead_l4",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_dead_l4",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_dead_l5",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_dead_l5",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_dead_l6",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_dead_l6",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_axe_dead_l7",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_axe_dead_l7",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_idle_r0",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_idle_r0",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_idle_r1",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_idle_r1",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_idle_r2",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_idle_r2",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_idle_r3",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_idle_r3",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_idle_r4",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_idle_r4",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_idle_r5",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_idle_r5",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_idle_r6",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_idle_r6",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_idle_r7",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_idle_r7",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_idle_l0",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_idle_l0",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_idle_l1",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_idle_l1",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_idle_l2",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_idle_l2",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_idle_l3",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_idle_l3",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_idle_l4",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_idle_l4",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_idle_l5",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_idle_l5",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_idle_l6",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_idle_l6",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_idle_l7",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_idle_l7",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_run_r0",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_run_r0",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_run_r1",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_run_r1",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_run_r2",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_run_r2",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_run_r3",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_run_r3",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_run_r4",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_run_r4",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_run_r5",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_run_r5",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_run_r6",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_run_r6",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_run_r7",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_run_r7",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_run_l0",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_run_l0",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_run_l1",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_run_l1",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_run_l2",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_run_l2",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_run_l3",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_run_l3",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_run_l4",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_run_l4",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_run_l5",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_run_l5",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_run_l6",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_run_l6",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_run_l7",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_run_l7",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_attack_r0",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_attack_r0",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_attack_r1",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_attack_r1",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_attack_r2",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_attack_r2",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_attack_r3",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_attack_r3",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_attack_r4",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_attack_r4",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_attack_r5",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_attack_r5",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_attack_r6",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_attack_r6",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_attack_r7",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_attack_r7",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_attack_l0",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_attack_l0",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_attack_l1",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_attack_l1",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_attack_l2",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_attack_l2",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_attack_l3",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_attack_l3",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_attack_l4",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_attack_l4",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_attack_l5",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_attack_l5",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_attack_l6",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_attack_l6",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_attack_l7",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_attack_l7",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_sight_r0",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_sight_r0",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_sight_r1",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_sight_r1",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_sight_r2",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_sight_r2",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_sight_r3",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_sight_r3",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_sight_r4",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_sight_r4",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_sight_r5",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_sight_r5",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_sight_r6",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_sight_r6",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_sight_r7",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_sight_r7",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_sight_l0",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_sight_l0",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_sight_l1",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_sight_l1",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_sight_l2",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_sight_l2",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_sight_l3",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_sight_l3",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_sight_l4",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_sight_l4",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_sight_l5",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_sight_l5",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_sight_l6",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_sight_l6",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_sight_l7",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_sight_l7",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_guard_r0",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_guard_r0",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_guard_r1",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_guard_r1",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_guard_r2",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_guard_r2",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_guard_r3",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_guard_r3",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_guard_r4",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_guard_r4",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_guard_r5",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_guard_r5",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_guard_r6",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_guard_r6",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_guard_r7",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_guard_r7",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_guard_l0",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_guard_l0",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_guard_l1",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_guard_l1",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_guard_l2",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_guard_l2",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_guard_l3",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_guard_l3",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_guard_l4",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_guard_l4",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_guard_l5",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_guard_l5",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_guard_l6",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_guard_l6",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_guard_l7",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_guard_l7",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_chain_r0",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_chain_r0",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_chain_r1",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_chain_r1",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_chain_r2",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_chain_r2",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_chain_r3",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_chain_r3",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_chain_r4",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_chain_r4",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_chain_r5",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_chain_r5",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_chain_r6",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_chain_r6",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_chain_r7",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_chain_r7",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_chain_l0",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_chain_l0",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_chain_l1",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_chain_l1",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_chain_l2",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_chain_l2",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_chain_l3",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_chain_l3",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_chain_l4",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_chain_l4",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_chain_l5",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_chain_l5",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_chain_l6",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_chain_l6",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_chain_l7",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_chain_l7",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_cleave_r0",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_cleave_r0",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_cleave_r1",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_cleave_r1",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_cleave_r2",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_cleave_r2",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_cleave_r3",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_cleave_r3",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_cleave_r4",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_cleave_r4",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_cleave_r5",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_cleave_r5",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_cleave_r6",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_cleave_r6",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_cleave_r7",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_cleave_r7",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_cleave_l0",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_cleave_l0",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_cleave_l1",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_cleave_l1",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_cleave_l2",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_cleave_l2",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_cleave_l3",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_cleave_l3",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_cleave_l4",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_cleave_l4",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_cleave_l5",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_cleave_l5",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_cleave_l6",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_cleave_l6",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_cleave_l7",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_cleave_l7",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_sweep_r0",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_sweep_r0",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_sweep_r1",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_sweep_r1",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_sweep_r2",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_sweep_r2",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_sweep_r3",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_sweep_r3",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_sweep_r4",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_sweep_r4",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_sweep_r5",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_sweep_r5",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_sweep_r6",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_sweep_r6",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_sweep_r7",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_sweep_r7",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_sweep_l0",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_sweep_l0",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_sweep_l1",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_sweep_l1",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_sweep_l2",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_sweep_l2",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_sweep_l3",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_sweep_l3",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_sweep_l4",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_sweep_l4",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_sweep_l5",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_sweep_l5",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_sweep_l6",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_sweep_l6",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_sweep_l7",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_sweep_l7",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_smash_r0",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_smash_r0",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_smash_r1",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_smash_r1",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_smash_r2",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_smash_r2",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_smash_r3",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_smash_r3",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_smash_r4",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_smash_r4",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_smash_r5",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_smash_r5",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_smash_r6",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_smash_r6",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_smash_r7",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_smash_r7",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_smash_l0",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_smash_l0",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_smash_l1",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_smash_l1",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_smash_l2",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_smash_l2",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_smash_l3",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_smash_l3",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_smash_l4",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_smash_l4",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_smash_l5",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_smash_l5",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_smash_l6",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_smash_l6",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_smash_l7",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_smash_l7",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_ult_r0",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_ult_r0",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_ult_r1",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_ult_r1",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_ult_r2",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_ult_r2",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_ult_r3",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_ult_r3",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_ult_r4",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_ult_r4",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_ult_r5",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_ult_r5",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_ult_r6",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_ult_r6",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_ult_r7",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_ult_r7",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_ult_l0",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_ult_l0",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_ult_l1",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_ult_l1",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_ult_l2",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_ult_l2",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_ult_l3",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_ult_l3",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_ult_l4",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_ult_l4",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_ult_l5",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_ult_l5",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_ult_l6",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_ult_l6",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_ult_l7",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_ult_l7",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_hit_r0",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_hit_r0",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_hit_r1",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_hit_r1",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_hit_r2",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_hit_r2",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_hit_r3",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_hit_r3",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_hit_r4",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_hit_r4",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_hit_r5",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_hit_r5",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_hit_r6",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_hit_r6",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_hit_r7",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_hit_r7",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_hit_l0",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_hit_l0",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_hit_l1",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_hit_l1",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_hit_l2",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_hit_l2",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_hit_l3",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_hit_l3",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_hit_l4",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_hit_l4",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_hit_l5",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_hit_l5",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_hit_l6",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_hit_l6",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_hit_l7",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_hit_l7",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_dead_r0",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_dead_r0",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_dead_r1",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_dead_r1",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_dead_r2",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_dead_r2",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_dead_r3",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_dead_r3",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_dead_r4",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_dead_r4",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_dead_r5",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_dead_r5",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_dead_r6",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_dead_r6",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_dead_r7",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_dead_r7",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_dead_l0",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_dead_l0",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_dead_l1",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_dead_l1",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_dead_l2",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_dead_l2",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_dead_l3",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_dead_l3",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_dead_l4",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_dead_l4",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_dead_l5",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_dead_l5",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_dead_l6",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_dead_l6",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "krt_weapon_blades_dead_l7",
+      "anim": "asset/tfm2_custom/vfx/kratos_weapons",
+      "tag": "krt_weapon_blades_dead_l7",
+      "z": -1
+    }
+  ],
+  "view_effects": [
+    {
+      "type": "Animation",
+      "name": "krt_cleave",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "cleave",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_cleave_l",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "cleave_l",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_sweep",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "sweep",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_sweep_l",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "sweep_l",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_smash",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "smash",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_sight",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "sight",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "krt_guard",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "guard",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "krt_freeze",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "freeze",
+      "z": 4,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_fenrir_spawn",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "fenrir_spawn",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_fenrir_slam",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "fenrir_slam",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_chain_hit",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "chain_hit",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_dash_trail",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "dash_trail",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_swap_axe",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "swap_axe",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "krt_swap_blades",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "swap_blades",
+      "z": 5,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "krt_knock_up",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "knock_up",
+      "z": 4,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_fenrir_fade",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "fenrir_fade",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_chain",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "chain",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_chain_short_p0",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "chain_short_p0",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_chain_short_p1",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "chain_short_p1",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_chain_short_p2",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "chain_short_p2",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_chain_short_p3",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "chain_short_p3",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_chain_short_p4",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "chain_short_p4",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_chain_short_p5",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "chain_short_p5",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_chain_short_p6",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "chain_short_p6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_chain_short_p7",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "chain_short_p7",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_chain_long_p0",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "chain_long_p0",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_chain_long_p1",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "chain_long_p1",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_chain_long_p2",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "chain_long_p2",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_chain_long_p3",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "chain_long_p3",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_chain_long_p4",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "chain_long_p4",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_chain_long_p5",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "chain_long_p5",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_chain_long_p6",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "chain_long_p6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_chain_long_p7",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "chain_long_p7",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_fenrir_p0",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "fenrir_p0",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_fenrir_p0_f1",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "fenrir_p0_f1",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_fenrir_p0_f2",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "fenrir_p0_f2",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_fenrir_p0_f3",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "fenrir_p0_f3",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_fenrir_p0_f4",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "fenrir_p0_f4",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_fenrir_p0_f5",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "fenrir_p0_f5",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_fenrir_p0_f6",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "fenrir_p0_f6",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_fenrir_p0_f7",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "fenrir_p0_f7",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_fenrir_p1",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "fenrir_p1",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_fenrir_p1_f1",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "fenrir_p1_f1",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_fenrir_p1_f2",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "fenrir_p1_f2",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_fenrir_p1_f3",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "fenrir_p1_f3",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_fenrir_p1_f4",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "fenrir_p1_f4",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_fenrir_p1_f5",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "fenrir_p1_f5",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_fenrir_p1_f6",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "fenrir_p1_f6",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_fenrir_p1_f7",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "fenrir_p1_f7",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_fenrir_p2",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "fenrir_p2",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_fenrir_p2_f1",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "fenrir_p2_f1",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_fenrir_p2_f2",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "fenrir_p2_f2",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_fenrir_p2_f3",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "fenrir_p2_f3",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_fenrir_p2_f4",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "fenrir_p2_f4",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_fenrir_p2_f5",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "fenrir_p2_f5",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_fenrir_p2_f6",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "fenrir_p2_f6",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_fenrir_p2_f7",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "fenrir_p2_f7",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_fenrir_p3",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "fenrir_p3",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_fenrir_p3_f1",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "fenrir_p3_f1",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_fenrir_p3_f2",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "fenrir_p3_f2",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_fenrir_p3_f3",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "fenrir_p3_f3",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_fenrir_p3_f4",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "fenrir_p3_f4",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_fenrir_p3_f5",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "fenrir_p3_f5",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_fenrir_p3_f6",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "fenrir_p3_f6",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_fenrir_p3_f7",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "fenrir_p3_f7",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_fenrir_p4",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "fenrir_p4",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_fenrir_p4_f1",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "fenrir_p4_f1",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_fenrir_p4_f2",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "fenrir_p4_f2",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_fenrir_p4_f3",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "fenrir_p4_f3",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_fenrir_p4_f4",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "fenrir_p4_f4",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_fenrir_p4_f5",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "fenrir_p4_f5",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_fenrir_p4_f6",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "fenrir_p4_f6",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_fenrir_p4_f7",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "fenrir_p4_f7",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_fenrir_p5",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "fenrir_p5",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_fenrir_p5_f1",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "fenrir_p5_f1",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_fenrir_p5_f2",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "fenrir_p5_f2",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_fenrir_p5_f3",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "fenrir_p5_f3",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_fenrir_p5_f4",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "fenrir_p5_f4",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_fenrir_p5_f5",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "fenrir_p5_f5",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_fenrir_p5_f6",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "fenrir_p5_f6",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_fenrir_p5_f7",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "fenrir_p5_f7",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_fenrir_p6",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "fenrir_p6",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_fenrir_p6_f1",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "fenrir_p6_f1",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_fenrir_p6_f2",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "fenrir_p6_f2",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_fenrir_p6_f3",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "fenrir_p6_f3",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_fenrir_p6_f4",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "fenrir_p6_f4",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_fenrir_p6_f5",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "fenrir_p6_f5",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_fenrir_p6_f6",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "fenrir_p6_f6",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_fenrir_p6_f7",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "fenrir_p6_f7",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_fenrir_p7",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "fenrir_p7",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_fenrir_p7_f1",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "fenrir_p7_f1",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_fenrir_p7_f2",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "fenrir_p7_f2",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_fenrir_p7_f3",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "fenrir_p7_f3",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_fenrir_p7_f4",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "fenrir_p7_f4",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_fenrir_p7_f5",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "fenrir_p7_f5",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_fenrir_p7_f6",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "fenrir_p7_f6",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "krt_fenrir_p7_f7",
+      "anim": "asset/tfm2_custom/vfx/kratos",
+      "tag": "fenrir_p7_f7",
+      "z": 5,
+      "is_follow": false
+    }
+  ],
   "view_projectiles": []
 }

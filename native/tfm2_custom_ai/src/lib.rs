@@ -57,6 +57,8 @@ mod wright_data;
 mod kratos;
 #[allow(dead_code)] mod kratos_core;
 mod kratos_data;
+mod kratos_art_data;
+mod kratos_presentation;
 #[cfg(test)] mod kratos_tests;
 mod motion;
 #[cfg(test)] mod motion_guard_tests;

@@ -40,6 +40,7 @@ fn replace_buff(sim: &mut StableSim, id: usize, b: &BuffV1) {
 #[derive(Clone, Default)]
 pub struct Kratos {
     pub core: Core,
+    presentation: crate::kratos_presentation::Presentation,
     profile: Option<crate::athlete_ai_core::Profile>,
     terrain: Option<(u64, Vec<bool>)>,
     basic_hits: Vec<usize>,
@@ -236,10 +237,22 @@ impl Kratos {
                 }
                 Effect::Fx { name, at, ticks, ambient } => {
                     if name.starts_with("krt_fenrir_p") || self.fx_ok(tick as u64, ambient) {
+                        let mut at=at;
+                        let chain=if self.presentation.enabled && name=="krt_chain" {
+                            sim.get_entity(owner).map(|e|{let p=e.pos();let from=Point::new(p.0 as i64,p.1 as i64);let heading=crate::kratos_core::heading(from,at);
+                                let mode=if from.dist(at)>d::DASH_RANGE as f64+1000.0{"long"}else{"short"};
+                                at=Point::new((from.x+at.x)/2,(from.y+at.y)/2);format!("krt_chain_{mode}_p{heading}")})
+                        }else{None};
+                        let name=if self.presentation.enabled && name.starts_with("krt_fenrir_p") {
+                            let phase=(tick/3)%8;
+                            if phase>0{format!("{name}_f{phase}")}else{name}
+                        } else{chain.unwrap_or(name)};
                         crate::fx_point(sim, &name, owner, at.x, at.y, ticks);
                     }
                 }
                 Effect::Pose { name, ticks } => {
+                    let name=if self.presentation.enabled {crate::kratos_presentation::pose(&self.core,name)}else{name};
+                    self.presentation.action(name,tick as u64,ticks);
                     sim.apply_cc(owner, &named(CcKindV1::Animation, ticks, name));
                 }
                 Effect::Log(line) => crate::mod_log(sim, "kratos_log.txt", &format!("{tick}:{line}"), &line),
@@ -249,10 +262,12 @@ impl Kratos {
 }
 
 impl StablePassive for Kratos {
+    fn configure(&mut self,params:&str){self.presentation.enabled=serde_json::from_str::<serde_json::Value>(params).ok().and_then(|v|v.get("weapon_layer").and_then(|n|n.as_i64())).is_some_and(|n|n==1);}
     fn clone_box(&self) -> Box<dyn StablePassive> {
         Box::new(self.clone())
     }
     fn on_spawn(&mut self, sim: &mut StableSim, _: usize, id: usize) {
+        self.presentation.respawn(sim);
         self.core.respawn(sim.tick() as u64);
         for b in [BLADES, IMMUNE, REDUCE, SIGHT] {
             sim.entity_remove_buff(id, b);
@@ -287,12 +302,14 @@ impl StablePassive for Kratos {
             crate::mod_log(sim, "kratos_log.txt", &format!("dodge{}:{attacker}", sim.tick()), &format!("Heimdall's Sight dodged {damage} from {attacker}"));
         }
     }
-    fn on_update(&mut self, sim: &mut StableSim, _: u64, _: usize, id: usize) {
+    fn on_update(&mut self, sim: &mut StableSim, _: u64, player: usize, id: usize) {
         let f = self.frame(sim, id);
         if !f.alive {
+            self.presentation.clear(sim);
             return;
         }
         let effects = self.core.step(&f);
         self.apply(sim, id, effects);
+        self.presentation.update(sim,player,&f,&self.core);
     }
 }
