@@ -1,0 +1,21 @@
+{
+  "date": "2026-11-10",
+  "body": {
+    "approved": true,
+    "answer": "Approve Kratos\u2019s appearance"
+  },
+  "fenrir": {
+    "approved": true,
+    "answer": "Approve Fenrir"
+  },
+  "effects": {
+    "approved": true,
+    "answer": "Approve these effects",
+    "date": "2026-11-10",
+    "source_sha256": "32c6e893fa345d9641dd36c156aed942d6e9dbae8178d36682fcfbe70a0e4f07"
+  },
+  "source_sha256": {
+    "body-source-v1.png": "6544b3e3df361e6ae9eb258df0091ce83e94c60c602b566a8318f4e2cbab57f4",
+    "fenrir-source-v1.png": "d00800aaf9900dd23197e8e39eddf755f925123658d93542e99ea07634c1f52d"
+  }
+}

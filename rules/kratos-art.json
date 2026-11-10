@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "revision": "kratos-art-1",
+  "units_per_pixel": 950,
+  "body_canvas": [64, 64],
+  "body_anchor": [32, 52],
+  "weapon_canvas": [96, 96],
+  "weapon_anchor": [48, 68],
+  "weapon_prefix": "krt_weapon_",
+  "pose_ticks": {
+    "idle": [9,9,9,9,9,9,9,9],
+    "run": [6,6,6,6,6,6,6,6],
+    "attack": [2,2,2,3,3,2,2,2],
+    "sight": [1,1,2,2,2,2,1,1],
+    "guard": [1,2,2,2,2,2,2,1],
+    "chain": [1,1,2,2,2,2,1,1],
+    "cleave": [3,3,3,2,3,3,3,2],
+    "sweep": [3,3,3,2,3,3,3,2],
+    "smash": [3,3,3,2,3,3,3,2],
+    "ult": [2,2,2,3,3,2,2,2],
+    "hit": [1,1,1,1,1,1,1,1],
+    "dead": [6,6,6,6,6,6,6,6]
+  },
+  "aliases": {"skill1":"sight", "skill2":"cleave", "skill3":"guard"},
+  "source_groups": {
+    "body-motion": ["idle","run","attack"],
+    "body-defense": ["sight","guard","chain"],
+    "body-rampage": ["cleave","sweep","smash"],
+    "body-fenrir": ["ult","hit","dead"]
+  }
+}

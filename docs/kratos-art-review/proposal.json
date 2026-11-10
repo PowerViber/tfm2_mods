@@ -1,0 +1,24 @@
+{
+  "status": "approved_appearance_concepts",
+  "game_assets_written": false,
+  "source_scale": 0.0963855421686747,
+  "concept_canvas": [
+    64,
+    56
+  ],
+  "foot_anchor": [
+    32,
+    48
+  ],
+  "sources": {
+    "body-defense-source-v1.png": "217f45106ad7dc115e87444d366b4bc1155c34d8f72b452879fbfb30acc350e3",
+    "body-fenrir-source-v1.png": "875e043769814b6cd283bcf08f13a96cf3035525dd6d76e17bf7dcd9563e2921",
+    "body-motion-source-v1.png": "5a4c031c11072dde302cc5f4d976ac2de25f41cab1e3e7aa66ed0ca80b9ff2da",
+    "body-rampage-source-v1.png": "0b1c059b8df50f43236efddd4ee2c7487070d2fa2b188d9b7da2e80a3a50d012",
+    "body-source-v1.png": "6544b3e3df361e6ae9eb258df0091ce83e94c60c602b566a8318f4e2cbab57f4",
+    "effects-source-v1.png": "32c6e893fa345d9641dd36c156aed942d6e9dbae8178d36682fcfbe70a0e4f07",
+    "fenrir-run-source-v1.png": "fc4cc84b72aa174e1004c1841301dda8426f7439389fbe4b2b974226946415de",
+    "fenrir-source-v1.png": "d00800aaf9900dd23197e8e39eddf755f925123658d93542e99ea07634c1f52d",
+    "props-source-v1.png": "7c779f78140edce212553f8f3f5aca934ca0cd4a25b6cd77b28a8dad99825e4a"
+  }
+}
