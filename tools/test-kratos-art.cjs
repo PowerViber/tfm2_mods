@@ -55,6 +55,9 @@ try{
  check('All thirteen manual 20/80 comparisons agree across three fixtures each',result.manualEqual);
  check('Recorded inputs replay with every original core output identical',result.replayOK&&result.frames===100);
  check('Older rules are explicitly rejected for replay',result.oldRejected);
+ const cleanup=await page.evaluate(()=>{const L=kratosLab;L.reset();L.pause();L.order('fenrir');L.step();document.querySelector('#defeat').click();L.step();return L.visualPose().name==='dead'&&!L.state.fenrir;});
+ check('Owner defeat clears the Lab wolf and shows the complete death pose',cleanup);
+ await page.evaluate(()=>{const L=kratosLab;L.startDemo('fenrir');L.pause();for(let i=0;i<52;i++)L.step();});
  fs.writeFileSync(path.join(tmp,'parity.json'),JSON.stringify(result.sample));
  await page.screenshot({path:path.join(out,'lab.png')});
  const warm=await page.evaluate(()=>{const p=kratosLab.painter,ctx=document.createElement('canvas').getContext('2d'),samples=[];ctx.canvas.width=900;ctx.canvas.height=900;

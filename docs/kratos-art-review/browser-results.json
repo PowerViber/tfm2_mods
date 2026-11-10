@@ -1,5 +1,5 @@
 {
-  "checks": 26,
+  "checks": 27,
   "passed": [
     "Editor route kratos-review.html",
     "Editor route kratos-clock.js",
@@ -24,6 +24,7 @@
     "All thirteen manual 20/80 comparisons agree across three fixtures each",
     "Recorded inputs replay with every original core output identical",
     "Older rules are explicitly rejected for replay",
+    "Owner defeat clears the Lab wolf and shows the complete death pose",
     "Full pose/effect review loads with the actual packed atlases",
     "Direct /editor/ route loads the same packaged artwork",
     "No browser errors: "
@@ -36,32 +37,32 @@
   "trace_sha256": "16ddbaff6780bff2c0c082ec1e4256879dc0772089d544cc99720c2f98554682",
   "warm_render_ms": [
     {
-      "p50": 0,
-      "p95": 0.10000014305114746
+      "p50": 0.09999990463256836,
+      "p95": 0.20000004768371582
     },
     {
-      "p50": 0,
-      "p95": 0.10000014305114746
+      "p50": 0.09999990463256836,
+      "p95": 0.20000004768371582
     },
     {
-      "p50": 0,
-      "p95": 0.10000014305114746
+      "p50": 0.09999990463256836,
+      "p95": 0.20000004768371582
     },
     {
-      "p50": 0,
-      "p95": 0.10000014305114746
+      "p50": 0.09999990463256836,
+      "p95": 0.20000004768371582
     },
     {
-      "p50": 0,
-      "p95": 0.10000014305114746
+      "p50": 0.09999990463256836,
+      "p95": 0.20000004768371582
     }
   ],
   "cold_navigation_and_art_ms": [
-    175.16599999999926,
-    196.41450000000077,
-    207.92069999999876,
-    210.79860000000008,
-    212.23689999999988
+    244.00310000000172,
+    214.13880000000063,
+    224.43059999999969,
+    208.27479999999923,
+    225.708499999997
   ],
   "performance_scope": "Browser rendering only, 12 bodies + Fenrir, five matched runs; not a native/host benchmark or Magnus 128-piece acceptance.",
   "native_observation": "pending"

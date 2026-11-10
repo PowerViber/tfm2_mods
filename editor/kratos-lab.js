@@ -134,6 +134,9 @@
     if (out.rejection && out.rejection !== lastRejection) log('Refused: ' + out.rejection);
     lastRejection = out.rejection || '';
     apply(out);
+    if(me.hp<=0){
+      me.deadStart??=tick;me.shields=[];me.pose='dead';me.poseUntil=0;glides=[];fx=[];queue=[];pendingHits=[];held.clear();
+    }
     const before = {...me.pos};
     tick++;
     for (const g of glides) { const k = Math.min(1, (tick - g.t0) / (g.t1 - g.t0)); g.who.pos = {x: g.from.x + (g.to.x - g.from.x) * k, y: g.from.y + (g.to.y - g.from.y) * k}; }
@@ -213,6 +216,7 @@
     return list.reduce((s, [a, b]) => s + Math.max(0, Math.min(b, tick) - Math.max(a, from)), 0);
   }
   function draw() {
+    ctx.imageSmoothingEnabled=false;
     if ($('zoom').checked) cam = {x: me.pos.x, y: me.pos.y, s: 900 / 260000}; else cam = {x: 480000, y: 480000, s: 900 / WORLD};
     ctx.fillStyle = '#2a3340'; ctx.fillRect(0, 0, 900, 900);
     const o = P({x: 0, y: 0});
@@ -309,6 +313,7 @@
   $('stunMe').onclick = () => { if (tick < me.immuneUntil) log('Kratos is CC-immune: the stun does nothing'); else { me.stunUntil = tick + 60; log('Kratos stunned 1 s'); } };
   $('wallDemo').onclick = () => { const c = wallCrossing(); me.pos = {...c.from}; find(2).pos = {...c.to}; find(2).hp = 1000; aim = {...c.to}; log('A foe across the wall: Chain Dash (E) hops over it'); };
   $('group').onclick = () => { units.filter(u => u.team === 1 && u.champion).forEach((u, i) => { u.pos = toward(me.pos, aim, 40000 + i * 12000); }); log('Enemies lined up toward the mouse'); };
+  $('defeat').onclick = () => {me.hp=0;me.deadStart=tick;log('Owner defeat injected into the Lab host; next core frame is dead.');};
   $('preview').onclick = () => startDemo($('demo').value);
   $('record').onclick = () => { if (recording) { $('record').textContent = 'Start recording'; recording = null; }
     else { reset(); window.kratosRecording = recording = {version: 1, transport: 1, rules_revision: R.revision, frames: []}; $('record').textContent = 'Stop recording'; log('Recording inputs, outputs and host observations (maximum two minutes).'); } };

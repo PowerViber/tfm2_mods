@@ -1,15 +1,14 @@
 
 ==============================  TFM2 Mod Manager  ==============================
- repo: C:\Users\arian\.codex\worktrees\kratos-art\tfm2_mods [codex/kratos-art] 740a8e9 Kratos Lab on the real 5v5 map, guide, art handoff and playtest notes
- game: C:\Users\arian\.codex\worktrees\kratos-art\tfm2_mods\backups\kratos-art-manager-l09ciuvk
- installed: native 0.10.94  champions 0.2.97
- log: C:\Users\arian\.codex\worktrees\kratos-art\tfm2_mods\logs\manager-20261110_144708.txt
+ repo: C:\Users\arian\.codex\worktrees\kratos-art\tfm2_mods [codex/kratos-art] ef036bc Merge current main and preserve round-160 balance changes
+ game: C:\Users\arian\.codex\worktrees\kratos-art\tfm2_mods\backups\kratos-art-manager-m1ju3sni
+ installed: native 0.10.95  champions 0.2.98
+ log: C:\Users\arian\.codex\worktrees\kratos-art\tfm2_mods\logs\manager-20261110_145201.txt
 ================================================================================
-Game folder: C:\Users\arian\.codex\worktrees\kratos-art\tfm2_mods\backups\kratos-art-manager-l09ciuvk
-  native (tfm2_custom_ai): repo 0.10.94  game 0.10.94
-  champions (tfm2_custom): repo 0.2.97  game 0.2.97
+Game folder: C:\Users\arian\.codex\worktrees\kratos-art\tfm2_mods\backups\kratos-art-manager-m1ju3sni
+  native (tfm2_custom_ai): repo 0.10.95  game 0.10.95
+  champions (tfm2_custom): repo 0.2.98  game 0.2.98
   765 champion files compared, 0 differ, 0 missing; native DLL identical
 
-  NOT UP TO DATE:
-   1. this folder is 2 commit(s) behind main: Update pulls / switches to main
-Log saved: C:\Users\arian\.codex\worktrees\kratos-art\tfm2_mods\logs\manager-20261110_144708.txt
+  UP TO DATE: the game has exactly the repo's mods.
+Log saved: C:\Users\arian\.codex\worktrees\kratos-art\tfm2_mods\logs\manager-20261110_145201.txt

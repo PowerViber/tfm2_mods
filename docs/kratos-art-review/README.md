@@ -33,6 +33,7 @@ The native body/weapon/FX allocation totals **16 MiB**, below 32 MiB. Atlases ar
 ## Review and limitations
 
 - `editor/kratos-review.html`: actual-size/3× comparisons, all poses/frames/facings and effect playback.
+- `rtk proxy powershell -NoProfile -File tools/start-kratos-review.ps1`: start the review server in a hidden window at http://localhost:7302/kratos-review.html. `-Restart` restarts only a verified Node editor server on that port.
 - `editor/kratos.html`: fixed-60-Hz WASM simulation, actual 5v5 map, full-map/follow views, supported manual commands, thirteen athlete values, demos and recordings.
 - `tools/test-kratos-art.cjs`: browser/route, playback, recording, presentation independence, scenario and manual-profile checks.
 - `tools/verify-kratos-art.py`: source hashes, atlas bounds, mirrors, anchors, unchanged combat data and complete native/WASM output comparisons.
