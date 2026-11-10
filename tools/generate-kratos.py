@@ -54,10 +54,8 @@ text = {
 }
 
 champ = copy.deepcopy(json.loads((ROOT / 'mods/tfm2_custom/champion/tfm2_custom_contender.data_champion').read_text()))
-sheet = ROOT / 'mods/tfm2_custom/champions' / f'{ID}#sheet.png'
-# Until Codex's art lands the body is Contender's (presentation only); the generator switches by itself.
-sprite_id = ID if sheet.exists() else 'tfm2_custom_contender'
-champ.update(id=ID, category=rules['category'], tags=rules['tags'], sprite='asset/tfm2_custom/champions/' + sprite_id, anim_prefix='')
+# his own body sheet (Codex's art); like Wright, the game skips him until it exists
+champ.update(id=ID, category=rules['category'], tags=rules['tags'], sprite='asset/tfm2_custom/champions/' + ID, anim_prefix='')
 for key in ['stat', 'growth']:
     champ[key] = {k: 0 for k in champ[key]}
     champ[key].update(rules[key])

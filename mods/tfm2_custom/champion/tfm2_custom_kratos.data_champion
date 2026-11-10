@@ -7,7 +7,7 @@
     "CC",
     "Tank"
   ],
-  "sprite": "asset/tfm2_custom/champions/tfm2_custom_contender",
+  "sprite": "asset/tfm2_custom/champions/tfm2_custom_kratos",
   "anim_prefix": "",
   "stat": {
     "attack": 80,

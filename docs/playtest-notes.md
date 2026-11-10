@@ -3827,3 +3827,8 @@ To check in game: close the game, Update/Check, confirm native 0.10.36 and champ
 - **Checks:** 1109 native tests, 25 Lab tests, 12 browser checks, the art verifier's checks, Mod Manager load. Review: `docs/main-review-round-159.md`.
 - **Pending:** live acceptance and balance.
 
+## Nov 10: Kratos (in progress, not released)
+- Reihan designed **Kratos** (God of War, a new family): an Attack engage bruiser for top, jungle or support. Two weapons (the axe freezes at 3 Frost, the Blades burn and reach farther), swapped only by S3, each swap a 5% shield (10% cap); Heimdall's Sight (1.5 s immunity, first hit per champion dodged); Leviathan Rampage (cleave, sweep, frost-fire smash; cleanse, immunity, 25% reduction); Spartan Guard / Chain Dash with a 3 s link (Guard → Dash reaches 90,000; Dash → Guard is stronger), the dash crossing any wall; Fenrir's Charge (Ornn-like, recast slams it back).
+- **Guardrails:** CC immunity never stacks and is capped at 3 s in any 6 s; his skills and Fenrir never hit towers (his basic attacks do).
+- **Built:** the native kit, the Lab on the real 5v5 map (`editor/kratos.html`) and tests (26 Kratos native tests, 10 browser checks). Guide: `docs/kratos-guide.md`.
+- **Waiting on:** Codex's art (`docs/kratos-art-handoff.md`), then the release.
