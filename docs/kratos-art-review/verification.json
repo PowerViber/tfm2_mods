@@ -1,0 +1,51 @@
+{
+  "decoded_bytes": 16777216,
+  "atlas_info": {
+    "body": {
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "animations": 30,
+      "sha256": "26041882805824a675c887841d80d9d9d51c319ef55492c10a9cea6956a37cc6"
+    },
+    "weapons": {
+      "dimensions": [
+        1024,
+        2048
+      ],
+      "animations": 384,
+      "sha256": "5b55bf733ddf3fa33f5f515a2f9892d6b9a052d506f4465d71e7037f40e1e7fc"
+    },
+    "effects": {
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "animations": 103,
+      "sha256": "6174f2aa6ba33d6cebb297b5cf59455899b9665739497e2dfd1aa55b2b3e4be9"
+    },
+    "assembled": {
+      "dimensions": [
+        2048,
+        2048
+      ],
+      "animations": 48,
+      "sha256": "ce0c54b0820ae438d42cfab1a07eaa8a29aa3bfb89b223d17e82501d16548f9d"
+    }
+  },
+  "animation_frame_entries_checked": 1211,
+  "native_wasm_complete_outputs_equal": 405,
+  "unchanged_from_pr_head": [
+    "rules/kratos.json",
+    "native/tfm2_custom_ai/src/kratos_core.rs",
+    "native/tfm2_custom_ai/src/kratos_data.rs",
+    "editor/kratos-data.js",
+    "editor/kratos.wasm",
+    "native/kratos_lab/src/lib.rs"
+  ],
+  "body_and_effect_approvals": "verified",
+  "gameplay_data_unchanged": true,
+  "live_game_acceptance": "pending",
+  "release_packaging": "pending; existing packaged DLL not rebuilt or installed"
+}

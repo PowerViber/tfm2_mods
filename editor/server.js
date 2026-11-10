@@ -244,7 +244,11 @@ STATIC['/rally-white.png']='../mods/tfm2_custom/vfx/rally-white#sheet.png';
 STATIC['/rally-white.fanim']='../mods/tfm2_custom/vfx/rally-white#anim.fanim';
 for(const f of ['grimhald.html','grimhald-review.html','grimhald-lab.js','grimhald-data.js','grimhald-art.json','grimhald.wasm'])STATIC['/'+f]=f;
 for(const f of ['thalassa.html','thalassa-lab.js','thalassa-data.js','thalassa.wasm','thalassa-review.html','thalassa-art.js','thalassa-renderer.js'])STATIC['/'+f]=f;
-for(const f of ['kratos.html','kratos-lab.js','kratos-data.js','kratos.wasm'])STATIC['/'+f]=f;
+for(const f of ['kratos.html','kratos-lab.js','kratos-data.js','kratos.wasm','kratos-clock.js','kratos-renderer.js','kratos-review.html'])STATIC['/'+f]=f;
+for(const [url,file] of Object.entries({'kratos-body.png':'champions/tfm2_custom_kratos#sheet.png','kratos-weapons.png':'vfx/kratos_weapons#sheet.png','kratos-effects.png':'vfx/kratos#sheet.png'}))STATIC['/'+url]='../mods/tfm2_custom/'+file;
+for(const file of fs.existsSync(path.join(HERE,'../docs/kratos-art-review'))?fs.readdirSync(path.join(HERE,'../docs/kratos-art-review')):[]){
+  if(/^[a-zA-Z0-9_.-]+\.(png|gif|json|fanim|txt|md)$/.test(file))STATIC['/kratos-review-assets/'+file]='../docs/kratos-art-review/'+file;
+}
 for(const f of ['wright.html','wright-lab.js','wright-data.js','wright.wasm','wright-clock.js','wright-review.html','wright-renderer.js','wright-art.js'])STATIC['/'+f]=f;
 STATIC['/wright-body.png']=fs.existsSync(path.join(HERE,'../mods/tfm2_custom/champions/tfm2_custom_wright#sheet.png'))?'../mods/tfm2_custom/champions/tfm2_custom_wright#sheet.png':'../docs/wright-art-review/candidate-body.png';
 STATIC['/wright-fx.png']=fs.existsSync(path.join(HERE,'../mods/tfm2_custom/vfx/wright#sheet.png'))?'../mods/tfm2_custom/vfx/wright#sheet.png':'../docs/wright-art-review/candidate-fx.png';

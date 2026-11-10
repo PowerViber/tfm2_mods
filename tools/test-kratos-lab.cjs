@@ -1,12 +1,12 @@
 // Kratos Lab in a real browser, on the real 5v5 map: the page loads the shared core (kratos.wasm) and every skill
 // behaves as in the game. Run: node tools/test-kratos-lab.cjs   (uses the preinstalled Playwright / Chromium)
 const assert = require('assert'), path = require('path'), {spawn} = require('child_process');
-const {chromium} = require('playwright');
+const {chromium} = require(require.resolve('playwright', {paths: [process.cwd(), path.join(require('os').homedir(), '.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules')]}));
 const root = path.resolve(__dirname, '..'), port = 7323;
 (async () => {
   const server = spawn('node', ['server.js', '--port', String(port), '--no-open'], {cwd: path.join(root, 'editor'), stdio: 'ignore'});
   await new Promise(r => setTimeout(r, 1500));
-  const browser = await chromium.launch(), page = await browser.newPage({viewport: {width: 1300, height: 950}}), errors = [];
+  const browser = await chromium.launch({channel: 'msedge', headless: true}), page = await browser.newPage({viewport: {width: 1300, height: 950}}), errors = [];
   page.on('pageerror', e => errors.push(e.message));
   let checks = 0;
   const check = (name, ok) => { assert(ok, name); checks++; console.log('ok -', name); };

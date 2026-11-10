@@ -1,0 +1,30 @@
+{
+  "files_identical": 24,
+  "sha256": {
+    "docs/kratos-art-review/assembled-preview.png": "ce0c54b0820ae438d42cfab1a07eaa8a29aa3bfb89b223d17e82501d16548f9d",
+    "docs/kratos-art-review/body-preview.png": "26041882805824a675c887841d80d9d9d51c319ef55492c10a9cea6956a37cc6",
+    "docs/kratos-art-review/effects-preview.png": "6174f2aa6ba33d6cebb297b5cf59455899b9665739497e2dfd1aa55b2b3e4be9",
+    "docs/kratos-art-review/weapons-preview.png": "5b55bf733ddf3fa33f5f515a2f9892d6b9a052d506f4465d71e7037f40e1e7fc",
+    "docs/kratos-art-review/assembled-preview.fanim": "92128b5aac0065fd5b2998b78a817467f4f2f4a1777d2be6c0827146dbe7a233",
+    "docs/kratos-art-review/body-preview.fanim": "9d5e22d923d42beb5ff522a30d24842062dfd2fd2d66c12d0e083a3d95085351",
+    "docs/kratos-art-review/effects-preview.fanim": "4ac9ff9f57bc2c8c7e54f67f7532dd34530a774502f1dbaab9d7e63fde21d725",
+    "docs/kratos-art-review/weapons-preview.fanim": "21a82915cdbc0a99111bd3bb2def137b86880e16968b7e0b58a2b5ab8f3d20f4",
+    "docs/kratos-art-review/animation-attack.gif": "42a93dc69302c64a991edc8893c11ae46fe254fd30a900cc7bd4d447ecd3692f",
+    "docs/kratos-art-review/animation-chain.gif": "ba0ebf165484a2124e55a3abb162fab2d05e1ec67eaf9562067020cf40dd2997",
+    "docs/kratos-art-review/animation-cleave.gif": "862992ef084ed43258f38c861ea3e8d96a47ee3375cc383a30b4a2cd2a7c77dd",
+    "docs/kratos-art-review/animation-dead.gif": "025856f7bbeb12d57d6bc43449591c52d052194a258bc82090f50cbb52aa7f86",
+    "docs/kratos-art-review/animation-guard.gif": "f63e55683bc28f55d7e4e1cc9e84838ec4f13708146202309453ca1de83d147f",
+    "docs/kratos-art-review/animation-hit.gif": "2dd29f3047fc7baadc4ef7a2f9a78cef6a1d775480602b83fd1dbd32129a67ba",
+    "docs/kratos-art-review/animation-idle.gif": "dbfca8fe5b0da0a526ccf780ca67548edc9164c2a585365462b5df5a61c22767",
+    "docs/kratos-art-review/animation-run.gif": "c8850953c5474b859e0f7ae6e81be0bf05fedd1f7dfd8f89cc34a15dc9a6a56e",
+    "docs/kratos-art-review/animation-sight.gif": "1641746fdfb34a8a2e3f2ed6225e7592680a77c994c981a71eb28269013aeff7",
+    "docs/kratos-art-review/animation-smash.gif": "d197312c8d91d6ebd92310317996875a095a37ad4b767de94aa8265d74b87daf",
+    "docs/kratos-art-review/animation-sweep.gif": "95f6d71bdf662271fe28500916a556bcd17d9950acd2c8730e48ec62a8fba2d9",
+    "docs/kratos-art-review/animation-ult.gif": "3cd66304023aec0389d8880f0ca02da379ea49cf7ea76bf9946c7da4e580cd54",
+    "docs/kratos-art-review/art-manifest.json": "397aa57df469b56d2745dd7b97f97e0310dc340cec1fcfa107d8e7d1991b2cc4",
+    "docs/kratos-art-review/presentation.json": "397aa57df469b56d2745dd7b97f97e0310dc340cec1fcfa107d8e7d1991b2cc4",
+    "native/tfm2_custom_ai/src/kratos_art_data.rs": "7b7db360d72c9e3afaadfaf755eb77f806b9f0b67f5a1bc4f37b6e629c23e177",
+    "mods/tfm2_custom/champion/tfm2_custom_kratos.data_champion": "ca6709c3b308424e44636e0f2ae038de3d7ed430dbe9e8d92419ce244a5e4a26"
+  },
+  "scope": "Deterministic extraction, mirroring, packing, clocks and bindings from frozen sources. AI generation is not deterministic."
+}
