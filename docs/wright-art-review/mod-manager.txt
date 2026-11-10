@@ -1,0 +1,14 @@
+
+==============================  TFM2 Mod Manager  ==============================
+ repo: C:\Users\arian\.codex\worktrees\wright-art\tfm2_mods [codex/wright-art] 1f96d48 Record Wright rework art parity, previews and isolated validation
+ game: C:\Users\arian\.codex\worktrees\wright-art\tfm2_mods\backups\wright-art-manager-uj8a92wo
+ installed: native 0.10.93  champions 0.2.96
+ log: C:\Users\arian\.codex\worktrees\wright-art\tfm2_mods\logs\manager-20261109_202950.txt
+================================================================================
+Game folder: C:\Users\arian\.codex\worktrees\wright-art\tfm2_mods\backups\wright-art-manager-uj8a92wo
+  native (tfm2_custom_ai): repo 0.10.93  game 0.10.93
+  champions (tfm2_custom): repo 0.2.96  game 0.2.96
+  758 champion files compared, 0 differ, 0 missing; native DLL identical
+
+  UP TO DATE: the game has exactly the repo's mods.
+Log saved: C:\Users\arian\.codex\worktrees\wright-art\tfm2_mods\logs\manager-20261109_202950.txt

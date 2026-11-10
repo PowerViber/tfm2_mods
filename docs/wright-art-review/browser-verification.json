@@ -1,0 +1,112 @@
+{
+  "checks": 63,
+  "passed": [
+    "source review images decode",
+    "idle eight-frame inspection",
+    "idle left binding",
+    "idle right binding",
+    "run eight-frame inspection",
+    "run left binding",
+    "run right binding",
+    "attack eight-frame inspection",
+    "attack left binding",
+    "attack right binding",
+    "skill1 eight-frame inspection",
+    "skill1 left binding",
+    "skill1 right binding",
+    "skill2 eight-frame inspection",
+    "skill2 left binding",
+    "skill2 right binding",
+    "skill3 eight-frame inspection",
+    "skill3 left binding",
+    "skill3 right binding",
+    "ult eight-frame inspection",
+    "ult left binding",
+    "ult right binding",
+    "hit eight-frame inspection",
+    "hit left binding",
+    "hit right binding",
+    "dead eight-frame inspection",
+    "dead left binding",
+    "dead right binding",
+    "review exposes dogfight phase inspection",
+    "actual packaged atlases load",
+    "thirteen athlete controls retained",
+    "canonical 45k and 100k areas loaded",
+    "normal and carrier-ready warnings select complete lifetimes",
+    "jet phase selection retains stable birth clock",
+    "30 Hz gives 60 ticks/sec",
+    "60 Hz gives 60 ticks/sec",
+    "120 Hz gives 60 ticks/sec",
+    "144 Hz gives 60 ticks/sec",
+    "240 Hz gives 60 ticks/sec",
+    "pause resets accumulator and stalls have bounded catch-up",
+    "complete combat/host trace identical with art on/off",
+    "complete native/WASM states and command arrays",
+    "non-bomber baseline complete combat states and nonvisual commands unchanged",
+    "native/WASM jet phase names agree with Lab renderer",
+    "manual mechanics independent of thirteen-stat profile",
+    "three fixed advancing centres",
+    "three individually timed ground warnings",
+    "all review images including actual-core bomber animation decode",
+    "each isolated footprint delivers one large blast",
+    "only third footprint receives the final stun",
+    "WASD moves actor",
+    "arena focus loss clears held movement",
+    "step pauses and advances once",
+    "escort preview starts",
+    "rockets preview starts",
+    "kamikaze preview starts",
+    "bomber preview starts",
+    "repair preview starts",
+    "drone preview starts",
+    "carrier preview starts",
+    "low-HP fixture changes actual Lab carrier HP only",
+    "death clears fleet and chooses body death pose",
+    "no browser errors"
+  ],
+  "complete_trace_frames": 2010,
+  "native_wasm_parity_frames": 2010,
+  "combat_baseline": "1f96d4805670a16f18c018b4001bb66fff715749",
+  "baseline_non_bomber_frames": 2010,
+  "trace_sha256": "d36a8865cf371341a879ea1ef96e9cae634f625d8669a51e15e1220508fd7bbe",
+  "display_rates": [
+    {
+      "rate": 30,
+      "ticks": 120
+    },
+    {
+      "rate": 60,
+      "ticks": 120
+    },
+    {
+      "rate": 120,
+      "ticks": 120
+    },
+    {
+      "rate": 144,
+      "ticks": 120
+    },
+    {
+      "rate": 240,
+      "ticks": 120
+    }
+  ],
+  "cold_browser_load_ms": [
+    401.11570013687015,
+    389.8181999102235,
+    222.73709997534752,
+    263.3243999443948,
+    200.18330006860197
+  ],
+  "sustained_draw_ms_per_16_plane_scene": [
+    0.7208000001907349,
+    0.8087999999523163,
+    0.7762999999523162,
+    0.7885999999046326,
+    0.6391000001430511
+  ],
+  "performance_scope": "Five cold browser contexts and five sustained canvas scenes; not native-host FPS",
+  "live_game_acceptance": "pending",
+  "errors": []
+}

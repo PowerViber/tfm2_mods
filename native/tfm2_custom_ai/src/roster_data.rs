@@ -30,7 +30,7 @@ pub static FAMILY_RULES: [FamilyRule; 5] = [
     FamilyRule { id: "smoke_blocks_sight", from: "valorant", to: "*", rule: "Nobody outside Omen's Dark Cover sees in; someone inside sees only 15000 and nothing outside. Every champion's targeting respects it." },
     FamilyRule { id: "stopped_time", from: "jojo", to: "*", rule: "ZA WARUDO stops every caught champion, whatever its franchise; only DIO moves." },
 ];
-pub static CHAMPIONS: [ChampionDef; 82] = [
+pub static CHAMPIONS: [ChampionDef; 83] = [
     ChampionDef { id: "android", name: "Android", family: 0, role: "Melee", native: false, basic: BasicAttack { name: "Basic attack", range: 25000, reach: Range::Melee }, skills: &[
         SkillDef { slot: Slot::Skill, name: "Skill 1", kinds: 4 | 8 | 16 | 512, intents: 1 | 2 | 16 | 32 },
         SkillDef { slot: Slot::Skill2, name: "Skill 2", kinds: 256 | 512, intents: 2 | 4 | 8 },
@@ -457,5 +457,10 @@ pub static CHAMPIONS: [ChampionDef; 82] = [
         SkillDef { slot: Slot::Skill, name: "Tide Pool", kinds: 32 | 16 | 512, intents: 1 | 2 | 16 },
         SkillDef { slot: Slot::Skill2, name: "Dive / Tide Twin", kinds: 1 | 64 | 256, intents: 4 | 8 | 32 },
         SkillDef { slot: Slot::Ult, name: "Trident of the Deep", kinds: 4 | 512, intents: 2 | 32 },
+    ] },
+    ChampionDef { id: "tfm2_custom_wright", name: "Wright", family: 13, role: "Magician", native: true, basic: BasicAttack { name: "Rivet gun", range: 52000, reach: Range::Ranged }, skills: &[
+        SkillDef { slot: Slot::Skill, name: "Workshop / Fighter Wing", kinds: 64 | 4 | 512, intents: 32 | 1 | 64 },
+        SkillDef { slot: Slot::Skill2, name: "Carpet Bomber / Repair Wing", kinds: 16 | 32 | 128 | 256, intents: 2 | 8 | 1 },
+        SkillDef { slot: Slot::Ult, name: "Sky Carrier", kinds: 64 | 16 | 512, intents: 2 | 16 },
     ] },
 ];

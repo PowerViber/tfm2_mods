@@ -1,0 +1,281 @@
+{
+  "scope": "wright-3 / wright-art-3: three advancing bomber explosions, one large explosion per committed footprint",
+  "baseline": "1f96d4805670a16f18c018b4001bb66fff715749",
+  "historical_evidence": [
+    "validation-summary-wright-art-1.json",
+    "validation-summary-wright-art-2.json"
+  ],
+  "native_serial": {
+    "passed": 1105,
+    "failed": 0,
+    "ignored": 13,
+    "warnings": "Four pre-existing Windows native-bridge detour-test-helper dead-code warnings"
+  },
+  "wright_native": 32,
+  "lab_tests": 24,
+  "gameplay_browser_checks": 12,
+  "art_browser_checks": 63,
+  "actual_editor_routes": 5,
+  "complete_native_wasm_frames": 2010,
+  "unchanged_non_bomber_baseline_frames": 2010,
+  "art_checks": 1088,
+  "decoded_bytes": 11894784,
+  "manager_champion_load": true,
+  "manager_comparison": {
+    "scope": "Disposable fixture comparison only; no real installation, game or career migration",
+    "exit_code": 0,
+    "files_compared": 871,
+    "different_or_missing": [],
+    "isolated_appdata": true,
+    "packaged_dll_sha256": "97ce14369d999da605a80dbe0618fec3bf192c9595cf606564ae25a00565a628",
+    "release_packaging": "pending; this check does not prove DLL registration or live rendering"
+  },
+  "magnus_stress": {
+    "scope": "Unchanged Magnus release core; excludes native host, rendering and crowded-game FPS",
+    "five_runs": [
+      [
+        {
+          "pieces": 32,
+          "finalArmy": 32,
+          "p95StepUs": 1191,
+          "maxStepUs": 5543,
+          "p95PlanningUs": 1364,
+          "commands": [
+            0,
+            3,
+            0,
+            6,
+            0
+          ]
+        },
+        {
+          "pieces": 64,
+          "finalArmy": 64,
+          "p95StepUs": 485,
+          "maxStepUs": 5114,
+          "p95PlanningUs": 580,
+          "commands": [
+            1,
+            0,
+            0,
+            7,
+            0
+          ]
+        },
+        {
+          "pieces": 128,
+          "finalArmy": 128,
+          "p95StepUs": 937,
+          "maxStepUs": 7020,
+          "p95PlanningUs": 1273,
+          "commands": [
+            0,
+            3,
+            1,
+            4,
+            0
+          ]
+        }
+      ],
+      [
+        {
+          "pieces": 32,
+          "finalArmy": 32,
+          "p95StepUs": 1081,
+          "maxStepUs": 4737,
+          "p95PlanningUs": 1240,
+          "commands": [
+            0,
+            3,
+            0,
+            6,
+            0
+          ]
+        },
+        {
+          "pieces": 64,
+          "finalArmy": 64,
+          "p95StepUs": 507,
+          "maxStepUs": 5445,
+          "p95PlanningUs": 606,
+          "commands": [
+            1,
+            0,
+            0,
+            7,
+            0
+          ]
+        },
+        {
+          "pieces": 128,
+          "finalArmy": 128,
+          "p95StepUs": 909,
+          "maxStepUs": 7311,
+          "p95PlanningUs": 1052,
+          "commands": [
+            0,
+            3,
+            1,
+            4,
+            0
+          ]
+        }
+      ],
+      [
+        {
+          "pieces": 32,
+          "finalArmy": 32,
+          "p95StepUs": 1177,
+          "maxStepUs": 5086,
+          "p95PlanningUs": 1346,
+          "commands": [
+            0,
+            3,
+            0,
+            6,
+            0
+          ]
+        },
+        {
+          "pieces": 64,
+          "finalArmy": 64,
+          "p95StepUs": 523,
+          "maxStepUs": 5156,
+          "p95PlanningUs": 690,
+          "commands": [
+            1,
+            0,
+            0,
+            7,
+            0
+          ]
+        },
+        {
+          "pieces": 128,
+          "finalArmy": 128,
+          "p95StepUs": 810,
+          "maxStepUs": 6856,
+          "p95PlanningUs": 1105,
+          "commands": [
+            0,
+            3,
+            1,
+            4,
+            0
+          ]
+        }
+      ],
+      [
+        {
+          "pieces": 32,
+          "finalArmy": 32,
+          "p95StepUs": 1018,
+          "maxStepUs": 3942,
+          "p95PlanningUs": 1229,
+          "commands": [
+            0,
+            3,
+            0,
+            6,
+            0
+          ]
+        },
+        {
+          "pieces": 64,
+          "finalArmy": 64,
+          "p95StepUs": 470,
+          "maxStepUs": 4201,
+          "p95PlanningUs": 534,
+          "commands": [
+            1,
+            0,
+            0,
+            7,
+            0
+          ]
+        },
+        {
+          "pieces": 128,
+          "finalArmy": 128,
+          "p95StepUs": 1026,
+          "maxStepUs": 8077,
+          "p95PlanningUs": 1307,
+          "commands": [
+            0,
+            3,
+            1,
+            4,
+            0
+          ]
+        }
+      ],
+      [
+        {
+          "pieces": 32,
+          "finalArmy": 32,
+          "p95StepUs": 1097,
+          "maxStepUs": 4843,
+          "p95PlanningUs": 1314,
+          "commands": [
+            0,
+            3,
+            0,
+            6,
+            0
+          ]
+        },
+        {
+          "pieces": 64,
+          "finalArmy": 64,
+          "p95StepUs": 521,
+          "maxStepUs": 5622,
+          "p95PlanningUs": 716,
+          "commands": [
+            1,
+            0,
+            0,
+            7,
+            0
+          ]
+        },
+        {
+          "pieces": 128,
+          "finalArmy": 128,
+          "p95StepUs": 872,
+          "maxStepUs": 7251,
+          "p95PlanningUs": 1118,
+          "commands": [
+            0,
+            3,
+            1,
+            4,
+            0
+          ]
+        }
+      ]
+    ],
+    "median_128_piece_p95_us": 909,
+    "target_us": 4000
+  },
+  "intentional_changes": [
+    "Three committed overlapping strike centres instead of one repeated centre",
+    "Aim selects the middle/direction, 40000 nominal spacing, furthest centre within 110000",
+    "Each strike has its own warning and large explosion; per-strike damage, timing and control unchanged",
+    "Invalid zero-length map-edge lines rejected before payment",
+    "AI scores the actual three-circle coverage, without new athlete weights"
+  ],
+  "release_packaging": "pending",
+  "installation": "not performed",
+  "career_migration": "not performed",
+  "live_game_acceptance": "pending",
+  "live_gates": [
+    "Host rendering and damage/control receipt observations",
+    "Post-reduction carrier guard callback calibration",
+    "Actual turret targeting of jets/drone"
+  ],
+  "file_hashes": {
+    "editor/wright.wasm": "c564c7b9e122d3a668516b463fd45d2ab85dbfdfca68e63a22a7b41227881a3d",
+    "mods/tfm2_custom/vfx/wright#sheet.png": "a611a4381751f6a13d1d842c056c1c72f334289571478e0994052482362a81e9",
+    "mods/tfm2_custom/vfx/wright#anim.fanim": "4e5f6352f8677619a6d95f25fc8b3c185ff5c6b986a34c183c333911af02fc6c"
+  }
+}

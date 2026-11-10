@@ -1,0 +1,11 @@
+{
+  "checks": 5,
+  "passed": [
+    "wright-review.html",
+    "wright.html",
+    "wright-body.png packaged hash",
+    "wright-fx.png packaged hash",
+    "no script errors"
+  ],
+  "scope": "Real Node editor routes; isolated AppData; no game installation"
+}

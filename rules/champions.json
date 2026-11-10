@@ -5188,6 +5188,65 @@
      "summary": "Trident of the Deep (100 s): a slow trident with global range, steerable 25 degrees in total. The first enemy champion hit is stunned 3 s (4 s if thrown from water) and enemies around take 150 + 90% AP. It leaves a pool where it lands (from water it flies faster and the pool is a whirlpool) and a clone of her there for 8 s (25% of her HP) that fights on its own with harp bolts, Tide Pool and Dive at 50% damage."
     }
    ]
+  },
+  {
+   "id": "tfm2_custom_wright",
+   "name": "Wright",
+   "family": "original",
+   "role": "Magician",
+   "native": true,
+   "basicAttack": {
+    "name": "Rivet gun",
+    "kind": "ranged",
+    "range": 52000
+   },
+   "skills": [
+    {
+     "slot": "skill",
+     "name": "Workshop / Fighter Wing",
+     "kinds": [
+      "Summon",
+      "Projectile",
+      "Cc"
+     ],
+     "intents": [
+      "Poke",
+      "Clear",
+      "Vision"
+     ],
+     "summary": "Workshop (passive): builds an airframe every 4 s (up to 3); each skill uses one. Every 14 s a scout drone (15% of his HP) flies to the nearest enemy champion, hovers 4 s and taunts enemies within 20000 onto it for 0.75 s. Fighter Wing (6 s): launches 2 fighters for 20 s (up to 4, 15% of his HP each, can be shot down). They fly sorties from him: each picks the nearest enemy (champions first, then minions and creeps), flies to where it is, strafes once (20 + 25% AP; every 3rd sortie a rocket, 35 + 40% AP with splash) and returns; no homing, so a moving target can dodge, and the closer he is, the faster they attack. They never damage turrets. When their time ends or they fall below 25% HP they kamikaze: 30 + 35% AP, a knockback and a burn of 2% max HP a second for 3 s."
+    },
+    {
+     "slot": "skill2",
+     "name": "Carpet Bomber / Repair Wing",
+     "kinds": [
+      "Aoe",
+      "Zone",
+      "Heal",
+      "Shield"
+     ],
+     "intents": [
+      "Engage",
+      "Protect",
+      "Clear"
+     ],
+     "summary": "Carpet Bomber (10 s): marks 3 overlapping circles advancing in a fixed line (radius 45000, spacing 40000, furthest centre within 110000). After 1 s, a bomber triggers one large explosion per circle, 0.3 s apart (45 + 40% AP each): the first ones slow 30%, the last stuns 0.75 s. Repair Wing (14 s): a repair chopper circles him and a repair plane flies to the most hurt ally anywhere, both for 6 s. Every 1 s each drops a kit: 1% max HP and a 15 + 10% AP shield (up to 60 + 40% AP). The chopper also repairs his fighters."
+    },
+    {
+     "slot": "ult",
+     "name": "Sky Carrier",
+     "kinds": [
+      "Summon",
+      "Aoe",
+      "Cc"
+     ],
+     "intents": [
+      "Engage",
+      "Objective"
+     ],
+     "summary": "Sky Carrier (90 s): a carrier drops from the sky on Wright, knocking enemies away (the closer, the farther, up to 100000) and slowing them 15%, with no damage. It hovers over him for 10 s and takes 80% of the damage he takes (until its pool of 100% of his HP runs out). It launches a fighter every 1 s (up to 6) and a repair chopper every 3 s, and readies a bomber every 3 s (up to 3): while it's up, Carpet Bomber uses a ready bomber, with no airframe or cooldown."
+    }
+   ]
   }
  ]
 }

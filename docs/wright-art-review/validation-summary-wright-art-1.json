@@ -1,0 +1,44 @@
+{
+  "scope": "Approved Wright body/fleet/FX, native presentation and artwork Lab; release and live acceptance separate",
+  "baseline": "2635f714c89d761df822e174ffad7c3984799bef",
+  "native_serial": {
+    "passed": 1095,
+    "failed": 0,
+    "ignored": 13,
+    "warnings": "Four pre-existing Windows native-bridge detour-test-helper dead-code warnings"
+  },
+  "lab_tests": 18,
+  "original_browser_checks": 8,
+  "art_browser_checks": 52,
+  "actual_editor_routes": 5,
+  "complete_native_wasm_frames": 2010,
+  "art_checks": 818,
+  "decoded_bytes": 5505024,
+  "manager_champion_load": true,
+  "manager_comparison": {
+    "scope": "Disposable fixture comparison only; no real installation, game or career migration",
+    "exit_code": 0,
+    "files_compared": 871,
+    "different_or_missing": [],
+    "isolated_appdata": true,
+    "packaged_dll_sha256": "97ce14369d999da605a80dbe0618fec3bf192c9595cf606564ae25a00565a628",
+    "release_packaging": "pending; this check does not prove DLL registration or live rendering"
+  },
+  "magnus_stress": {
+    "five_p95_us": [
+      1400,
+      949,
+      1014,
+      940,
+      847
+    ],
+    "median_p95_us": 949,
+    "target_us": 4000
+  },
+  "release_packaging": "pending",
+  "installation": "not performed",
+  "career_migration": "not performed",
+  "live_game_acceptance": "pending",
+  "wright_native": 22,
+  "independent_owners_and_replay": "Native Lab integration test passed"
+}
