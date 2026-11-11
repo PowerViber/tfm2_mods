@@ -62,6 +62,12 @@ She also reads towers and whether something of hers is tanking them, plus walls 
 - **Lab:** `native/akane_lab` → `editor/akane.html`, on the real 5v5 map. Browser test: `node tools/test-akane-lab.cjs`.
 - **Art:** `docs/akane-art-handoff.md`.
 
+## Wave clear (round 165, `akane-1.3`)
+- **Rhythm cleave:** at 3+ Blood Rhythm stacks, her basic attacks cleave within 12,000 of the target: 80% to minions and creeps, 40% to champions.
+- **Kunai Flip pierces** up to 4 minions or creeps. It marks the first champion behind them, or the last one it went through.
+- **Crimson Edge** splashes 50% around each empowered hit, and on a minion or creep the 4th hit always bursts.
+- **No extra CC** on champions from any of these, and never towers.
+
 ## Known limits
 - **Released in round 164** (native 0.10.98, tfm2_custom 0.2.101) with Codex's approved art and the `akane-1.1` ranges. Live acceptance is still pending.
 - **Healing reduction:** Dismiss's heal is a normal heal, so healing reduction on her shrinks it.

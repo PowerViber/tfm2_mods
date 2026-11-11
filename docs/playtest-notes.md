@@ -3873,3 +3873,8 @@ To check in game: close the game, Update/Check, confirm native 0.10.36 and champ
 - **Wright (`wright-6`):** the Sky Carrier launches nothing. It empowers his skills instead: no airframe, half cooldown, faster rearm and +1 strike, 125% bombs with the same warning and size, 150% kits. It still guards him for 80%.
 - **Thalassa (`thalassa-1.6`):** no bounce. A slower basic attack (2 s) sends a tsunami through the target: the wave's damage to others, a 0.35 s knock-up, each unit at most once every 3 s.
 - **Checks:** 1,197 native tests, 0 warnings; Wright 12 and Thalassa 10 browser checks; DLL 0.10.99. Review: `docs/main-review-round-165.md`.
+- **Akane wave clear (`akane-1.3`, same round):**
+  - Rhythm cleave at 3+ stacks: 80% to minions and creeps, 40% to champions.
+  - The Kunai pierces up to 4 minions or creeps and marks the champion behind them.
+  - Crimson Edge splashes 50% per hit, and the 4th hit always bursts on a minion or creep.
+  - 1,200 native tests.

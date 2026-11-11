@@ -464,14 +464,14 @@ pub static CHAMPIONS: [ChampionDef; 85] = [
         SkillDef { slot: Slot::Skill2, name: "Kunai Flip / Crimson Edge", kinds: 1 | 4 | 16 | 512, intents: 2 | 4 | 1 },
         SkillDef { slot: Slot::Ult, name: "Crimson Night", kinds: 1024 | 1, intents: 2 | 64 },
     ] },
-    ChampionDef { id: "tfm2_custom_wright", name: "Wright", family: 13, role: "Magician", native: true, basic: BasicAttack { name: "Rivet gun", range: 52000, reach: Range::Ranged }, skills: &[
-        SkillDef { slot: Slot::Skill, name: "Workshop / Fighter Wing", kinds: 64 | 4 | 512, intents: 32 | 1 | 64 },
-        SkillDef { slot: Slot::Skill2, name: "Carpet Bomber / Repair Wing", kinds: 16 | 32 | 128 | 256, intents: 2 | 8 | 1 },
-        SkillDef { slot: Slot::Ult, name: "Sky Carrier", kinds: 64 | 16 | 512, intents: 2 | 16 },
-    ] },
     ChampionDef { id: "tfm2_custom_thalassa", name: "Thalassa", family: 13, role: "Magician", native: true, basic: BasicAttack { name: "Harp bolt", range: 55000, reach: Range::Ranged }, skills: &[
         SkillDef { slot: Slot::Skill, name: "Tide Pool", kinds: 32 | 16 | 512, intents: 1 | 2 | 16 },
         SkillDef { slot: Slot::Skill2, name: "Dive / Tide Twin", kinds: 1 | 64 | 256, intents: 4 | 8 | 32 },
         SkillDef { slot: Slot::Ult, name: "Trident of the Deep", kinds: 4 | 512, intents: 2 | 32 },
+    ] },
+    ChampionDef { id: "tfm2_custom_wright", name: "Wright", family: 13, role: "Magician", native: true, basic: BasicAttack { name: "Rivet gun", range: 52000, reach: Range::Ranged }, skills: &[
+        SkillDef { slot: Slot::Skill, name: "Workshop / Fighter Wing", kinds: 64 | 4 | 512, intents: 32 | 1 | 64 },
+        SkillDef { slot: Slot::Skill2, name: "Carpet Bomber / Repair Wing", kinds: 16 | 32 | 128 | 256, intents: 2 | 8 | 1 },
+        SkillDef { slot: Slot::Ult, name: "Sky Carrier", kinds: 64 | 16 | 512, intents: 2 | 16 },
     ] },
 ];

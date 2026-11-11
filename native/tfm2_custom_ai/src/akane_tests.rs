@@ -311,11 +311,13 @@ fn kunai_flips_back_marks_the_first_enemy_and_the_recast_dashes_and_slashes() {
     let mut f = frame(0, vec![minion(30, 430_000, 400_000), champ(FOE, 2, 450_000, 400_000), tower(40, 420_000, 400_000)]);
     let mut out = run_order(&mut c, &mut f, Some(Order::Kunai(Point::new(450_000, 400_000))), 0, 40);
     assert!(f.pos.x < 400_000 - d::KUNAI_FLIP + 1_000, "flipped back: {:?}", f.pos);
-    assert_eq!(c.marked(40), Some(30), "the minion in front is hit first, never the tower");
+    // round 165: it pierces the minion in front and marks the champion behind it; never the tower
+    assert_eq!(c.marked(40), Some(FOE));
+    assert!(damage_to(&out, 30) > 0, "the minion it pierced took the kunai");
     assert_eq!(damage_to(&out, 40), 0);
     out.extend(run_order(&mut c, &mut f, Some(Order::KunaiRecast), 40, 100));
-    assert!(f.pos.x > 420_000, "dashed to the mark: {:?}", f.pos);
-    assert!(out.iter().any(|e| matches!(e, Effect::Damage { target: 30, direct: true, .. })), "the slash is a committed strike");
+    assert!(f.pos.x > 430_000, "dashed to the mark: {:?}", f.pos);
+    assert!(out.iter().any(|e| matches!(e, Effect::Damage { target: FOE, direct: true, .. })), "the slash is a committed strike");
     // a miss means no recast; the mark expires after 3 s
     let mut c = Core::default();
     order(&mut c, &frame(0, vec![]), Order::Kunai(Point::new(500_000, 400_000)));
@@ -859,4 +861,63 @@ mod glue {
         assert_eq!(k.core.orbs.len(), 1);
         assert_eq!(k.core.orbs[0].pos, Point::new(x as i64 + 20_000, y as i64));
     }
+}
+
+// ------------------------------------------------------------------ round 165: wave clear
+
+#[test]
+fn the_kunai_pierces_up_to_four_minions_and_marks_the_last_without_a_champion() {
+    let mut c = Core::default();
+    let wave: Vec<Unit> = (0..6).map(|i| minion(30 + i, 420_000 + i as i64 * 8_000, 400_000)).collect();
+    let mut f = frame(0, wave);
+    let out = run_order(&mut c, &mut f, Some(Order::Kunai(Point::new(500_000, 400_000))), 0, 60);
+    let hit: Vec<usize> = (30..36).filter(|id| damage_to(&out, *id) > 0).collect();
+    assert_eq!(hit, vec![30, 31, 32, 33], "up to 4");
+    assert_eq!(c.marked(60), Some(33), "the last one it went through is marked");
+    // a champion in front stops it at once
+    let mut c = Core::default();
+    let mut f = frame(0, vec![champ(FOE, 2, 420_000, 400_000), minion(30, 440_000, 400_000)]);
+    let out = run_order(&mut c, &mut f, Some(Order::Kunai(Point::new(500_000, 400_000))), 0, 60);
+    assert_eq!(c.marked(60), Some(FOE));
+    assert_eq!(damage_to(&out, 30), 0, "stopped at the champion");
+}
+
+#[test]
+fn rhythm_cleave_starts_at_three_stacks_more_on_minions_never_towers() {
+    let mut c = Core::default();
+    let mut f = frame(0, vec![champ(FOE, 2, 415_000, 400_000), minion(30, 420_000, 405_000), champ(11, 2, 420_000, 395_000), tower(40, 418_000, 400_000)]);
+    let mut out = vec![];
+    for tick in 1..=2 {
+        out.extend(hit(&mut c, &mut f, tick, FOE));
+    }
+    assert_eq!(damage_to(&out, 30) + damage_to(&out, 11), 0, "no cleave below 3 stacks");
+    let out = hit(&mut c, &mut f, 3, FOE);
+    let hit_est = 180 * c.basic_multiplier(3) / 100;
+    assert_eq!(damage_to(&out, 30), hit_est * d::RHYTHM_CLEAVE_MINION_PCT / 100);
+    assert_eq!(damage_to(&out, 11), hit_est * d::RHYTHM_CLEAVE_PCT / 100);
+    assert_eq!(damage_to(&out, 40), 0);
+}
+
+#[test]
+fn crimson_edge_splashes_each_hit_and_bursts_on_a_minion_at_the_fourth() {
+    let mut c = Core::default();
+    let mut f = frame(0, vec![minion(30, 415_000, 400_000), minion(31, 420_000, 405_000), champ(11, 2, 420_000, 395_000)]);
+    order(&mut c, &f, Order::Edge);
+    let o1 = hit(&mut c, &mut f, 5, 30);
+    assert!(damage_to(&o1, 31) > 0 && damage_to(&o1, 11) > 0, "the splash");
+    assert!(!o1.iter().any(|e| matches!(e, Effect::Slow { target: 11, .. } | Effect::Vulnerable { target: 11, .. } | Effect::KnockUp { target: 11, .. })));
+    // hits 2-3 go on the other minion, so the 4th lands on a minion with only 1 stack: it still bursts
+    hit(&mut c, &mut f, 6, 31);
+    hit(&mut c, &mut f, 7, 31);
+    let o4 = hit(&mut c, &mut f, 8, 30);
+    assert!(o4.iter().any(|e| matches!(e, Effect::Fx { name, .. } if name == "akn_burst")), "a minion's 4th hit bursts without 4 stacks on it");
+    // champions still need the 4 stacks
+    let mut c = Core::default();
+    let mut f = frame(0, vec![champ(FOE, 2, 415_000, 400_000), champ(11, 2, 420_000, 395_000)]);
+    order(&mut c, &f, Order::Edge);
+    hit(&mut c, &mut f, 5, 11);
+    hit(&mut c, &mut f, 6, 11);
+    hit(&mut c, &mut f, 7, 11);
+    let o4 = hit(&mut c, &mut f, 8, FOE);
+    assert!(!o4.iter().any(|e| matches!(e, Effect::Fx { name, .. } if name == "akn_burst")), "1 stack on a champion: no burst");
 }
