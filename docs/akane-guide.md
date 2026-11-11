@@ -62,7 +62,7 @@ She also reads towers and whether something of hers is tanking them, plus walls 
 - **Art:** `docs/akane-art-handoff.md`.
 
 ## Known limits
-- **Art pending:** the data points at her own body sheet, so the game skips her until Codex's art exists.
+- **Released in round 164** (native 0.10.98, tfm2_custom 0.2.101) with Codex's approved art and the `akane-1.1` ranges. Live acceptance is still pending.
 - **Healing reduction:** Dismiss's heal is a normal heal, so healing reduction on her shrinks it.
 - **Skill readiness:** native kits' skills read as "ready" (their data slots never come off cooldown), so she treats them as dangerous.
 - **Balance:** unplayed. The level-10 table goes in the release review.

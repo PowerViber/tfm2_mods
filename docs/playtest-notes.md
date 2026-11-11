@@ -3861,3 +3861,7 @@ To check in game: close the game, Update/Check, confirm native 0.10.36 and champ
 - **AI:** her own, separate from the global AI. It reads enemies' Flash, skill readiness, roster abilities, protections and towers; it judges recasts, chains and disengages; the 13 athlete values shape her choices.
 - **Built:** the native kit (30 Akane tests), the Lab on the real map (`editor/akane.html`, 9 browser checks). Guide: `docs/akane-guide.md`.
 - **Waiting on:** Codex's art (`docs/akane-art-handoff.md`), then the release.
+## Nov 11: round 164 (native 0.10.98, tfm2_custom 0.2.101): Akane released
+- **Akane** joins the game with Codex's approved art and the `akane-1.1` ranges: a 120,000 kunai flying with a delay, a 30,000 flip, and a 240,000 Crimson Night dash.
+- **Checks:** 1,193 native tests, 0 warnings; DLL reports 0.10.98; Mod Manager load. Codex's browser and art checks need the local game-reference cache, so they run on Reihan's PC. Review: `docs/main-review-round-164.md`.
+- **Pending:** live acceptance and balance. Watch her long reach, and the kill chain once orbs start resetting her.
