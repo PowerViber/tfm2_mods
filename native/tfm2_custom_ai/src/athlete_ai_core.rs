@@ -67,6 +67,46 @@ impl Profile {
         opening * (30 + self.values[4] as usize * 70 / 100) / 100
     }
 }
+// ---- Fight Sense (round 163). Additive: nothing above changes. An average athlete (all 50) gets the base
+// value from each helper. Unused in game until the first kit adopts Fight Sense.
+#[allow(dead_code)]
+impl Profile {
+    /// Percent applied to a kill's escape margin: aggressive 0 → 120, 50 → 100, 100 → 80.
+    pub fn lethal_margin_scale(self) -> i64 {
+        100 - (self.values[6].clamp(0, 100) - 50) * 2 / 5
+    }
+    /// Caution: careful positioning and low ego (which already retreats early in `athlete_play`).
+    pub fn caution(self) -> i64 {
+        (self.values[2].clamp(0, 100) + 100 - self.values[0].clamp(0, 100)) / 2
+    }
+    /// The damage this athlete will walk into, out of `effective_hp`: 50% on average, 30% at full caution,
+    /// 70% with none.
+    pub fn accepted_damage(self, effective_hp: i64) -> i64 {
+        effective_hp.max(0) * (50 - (self.caution() - 50) * 2 / 5) / 100
+    }
+    /// Where to aim at a target moving at `vel` per tick, `travel` ticks out: skill accuracy decides how
+    /// much of the movement is led (the same share as `prediction_ticks`).
+    pub fn aim_lead(self, vel: (i64, i64), travel: usize) -> (i64, i64) {
+        let t = self.prediction_ticks(travel) as i64;
+        (vel.0 * t, vel.1 * t)
+    }
+    /// A threat radius scaled by Map Awareness: 50% at 0, 100% at 50, 150% at 100.
+    pub fn threat_radius(self, base: i64) -> i64 {
+        base * (50 + self.sense.0[2].clamp(0, 100)) / 100
+    }
+    /// How long a missing enemy stays a worry: 3 s at Map Awareness 0, 10 s at 100.
+    pub fn missing_memory_ticks(self) -> u64 {
+        180 + self.sense.0[2].clamp(0, 100) as u64 * 420 / 100
+    }
+    /// How many landing spots an escape search tries, from Micro: 8, 16 or 32.
+    pub fn route_candidates(self) -> usize {
+        match self.sense.0[1] {
+            m if m <= 30 => 8,
+            m if m >= 70 => 32,
+            _ => 16,
+        }
+    }
+}
 pub fn sq_distance(a: (i64, i64), b: (i64, i64)) -> i128 {
     (a.0 - b.0) as i128 * (a.0 - b.0) as i128 + (a.1 - b.1) as i128 * (a.1 - b.1) as i128
 }

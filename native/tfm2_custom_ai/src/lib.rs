@@ -113,6 +113,8 @@ mod balance;
 #[allow(dead_code)] mod balance_data;
 mod gojo;
 mod athlete_ai_core;
+mod fight_sense_core;
+mod fight_sense;
 mod game_sense_core;
 mod strategic_core;
 mod strategic_policy;
@@ -784,6 +786,12 @@ pub(crate) mod walls {
         if let Ok(mut g) = BUSH.write() {
             *g = Some(cells);
         }
+    }
+    /// Copies of both grids with the wall grid's version (round 163, for Fight Sense's host-free terrain).
+    pub fn snapshot() -> (Vec<bool>, Vec<bool>, u64) {
+        let walls = GRID.read().ok().and_then(|g| g.clone()).unwrap_or_default();
+        let bushes = BUSH.read().ok().and_then(|g| g.clone()).unwrap_or_default();
+        (walls, bushes, VERSION.load(std::sync::atomic::Ordering::Acquire))
     }
     pub fn bush_at(x: i64, y: i64) -> bool {
         if x < 0 || y < 0 || x / CELL >= N || y / CELL >= N { return false; }

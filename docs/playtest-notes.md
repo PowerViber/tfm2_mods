@@ -3851,3 +3851,9 @@ To check in game: close the game, Update/Check, confirm native 0.10.36 and champ
 - **Rampage (`kratos-4`):** each advance stops at the enemy in front of him instead of running past; never walks him into enemy tower range unless he started inside it; the athlete won't Rampage a healthy foe under their tower (a foe below 30% is a dive).
 - **Engage speed:** +20% for 2 s on every weapon swap, +25% during Heimdall's Sight, and **Spartan Charge** (+20% for 2 s heading at a champion within 60,000, every 8 s). One buff, never stacking.
 - **Checks:** 1,159 native tests, 0 warnings; DLL reports 0.10.97; Mod Manager load. Review: `docs/main-review-round-162.md`.
+## Nov 11: round 163 (no version change): global AI track, Part 1, Fight Sense
+- Reihan started a standalone global-AI track on the 13 athlete stats. The global Flash reads none of them.
+- **Fight Sense** (`fight_sense_core.rs`, `fight_sense.rs`): a shared read of the fight, once per tick per team, with scores (effective HP, escape margin, lethal, isolation, danger at a point, escape routes, missing threats) shaped by the athlete. No champion uses it yet, so nothing changes in game. Guide: `docs/fight-sense-guide.md`.
+- **Audit** (`docs/athlete-stat-coverage.md`): only Raze and Contender use all 13 stats; 12 native kits use none; the shared movement and planner layers ship off.
+- **Waiting on:** the game binary for Part 0 (how the engine applies the stats, plus last_hit, concentration and mental).
+- **Checks:** 1,175 native tests, 0 warnings. Review: `docs/main-review-round-163.md`.
