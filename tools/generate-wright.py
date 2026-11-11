@@ -46,9 +46,9 @@ text = {
                f"{re_['shieldApRatio']}% AP shield (up to {re_['shieldCapBase']} + {re_['shieldCapApRatio']}% AP). The chopper also repairs his fighters."),
     'ult': (f"Sky Carrier ({sec(ca['cooldownTicks'])}): a carrier drops from the sky on Wright, knocking enemies away (the closer, the farther, up to "
             f"{ca['knockMax']}) and slowing them {ca['slowPct']}%, with no damage. It hovers over him for {sec(ca['ticks'])} and takes {ca['guardPct']}% of the damage "
-            f"he takes (until its pool of {ca['poolPct']}% of his HP runs out). It launches a fighter every {sec(ca['fighterEveryTicks'])} (up to {ca['maxFighters']}) "
-            f"and a repair chopper every {sec(ca['chopperEveryTicks'])}, and readies a bomber every {sec(ca['bomberEveryTicks'])} (up to {ca['maxReadyBombers']}): "
-            f"while it's up, Carpet Bomber uses a ready bomber, with no airframe or cooldown."),
+            f"he takes (until its pool of {ca['poolPct']}% of his HP runs out). It launches nothing: while it's up it empowers his skills. They use no airframe "
+            f"and recharge in {ca['cooldownPct']}% of the time; his jets rearm in {ca['rearmPct']}% of the time with +{ca['bonusAmmo']} strike; Carpet Bomber's "
+            f"explosions deal {ca['bomberDamagePct']}% damage (same warning); repair kits are {ca['kitPct']}% as strong."),
 }
 
 champ = copy.deepcopy(json.loads((ROOT / 'mods/tfm2_custom/champion/tfm2_custom_contender.data_champion').read_text()))

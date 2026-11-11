@@ -258,6 +258,14 @@ pub enum Effect {
     Mark { target: usize, ticks: u64 },
     /// Dismiss & Devour: invisible, invulnerable, fast and move-only until `ticks` from now (replaces a shorter one)
     Soul { ticks: u64, speed_pct: i64 },
+    /// she acted (a skill or a basic attack) during Dismiss: she's seen again, still invulnerable
+    Reveal,
+    /// Dismiss ended (its time ran out, or her 2nd basic attack): invulnerability and speed end now
+    SoulEnd,
+    /// Ambush: her damage is `percent` higher for `ticks` (basic attacks scaled by the bridge, skills by the core)
+    Ambush { percent: i64, ticks: u64 },
+    /// Blood Rhythm stacks shown on her
+    Rhythm { stacks: i64, ticks: u64 },
     Heal { amount: i64 },
     /// invulnerable (damage and CC) for `ticks` (the Crimson Edge finale)
     Invulnerable { ticks: u64 },
@@ -325,6 +333,16 @@ pub struct Core {
     pub next_charge: u64,
     /// Dismiss & Devour's window (invisible, invulnerable, move only)
     pub soul_until: u64,
+    /// Dismiss is running (to notice its end)
+    pub soul_on: bool,
+    /// still invisible in this Dismiss (until she acts)
+    pub soul_hidden: bool,
+    /// basic attacks landed in this Dismiss
+    pub soul_hits: i64,
+    /// Ambush: her damage is higher until
+    pub ambush_until: u64,
+    /// Blood Rhythm: (stacks, until)
+    pub rhythm: (i64, u64),
     pub invuln_until: u64,
     pub orbs: Vec<Orb>,
     /// an orb may reset Crimson Edge again from
@@ -365,6 +383,11 @@ impl Default for Core {
             charges: d::SOUL_CHARGES,
             next_charge: 0,
             soul_until: 0,
+            soul_on: false,
+            soul_hidden: false,
+            soul_hits: 0,
+            ambush_until: 0,
+            rhythm: (0, 0),
             invuln_until: 0,
             orbs: vec![],
             edge_reset_ready: 0,
@@ -444,10 +467,24 @@ impl Core {
         if self.edge.is_some_and(|e| f.tick >= e.1) {
             self.edge = None;
         }
+        if self.rhythm.0 > 0 && f.tick >= self.rhythm.1 {
+            self.rhythm = (0, 0);
+            out.push(Effect::Rhythm { stacks: 0, ticks: 0 });
+        }
         for &target in &f.basic_hits {
             if let Some(u) = f.unit(target).cloned() {
+                self.soul_basic(f, &mut out);
+                if !u.tower && f.skill_target(&u) {
+                    // Blood Rhythm: her own basic-attack stacks
+                    let stacks = (self.rhythm.0 + 1).min(d::RHYTHM_MAX_STACKS);
+                    self.rhythm = (stacks, f.tick + t(d::RHYTHM_TICKS));
+                    out.push(Effect::Rhythm { stacks, ticks: t(d::RHYTHM_TICKS) });
+                }
                 self.edge_hit(f, &u, &mut out);
             }
+        }
+        if self.soul_on && f.tick >= self.soul_until {
+            self.end_soul(f, &mut out);
         }
         self.run_bleeds(f, &mut out);
         self.run_kunai(f, &mut out);
@@ -455,8 +492,55 @@ impl Core {
         let order = if f.manual { f.order } else { self.decide(f, &mut out) };
         if let Some(o) = order {
             self.execute(f, o, &mut out);
+            // casting a skill during Dismiss reveals her (she stays invulnerable)
+            if o != Order::Soul && self.rejection.is_empty() && self.soul_on && self.soul_hidden {
+                self.soul_hidden = false;
+                out.push(Effect::Reveal);
+            }
+        }
+        // Ambush: every damage of hers this tick is higher (the bridge scales her basic attacks)
+        if f.tick < self.ambush_until {
+            for e in out.iter_mut() {
+                if let Effect::Damage { amount, .. } = e {
+                    *amount = *amount * (100 + d::SOUL_AMBUSH_PCT) / 100;
+                }
+            }
         }
         out
+    }
+
+    /// Her basic-attack damage multiplier, percent (Blood Rhythm and Ambush), for the bridge.
+    pub fn basic_multiplier(&self, tick: u64) -> i64 {
+        let stacks = if tick < self.rhythm.1 { self.rhythm.0 } else { 0 };
+        let ambush = if tick < self.ambush_until { d::SOUL_AMBUSH_PCT } else { 0 };
+        (100 + stacks * d::RHYTHM_PCT_PER_STACK) * (100 + ambush) / 100
+    }
+
+    /// A basic attack during Dismiss: the 1st reveals her (she stays invulnerable), one more ends it.
+    fn soul_basic(&mut self, f: &Frame, out: &mut Vec<Effect>) {
+        if !self.soul_on {
+            return;
+        }
+        self.soul_hits += 1;
+        if self.soul_hidden {
+            self.soul_hidden = false;
+            out.push(Effect::Reveal);
+        }
+        if self.soul_hits > d::SOUL_HITS_ALLOWED {
+            self.end_soul(f, out);
+        }
+    }
+
+    /// Dismiss is over (time, or her 2nd basic attack): invulnerability ends now, Ambush starts.
+    fn end_soul(&mut self, f: &Frame, out: &mut Vec<Effect>) {
+        self.soul_on = false;
+        self.soul_hidden = false;
+        self.soul_hits = 0;
+        self.soul_until = self.soul_until.min(f.tick);
+        self.invuln_until = self.invuln_until.min(f.tick);
+        self.ambush_until = f.tick + t(d::SOUL_AMBUSH_TICKS);
+        out.push(Effect::SoulEnd);
+        out.push(Effect::Ambush { percent: d::SOUL_AMBUSH_PCT, ticks: t(d::SOUL_AMBUSH_TICKS) });
     }
 
     fn recharge(&mut self, f: &Frame) {
@@ -712,9 +796,6 @@ impl Core {
             return reject(self, "crowd-controlled");
         }
         // Dismiss & Devour: move only, until it ends (another charge may extend it)
-        if self.in_soul(f.tick) && o != Order::Soul {
-            return reject(self, "Dismiss: she can only move");
-        }
         if f.tick < self.busy_until && o != Order::Soul {
             return reject(self, "mid-dash");
         }
@@ -730,6 +811,11 @@ impl Core {
                 // windows never stack: an overlap only extends to the new end
                 self.soul_until = self.soul_until.max(f.tick + t(d::SOUL_TICKS));
                 self.invuln_until = self.invuln_until.max(self.soul_until);
+                if !self.soul_on {
+                    self.soul_hits = 0;
+                }
+                self.soul_on = true;
+                self.soul_hidden = true;
                 out.push(Effect::Soul { ticks: self.soul_until - f.tick, speed_pct: d::SOUL_SPEED_PCT });
                 out.push(Effect::Heal { amount: f.max_hp * d::SOUL_HEAL_PCT_MAX_HP / 100 + d::SOUL_HEAL_AD_RATIO * f.attack / 100 });
                 out.push(Effect::Fx { name: "akn_dismiss".into(), at: f.pos, ticks: 20, ambient: false });
@@ -1053,11 +1139,25 @@ impl Core {
         let escape = self.has_escape(f);
         let limit = Self::danger_limit(f, escape);
         let _ = escape;
-        // ---- in Dismiss: move only, to safety (or to an orb that's safe)
+        // ---- in Dismiss: she can cast now. Engage a killable target with her skills (the Ambush after Dismiss adds
+        // 20%); otherwise slip away to safety or a safe orb.
         if self.in_soul(f.tick) {
-            let to = self.safe_orb(f).unwrap_or_else(|| self.safe_spot(f));
-            out.push(Effect::Steer { to });
-            return None;
+            let engage = self.hunt(f).filter(|u| self.lethal(f, u, -d::SOUL_AMBUSH_PCT) && u.pos.within(f.pos, d::KUNAI_RANGE));
+            match engage {
+                Some(u) if self.ready(EDGE, f.tick) && self.edge.is_none() && u.pos.within(f.pos, d::BASIC_RANGE + u.radius + 3_000) => return Some(Order::Edge),
+                Some(u) if self.ready(KUNAI, f.tick) && self.kunai_flights.is_empty() && self.marked(f.tick).is_none() => {
+                    let aim = Self::aim_at(f, &u);
+                    if Self::kunai_target(f, f.pos, f.pos.toward(aim, d::KUNAI_RANGE)).is_some_and(|first| first.id == u.id) {
+                        return Some(Order::Kunai(aim));
+                    }
+                }
+                Some(_) => {}
+                None => {
+                    let to = self.safe_orb(f).unwrap_or_else(|| self.safe_spot(f));
+                    out.push(Effect::Steer { to });
+                    return None;
+                }
+            }
         }
         if f.tick < self.busy_until {
             return None;

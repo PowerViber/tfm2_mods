@@ -177,17 +177,60 @@ fn land_is_neutral() {
     assert!(log.is_empty(), "nothing on land without orders: {log:?}");
 }
 
+// ------------------------------------------------------------------ round 165: the tsunami basic attack
+
+fn knockups(log: &[Effect]) -> Vec<usize> {
+    log.iter().filter_map(|e| if let Effect::KnockUp { target, .. } = e { Some(*target) } else { None }).collect()
+}
+
 #[test]
-fn in_water_harp_bolts_bounce_to_a_second_enemy() {
+fn harp_bolts_send_a_small_tsunami_through_the_target_and_no_longer_bounce() {
+    // her at 300,000; target 5 at 340,000; 6 inside the wave just past it; 7 beside the wave; 8 well past it
     let mut core = Core::default();
-    let mut f = frame(0, 300_000, 300_000, vec![unit(5, 1, 340_000, 300_000), unit(6, 1, 355_000, 300_000)]);
+    let units = vec![unit(5, 1, 340_000, 300_000), unit(6, 1, 345_000, 302_000), unit(7, 1, 320_000, 330_000), unit(8, 1, 380_000, 300_000)];
+    let mut f = frame(0, 300_000, 300_000, units);
     let mut log = vec![];
-    let here = f.pos;
-    cast_s1(&mut core, &mut f, here, &mut log);
     f.basic_hits = vec![5];
-    log.clear();
     run(&mut core, &mut f, 1, &mut log);
-    assert!(damage_to(&log, 6) > 0, "bounced");
+    let wave = d::BASIC_WAVE_BASE + d::BASIC_WAVE_AP_RATIO * 100 / 100;
+    assert_eq!(damage_to(&log, 6), wave, "the wave hits who's in it");
+    assert_eq!(damage_to(&log, 5), 0, "the target takes its bolt (the data attack), not the wave");
+    assert_eq!(damage_to(&log, 7), 0, "beside the wave");
+    assert_eq!(damage_to(&log, 8), 0, "it stops just past the target");
+    let mut k = knockups(&log);
+    k.sort();
+    assert_eq!(k, vec![5, 6], "everyone in it is knocked up, the target too");
+    assert!(log.iter().any(|e| matches!(e, Effect::KnockUp { ticks, .. } if *ticks == d::BASIC_KNOCK_UP_TICKS as u64)));
+    assert_eq!(d::BASIC_COOLDOWN_TICKS, 120, "a slower attack");
+}
+
+#[test]
+fn the_tsunami_knocks_each_unit_up_at_most_once_every_three_seconds_and_never_towers_or_allies() {
+    let mut core = Core::default();
+    let mut tower = unit(30, 1, 345_000, 300_000);
+    tower.tower = true;
+    tower.champion = false;
+    let units = vec![unit(5, 1, 340_000, 300_000), tower, unit(4, 0, 335_000, 300_000)];
+    let mut f = frame(0, 300_000, 300_000, units);
+    let mut log = vec![];
+    f.basic_hits = vec![5];
+    run(&mut core, &mut f, 1, &mut log);
+    assert_eq!(knockups(&log), vec![5]);
+    assert_eq!(damage_to(&log, 30) + damage_to(&log, 4), 0, "no tower, no ally");
+    log.clear();
+    f.basic_hits = vec![5];
+    run(&mut core, &mut f, 1, &mut log);
+    assert!(knockups(&log).is_empty(), "locked for 3 s");
+    run(&mut core, &mut f, d::BASIC_KNOCK_UP_LOCK_TICKS as u64, &mut log);
+    log.clear();
+    f.basic_hits = vec![5];
+    run(&mut core, &mut f, 1, &mut log);
+    assert_eq!(knockups(&log), vec![5], "again after 3 s");
+    // a bolt on a tower sends no wave
+    log.clear();
+    f.basic_hits = vec![30];
+    run(&mut core, &mut f, 1, &mut log);
+    assert!(knockups(&log).is_empty() && damage_to(&log, 5) == 0);
 }
 
 // ------------------------------------------------------------------ S1
@@ -861,35 +904,6 @@ fn every_pool_slows_once_whirlpools_more() {
 #[test]
 fn round_160_her_ap_growth_and_mod_power_are_cut() {
     assert_eq!(d::MOD_POWER[1], 10, "Mod Power AP 25 -> 10");
-    assert_eq!(d::WATER_BOUNCE_PCT, 30);
     assert_eq!((d::TWIN_COPY_PCT, d::ULT_ECHO_DAMAGE_PCT), (40, 40));
 }
 
-#[test]
-fn a_minion_hit_never_bounces_onto_a_champion_and_a_champion_hit_never_onto_a_minion() {
-    let mut core = Core::default();
-    let mut minion = unit(20, 1, 330_000, 300_000);
-    minion.champion = false;
-    let mut minion2 = unit(21, 1, 345_000, 300_000);
-    minion2.champion = false;
-    // the champion is closer to the minion than the other minion
-    let champ = unit(7, 1, 335_000, 300_000);
-    let champ2 = unit(8, 1, 330_000, 312_000);
-    let mut f = frame(0, 300_000, 300_000, vec![minion, minion2, champ, champ2]);
-    let mut log = vec![];
-    let here = f.pos;
-    cast_s1(&mut core, &mut f, here, &mut log);
-    assert!(core.in_water);
-    let bounced = |log: &[Effect]| -> Vec<(usize, i64)> {
-        log.iter().filter_map(|e| if let Effect::Damage { target, amount, from_clone: false } = e { Some((*target, *amount)) } else { None }).collect()
-    };
-    let per = (d::BASIC_BASE + d::BASIC_AP_RATIO * 100 / 100) * d::WATER_BOUNCE_PCT / 100;
-    log.clear();
-    f.basic_hits = vec![20];
-    run(&mut core, &mut f, 1, &mut log);
-    assert_eq!(bounced(&log), vec![(21, per)], "minion -> minion only");
-    log.clear();
-    f.basic_hits = vec![7];
-    run(&mut core, &mut f, 1, &mut log);
-    assert_eq!(bounced(&log), vec![(8, per)], "champion -> champion only");
-}

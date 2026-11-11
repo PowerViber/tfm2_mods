@@ -296,6 +296,9 @@ pub struct Plane {
     pub phase_until: u64,
     /// carpet waves dropped so far (the bomber); strikes made so far (a jet)
     pub waves: i64,
+    /// a bomber called while the carrier empowered him (stronger explosions)
+    #[serde(default)]
+    pub boost: bool,
     /// a jet's strikes left before it must fly home to rearm
     #[serde(default)]
     pub ammo: i64,
@@ -316,14 +319,9 @@ pub struct Carrier {
     pub center: Point,
     pub land_at: u64,
     pub until: u64,
-    pub next_fighter: u64,
-    pub next_bomber: u64,
-    pub next_chopper: u64,
     /// what it can still absorb for him, and its full size
     pub pool: i64,
     pub max_pool: i64,
-    /// bombers readied on deck for his Carpet Bomber
-    pub ready_bombers: i64,
     pub guarding: bool,
 }
 
@@ -481,7 +479,8 @@ impl Core {
             phase: Phase::Patrol,
             phase_until: f.tick + (key as u64 % 2) * 6,
             waves: 0,
-            ammo: d::FIGHTER_AMMO,
+            ammo: d::FIGHTER_AMMO + if self.empowered(f.tick) { d::CARRIER_BONUS_AMMO } else { 0 },
+            boost: false,
             strikes: None,
         });
         if kind.real() {
@@ -640,8 +639,10 @@ impl Core {
                 self.fly(f, p, f.pos, d::FIGHTER_CRUISE_SPEED, out);
                 if p.pos.within(f.pos, d::FIGHTER_HOME_RADIUS + 4_000) {
                     p.phase = Phase::Patrol;
-                    p.phase_until = f.tick + sec(d::FIGHTER_REARM_TICKS);
-                    p.ammo = d::FIGHTER_AMMO;
+                    // the carrier over him: rearm faster, one more strike
+                    let (rearm, bonus) = if self.empowered(f.tick) { (d::FIGHTER_REARM_TICKS * d::CARRIER_REARM_PCT / 100, d::CARRIER_BONUS_AMMO) } else { (d::FIGHTER_REARM_TICKS, 0) };
+                    p.phase_until = f.tick + sec(rearm);
+                    p.ammo = d::FIGHTER_AMMO + bonus;
                 }
             }
             Phase::Patrol => {
@@ -766,7 +767,7 @@ impl Core {
             // Each warned centre gets one large explosion and one packet per
             // victim. The line is committed; it never follows later target motion.
             out.push(Effect::Fx { name: format!("wrt_bomber_wave{}", p.waves), at: center, ticks: 14, ambient: false });
-            let dmg = pct(d::BOMBER_WAVE_BASE, d::BOMBER_WAVE_AP_RATIO, f.ap);
+            let dmg = pct(d::BOMBER_WAVE_BASE, d::BOMBER_WAVE_AP_RATIO, f.ap) * if p.boost { d::CARRIER_BOMBER_DAMAGE_PCT } else { 100 } / 100;
             for u in f.units.iter().filter(|u| f.enemy(u) && !u.tower && u.pos.within(center, d::BOMBER_RADIUS + u.radius)) {
                 out.push(Effect::Damage { target: u.id, amount: dmg, direct: false });
                 if last {
@@ -826,10 +827,11 @@ impl Core {
     }
 
     fn kit(&mut self, f: &Frame, ally: usize, at: Point, max_hp: i64, out: &mut Vec<Effect>) {
-        out.push(Effect::Heal { target: ally, amount: (max_hp * d::REPAIR_HEAL_PERMILLE / 1000).max(1) });
-        let cap = pct(d::REPAIR_SHIELD_CAP_BASE, d::REPAIR_SHIELD_CAP_AP_RATIO, f.ap);
+        let k = if self.empowered(f.tick) { d::CARRIER_KIT_PCT } else { 100 };
+        out.push(Effect::Heal { target: ally, amount: (max_hp * d::REPAIR_HEAL_PERMILLE / 1000 * k / 100).max(1) });
+        let cap = pct(d::REPAIR_SHIELD_CAP_BASE, d::REPAIR_SHIELD_CAP_AP_RATIO, f.ap) * k / 100;
         let have: i64 = self.repair_shields.iter().filter(|s| s.0 == ally).map(|s| s.1).sum();
-        let add = pct(d::REPAIR_SHIELD_BASE, d::REPAIR_SHIELD_AP_RATIO, f.ap).min(cap - have);
+        let add = (pct(d::REPAIR_SHIELD_BASE, d::REPAIR_SHIELD_AP_RATIO, f.ap) * k / 100).min(cap - have);
         if add > 0 {
             let ticks = sec(d::REPAIR_SHIELD_TICKS);
             self.repair_shields.push((ally, add, f.tick + ticks));
@@ -879,30 +881,22 @@ impl Core {
             return;
         }
         out.push(Effect::Fx { name: "wrt_carrier".into(), at: c.center, ticks: 1, ambient: false });
-        let carrier_fighters = self.planes.iter().filter(|p| p.kind == Kind::Fighter && p.from_carrier && !p.kamikaze).count() as i64;
-        if f.tick >= c.next_fighter {
-            c.next_fighter = f.tick + sec(d::CARRIER_FIGHTER_EVERY_TICKS);
-            if carrier_fighters < d::CARRIER_MAX_FIGHTERS {
-                self.launch(f, Kind::Fighter, c.center, sec(d::CARRIER_FIGHTER_TICKS), Anchor::Owner, 0, true, out);
-            }
-        }
-        if f.tick >= c.next_bomber {
-            c.next_bomber = f.tick + sec(d::CARRIER_BOMBER_EVERY_TICKS);
-            if c.ready_bombers < d::CARRIER_MAX_READY_BOMBERS {
-                c.ready_bombers += 1;
-                out.push(Effect::Log(format!("bomber ready on deck ({})", c.ready_bombers)));
-            }
-        }
-        if f.tick >= c.next_chopper {
-            c.next_chopper = f.tick + sec(d::CARRIER_CHOPPER_EVERY_TICKS);
-            self.launch(f, Kind::Chopper, c.center, sec(d::REPAIR_TICKS), Anchor::Owner, d::REPAIR_CHOPPER_ORBIT, true, out);
-        }
+        // round 165: it launches nothing; while it's up it empowers his skills (`empowered`)
         self.carrier = Some(c);
     }
 
-    /// Ready bombers on the carrier's deck (S2 uses them while it's up).
-    pub fn ready_bombers(&self, tick: u64) -> i64 {
-        self.carrier.filter(|c| tick >= c.land_at).map_or(0, |c| c.ready_bombers)
+    /// The Sky Carrier is over him (landed, not gone): his skills are empowered (round 165).
+    pub fn empowered(&self, tick: u64) -> bool {
+        self.carrier.is_some_and(|c| tick >= c.land_at && tick < c.until)
+    }
+    /// A skill's cooldown, shorter while the carrier empowers him.
+    fn cooldown(&self, tick: u64, ticks: i64) -> u64 {
+        let pct = if self.empowered(tick) { d::CARRIER_COOLDOWN_PCT } else { 100 };
+        sec(ticks * pct / 100)
+    }
+    /// An airframe for a skill; none needed while the carrier empowers him.
+    fn airframe(&mut self, tick: u64, out: &mut Vec<Effect>) -> bool {
+        self.empowered(tick) || self.take_airframe(out)
     }
 
     // ---------------------------------------------------------------- orders
@@ -920,10 +914,10 @@ impl Core {
     }
 
     fn fighters(&mut self, f: &Frame, out: &mut Vec<Effect>) -> bool {
-        if f.stunned || !self.ready(0, f.tick) || !self.take_airframe(out) {
+        if f.stunned || !self.ready(0, f.tick) || !self.airframe(f.tick, out) {
             return false;
         }
-        self.ready[0] = f.tick + sec(d::FIGHTER_COOLDOWN_TICKS);
+        self.ready[0] = f.tick + self.cooldown(f.tick, d::FIGHTER_COOLDOWN_TICKS);
         for _ in 0..d::FIGHTER_PER_CAST {
             // at most maxAlive: the oldest of his own leaves
             while self.own_fighters() as i64 >= d::FIGHTER_MAX_ALIVE {
@@ -943,21 +937,16 @@ impl Core {
             return false;
         }
         let Some(strikes)=bomber_centres(f.pos,aim) else{return false};
-        // a ready bomber from the carrier: no airframe, no cooldown, a short mark
-        let from_deck = self.ready_bombers(f.tick) > 0;
-        if from_deck {
-            if let Some(c) = self.carrier.as_mut() {
-                c.ready_bombers -= 1;
-            }
-        } else {
-            if !self.ready(1, f.tick) || !self.take_airframe(out) {
-                return false;
-            }
-            self.ready[1] = f.tick + sec(d::BOMBER_COOLDOWN_TICKS);
+        // round 165: always the full warning; the carrier empowers the explosions instead of skipping it
+        if !self.ready(1, f.tick) || !self.airframe(f.tick, out) {
+            return false;
         }
-        let mark = sec(if from_deck { d::BOMBER_READY_MARK_TICKS } else { d::BOMBER_WARN_TICKS });
-        let key = self.launch(f, Kind::Bomber, f.pos, mark + sec(d::BOMBER_WAVES * d::BOMBER_WAVE_EVERY_TICKS) + 90, Anchor::At(strikes[0]), 0, from_deck, out);
+        let boost = self.empowered(f.tick);
+        self.ready[1] = f.tick + self.cooldown(f.tick, d::BOMBER_COOLDOWN_TICKS);
+        let mark = sec(d::BOMBER_WARN_TICKS);
+        let key = self.launch(f, Kind::Bomber, f.pos, mark + sec(d::BOMBER_WAVES * d::BOMBER_WAVE_EVERY_TICKS) + 90, Anchor::At(strikes[0]), 0, false, out);
         if let Some(p) = self.planes.iter_mut().find(|p| p.key == key) {
+            p.boost = boost;
             p.start = f.tick + mark;
             p.next_bomb = p.start;
             p.strikes=Some(strikes);
@@ -967,16 +956,16 @@ impl Core {
             out.push(Effect::Fx { name: format!("wrt_warn{}",i+1), at:center, ticks:mark+sec(i as i64*d::BOMBER_WAVE_EVERY_TICKS), ambient:false });
         }
         out.push(Effect::Pose { name: "skill2", ticks: 18 });
-        out.push(Effect::Log(if from_deck { "a ready bomber from the carrier".into() } else { "carpet bomber called".into() }));
+        out.push(Effect::Log(if boost { "carpet bomber called (empowered by the carrier)".into() } else { "carpet bomber called".into() }));
         self.last_skill = "bomber";
         true
     }
 
     fn repair_cast(&mut self, f: &Frame, out: &mut Vec<Effect>) -> bool {
-        if f.stunned || !self.ready(2, f.tick) || !self.take_airframe(out) {
+        if f.stunned || !self.ready(2, f.tick) || !self.airframe(f.tick, out) {
             return false;
         }
-        self.ready[2] = f.tick + sec(d::REPAIR_COOLDOWN_TICKS);
+        self.ready[2] = f.tick + self.cooldown(f.tick, d::REPAIR_COOLDOWN_TICKS);
         self.launch(f, Kind::Chopper, f.pos, sec(d::REPAIR_TICKS), Anchor::Owner, d::REPAIR_CHOPPER_ORBIT, false, out);
         // the plane goes to the most hurt ally anywhere (him included)
         let allies = f.allies();
@@ -999,12 +988,8 @@ impl Core {
             center: f.pos,
             land_at,
             until: land_at + sec(d::CARRIER_TICKS),
-            next_fighter: land_at + 10,
-            next_bomber: land_at + sec(d::CARRIER_BOMBER_EVERY_TICKS),
-            next_chopper: land_at + 20,
             pool,
             max_pool: pool,
-            ready_bombers: 0,
             guarding: false,
         });
         out.push(Effect::Fx { name: "wrt_carrier_shadow".into(), at: f.pos, ticks: sec(d::CARRIER_WARN_TICKS), ambient: false });
@@ -1039,13 +1024,8 @@ impl Core {
                 .max_by_key(|(n, u)| (*n, std::cmp::Reverse(u.id)))
                 .map(|(_, u)| u.pos)
         };
-        // a ready bomber on the carrier's deck: use it on the best spot
-        if self.ready_bombers(f.tick) > 0 {
-            if let Some(at) = best_bomb() {
-                return Some(Order::Bomber(at));
-            }
-        }
-        if self.stock <= 0 {
+        // the carrier over him: no airframes needed, so his skills cast freely
+        if self.stock <= 0 && !self.empowered(f.tick) {
             return None;
         }
         // keep an airframe for repairs when someone is hurt

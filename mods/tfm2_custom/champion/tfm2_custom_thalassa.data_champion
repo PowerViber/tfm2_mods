@@ -38,7 +38,7 @@
     "growth_range": 0,
     "can_use_with_move": false,
     "duration": 22,
-    "cooltime": 78,
+    "cooltime": 120,
     "start_timing": 12,
     "range": 55000,
     "casting_type": "Targeting",

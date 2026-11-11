@@ -8,7 +8,7 @@ import copy, json, re, sys
 ROOT = Path(__file__).resolve().parents[1]
 rules = json.loads((ROOT / 'rules/akane.json').read_text())
 ID = rules['id']
-GROUPS = ['basic', 'orb', 'soul', 'kunai', 'edge', 'night', 'ai']
+GROUPS = ['basic', 'orb', 'soul', 'rhythm', 'kunai', 'edge', 'night', 'ai']
 
 
 def snake(s):
@@ -24,15 +24,17 @@ for group in GROUPS:
 lines.append(f'pub const FX_TOKENS: usize = {rules["fxTokens"]};')
 rust = '\n'.join(lines) + '\n'
 
-b, o, so, ku, ed, ni, _ = (rules[k] for k in GROUPS)
+b, o, so, rh, ku, ed, ni, _ = (rules[k] for k in GROUPS)
 sec = lambda n: f'{n / 60:g} s'
 text = {
     'name': rules['name'],
     'skill': (f"Soul Harvest (passive): a champion kill or assist leaves a Soul Orb for {sec(o['ticks'])}. After {sec(o['armTicks'])}, staying within "
               f"{o['range']} of it for {sec(o['absorbTicks'])} (she can move) absorbs it: a Soul charge back, Kunai Flip's cooldown reset, and "
               f"Crimson Edge's reset at most once every {sec(o['s3ResetCooldownTicks'])}. "
-              f"Dismiss & Devour ({so['charges']} charges, {sec(so['rechargeTicks'])} each): for {sec(so['ticks'])} she's invisible and invulnerable "
-              f"and moves {so['speedPct']}% faster, but can only move; she heals {so['healPctMaxHp']}% max HP + {so['healAdRatio']}% Attack."),
+              f"Blood Rhythm: each basic attack adds a stack (up to {rh['maxStacks']}, {sec(rh['ticks'])}): +{rh['pctPerStack']}% basic-attack damage per stack. "
+              f"Dismiss & Devour ({so['charges']} charges, {sec(so['rechargeTicks'])} each): for {sec(so['ticks'])} she's invulnerable, {so['speedPct']}% faster "
+              f"and invisible until she casts a skill or attacks; she can cast skills, but a second basic attack ends it. She heals "
+              f"{so['healPctMaxHp']}% max HP + {so['healAdRatio']}% Attack, and when it ends her damage is {so['ambushPct']}% higher for {sec(so['ambushTicks'])}."),
     'skill2': (f"Kunai Flip ({sec(ku['cooldownTicks'])}): she flips back {ku['flip']} over {sec(ku['flipTicks'])} and throws a non-homing kunai ({ku['range']}, {ku['speed'] * 60} units/s); the first enemy hit (never a tower) "
                f"takes {ku['base']} + {ku['adRatio']}% Attack and is marked for {sec(ku['markTicks'])}. Recast: she dashes to it, over walls too, and "
                f"slashes for {ku['slashBase']} + {ku['slashAdRatio']}% Attack. "

@@ -66,3 +66,6 @@ Thalassa's native kit and Lab now have approved original artwork. On November 9,
 1. `python3 tools/generate-thalassa.py --check` passes. If a tag is renamed, update the generator's `effects` list and regenerate.
 2. Mod Manager `the_repos_champions_all_load` passes.
 3. Release: native 0.10.92 / tfm2_custom 0.2.95 (0.2.94 is taken by PR #69), the DLL, and the review doc. **Done in round 157** (`docs/main-review-round-157.md`).
+
+## Round 165: tsunami (new)
+Her basic attack now sends a small tsunami from her through the target: a rectangle 14,000 wide, up to about 63,000 long. It currently reuses `surge` (at the midpoint) and `bump` (on each unit knocked up). A proper `tsunami` effect (a short wave sweeping along the line, both facings or 8 headings) would read better; the native side emits `tls_surge` and `tls_bump` today.

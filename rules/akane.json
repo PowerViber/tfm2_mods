@@ -8,7 +8,7 @@
     "CC",
     "Dot"
   ],
-  "revision": "akane-1.1",
+  "revision": "akane-1.2",
   "stat": {
     "attack": 78,
     "magic_power": 0,
@@ -54,7 +54,15 @@
     "ticks": 90,
     "speedPct": 60,
     "healPctMaxHp": 6,
-    "healAdRatio": 30
+    "healAdRatio": 30,
+    "hitsAllowed": 1,
+    "ambushPct": 20,
+    "ambushTicks": 180
+  },
+  "rhythm": {
+    "maxStacks": 5,
+    "ticks": 240,
+    "pctPerStack": 6
   },
   "kunai": {
     "cooldownTicks": 600,

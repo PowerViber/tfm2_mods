@@ -260,6 +260,11 @@ impl Thalassa {
                         sim.apply_cc(target, &named(CcKindV1::Stun, ticks, "tls_stun"));
                     }
                 }
+                Effect::KnockUp { target, ticks } => {
+                    if reach(owner, target) && sim.get_entity(target).is_some_and(|e| !e.is_tower()) {
+                        sim.apply_cc(target, &named(CcKindV1::Airborne, ticks, "tls_knockup"));
+                    }
+                }
                 Effect::Slow { target, percent, ticks } => {
                     if reach(owner, target) {
                         sim.entity_remove_buff(target, "tls_slow");
@@ -516,7 +521,7 @@ impl StablePassive for Thalassa {
         self.dive_exit_at = None;
         self.twin_dive_exit_at = None;
     }
-    /// Her own hits never cross a cage or a Main Event ring; accepted harp bolts feed the bounce and the twin's echo.
+    /// Her own hits never cross a cage or a Main Event ring; accepted harp bolts feed the tsunami and the twin's echo.
     fn on_attack(&mut self, sim: &mut StableSim, _: usize, id: usize, target: usize, damage: &mut usize) {
         let all = crate::champions_shared(sim);
         if !crate::grimhald_cage::can_interact(&all, id, target) {

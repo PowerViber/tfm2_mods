@@ -3865,3 +3865,11 @@ To check in game: close the game, Update/Check, confirm native 0.10.36 and champ
 - **Akane** joins the game with Codex's approved art and the `akane-1.1` ranges: a 120,000 kunai flying with a delay, a 30,000 flip, and a 240,000 Crimson Night dash.
 - **Checks:** 1,193 native tests, 0 warnings; DLL reports 0.10.98; Mod Manager load. Codex's browser and art checks need the local game-reference cache, so they run on Reihan's PC. Review: `docs/main-review-round-164.md`.
 - **Pending:** live acceptance and balance. Watch her long reach, and the kill chain once orbs start resetting her.
+## Nov 11: round 165 (native 0.10.99, tfm2_custom 0.2.102): Akane buff, Wright's carrier, Thalassa's tsunami
+- **Akane (`akane-1.2`):**
+  - Blood Rhythm: basic-attack stacks, +6% each, up to 5.
+  - Dismiss: she can cast skills now; the 1st basic attack reveals her and the 2nd ends it; she's invisible until she acts.
+  - Ambush: +20% damage for 3 s after Dismiss.
+- **Wright (`wright-6`):** the Sky Carrier launches nothing. It empowers his skills instead: no airframe, half cooldown, faster rearm and +1 strike, 125% bombs with the same warning and size, 150% kits. It still guards him for 80%.
+- **Thalassa (`thalassa-1.6`):** no bounce. A slower basic attack (2 s) sends a tsunami through the target: the wave's damage to others, a 0.35 s knock-up, each unit at most once every 3 s.
+- **Checks:** 1,197 native tests, 0 warnings; Wright 12 and Thalassa 10 browser checks; DLL 0.10.99. Review: `docs/main-review-round-165.md`.

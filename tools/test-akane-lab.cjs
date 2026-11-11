@@ -23,7 +23,7 @@ const root = path.resolve(__dirname, '..'), port = 7331;
       L.order('soul'); run(1);
       out.soul = L.me.soulUntil > L.tick && L.me.invulnUntil > L.tick && !L.seenByEnemy(L.me.pos);
       out.noDash = Math.hypot(L.me.pos.x - before.x, L.me.pos.y - before.y) < 2000;
-      L.order('edge'); run(1); out.moveOnly = !L.state.edge;
+      L.order('edge'); run(1); out.castInSoul = !!L.state.edge && L.me.invulnUntil > L.tick && L.seenByEnemy(L.me.pos);
       run(100);
       // Kunai Flip over a real map wall
       const c = L.wallCrossing(); L.me.pos = {...c.from}; foe.pos = {...c.to}; foe.hp = foe.max_hp; L.setAim(foe.pos);
@@ -56,7 +56,7 @@ const root = path.resolve(__dirname, '..'), port = 7331;
     });
     check(`The Lab loads the game's real wall grid (${r.realWalls} wall cells)`, r.realWalls > 20);
     check('Dismiss & Devour: invisible and invulnerable, no dash', r.soul && r.noDash);
-    check('During Dismiss she can only move (Crimson Edge refused)', r.moveOnly);
+    check('During Dismiss she can cast (Crimson Edge) and it reveals her while she stays invulnerable', r.castInSoul);
     check('Kunai Flip marks the foe, and the recast dashes over a real map wall', r.marked && r.crossed);
     check('Crimson Edge: vulnerable, the crimson burst and the finale knock-up', r.vulnerable && r.burstFx && r.knocked);
     check('A kill drops a Soul Orb; absorbing it resets Kunai Flip', r.orb && r.absorbed);

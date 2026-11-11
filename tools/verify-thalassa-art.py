@@ -70,6 +70,9 @@ expected['revision']='thalassa-1.4';[expected['tidePool'].pop(k) for k in ('pull
 # thalassa-1.5 (round 160 nerf): AP growth 26 -> 12, Mod Power AP 25 -> 10, bounce 30% (same type), twin/echo 40%, ult 120 + 70%
 expected['revision']='thalassa-1.5';expected['growth']['magic_power']=12;expected['modPower'][1]=10;expected['water']['bouncePct']=30
 expected['twin']['copyPct']=40;expected['ult'].update(base=120,apRatio=70,echoDamagePct=40)
+# thalassa-1.6 (round 165): the water bounce is replaced by a slower tsunami basic attack
+expected['revision']='thalassa-1.6';[expected['water'].pop(k) for k in ('bouncePct','bounceRange')]
+expected['basic'].update(cooldownTicks=120,waveBeyond=8000,waveWidth=14000,waveBase=25,waveApRatio=35,knockUpTicks=21,knockUpLockTicks=180)
 check(rules==expected,'only authorized canonical rule changes')
 for tag,ani in links.items():check(len(ani['frames'])==1 and ani['frames'][0]['duration']==1/60,tag+' one-tick tracked link')
 check(Image.open(REVIEW/'effect-pool.png').size==Image.open(REVIEW/'effect-whirlpool.png').size==(74,74),'equal pool and whirlpool footprints')
@@ -77,6 +80,7 @@ original=json.loads(subprocess.check_output(['rtk','proxy','git','show',baseline
 for key in ('stat','growth','attack','skill','skill2','ult','passive','passive_ult'):
     want=json.loads(json.dumps(original[key]))
     if key=='growth':want['magic_power']=12  # round 160 nerf
+    if key=='attack':want['cooltime']=120  # round 165: the slower tsunami bolt
     check(champ[key]==want,key+' unchanged gameplay definition (round 160 growth nerf aside)')
 paths=[Path(str(body_base)+'#sheet.png'),Path(str(body_base)+'#anim.fanim'),Path(str(fx_base)+'#sheet.png'),Path(str(fx_base)+'#anim.fanim'),Path(str(link_base)+'#sheet.png'),Path(str(link_base)+'#anim.fanim'),REVIEW/'art-manifest.json',ROOT/'editor/thalassa-art.js',ROOT/'native/tfm2_custom_ai/src/thalassa_art.rs']
 before={p:sha(p) for p in paths}

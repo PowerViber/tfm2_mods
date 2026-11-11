@@ -168,7 +168,7 @@
       for(const [id,until] of map){if(tick>=until){map.delete(id);continue;}const u=id===1?me:find(id);if(u&&u.hp>0){const q=P(u.pos);painter.effect(ctx,tag,tick,q.x,q.y,pixel,true);}}
     }
     $('hud').innerHTML = [`Tick ${tick}`, `Airframes ${state.stock ?? '-'}`, `Fighters ${(state.planes || []).filter(p => p.kind === 'fighter' && !p.from_carrier && !p.kamikaze).length}`,
-      `Carrier ${state.carrier ? 'up, ' + state.carrier.ready_bombers + ' bombers ready' : '-'}`, ...['S1', 'S2', 'S3', 'U'].map((n, i) => `${n} ${state.ready ? Math.max(0, ((state.ready[i] - tick) / 60)).toFixed(1) + ' s' : '-'}`), `Wright HP ${Math.round(me.hp)}`].map(s => `<span>${s}</span>`).join('');
+      `Carrier ${state.carrier ? 'up: skills empowered (no airframe, half cooldown)' : '-'}`, ...['S1', 'S2', 'S3', 'U'].map((n, i) => `${n} ${state.ready ? Math.max(0, ((state.ready[i] - tick) / 60)).toFixed(1) + ' s' : '-'}`), `Wright HP ${Math.round(me.hp)}`].map(s => `<span>${s}</span>`).join('');
     $('status').textContent = state.rejection ? 'Last rejected: ' + state.rejection : running?'Running':'Paused';
   }
   function loop(now) { clock.advance(now,running&&!document.hidden,step); draw(); requestAnimationFrame(loop); }

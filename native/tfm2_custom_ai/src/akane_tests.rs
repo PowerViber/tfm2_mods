@@ -200,27 +200,88 @@ fn an_orb_refills_a_charge_resets_kunai_and_resets_edge_only_once_every_30_s() {
 // ------------------------------------------------------------------ S1
 
 #[test]
-fn dismiss_and_devour_is_invisible_invulnerable_fast_move_only_with_a_heal_and_no_dash() {
+fn dismiss_and_devour_is_invulnerable_fast_and_hidden_with_a_heal_and_no_dash() {
     let mut c = Core::default();
     let f = frame(0, vec![]);
     let out = order(&mut c, &f, Order::Soul);
     assert!(out.contains(&Effect::Soul { ticks: d::SOUL_TICKS as u64, speed_pct: d::SOUL_SPEED_PCT }));
     assert!(out.iter().any(|e| matches!(e, Effect::Heal { amount } if *amount == 1600 * d::SOUL_HEAL_PCT_MAX_HP / 100 + 180 * d::SOUL_HEAL_AD_RATIO / 100)));
     assert!(!out.iter().any(|e| matches!(e, Effect::Glide { .. })), "not a dash");
+    assert!(c.soul_on && c.soul_hidden);
     assert_eq!(c.charges, 1);
-    // move only: no skills until it ends
+    // round 165: she can cast during it; casting reveals her, she stays invulnerable
     let out = order(&mut c, &frame(10, vec![]), Order::Edge);
-    assert!(!out.iter().any(|e| matches!(e, Effect::Pose { .. })));
-    assert!(c.rejection.contains("only move"));
+    assert!(out.iter().any(|e| matches!(e, Effect::Pose { .. })), "skills are allowed");
+    assert!(out.contains(&Effect::Reveal) && !c.soul_hidden);
+    assert!(c.soul_on && c.invuln_until > 10, "still invulnerable");
     // a second charge extends it to its own end, never stacking
     order(&mut c, &frame(60, vec![]), Order::Soul);
     assert_eq!(c.soul_until, 60 + d::SOUL_TICKS as u64);
     assert_eq!(c.charges, 0);
     let out = order(&mut c, &frame(70, vec![]), Order::Soul);
-    assert!(out.is_empty() || !out.iter().any(|e| matches!(e, Effect::Soul { .. })), "no charge left");
-    // after it ends she acts normally
-    let out = order(&mut c, &frame(60 + d::SOUL_TICKS as u64, vec![]), Order::Edge);
-    assert!(out.iter().any(|e| matches!(e, Effect::Pose { .. })));
+    assert!(!out.iter().any(|e| matches!(e, Effect::Soul { .. })), "no charge left");
+}
+
+#[test]
+fn one_basic_attack_is_allowed_in_dismiss_and_the_second_ends_it_into_ambush() {
+    let mut c = Core::default();
+    let mut f = frame(0, vec![champ(FOE, 2, 415_000, 400_000)]);
+    order(&mut c, &f, Order::Soul);
+    let o1 = hit(&mut c, &mut f, 10, FOE);
+    assert!(o1.contains(&Effect::Reveal), "the 1st hit reveals her");
+    assert!(c.soul_on && c.in_soul(10), "and she stays invulnerable");
+    let o2 = hit(&mut c, &mut f, 20, FOE);
+    assert!(o2.contains(&Effect::SoulEnd), "the 2nd hit ends it");
+    assert!(!c.soul_on && c.invuln_until <= 20);
+    assert!(o2.contains(&Effect::Ambush { percent: d::SOUL_AMBUSH_PCT, ticks: d::SOUL_AMBUSH_TICKS as u64 }));
+    // Ambush: her skill damage is 20% higher for 3 s
+    let units = vec![champ(FOE, 2, 440_000, 400_000)];
+    let out = order(&mut c, &frame(30, units.clone()), Order::Kunai(Point::new(440_000, 400_000)));
+    let _ = out;
+    let mut base = Core::default();
+    let mut f1 = frame(30, units.clone());
+    let mut f2 = f1.clone();
+    let mut boosted = run_order(&mut c, &mut f1, None, 31, 60);
+    boosted.retain(|e| matches!(e, Effect::Damage { target: FOE, .. }));
+    order(&mut base, &frame(30, units), Order::Kunai(Point::new(440_000, 400_000)));
+    let mut plain = run_order(&mut base, &mut f2, None, 31, 60);
+    plain.retain(|e| matches!(e, Effect::Damage { target: FOE, .. }));
+    assert_eq!(damage_to(&boosted, FOE), damage_to(&plain, FOE) * (100 + d::SOUL_AMBUSH_PCT) / 100, "the kunai hits 20% harder");
+}
+
+#[test]
+fn dismiss_ending_on_its_own_also_starts_ambush() {
+    let mut c = Core::default();
+    order(&mut c, &frame(0, vec![]), Order::Soul);
+    let mut f = frame(0, vec![]);
+    let mut out = vec![];
+    for tick in 1..=d::SOUL_TICKS as u64 {
+        f.tick = tick;
+        out.extend(c.step(&f));
+    }
+    assert!(out.contains(&Effect::SoulEnd) && !c.soul_on);
+    assert_eq!(c.ambush_until, d::SOUL_TICKS as u64 + d::SOUL_AMBUSH_TICKS as u64);
+}
+
+#[test]
+fn blood_rhythm_stacks_on_basic_attacks_caps_at_five_and_expires() {
+    let mut c = Core::default();
+    let mut f = frame(0, vec![champ(FOE, 2, 415_000, 400_000), tower(40, 420_000, 400_000)]);
+    hit(&mut c, &mut f, 1, 40);
+    assert_eq!(c.rhythm.0, 0, "towers give no stack");
+    for tick in 2..10 {
+        hit(&mut c, &mut f, tick, FOE);
+    }
+    assert_eq!(c.rhythm.0, d::RHYTHM_MAX_STACKS);
+    assert_eq!(c.basic_multiplier(10), 100 + d::RHYTHM_MAX_STACKS * d::RHYTHM_PCT_PER_STACK);
+    f.tick = 9 + d::RHYTHM_TICKS as u64;
+    c.step(&f);
+    assert_eq!(c.rhythm.0, 0, "lost 4 s after her last hit");
+    assert_eq!(c.basic_multiplier(f.tick), 100);
+    // with Ambush on top: both multiply
+    c.rhythm = (5, f.tick + 100);
+    c.ambush_until = f.tick + 100;
+    assert_eq!(c.basic_multiplier(f.tick), (100 + 5 * d::RHYTHM_PCT_PER_STACK) * (100 + d::SOUL_AMBUSH_PCT) / 100);
 }
 
 #[test]
@@ -653,26 +714,60 @@ mod glue {
     }
 
     #[test]
-    fn dismiss_hides_her_makes_her_invulnerable_and_move_only_without_reading_as_stunned() {
+    fn dismiss_hides_her_until_she_acts_and_ends_on_the_second_basic_attack() {
         let (x, y) = open_spot(80_000);
-        let host = Host::new(vec![champ(0, (x, y), "tfm2_custom_akane")]);
+        let host = Host::new(vec![champ(0, (x, y), "tfm2_custom_akane"), champ(1, (x + 15_000, y), "foe")]);
         let mut k = Akane::default();
         host.borrow_mut().tick = 10;
         let f = with_sim(&host, |sim| k.frame(sim, 0));
         let mut out = vec![];
         k.core.execute(&f, Order::Soul, &mut out);
         with_sim(&host, |sim| k.apply(sim, 0, out));
-        let g = host.borrow();
-        assert!(g.invisible.contains(&(0, d::SOUL_TICKS as usize)));
-        let soul = g.buffs[0].iter().find(|b| b.name() == "akn_soul").expect("soul buff");
-        assert!(soul.damaged_reduce == 100 && soul.cc_immune && soul.move_speed_mult == d::SOUL_SPEED_PCT as i32);
-        let locks: Vec<u32> = g.ccs[0].iter().filter(|c| c.0.name() == "akn_soul_lock").map(|c| c.0.kind).collect();
-        assert!(locks.contains(&CcKindV1::BlockAttack.code()) && locks.contains(&CcKindV1::BlockSkill.code()));
-        assert_eq!(g.heals.len(), 1);
-        drop(g);
+        {
+            let g = host.borrow();
+            let soul = g.buffs[0].iter().find(|b| b.name() == "akn_soul").expect("soul buff");
+            assert!(soul.damaged_reduce == 100 && soul.cc_immune && soul.move_speed_mult == d::SOUL_SPEED_PCT as i32);
+            assert!(!g.ccs[0].iter().any(|c| c.0.kind == CcKindV1::BlockAttack.code() || c.0.kind == CcKindV1::BlockSkill.code()), "she can act");
+            assert_eq!(g.heals.len(), 1);
+        }
+        // hidden is renewed a few ticks at a time while she hasn't acted
+        host.borrow_mut().invisible.clear();
         host.borrow_mut().tick = 11;
-        let f = with_sim(&host, |sim| k.frame(sim, 0));
-        assert!(!f.stunned, "her own locks never read as being stunned");
+        with_sim(&host, |sim| k.on_update(sim, 11, 0, 0));
+        assert!(host.borrow().invisible.iter().any(|i| i.0 == 0 && i.1 <= 3));
+        // her 1st basic attack: revealed, still invulnerable (scaled by Blood Rhythm later)
+        host.borrow_mut().invisible.clear();
+        host.borrow_mut().tick = 12;
+        with_sim(&host, |sim| {
+            let mut dmg = 100;
+            k.on_attack(sim, 0, 0, 1, &mut dmg);
+            k.on_update(sim, 12, 0, 0);
+        });
+        assert!(host.borrow().invisible.is_empty(), "revealed: no more renewals");
+        assert!(host.borrow().buffs[0].iter().any(|b| b.name() == "akn_soul"));
+        // the 2nd: invulnerability ends at once, Ambush starts
+        host.borrow_mut().tick = 13;
+        with_sim(&host, |sim| {
+            let mut dmg = 100;
+            k.on_attack(sim, 0, 0, 1, &mut dmg);
+            k.on_update(sim, 13, 0, 0);
+        });
+        let g = host.borrow();
+        assert!(!g.buffs[0].iter().any(|b| b.name() == "akn_soul"), "invulnerability gone");
+        assert!(g.buffs[0].iter().any(|b| b.name() == "akn_ambush"));
+    }
+
+    #[test]
+    fn basic_attacks_scale_with_blood_rhythm_and_ambush_in_on_attack() {
+        let (x, y) = open_spot(80_000);
+        let host = Host::new(vec![champ(0, (x, y), "tfm2_custom_akane"), champ(1, (x + 15_000, y), "foe")]);
+        let mut k = Akane::default();
+        k.core.rhythm = (5, 1_000);
+        k.core.ambush_until = 1_000;
+        host.borrow_mut().tick = 10;
+        let mut dmg = 100;
+        with_sim(&host, |sim| k.on_attack(sim, 0, 0, 1, &mut dmg));
+        assert_eq!(dmg as i64, 100 * (100 + 5 * d::RHYTHM_PCT_PER_STACK) * (100 + d::SOUL_AMBUSH_PCT) / 100 / 100);
     }
 
     #[test]

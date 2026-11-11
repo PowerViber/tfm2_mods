@@ -177,6 +177,8 @@ pub enum Effect {
     /// magic damage from her (or her clone: `from_clone`)
     Damage { target: usize, amount: i64, from_clone: bool },
     Stun { target: usize, ticks: u64 },
+    /// her tsunami's knock-up (round 165)
+    KnockUp { target: usize, ticks: u64 },
     Slow { target: usize, percent: i64, ticks: u64 },
     /// an engine push (crate::motion::glide): whirlpool pulls
     Pull { target: usize, to: Point, ticks: u64 },
@@ -283,6 +285,8 @@ pub enum Cast {
 pub struct Core {
     /// tick each skill is ready again: [S1, S2, S3, ult]
     pub ready: [u64; 4],
+    /// the tsunami's knock-up lock: (unit, can be knocked up again at)
+    pub knock_lock: Vec<(usize, u64)>,
     pub pools: Vec<Pool>,
     pub next_pool: u32,
     pub wet_until: u64,
@@ -307,6 +311,7 @@ impl Default for Core {
     fn default() -> Self {
         Core {
             ready: [0; 4],
+            knock_lock: vec![],
             pools: vec![],
             next_pool: 1,
             wet_until: 0,
@@ -361,7 +366,7 @@ impl Core {
         self.run_twin(f, &mut out);
         self.run_echo(f, &mut out);
         self.run_trident(f, &mut out);
-        self.bounce(f, &mut out);
+        self.tsunami(f, &mut out);
         let order = if f.manual { f.order } else { self.decide(f) };
         if let Some(o) = order {
             self.execute(f, o, &mut out);
@@ -428,21 +433,39 @@ impl Core {
         }
     }
 
-    /// Her accepted harp bolts: in water each bounces to a second enemy of the same type (round 160: a minion hit only
-    /// bounces to minions and creeps, a champion hit only to champions; waves are no longer free poke).
-    fn bounce(&mut self, f: &Frame, out: &mut Vec<Effect>) {
-        let base = pct(d::BASIC_BASE, d::BASIC_AP_RATIO, f.ap);
+    /// Round 165: her accepted harp bolts send a small tsunami from her through the target (`waveBeyond` past it,
+    /// `waveWidth` wide). Other enemies in it take the wave's damage; everyone in it, the target too, is knocked up,
+    /// each at most once every `knockUpLockTicks`. Never towers or allies. (The water bounce is gone.)
+    fn tsunami(&mut self, f: &Frame, out: &mut Vec<Effect>) {
+        self.knock_lock.retain(|l| f.tick < l.1);
+        let wave = pct(d::BASIC_WAVE_BASE, d::BASIC_WAVE_AP_RATIO, f.ap);
         for &t in &f.basic_hits {
-            let Some(target) = f.units.iter().find(|u| u.id == t && u.hp > 0) else { continue };
-            if self.in_water {
-                if let Some(next) = f
-                    .units
-                    .iter()
-                    .filter(|u| u.id != t && u.champion == target.champion && f.enemy(u) && !u.tower && u.pos.within(target.pos, d::WATER_BOUNCE_RANGE + u.radius))
-                    .min_by_key(|u| (u.pos.d2(target.pos), u.id))
-                {
-                    out.push(Effect::Damage { target: next.id, amount: base * d::WATER_BOUNCE_PCT / 100, from_clone: false });
-                    out.push(Effect::Fx { name: "tls_bounce".into(), at: next.pos, ticks: 10, ambient: true });
+            let Some(target) = f.units.iter().find(|u| u.id == t && u.hp > 0).cloned() else { continue };
+            if target.tower {
+                continue; // a tower takes her bolt, never the wave
+            }
+            let reach = (f.pos.dist(target.pos) as i64) + d::BASIC_WAVE_BEYOND;
+            let end = if target.pos == f.pos { Point::new(f.pos.x + reach, f.pos.y) } else { f.pos.toward(target.pos, reach) };
+            out.push(Effect::Fx { name: "tls_surge".into(), at: Point::new((f.pos.x + end.x) / 2, (f.pos.y + end.y) / 2), ticks: 18, ambient: false });
+            for u in f.units.iter().filter(|u| f.enemy(u) && !u.tower) {
+                let (dx, dy) = ((end.x - f.pos.x) as f64, (end.y - f.pos.y) as f64);
+                let len2 = (dx * dx + dy * dy).max(1.0);
+                let k = ((u.pos.x - f.pos.x) as f64 * dx + (u.pos.y - f.pos.y) as f64 * dy) / len2;
+                if !(0.0..=1.0).contains(&k) {
+                    continue;
+                }
+                let (qx, qy) = (f.pos.x as f64 + dx * k, f.pos.y as f64 + dy * k);
+                let side = ((u.pos.x as f64 - qx).powi(2) + (u.pos.y as f64 - qy).powi(2)).sqrt();
+                if side > (d::BASIC_WAVE_WIDTH / 2 + u.radius) as f64 {
+                    continue;
+                }
+                if u.id != t {
+                    out.push(Effect::Damage { target: u.id, amount: wave, from_clone: false });
+                }
+                if !self.knock_lock.iter().any(|l| l.0 == u.id) {
+                    self.knock_lock.push((u.id, f.tick + sec(d::BASIC_KNOCK_UP_LOCK_TICKS)));
+                    out.push(Effect::KnockUp { target: u.id, ticks: sec(d::BASIC_KNOCK_UP_TICKS) });
+                    out.push(Effect::Fx { name: "tls_bump".into(), at: u.pos, ticks: 12, ambient: true });
                 }
             }
         }
