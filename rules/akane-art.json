@@ -1,0 +1,300 @@
+{
+  "version": 1,
+  "revision": "akane-art-1",
+  "units_per_pixel": 1000,
+  "body_canvas": [
+    48,
+    56
+  ],
+  "foot_below_centre": 20,
+  "source_groups": {
+    "motion": [
+      "idle",
+      "run",
+      "attack"
+    ],
+    "techniques": [
+      null,
+      "skill1",
+      "skill2"
+    ],
+    "finale": [
+      null,
+      "finale",
+      "dead"
+    ],
+    "night": [
+      null,
+      "ult",
+      "hit"
+    ]
+  },
+  "pose_ticks": {
+    "idle": [
+      9,
+      9,
+      9,
+      9,
+      9,
+      9,
+      9,
+      9
+    ],
+    "run": [
+      5,
+      5,
+      5,
+      5,
+      5,
+      5,
+      5,
+      5
+    ],
+    "attack": [
+      1,
+      1,
+      2,
+      2,
+      2,
+      3,
+      3,
+      2
+    ],
+    "skill1": [
+      3,
+      3,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4
+    ],
+    "skill2": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      2,
+      2,
+      1
+    ],
+    "finale": [
+      1,
+      1,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "ult": [
+      2,
+      2,
+      2,
+      3,
+      3,
+      2,
+      2,
+      2
+    ],
+    "hit": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+    ],
+    "dead": [
+      6,
+      6,
+      6,
+      6,
+      6,
+      6,
+      6,
+      6
+    ]
+  },
+  "aliases": {
+    "dash": "attack",
+    "night_dash": "attack"
+  },
+  "headings": [
+    "e",
+    "se",
+    "s",
+    "sw",
+    "w",
+    "nw",
+    "n",
+    "ne"
+  ],
+  "effects": {
+    "orb": [
+      0,
+      8,
+      10,
+      60,
+      -2,
+      "effect"
+    ],
+    "orb_absorb": [
+      1,
+      24,
+      24,
+      18,
+      6,
+      "effect"
+    ],
+    "dismiss": [
+      2,
+      40,
+      40,
+      20,
+      5,
+      "effect"
+    ],
+    "kunai": [
+      3,
+      24,
+      12,
+      10,
+      6,
+      "effect"
+    ],
+    "kunai_hit": [
+      5,
+      16,
+      16,
+      12,
+      6,
+      "effect"
+    ],
+    "flip": [
+      4,
+      30,
+      26,
+      30,
+      5,
+      "effect"
+    ],
+    "dash_slash": [
+      4,
+      38,
+      30,
+      12,
+      6,
+      "effect"
+    ],
+    "burst": [
+      5,
+      36,
+      36,
+      20,
+      6,
+      "effect"
+    ],
+    "finale": [
+      6,
+      40,
+      40,
+      18,
+      6,
+      "effect"
+    ],
+    "knock_up": [
+      7,
+      24,
+      30,
+      18,
+      5,
+      "effect"
+    ],
+    "night": [
+      8,
+      72,
+      44,
+      24,
+      -2,
+      "effect"
+    ],
+    "night_slash": [
+      6,
+      46,
+      38,
+      18,
+      6,
+      "effect"
+    ],
+    "night_aura": [
+      8,
+      60,
+      36,
+      60,
+      -2,
+      "buff"
+    ],
+    "mark": [
+      9,
+      22,
+      30,
+      60,
+      5,
+      "buff"
+    ],
+    "bleed1": [
+      10,
+      10,
+      16,
+      60,
+      4,
+      "buff"
+    ],
+    "bleed2": [
+      10,
+      14,
+      18,
+      60,
+      4,
+      "buff"
+    ],
+    "bleed3": [
+      10,
+      18,
+      20,
+      60,
+      4,
+      "buff"
+    ],
+    "bleed4": [
+      10,
+      20,
+      22,
+      60,
+      4,
+      "buff"
+    ],
+    "crimson": [
+      10,
+      24,
+      28,
+      60,
+      4,
+      "buff"
+    ],
+    "vulnerable": [
+      11,
+      30,
+      30,
+      60,
+      4,
+      "buff"
+    ]
+  }
+}

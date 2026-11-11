@@ -1,0 +1,478 @@
+{
+  "version": 1,
+  "revision": "akane-art-1",
+  "review_only": false,
+  "body_approved": true,
+  "effects_approved": true,
+  "complete_body": true,
+  "units_per_pixel": 1000,
+  "body_canvas": [
+    48,
+    56
+  ],
+  "world_anchor": [
+    24,
+    28
+  ],
+  "foot_anchor": [
+    24,
+    48
+  ],
+  "atlases": {
+    "body": "body",
+    "effects": "effects"
+  },
+  "poses": [
+    "idle",
+    "run",
+    "attack",
+    "skill1",
+    "skill2",
+    "finale",
+    "dead",
+    "ult",
+    "hit"
+  ],
+  "effects": {
+    "orb": {
+      "kind": "effect",
+      "z": -2,
+      "follow": false,
+      "ticks": 60,
+      "geometry_pixels": [
+        8,
+        10
+      ]
+    },
+    "orb_p0": {
+      "kind": "effect",
+      "z": -2,
+      "follow": false,
+      "ticks": 1
+    },
+    "orb_p1": {
+      "kind": "effect",
+      "z": -2,
+      "follow": false,
+      "ticks": 1
+    },
+    "orb_p2": {
+      "kind": "effect",
+      "z": -2,
+      "follow": false,
+      "ticks": 1
+    },
+    "orb_p3": {
+      "kind": "effect",
+      "z": -2,
+      "follow": false,
+      "ticks": 1
+    },
+    "orb_absorb": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false,
+      "ticks": 18,
+      "geometry_pixels": [
+        24,
+        24
+      ]
+    },
+    "dismiss": {
+      "kind": "effect",
+      "z": 5,
+      "follow": false,
+      "ticks": 20,
+      "geometry_pixels": [
+        40,
+        40
+      ]
+    },
+    "kunai": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false,
+      "ticks": 10,
+      "geometry_pixels": [
+        24,
+        12
+      ]
+    },
+    "kunai_e": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false,
+      "ticks": 10
+    },
+    "kunai_flight_e": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false,
+      "ticks": 1
+    },
+    "kunai_se": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false,
+      "ticks": 10
+    },
+    "kunai_flight_se": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false,
+      "ticks": 1
+    },
+    "kunai_s": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false,
+      "ticks": 10
+    },
+    "kunai_flight_s": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false,
+      "ticks": 1
+    },
+    "kunai_sw": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false,
+      "ticks": 10
+    },
+    "kunai_flight_sw": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false,
+      "ticks": 1
+    },
+    "kunai_w": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false,
+      "ticks": 10
+    },
+    "kunai_flight_w": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false,
+      "ticks": 1
+    },
+    "kunai_nw": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false,
+      "ticks": 10
+    },
+    "kunai_flight_nw": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false,
+      "ticks": 1
+    },
+    "kunai_n": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false,
+      "ticks": 10
+    },
+    "kunai_flight_n": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false,
+      "ticks": 1
+    },
+    "kunai_ne": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false,
+      "ticks": 10
+    },
+    "kunai_flight_ne": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false,
+      "ticks": 1
+    },
+    "kunai_hit": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false,
+      "ticks": 12,
+      "geometry_pixels": [
+        16,
+        16
+      ]
+    },
+    "flip": {
+      "kind": "effect",
+      "z": 5,
+      "follow": false,
+      "ticks": 30,
+      "geometry_pixels": [
+        30,
+        26
+      ]
+    },
+    "dash_slash": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false,
+      "ticks": 12,
+      "geometry_pixels": [
+        38,
+        30
+      ]
+    },
+    "dash_slash_e": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false,
+      "ticks": 12
+    },
+    "dash_slash_se": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false,
+      "ticks": 12
+    },
+    "dash_slash_s": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false,
+      "ticks": 12
+    },
+    "dash_slash_sw": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false,
+      "ticks": 12
+    },
+    "dash_slash_w": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false,
+      "ticks": 12
+    },
+    "dash_slash_nw": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false,
+      "ticks": 12
+    },
+    "dash_slash_n": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false,
+      "ticks": 12
+    },
+    "dash_slash_ne": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false,
+      "ticks": 12
+    },
+    "burst": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false,
+      "ticks": 20,
+      "geometry_pixels": [
+        36,
+        36
+      ]
+    },
+    "finale": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false,
+      "ticks": 18,
+      "geometry_pixels": [
+        40,
+        40
+      ]
+    },
+    "knock_up": {
+      "kind": "effect",
+      "z": 5,
+      "follow": false,
+      "ticks": 18,
+      "geometry_pixels": [
+        24,
+        30
+      ]
+    },
+    "night": {
+      "kind": "effect",
+      "z": -2,
+      "follow": false,
+      "ticks": 24,
+      "geometry_pixels": [
+        72,
+        44
+      ]
+    },
+    "night_slash": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false,
+      "ticks": 18,
+      "geometry_pixels": [
+        46,
+        38
+      ]
+    },
+    "night_slash_e": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false,
+      "ticks": 18
+    },
+    "night_slash_se": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false,
+      "ticks": 18
+    },
+    "night_slash_s": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false,
+      "ticks": 18
+    },
+    "night_slash_sw": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false,
+      "ticks": 18
+    },
+    "night_slash_w": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false,
+      "ticks": 18
+    },
+    "night_slash_nw": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false,
+      "ticks": 18
+    },
+    "night_slash_n": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false,
+      "ticks": 18
+    },
+    "night_slash_ne": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false,
+      "ticks": 18
+    },
+    "night_aura": {
+      "kind": "buff",
+      "z": -2,
+      "follow": true,
+      "ticks": 60,
+      "geometry_pixels": [
+        60,
+        36
+      ]
+    },
+    "mark": {
+      "kind": "buff",
+      "z": 5,
+      "follow": true,
+      "ticks": 60,
+      "geometry_pixels": [
+        22,
+        30
+      ]
+    },
+    "bleed1": {
+      "kind": "buff",
+      "z": 4,
+      "follow": true,
+      "ticks": 60,
+      "geometry_pixels": [
+        10,
+        16
+      ]
+    },
+    "bleed2": {
+      "kind": "buff",
+      "z": 4,
+      "follow": true,
+      "ticks": 60,
+      "geometry_pixels": [
+        14,
+        18
+      ]
+    },
+    "bleed3": {
+      "kind": "buff",
+      "z": 4,
+      "follow": true,
+      "ticks": 60,
+      "geometry_pixels": [
+        18,
+        20
+      ]
+    },
+    "bleed4": {
+      "kind": "buff",
+      "z": 4,
+      "follow": true,
+      "ticks": 60,
+      "geometry_pixels": [
+        20,
+        22
+      ]
+    },
+    "crimson": {
+      "kind": "buff",
+      "z": 4,
+      "follow": true,
+      "ticks": 60,
+      "geometry_pixels": [
+        24,
+        28
+      ]
+    },
+    "vulnerable": {
+      "kind": "buff",
+      "z": 4,
+      "follow": true,
+      "ticks": 60,
+      "geometry_pixels": [
+        30,
+        30
+      ]
+    }
+  },
+  "headings": [
+    "e",
+    "se",
+    "s",
+    "sw",
+    "w",
+    "nw",
+    "n",
+    "ne"
+  ],
+  "source_sha256": {
+    "concept-source-v1.png": "2e8e5582e4c3cdebd5adb2c460bb17ce103c61ac575a8e429e6c4579616d7fa3",
+    "effects-source-v1.png": "ed3fd5193d9902e12c7102b83fb585a07c357425314195ff09248dbe44a1b009",
+    "finale-source-v1.png": "445821f1ff5ef8377c9af37b255a2ab2183b5f1f1293c6811cb394f8ed3d2249",
+    "motion-source-v1.png": "522f1dd59e57162c077f4ab8d752a00aa49ff69fe8b4b8b024653e1433c2271f",
+    "night-source-v1.png": "20063ac99db88a81d4a1ccd6d280a470f4dc11a2566e6f33c0024fa1a96aa587",
+    "techniques-source-v1.png": "d682afc21739063f060b4ba89c4cde56accf310d475c3e7c1d2740cbd399aa1d"
+  },
+  "atlas_sha256": {
+    "body": "b8739b5761eccf5fe6414b14f5cfed955017d2e045373c2edd70d719abe0b324",
+    "effects": "d552c19e7bab4c31ce4358239c4f6e0fe41d0e9b5e4cabd6f9b2ff99b2df6169"
+  },
+  "decoded_bytes": 4194304,
+  "phase_clock": "orb phase = (tick - birth) / 15 modulo 4; all other animations use committed start, not renewal"
+}

@@ -1,0 +1,254 @@
+{
+  "checks": 37,
+  "passed": [
+    "Editor route akane.html",
+    "Editor route editor/akane.html",
+    "Editor route akane-review.html",
+    "Editor route akane-body.png",
+    "Editor route akane.wasm",
+    "Editor route akane-renderer.js",
+    "Editor route akane-review-assets/effects.png",
+    "Editor route akane-review-assets/body.fanim",
+    "Default levelled gank at 8:00 with all original stock actors",
+    "Verified 960,000 map, 1,000 world/art pixel, all 900 wall cells registered",
+    "Canvas retains square pixels",
+    "30/60/120/144/240 Hz each produce exactly 600 ticks in ten seconds",
+    "Pause/background resets have no catch-up ticks",
+    "Step advances exactly once",
+    "Focused WASD moves through terrain validation",
+    "Focus loss clears held inputs",
+    "laning: bounded real-map actors and 180 legal shared-core ticks",
+    "gank: bounded real-map actors and 180 legal shared-core ticks",
+    "countergank: bounded real-map actors and 180 legal shared-core ticks",
+    "camp: bounded real-map actors and 180 legal shared-core ticks",
+    "morgard: bounded real-map actors and 180 legal shared-core ticks",
+    "serpen: bounded real-map actors and 180 legal shared-core ticks",
+    "defend: bounded real-map actors and 180 legal shared-core ticks",
+    "dive: bounded real-map actors and 180 legal shared-core ticks",
+    "Stock replacement loads original sprite/stats",
+    "Native-size inspection has one pixel per art pixel",
+    "Hidden positions/HP withheld from core decisions",
+    "24 development + 12 holdout art-on/off complete combat traces match",
+    "All 13 stats at 20/80 retain manual mechanics across three fixtures",
+    "Normal basics keep release and attack cadence",
+    "Kunai launches without instant damage and starts at caster",
+    "100,000-distance hit takes 31 ticks and marks once on arrival",
+    "Canonical extended ranges and slower movement reach the browser",
+    "Recording replays complete core outputs and visible host state",
+    "Direct /editor route loads actual assets",
+    "Review has nine full body poses, both facings and effects",
+    "No browser errors"
+  ],
+  "scenarios": [
+    {
+      "kind": "laning",
+      "n": 55,
+      "ticks": 180,
+      "legal": true,
+      "error": null,
+      "damage": {
+        "requested": 126,
+        "hp_damage": 60,
+        "shield_damage": 0,
+        "taken": 0,
+        "kills": 0,
+        "champions": 60,
+        "minions": 0,
+        "camps": 0,
+        "objectives": 0
+      },
+      "realTowers": true
+    },
+    {
+      "kind": "gank",
+      "n": 55,
+      "ticks": 180,
+      "legal": true,
+      "error": null,
+      "damage": {
+        "requested": 126,
+        "hp_damage": 60,
+        "shield_damage": 0,
+        "taken": 0,
+        "kills": 0,
+        "champions": 60,
+        "minions": 0,
+        "camps": 0,
+        "objectives": 0
+      },
+      "realTowers": true
+    },
+    {
+      "kind": "countergank",
+      "n": 55,
+      "ticks": 180,
+      "legal": true,
+      "error": null,
+      "damage": {
+        "requested": 126,
+        "hp_damage": 60,
+        "shield_damage": 0,
+        "taken": 0,
+        "kills": 0,
+        "champions": 60,
+        "minions": 0,
+        "camps": 0,
+        "objectives": 0
+      },
+      "realTowers": true
+    },
+    {
+      "kind": "camp",
+      "n": 55,
+      "ticks": 180,
+      "legal": true,
+      "error": null,
+      "damage": {
+        "requested": 818,
+        "hp_damage": 700,
+        "shield_damage": 0,
+        "taken": 63,
+        "kills": 1,
+        "champions": 0,
+        "minions": 0,
+        "camps": 700,
+        "objectives": 0
+      },
+      "realTowers": true
+    },
+    {
+      "kind": "morgard",
+      "n": 55,
+      "ticks": 180,
+      "legal": true,
+      "error": null,
+      "damage": {
+        "requested": 454,
+        "hp_damage": 216,
+        "shield_damage": 0,
+        "taken": 87,
+        "kills": 0,
+        "champions": 216,
+        "minions": 0,
+        "camps": 0,
+        "objectives": 0
+      },
+      "realTowers": true
+    },
+    {
+      "kind": "serpen",
+      "n": 55,
+      "ticks": 180,
+      "legal": true,
+      "error": null,
+      "damage": {
+        "requested": 454,
+        "hp_damage": 216,
+        "shield_damage": 0,
+        "taken": 87,
+        "kills": 0,
+        "champions": 216,
+        "minions": 0,
+        "camps": 0,
+        "objectives": 0
+      },
+      "realTowers": true
+    },
+    {
+      "kind": "defend",
+      "n": 55,
+      "ticks": 180,
+      "legal": true,
+      "error": null,
+      "damage": {
+        "requested": 606,
+        "hp_damage": 438,
+        "shield_damage": 0,
+        "taken": 0,
+        "kills": 0,
+        "champions": 152,
+        "minions": 286,
+        "camps": 0,
+        "objectives": 0
+      },
+      "realTowers": true
+    },
+    {
+      "kind": "dive",
+      "n": 55,
+      "ticks": 180,
+      "legal": true,
+      "error": null,
+      "damage": {
+        "requested": 126,
+        "hp_damage": 60,
+        "shield_damage": 0,
+        "taken": 1284,
+        "kills": 0,
+        "champions": 60,
+        "minions": 0,
+        "camps": 0,
+        "objectives": 0
+      },
+      "realTowers": true
+    }
+  ],
+  "manual_stat_comparisons": 39,
+  "parity_frames": 3240,
+  "clocks": [
+    [
+      30,
+      600
+    ],
+    [
+      60,
+      600
+    ],
+    [
+      120,
+      600
+    ],
+    [
+      144,
+      600
+    ],
+    [
+      240,
+      600
+    ]
+  ],
+  "cold_page_assets_ms": [
+    580,
+    538,
+    509
+  ],
+  "matched_runs": [
+    {
+      "ticks": 300,
+      "step_p95_ms": 2,
+      "draw_p95_ms": 1.200000286102295
+    },
+    {
+      "ticks": 300,
+      "step_p95_ms": 2.200000286102295,
+      "draw_p95_ms": 1.299999713897705
+    },
+    {
+      "ticks": 300,
+      "step_p95_ms": 1.5,
+      "draw_p95_ms": 0.9000000953674316
+    },
+    {
+      "ticks": 300,
+      "step_p95_ms": 1.6999998092651367,
+      "draw_p95_ms": 0.9000000953674316
+    },
+    {
+      "ticks": 300,
+      "step_p95_ms": 1.8000001907348633,
+      "draw_p95_ms": 1.0999999046325684
+    }
+  ],
+  "scope": "Lab + modeled host only; no native-game visual or combat acceptance",
+  "live_acceptance": "pending"
+}

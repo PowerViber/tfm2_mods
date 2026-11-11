@@ -1,0 +1,32 @@
+{
+  "revision": "akane-1.1",
+  "decoded_bytes": 4194304,
+  "atlases": {
+    "body": {
+      "size": [
+        1024,
+        512
+      ],
+      "animations": 22,
+      "sha256": "b8739b5761eccf5fe6414b14f5cfed955017d2e045373c2edd70d719abe0b324"
+    },
+    "effects": {
+      "size": [
+        512,
+        1024
+      ],
+      "animations": 56,
+      "sha256": "d552c19e7bab4c31ce4358239c4f6e0fe41d0e9b5e4cabd6f9b2ff99b2df6169"
+    }
+  },
+  "animation_frame_entries": 364,
+  "complete_native_wasm_outputs_equal": 3240,
+  "reproducible_packing": true,
+  "unchanged_from_pr_head": [
+    "mods/tfm2_custom_ai/tfm2_custom_ai.dll"
+  ],
+  "artwork_approvals": "verified",
+  "release_dll_sha256": "c0bad5da4891e8dee321c87852eecfbfd295c37b39613944c253592e045b2d86",
+  "native_game_acceptance": "pending",
+  "release_packaging": "pending"
+}

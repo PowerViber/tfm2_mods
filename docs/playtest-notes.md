@@ -3851,3 +3851,17 @@ To check in game: close the game, Update/Check, confirm native 0.10.36 and champ
 - **Rampage (`kratos-4`):** each advance stops at the enemy in front of him instead of running past; never walks him into enemy tower range unless he started inside it; the athlete won't Rampage a healthy foe under their tower (a foe below 30% is a dive).
 - **Engage speed:** +20% for 2 s on every weapon swap, +25% during Heimdall's Sight, and **Spartan Charge** (+20% for 2 s heading at a champion within 60,000, every 8 s). One buff, never stacking.
 - **Checks:** 1,159 native tests, 0 warnings; DLL reports 0.10.97; Mod Manager load. Review: `docs/main-review-round-162.md`.
+## Nov 11: Akane (in progress, not released)
+- Reihan designed **Akane**, an original katana assassin, Reyna-style: fast and deadly, easy to kill. Her kit:
+  - **Soul Harvest:** takedown orbs (15 s; 0.75 s nearby, she can move) give a Soul charge and a Kunai reset, plus a Crimson Edge reset once every 30 s.
+  - **Dismiss & Devour:** 2 charges; invisible, invulnerable, faster and move-only for 1.5 s, plus a heal.
+  - **Kunai Flip:** like Akali's; the recast dashes over walls.
+  - **Crimson Edge:** 5 empowered hits: bleed, slow, vulnerable, a % max HP burst, an invulnerable teleport with an area knock-up.
+  - **Crimson Night:** like Nocturne's ult; her team hidden for 4 s, plus one dash.
+- **AI:** her own, separate from the global AI. It reads enemies' Flash, skill readiness, roster abilities, protections and towers; it judges recasts, chains and disengages; the 13 athlete values shape her choices.
+- **Built:** the native kit (30 Akane tests), the Lab on the real map (`editor/akane.html`, 9 browser checks). Guide: `docs/akane-guide.md`.
+- **Waiting on:** Codex's art (`docs/akane-art-handoff.md`), then the release.
+## Nov 11: round 164 (native 0.10.98, tfm2_custom 0.2.101): Akane released
+- **Akane** joins the game with Codex's approved art and the `akane-1.1` ranges: a 120,000 kunai flying with a delay, a 30,000 flip, and a 240,000 Crimson Night dash.
+- **Checks:** 1,193 native tests, 0 warnings; DLL reports 0.10.98; Mod Manager load. Codex's browser and art checks need the local game-reference cache, so they run on Reihan's PC. Review: `docs/main-review-round-164.md`.
+- **Pending:** live acceptance and balance. Watch her long reach, and the kill chain once orbs start resetting her.

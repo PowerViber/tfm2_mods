@@ -55,6 +55,11 @@ mod wright_art;
 mod wright_data;
 #[cfg(test)] mod wright_tests;
 mod kratos;
+mod akane;
+mod akane_presentation;
+#[allow(dead_code)] mod akane_core;
+mod akane_data;
+#[cfg(test)] mod akane_tests;
 #[allow(dead_code)] mod kratos_core;
 mod kratos_data;
 mod kratos_art_data;
@@ -192,6 +197,7 @@ const MOD_POWER: &[(&str, [i32; 7])] = &[
     ("_thalassa", thalassa_data::MOD_POWER),
     ("_wright", wright_data::MOD_POWER),
     ("_kratos", kratos_data::MOD_POWER),
+    ("_akane", akane_data::MOD_POWER),
     ("_contender", [30, 0, 5, 10, 10, 0, 10]),
     //               atk  ap  hp  def  mr  ms  as
     ("_minato",     [ 25,  0,  5, 10, 10,  0, 10]),   // round 75 (was nothing); hp 10 -> 5 round 140
@@ -408,7 +414,7 @@ pub(crate) fn set_snapshot_cache_for_test(on: bool) {
 /// A view effect at a point / on a unit (named `<champion id>_<tag>` in the data's view_effects).
 /// Round 91: the native version, written in the game log and the champions' logs (gundam_log.txt / isliid_log.txt) so a
 /// game shows which build ran.
-pub(crate) const VERSION: &str = "0.10.97";
+pub(crate) const VERSION: &str = "0.10.98";
 
 static LOGGED: std::sync::Mutex<Option<std::collections::HashSet<String>>> = std::sync::Mutex::new(None);
 
@@ -2026,6 +2032,7 @@ fn init(host: &StableHost) -> StableMod {
     decl.add_native_passive(format!("{MOD_ID}:thalassa"), perf::Timed { name: "thalassa", inner: thalassa::Thalassa::default() });
     decl.add_native_passive(format!("{MOD_ID}:wright"), perf::Timed { name: "wright", inner: wright::Wright::default() });
     decl.add_native_passive(format!("{MOD_ID}:kratos"), perf::Timed { name: "kratos", inner: kratos::Kratos::default() });
+    decl.add_native_passive(format!("{MOD_ID}:akane"), perf::Timed { name: "akane", inner: akane::Akane::default() });
     decl.add_native_passive(format!("{MOD_ID}:grimhald"), perf::Timed { name: "grimhald", inner: grimhald::Grimhald::default() });
     decl.add_native_passive(format!("{MOD_ID}:rally"), perf::Timed { name: "rally", inner: rally::Rally::default() });
     decl.add_native_effect(format!("{MOD_ID}:rally_basic"), rally::BasicImpact);

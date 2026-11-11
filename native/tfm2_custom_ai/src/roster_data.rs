@@ -31,7 +31,7 @@ pub static FAMILY_RULES: [FamilyRule; 5] = [
     FamilyRule { id: "smoke_blocks_sight", from: "valorant", to: "*", rule: "Nobody outside Omen's Dark Cover sees in; someone inside sees only 15000 and nothing outside. Every champion's targeting respects it." },
     FamilyRule { id: "stopped_time", from: "jojo", to: "*", rule: "ZA WARUDO stops every caught champion, whatever its franchise; only DIO moves." },
 ];
-pub static CHAMPIONS: [ChampionDef; 84] = [
+pub static CHAMPIONS: [ChampionDef; 85] = [
     ChampionDef { id: "android", name: "Android", family: 0, role: "Melee", native: false, basic: BasicAttack { name: "Basic attack", range: 25000, reach: Range::Melee }, skills: &[
         SkillDef { slot: Slot::Skill, name: "Skill 1", kinds: 4 | 8 | 16 | 512, intents: 1 | 2 | 16 | 32 },
         SkillDef { slot: Slot::Skill2, name: "Skill 2", kinds: 256 | 512, intents: 2 | 4 | 8 },
@@ -468,5 +468,10 @@ pub static CHAMPIONS: [ChampionDef; 84] = [
         SkillDef { slot: Slot::Skill, name: "Frost & Flame / Heimdall's Sight", kinds: 1024 | 512, intents: 2 | 8 },
         SkillDef { slot: Slot::Skill2, name: "Leviathan Rampage / Spartan Guard / Chain Dash", kinds: 1 | 16 | 8 | 256 | 512, intents: 2 | 4 | 8 | 1 },
         SkillDef { slot: Slot::Ult, name: "Fenrir's Charge", kinds: 8 | 1 | 512, intents: 2 },
+    ] },
+    ChampionDef { id: "tfm2_custom_akane", name: "Akane", family: 13, role: "Assassin", native: true, basic: BasicAttack { name: "Katana", range: 22000, reach: Range::Melee }, skills: &[
+        SkillDef { slot: Slot::Skill, name: "Soul Harvest / Dismiss & Devour", kinds: 128 | 1024, intents: 4 | 8 },
+        SkillDef { slot: Slot::Skill2, name: "Kunai Flip / Crimson Edge", kinds: 1 | 4 | 16 | 512, intents: 2 | 4 | 1 },
+        SkillDef { slot: Slot::Ult, name: "Crimson Night", kinds: 1024 | 1, intents: 2 | 64 },
     ] },
 ];

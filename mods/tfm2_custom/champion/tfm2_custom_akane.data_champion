@@ -1,0 +1,561 @@
+{
+  "id": "tfm2_custom_akane",
+  "category": "Assassin",
+  "tags": [
+    "AD",
+    "Melee",
+    "CC",
+    "Dot"
+  ],
+  "sprite": "asset/tfm2_custom/champions/tfm2_custom_akane",
+  "anim_prefix": "",
+  "stat": {
+    "attack": 78,
+    "magic_power": 0,
+    "hp": 850,
+    "defence": 18,
+    "magic_resistance": 20,
+    "move_speed": 1080,
+    "hp_regen": 3,
+    "stack": 0,
+    "crit_chance": 0
+  },
+  "growth": {
+    "attack": 8,
+    "magic_power": 0,
+    "hp": 85,
+    "defence": 3,
+    "magic_resistance": 3,
+    "move_speed": 10,
+    "hp_regen": 0,
+    "stack": 0,
+    "crit_chance": 0
+  },
+  "attack": {
+    "action_name": "attack",
+    "cancelable": true,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 16,
+    "cooltime": 48,
+    "start_timing": 8,
+    "range": 22000,
+    "casting_type": "Targeting",
+    "casting_target": "Enemy",
+    "attack_type": "BaseAttack",
+    "effect": {
+      "type": "Attack",
+      "damage": 0,
+      "attack_ratio": 100
+    }
+  },
+  "skill": {
+    "action_name": "skill1",
+    "cancelable": false,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 6,
+    "cooltime": 5184000,
+    "start_timing": 3,
+    "range": 1,
+    "casting_type": "Targeting",
+    "casting_target": "EnemyChampionInCC",
+    "attack_type": "Skill",
+    "effect": {
+      "type": "Combine",
+      "effects": []
+    },
+    "description": "#asset/base/text/champion?description.tfm2_custom_akane.skill"
+  },
+  "skill2": {
+    "action_name": "skill2",
+    "cancelable": false,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 6,
+    "cooltime": 5184000,
+    "start_timing": 3,
+    "range": 1,
+    "casting_type": "Targeting",
+    "casting_target": "EnemyChampionInCC",
+    "attack_type": "Skill",
+    "effect": {
+      "type": "Combine",
+      "effects": []
+    },
+    "description": "#asset/base/text/champion?description.tfm2_custom_akane.skill2"
+  },
+  "ult": {
+    "action_name": "ult",
+    "cancelable": false,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 6,
+    "cooltime": 5184000,
+    "start_timing": 3,
+    "range": 1,
+    "casting_type": "Targeting",
+    "casting_target": "EnemyChampionInCC",
+    "attack_type": "Skill",
+    "effect": {
+      "type": "Combine",
+      "effects": []
+    },
+    "description": "#asset/base/text/champion?description.tfm2_custom_akane.ult"
+  },
+  "passive": {
+    "passive_ref": "tfm2_custom_ai:akane",
+    "params": {
+      "art_v1": 1
+    }
+  },
+  "passive_ult": {
+    "passive_ref": "tfm2_custom_ai:ult_learned",
+    "params": {}
+  },
+  "view_buffs": [
+    {
+      "type": "Animated",
+      "name": "akn_mark",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "mark",
+      "z": 5
+    },
+    {
+      "type": "Animated",
+      "name": "akn_crimson",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "crimson",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "akn_vulnerable",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "vulnerable",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "akn_bleed:1",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "bleed1",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "akn_bleed:2",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "bleed2",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "akn_bleed:3",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "bleed3",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "akn_bleed:4",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "bleed4",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "akn_night_aura",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "night_aura",
+      "z": -2
+    }
+  ],
+  "view_effects": [
+    {
+      "type": "Animation",
+      "name": "akn_orb",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "orb",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_orb_p0",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "orb_p0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_orb_p1",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "orb_p1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_orb_p2",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "orb_p2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_orb_p3",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "orb_p3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_orb_absorb",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "orb_absorb",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_dismiss",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "dismiss",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_kunai",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "kunai",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_kunai_e",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "kunai_e",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_kunai_flight_e",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "kunai_flight_e",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_kunai_se",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "kunai_se",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_kunai_flight_se",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "kunai_flight_se",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_kunai_s",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "kunai_s",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_kunai_flight_s",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "kunai_flight_s",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_kunai_sw",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "kunai_sw",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_kunai_flight_sw",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "kunai_flight_sw",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_kunai_w",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "kunai_w",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_kunai_flight_w",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "kunai_flight_w",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_kunai_nw",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "kunai_nw",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_kunai_flight_nw",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "kunai_flight_nw",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_kunai_n",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "kunai_n",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_kunai_flight_n",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "kunai_flight_n",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_kunai_ne",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "kunai_ne",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_kunai_flight_ne",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "kunai_flight_ne",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_kunai_hit",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "kunai_hit",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_flip",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "flip",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_dash_slash",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "dash_slash",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_dash_slash_e",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "dash_slash_e",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_dash_slash_se",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "dash_slash_se",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_dash_slash_s",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "dash_slash_s",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_dash_slash_sw",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "dash_slash_sw",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_dash_slash_w",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "dash_slash_w",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_dash_slash_nw",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "dash_slash_nw",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_dash_slash_n",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "dash_slash_n",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_dash_slash_ne",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "dash_slash_ne",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_burst",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "burst",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_finale",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "finale",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_knock_up",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "knock_up",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_night",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "night",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_night_slash",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "night_slash",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_night_slash_e",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "night_slash_e",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_night_slash_se",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "night_slash_se",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_night_slash_s",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "night_slash_s",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_night_slash_sw",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "night_slash_sw",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_night_slash_w",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "night_slash_w",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_night_slash_nw",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "night_slash_nw",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_night_slash_n",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "night_slash_n",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_night_slash_ne",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "night_slash_ne",
+      "z": 6,
+      "is_follow": false
+    }
+  ],
+  "view_projectiles": []
+}
