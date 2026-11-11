@@ -41,6 +41,8 @@ pub(crate) struct Host {
     pub heals: Vec<(usize, usize, usize)>,
     /// units `entity_clear_cc` cleansed
     pub cleansed: Vec<usize>,
+    /// (unit, ticks) for every `entity_set_invisible`
+    pub invisible: Vec<(usize, usize)>,
 }
 impl Host {
     pub fn new(units: Vec<Unit>) -> RefCell<Host> {
@@ -205,6 +207,10 @@ unsafe extern "C" fn heal(p: *mut c_void, caster: usize, target: usize, amount: 
         u.hp = (u.hp + amount).min(2000);
     }
 }
+unsafe extern "C" fn set_invisible(p: *mut c_void, e: E, ticks: usize) -> bool {
+    h(p).borrow_mut().invisible.push((id(e), ticks));
+    true
+}
 unsafe extern "C" fn clear_cc(p: *mut c_void, e: E) -> usize {
     let mut g = h(p).borrow_mut();
     let i = id(e);
@@ -266,6 +272,7 @@ pub(crate) fn with_sim<T>(host: &RefCell<Host>, f: impl FnOnce(&mut StableSim) -
         t.entity_add_shield = Some(add_shield);
         t.heal = Some(heal);
         t.entity_clear_cc = Some(clear_cc);
+        t.entity_set_invisible = Some(set_invisible);
         t.play_view_effect = Some(effect);
         let mut raw =
             SimCtxV1 { size: size_of::<SimCtxV1>(), sim: &t, frame: std::ptr::null(), state: host as *const _ as *mut c_void };

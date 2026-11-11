@@ -1003,6 +1003,20 @@ impl StablePlayerAi for WallAi {
             let (pid, aid) = (ctx.player_id(), ctx.athlete_id());
             if let Some(sim) = ctx.sim() { crate::isliid::note_athlete(sim.seed(), pid, aid); }
         }
+        // Akane's own AI walks her (disengage, Soul Orbs, Dismiss): a short `akn_go:x:y` buff from her bridge
+        if cname.as_deref().is_some_and(|n| n.ends_with("_akane")) {
+            let pid = ctx.player_id();
+            let go = ctx.sim().and_then(|sim| {
+                let me = sim.get_player(pid).and_then(|p| p.champion())?;
+                (0..me.buff_count()).filter_map(|i| me.buff_at(i)).find_map(|b| crate::akane::steer_of(b.name()))
+            });
+            if let Some((x, y)) = go {
+                let walk = InputV1::move_to(x.max(0) as u64, y.max(0) as u64);
+                if ctx.is_valid_input(&walk) {
+                    return Some(walk);
+                }
+            }
+        }
         // Round 146: a Main Event duelist's walk, retreat or recall order becomes a walk to the opponent (movement
         // guidance only: attacks and casts are never rewritten, and outsiders are never touched)
         if let Some(inp) = base {
