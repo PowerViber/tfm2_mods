@@ -33,4 +33,6 @@ Playback uses 60 simulation ticks per second independently of 30/60/120/144/240 
 
 `art-only-verification.json` and `art-only-browser-results.json` preserve evidence before the later requested range/travel changes. They must not be read as proof that subsequent balance edits leave gameplay unchanged. Current results live in `verification.json`, `browser-results.json` and the range review.
 
+The current `akane-1.1` ranges, flight rules, tests and limitations are recorded in [range-review.md](range-review.md). The backflip drawings now follow the requested 30-tick travel, and the kunai uses single-frame directional flight artwork renewed at its actual core position.
+
 Release versions, packaged Windows DLL, installation, real-career migration and actual-game visual/combat acceptance remain separate gates. The existing packaged DLL is unchanged; Mod Manager’s disposable fixture does not prove the new adapter runs in that DLL.
