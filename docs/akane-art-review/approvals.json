@@ -1,0 +1,14 @@
+{
+  "body": {
+    "approved": true,
+    "answer": "Approve Akane\u2019s appearance",
+    "date": "2026-11-11",
+    "source_sha256": "2e8e5582e4c3cdebd5adb2c460bb17ce103c61ac575a8e429e6c4579616d7fa3"
+  },
+  "effects": {
+    "approved": true,
+    "answer": "Approve these effects",
+    "date": "2026-11-11",
+    "source_sha256": "ed3fd5193d9902e12c7102b83fb585a07c357425314195ff09248dbe44a1b009"
+  }
+}

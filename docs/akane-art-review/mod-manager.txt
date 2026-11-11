@@ -1,0 +1,14 @@
+
+==============================  TFM2 Mod Manager  ==============================
+ repo: C:\Users\arian\.codex\worktrees\akane-art\tfm2_mods [codex/akane-art] 7b61b8f Akane Lab on the real 5v5 map, guide, art handoff and playtest notes
+ game: C:\Users\arian\.codex\worktrees\akane-art\tfm2_mods\backups\akane-art-manager-vudqoz8m
+ installed: native 0.10.97  champions 0.2.100
+ log: C:\Users\arian\.codex\worktrees\akane-art\tfm2_mods\logs\manager-20261111_154934.txt
+================================================================================
+Game folder: C:\Users\arian\.codex\worktrees\akane-art\tfm2_mods\backups\akane-art-manager-vudqoz8m
+  native (tfm2_custom_ai): repo 0.10.97  game 0.10.97
+  champions (tfm2_custom): repo 0.2.100  game 0.2.100
+  770 champion files compared, 0 differ, 0 missing; native DLL identical
+
+  UP TO DATE: the game has exactly the repo's mods.
+Log saved: C:\Users\arian\.codex\worktrees\akane-art\tfm2_mods\logs\manager-20261111_154934.txt

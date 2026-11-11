@@ -70,8 +70,10 @@ art_path = ROOT / 'docs/akane-art-review/art-manifest.json'
 if art_path.exists():
     art = json.loads(art_path.read_text())
     if not art['review_only']:
+        champ['passive']['params']['art_v1'] = 1
         champ['view_effects'] = [dict(type='Animation', name='akn_' + tag, anim=VFX, tag=tag, z=spec['z'], is_follow=spec.get('follow', False))
                                  for tag, spec in art['effects'].items() if spec['kind'] == 'effect']
+        champ['view_buffs'].append(dict(type='Animated', name='akn_night_aura', anim=VFX, tag='night_aura', z=-2))
 if not (ROOT / 'mods/tfm2_custom/vfx/akane#sheet.png').exists():
     # no VFX sheet yet: the effects stay native-only (nothing drawn) rather than point at a missing sheet
     champ['view_effects'], champ['view_buffs'] = [], []

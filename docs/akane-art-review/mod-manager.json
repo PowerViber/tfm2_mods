@@ -1,0 +1,9 @@
+{
+  "scope": "Disposable fixture comparison only; no real game installation or career migration",
+  "exit_code": 0,
+  "files_compared": 883,
+  "different_or_missing": [],
+  "isolated_appdata": true,
+  "existing_packaged_dll_sha256": "c0bad5da4891e8dee321c87852eecfbfd295c37b39613944c253592e045b2d86",
+  "release_packaging": "pending; existing DLL predates this presentation adapter and this check does not prove live registration/rendering"
+}

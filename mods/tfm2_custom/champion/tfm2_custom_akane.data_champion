@@ -105,13 +105,393 @@
   },
   "passive": {
     "passive_ref": "tfm2_custom_ai:akane",
-    "params": {}
+    "params": {
+      "art_v1": 1
+    }
   },
   "passive_ult": {
     "passive_ref": "tfm2_custom_ai:ult_learned",
     "params": {}
   },
-  "view_buffs": [],
-  "view_effects": [],
+  "view_buffs": [
+    {
+      "type": "Animated",
+      "name": "akn_mark",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "mark",
+      "z": 5
+    },
+    {
+      "type": "Animated",
+      "name": "akn_crimson",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "crimson",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "akn_vulnerable",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "vulnerable",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "akn_bleed:1",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "bleed1",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "akn_bleed:2",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "bleed2",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "akn_bleed:3",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "bleed3",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "akn_bleed:4",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "bleed4",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "akn_night_aura",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "night_aura",
+      "z": -2
+    }
+  ],
+  "view_effects": [
+    {
+      "type": "Animation",
+      "name": "akn_orb",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "orb",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_orb_p0",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "orb_p0",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_orb_p1",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "orb_p1",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_orb_p2",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "orb_p2",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_orb_p3",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "orb_p3",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_orb_absorb",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "orb_absorb",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_dismiss",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "dismiss",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_kunai",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "kunai",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_kunai_e",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "kunai_e",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_kunai_se",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "kunai_se",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_kunai_s",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "kunai_s",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_kunai_sw",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "kunai_sw",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_kunai_w",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "kunai_w",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_kunai_nw",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "kunai_nw",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_kunai_n",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "kunai_n",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_kunai_ne",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "kunai_ne",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_kunai_hit",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "kunai_hit",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_flip",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "flip",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_dash_slash",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "dash_slash",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_dash_slash_e",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "dash_slash_e",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_dash_slash_se",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "dash_slash_se",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_dash_slash_s",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "dash_slash_s",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_dash_slash_sw",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "dash_slash_sw",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_dash_slash_w",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "dash_slash_w",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_dash_slash_nw",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "dash_slash_nw",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_dash_slash_n",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "dash_slash_n",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_dash_slash_ne",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "dash_slash_ne",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_burst",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "burst",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_finale",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "finale",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_knock_up",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "knock_up",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_night",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "night",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_night_slash",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "night_slash",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_night_slash_e",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "night_slash_e",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_night_slash_se",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "night_slash_se",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_night_slash_s",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "night_slash_s",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_night_slash_sw",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "night_slash_sw",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_night_slash_w",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "night_slash_w",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_night_slash_nw",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "night_slash_nw",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_night_slash_n",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "night_slash_n",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_night_slash_ne",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "night_slash_ne",
+      "z": 6,
+      "is_follow": false
+    }
+  ],
   "view_projectiles": []
 }
