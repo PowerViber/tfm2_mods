@@ -56,6 +56,7 @@ mod wright_data;
 #[cfg(test)] mod wright_tests;
 mod kratos;
 mod akane;
+mod akane_presentation;
 #[allow(dead_code)] mod akane_core;
 mod akane_data;
 #[cfg(test)] mod akane_tests;

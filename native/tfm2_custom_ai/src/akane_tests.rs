@@ -617,6 +617,38 @@ mod glue {
     }
 
     #[test]
+    fn approved_art_changes_tags_without_changing_accepted_combat_commands() {
+        let (x,y)=open_spot(80000);
+        let run=|enabled:bool|{
+            let host=Host::new(vec![champ(0,(x,y),"tfm2_custom_akane"),champ(1,(x+20000,y),"foe")]);
+            let mut k=Akane::default();if enabled{k.configure("{\"art_v1\":1}");}
+            host.borrow_mut().tick=10;
+            with_sim(&host,|sim|k.apply(sim,0,vec![Effect::Pose{name:"skill2",ticks:14},Effect::Damage{target:1,amount:200,direct:false},Effect::Night{ticks:240},Effect::KnockUp{target:1,ticks:45}]));
+            let g=host.borrow();
+            assert_eq!(g.ccs[0][0].0.name(),if enabled{"finale"}else{"skill2"});
+            assert_eq!(g.buffs[0].iter().filter(|b|b.name()==crate::akane_presentation::NIGHT_AURA).count(),usize::from(enabled));
+            (g.damage.clone(),g.moves.clone(),g.heals.clone(),g.ccs.iter().map(|cc|cc.iter().map(|(c,t)|(c.kind,*t)).collect::<Vec<_>>()).collect::<Vec<_>>())
+        };
+        assert_eq!(run(false),run(true));
+    }
+
+    #[test]
+    fn orb_phases_follow_birth_and_stop_renewing_after_absorption_or_death() {
+        let (x,y)=open_spot(80000);let host=Host::new(vec![champ(0,(x,y),"tfm2_custom_akane")]);
+        host.borrow_mut().record_view_effects=true;
+        let mut k=Akane::default();k.configure("{\"art_v1\":1}");
+        k.core.orbs.push(crate::akane_core::Orb{pos:Point::new(x as i64+60000,y as i64),born:0,until:900,since:None});
+        for tick in [3,6,15]{host.borrow_mut().tick=tick;with_sim(&host,|sim|k.on_update(sim,tick as u64,0,0));}
+        let names:Vec<_>=host.borrow().view_effects.iter().map(|e|(e.0.clone(),e.3)).collect();
+        assert_eq!(names,vec![("akn_orb_p0".into(),3),("akn_orb_p0".into(),3),("akn_orb_p1".into(),3)]);
+        k.core.orbs.clear();host.borrow_mut().tick=18;with_sim(&host,|sim|k.on_update(sim,18,0,0));assert_eq!(host.borrow().view_effects.len(),3);
+        with_sim(&host,|sim|k.apply(sim,0,vec![Effect::Night{ticks:240}]));
+        host.borrow_mut().units[0].hp=0;with_sim(&host,|sim|k.on_update(sim,19,0,0));
+        assert!(!host.borrow().buffs[0].iter().any(|b|b.name()==crate::akane_presentation::NIGHT_AURA));
+        host.borrow_mut().units[0].hp=2000;with_sim(&host,|sim|k.on_spawn(sim,0,0));assert!(k.core.orbs.is_empty());
+    }
+
+    #[test]
     fn dismiss_hides_her_makes_her_invulnerable_and_move_only_without_reading_as_stunned() {
         let (x, y) = open_spot(80_000);
         let host = Host::new(vec![champ(0, (x, y), "tfm2_custom_akane")]);

@@ -14,6 +14,7 @@
 //!   a move order for her only.
 use crate::akane_core::{self as core, Core, Effect, Frame, Point, Unit};
 use crate::akane_data as d;
+use crate::akane_presentation as art;
 use mod_api_stable::{AttackTypeV1, BuffV1, CcKindV1, CcV1, SkillSlotV1, StablePassive, StableSim};
 
 pub(crate) const OWN_CC: &str = "akn_";
@@ -70,6 +71,9 @@ pub struct Akane {
     night_until: usize,
     fx_tokens: usize,
     fx_tick: u64,
+    art_v1: bool,
+    art_pos: Option<Point>,
+    art_heading: &'static str,
 }
 
 impl Akane {
@@ -340,17 +344,31 @@ impl Akane {
                 }
                 Effect::Night { ticks } => {
                     self.night_until = tick + ticks as usize;
+                    if self.art_v1 { replace_buff(sim, owner, &crate::timed(art::NIGHT_AURA, ticks as usize)); }
                 }
                 Effect::Steer { to } => {
                     remove_prefix(sim, owner, GO_PREFIX);
                     sim.add_buff(owner, &crate::timed(&format!("{GO_PREFIX}{}:{}", to.x, to.y), 6));
                 }
                 Effect::Fx { name, at, ticks, ambient } => {
+                    // The original long orb remains the fallback for old definitions.
+                    // New sheets renew one-frame phases from the orb's birth clock.
+                    if self.art_v1 && name == "akn_orb" { continue; }
+                    let (name, ticks) = if self.art_v1 {
+                        let direction = if name == "akn_kunai" {
+                            let p = sim.get_entity(owner).map(|e|e.pos()).unwrap_or_default();
+                            art::heading(at.x-p.0 as i64, at.y-p.1 as i64)
+                        } else if self.art_heading.is_empty() { "e" } else { self.art_heading };
+                        let tag = if matches!(name.as_str(), "akn_kunai"|"akn_dash_slash"|"akn_night_slash") {format!("{name}_{direction}")} else {name};
+                        let duration = if tag == "akn_night" { ticks.min(24) } else { ticks };
+                        (tag, duration)
+                    } else { (name, ticks) };
                     if self.fx_ok(tick as u64, ambient) {
                         crate::fx_point(sim, &name, owner, at.x, at.y, ticks);
                     }
                 }
                 Effect::Pose { name, ticks } => {
+                    let name = if self.art_v1 { art::pose(name, ticks, self.core.dash.is_some()) } else {name};
                     sim.apply_cc(owner, &named(CcKindV1::Animation, ticks, name));
                 }
                 Effect::Log(line) => crate::mod_log(sim, "akane_log.txt", &format!("{tick}:{line}"), &line),
@@ -387,18 +405,23 @@ impl Akane {
 }
 
 impl StablePassive for Akane {
+    fn configure(&mut self, params: &str) {
+        self.art_v1=serde_json::from_str::<serde_json::Value>(params).ok().and_then(|v|v.get("art_v1").and_then(|n|n.as_i64())).is_some_and(|n|n==1);
+    }
     fn clone_box(&self) -> Box<dyn StablePassive> {
         Box::new(self.clone())
     }
     fn on_spawn(&mut self, sim: &mut StableSim, _: usize, id: usize) {
         self.core.respawn(sim.tick() as u64);
-        for b in [SOUL, INVULN] {
+        for b in [SOUL, INVULN, art::NIGHT_AURA] {
             sim.entity_remove_buff(id, b);
         }
         remove_prefix(sim, id, GO_PREFIX);
         self.basic_hits.clear();
         self.in_skill = false;
         self.night_until = 0;
+        self.art_pos = None;
+        self.art_heading = "e";
     }
     /// Her own hits never cross a cage or a Main Event ring; accepted basic attacks feed Crimson Edge.
     fn on_attack(&mut self, sim: &mut StableSim, _: usize, id: usize, target: usize, damage: &mut usize) {
@@ -424,10 +447,22 @@ impl StablePassive for Akane {
     fn on_update(&mut self, sim: &mut StableSim, _: u64, _: usize, id: usize) {
         let f = self.frame(sim, id);
         if !f.alive {
+            if self.art_v1 { sim.entity_remove_buff(id, art::NIGHT_AURA); }
+            self.art_pos=None;
             return;
+        }
+        if self.art_v1 {
+            if let Some(p)=self.art_pos {if p!=f.pos {self.art_heading=art::heading(f.pos.x-p.x,f.pos.y-p.y);}}
+            self.art_pos=Some(f.pos);
         }
         let effects = self.core.step(&f);
         self.apply(sim, id, effects);
         self.darkness(sim, id);
+        if self.art_v1 && f.tick % art::ORB_RENEW == 0 {
+            let phases: Vec<_>=self.core.orbs.iter().map(|o|(o.pos,art::orb_phase(f.tick,o.born))).collect();
+            for (p,phase) in phases {
+                if self.fx_ok(f.tick,false) {crate::fx_point(sim,&format!("akn_orb_p{phase}"),id,p.x,p.y,art::ORB_TAIL);}
+            }
+        }
     }
 }
