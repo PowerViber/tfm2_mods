@@ -1,12 +1,12 @@
-// Akane Lab in a real browser, on the real 5v5 map: the page loads the shared core (akane.wasm) and every skill
+// Akane Lab in a real browser, on the real 5v5 map: the page loads the shared core (akane.wasm), while the stock host is modeled; every Akane skill
 // behaves as in the game. Run: node tools/test-akane-lab.cjs   (uses the preinstalled Playwright / Chromium)
 const assert = require('assert'), path = require('path'), {spawn} = require('child_process');
-const {chromium} = require('playwright');
+const {chromium}=require(require.resolve('playwright',{paths:[process.cwd(),require('os').homedir()+'/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules']}));
 const root = path.resolve(__dirname, '..'), port = 7331;
 (async () => {
   const server = spawn('node', ['server.js', '--port', String(port), '--no-open'], {cwd: path.join(root, 'editor'), stdio: 'ignore'});
   await new Promise(r => setTimeout(r, 1500));
-  const browser = await chromium.launch(), page = await browser.newPage({viewport: {width: 1300, height: 950}}), errors = [];
+  const browser = await chromium.launch({channel:'msedge',headless:true}), page = await browser.newPage({viewport: {width: 1300, height: 950}}), errors = [];
   page.on('pageerror', e => errors.push(e.message));
   let checks = 0;
   const check = (name, ok) => { assert(ok, name); checks++; console.log('ok -', name); };
@@ -15,7 +15,7 @@ const root = path.resolve(__dirname, '..'), port = 7331;
     await page.waitForFunction(() => window.akaneLab);
     const r = await page.evaluate(() => {
       const L = akaneLab, R = AKANE_RULES, out = {}, run = n => { for (let i = 0; i < n; i++) L.step(); };
-      L.pause(); L.reset(); document.querySelector('#moving').checked = false;
+      L.pause(); L.reset({fixture:true}); document.querySelector('#moving').checked = false;
       out.realWalls = L.walls.filter(Boolean).length;
       const foe = L.units.find(u => u.id === 2), tower = L.units.find(u => u.tower), towerHp = tower.hp;
       // S1: invisible, invulnerable, move only; no dash
@@ -33,13 +33,13 @@ const root = path.resolve(__dirname, '..'), port = 7331;
       // Crimson Edge: 5 hits
       foe.hp = foe.max_hp; foe.pos = {x: L.me.pos.x + 12000, y: L.me.pos.y};
       L.order('edge'); run(1);
-      for (let i = 0; i < 5; i++) { L.basic(2); run(1); }
+      for (let i = 0; i < 5; i++) { L.acceptedBasic(2); run(1); }
       out.burstFx = foe.crimsonUntil > L.tick || foe.hp <= 0;
       out.knocked = foe.airborneUntil > 0 || foe.hp <= 0;
       out.vulnerable = foe.vulnerableUntil > 0 || foe.hp <= 0;
       // a kill drops an orb; standing on it 0.75 s absorbs it and resets the kunai
       foe.deadUntil = 0; foe.hp = 30; foe.pos = {x: L.me.pos.x + 10000, y: L.me.pos.y};
-      L.basic(2); run(2);
+      L.acceptedBasic(2); run(2);
       out.orb = (L.state.orbs || []).length === 1;
       run(R.orb.armTicks + R.orb.absorbTicks + 3);
       out.absorbed = (L.state.orbs || []).length === 0 && (L.state.ready[0] <= L.tick);

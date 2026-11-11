@@ -2,7 +2,7 @@
 <html lang="en"><head><meta charset="utf-8"><title>Akane Lab</title>
 <style>
 body{margin:0;background:#140f14;color:#eee3e7;font:13px/1.4 system-ui,sans-serif;display:flex;gap:12px;padding:12px}
-canvas{background:#2a3340;border:1px solid #5a3a46;border-radius:6px;outline:none}
+canvas{background:#2a3340;border:1px solid #5a3a46;border-radius:6px;outline:none;image-rendering:pixelated;align-self:flex-start;flex-shrink:0}#arena{width:min(900px,calc(100vw - 390px));min-width:360px;height:auto;aspect-ratio:1}canvas:focus{border-color:#f6aac3;box-shadow:0 0 0 2px #f6aac3}
 #side{width:340px;display:flex;flex-direction:column;gap:8px}
 button{background:#5c1f2e;color:#fde8ee;border:1px solid #a33a55;border-radius:4px;padding:5px 8px;cursor:pointer}
 button:hover{background:#7a2840}
@@ -19,21 +19,40 @@ label{display:flex;gap:6px;align-items:center}
 <canvas id="arena" width="900" height="900" tabindex="0"></canvas>
 <div id="side">
   <h2 style="margin:0">Akane Lab</h2>
-  <div class="note"><b>Map:</b> the game's 5v5 wall grid and map art (<code>editor/levi-map.js</code>, read off the game's wall layer) at gameplay scale: bodies and every range share one world-to-screen scale, and the core gets the same wall grid. <b>Simulated layer:</b> enemies, minions and the tower's behaviour, deaths and respawns are a Lab model, not the game's. Art is pending (Codex): bodies and effects are placeholders. This is not live acceptance.</div>
+  <div class="note"><b>Installed map:</b> original game layers and stock actors; all 900 wall cells match the native export. One art pixel = 1,000 world units, preserving the 160-pixel map border. <a href="akane-review.html">Artwork review</a>.</div>
+  <details><summary>Source and host limitations</summary><p>Akane skills and AI use the unchanged Rust/WASM core. Stock movement, attacks, mitigation, visibility, non-champion radii and tower aggro are Lab models. Stock skills/items, exact native action gates, bush stealth, respawns and native receipt timing are unverified. Flash/skill readiness checkboxes are decision hints, not working stock abilities. Camps use extracted base HP. Night models the existing bridge's champion-hiding distance test; this is not actual-game acceptance.</p></details>
   <div id="status">Loading…</div>
   <div class="keys">Mouse aims · WASD move · <b>1</b> Dismiss &amp; Devour · <b>2</b> Kunai Flip, <b>2</b> again to dash to the mark · <b>3</b> Crimson Edge · <b>4</b> Crimson Night, <b>4</b> again to dash to the champion nearest the mouse · <b>F</b> basic attack the nearest enemy</div>
   <div class="row"><button id="play">Pause</button><button id="step">Step</button><button id="reset">Reset</button></div>
+  <div class="row"><select id="scenario"></select><label>Level <input id="level" type="number" min="1" max="12" value="8" style="width:42px"></label><button id="loadScenario">Load situation</button></div>
+  <div id="scenarioNote" class="note"></div>
+  <div class="row"><select id="stockChampion"></select><button id="spawnStock">Replace selected champion</button></div>
+  <label>Assigned role <select id="role"><option>top</option><option>jungle</option><option selected>mid</option><option>bot</option><option>support</option></select></label>
   <div class="row"><button id="wallDemo">Place a foe across a wall</button><button id="lowFoe">Make a foe low</button><button id="gank">Three enemies converge</button></div>
   <label><input type="checkbox" id="zoom" checked> Follow camera (zoomed); off = full-map overview</label>
+  <div class="row"><label>Zoom <input id="worldZoom" type="range" min="0.5" max="4" step="0.1" value="2"></label><button id="nativeSize">1× sprites</button><button id="follow">Follow Akane</button></div>
+  <div class="note">Wheel zoom · middle/Alt-drag pan · click a unit to select · minimap pans inspection.</div><canvas id="minimap" width="190" height="190"></canvas>
   <label><input type="checkbox" id="ranges" checked> Range overlays (Kunai 60,000, Night dash 120,000, nearsight 20,000, orb 25,000)</label>
   <label><input type="checkbox" id="art" checked> Map art</label>
+  <label><input type="checkbox" id="bodies" checked> Bodies and effects (presentation only)</label>
+  <label><input type="checkbox" id="colliders"> Debug walls and colliders</label>
+  <label><input type="checkbox" id="labels" checked> Unit names</label>
+  <label><input type="checkbox" id="overviewActors"> Spectator actors (AI receives only visible information)</label>
+  <label><input type="checkbox" id="enemyView"> Night enemy-eye radii (model)</label>
+  <label><input type="checkbox" id="ultUnlocked" checked> Ultimate learned (core gate)</label>
+  <label><input type="checkbox" id="enemyFlash"> Enemy Flash ready (decision hint only)</label>
+  <label><input type="checkbox" id="enemySkills"> Enemy CC ready (decision hint only)</label>
+  <label><input type="checkbox" id="autoBasics"> Automatic basics (modeled host)</label>
   <label><input type="checkbox" id="auto"> Athlete AI plays her</label>
   <label><input type="checkbox" id="moving" checked> Enemies walk and attack (Lab model)</label>
+  <div class="row"><button id="stunMe">Incoming 1s stun</button><button id="defeat">Defeat owner</button></div>
+  <div class="row"><select id="demo"><option value="soul">Dismiss &amp; Devour</option><option value="kunai">Flip / recast</option><option value="edge">Five-hit Crimson Edge</option><option value="night">Crimson Night / dash</option></select><button id="preview">Play preview</button></div>
+  <div class="row"><button id="record">Start recording</button><button id="saveRecording">Save recording</button><label>Replay <input type="file" id="loadRecording" accept=".json"></label></div>
   <details><summary>Athlete attributes (13)</summary><div class="stat" id="stats"></div></details>
   <div id="hud"></div>
   <div id="log"></div>
 </div>
 <script src="akane-data.js"></script>
-<script src="levi-map.js"></script>
+<script src="roster.js"></script><script src="game-world.js"></script><script src="lab-scenarios.js"></script><script src="kratos-clock.js"></script><script src="akane-renderer.js"></script>
 <script src="akane-lab.js"></script>
 </body></html>

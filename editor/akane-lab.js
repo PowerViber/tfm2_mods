@@ -1,268 +1,119 @@
-// Akane Lab: the game's exact core (akane.wasm) on the real 5v5 map (levi-map.js: the wall grid read off the game's wall
-// layer, and the map art), with a small, labelled host model around it: glides, simple enemies that see and attack her,
-// deaths that drop Soul Orbs, respawns, a wave and a tower. Every range is drawn at the same scale as the bodies.
-(async () => {
-  const $ = id => document.getElementById(id);
-  const R = window.AKANE_RULES, MAP = window.TFM2_LEVI_MAP, canvas = $('arena'), ctx = canvas.getContext('2d');
-  const wasm = (await WebAssembly.instantiate(await (await fetch('akane.wasm')).arrayBuffer(), {})).instance.exports;
-  const N = 30, CELL = 32000, WORLD = 960000;
-  const TOWERS = [[364000, 76000], [780000, 110000], [840000, 170000], [80000, 364000], [596000, 364000], [364000, 596000],
-    [880000, 596000], [110000, 780000], [170000, 840000], [596000, 880000]];
-  const WALLS = new Array(N * N).fill(false);
-  MAP.walls.forEach((row, y) => { for (let x = 0; x < N; x++) WALLS[y * N + x] = row[x] === '#'; });
-  const wallAt = p => p.x < 0 || p.y < 0 || p.x >= WORLD || p.y >= WORLD || WALLS[Math.floor(p.y / CELL) * N + Math.floor(p.x / CELL)];
-  const art = new Image(); art.src = 'data:image/png;base64,' + MAP.png;
-  const names = ['ego', 'judgement', 'positioning', 'control_speed', 'skill_hit', 'skill_avoid', 'aggressive', 'order', 'roaming', 'macro', 'micro', 'awareness', 'strategy'];
-  $('stats').innerHTML = names.map(n => `<span>${n}</span><input type="number" min="0" max="100" value="50">`).join('');
-  const rp = p => ({x: Math.round(p.x), y: Math.round(p.y)});
-  const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
-  const cellCenter = (cx, cy) => ({x: cx * CELL + CELL / 2, y: cy * CELL + CELL / 2});
-  let tick, me, units, glides, state, queue, fx, logLines, hits, basicHits, takedowns, nightUntil, running = true, aim = {x: 480000, y: 480000}, held = new Set(), lastRejection = '', steer = null;
-  const unit = (id, team, p, o = {}) => ({id, team, pos: {...p}, hp: 1000, max_hp: 1000, radius: 3000, attack: 90, armor: 25, champion: true, tower: false, farmable: false,
-    slowUntil: 0, stunUntil: 0, airborneUntil: 0, vulnerableUntil: 0, bleed: 0, bleedUntil: 0, crimsonUntil: 0, markUntil: 0, nextAttack: 0, deadUntil: 0, home: {...p},
-    flash_ready: true, skill_ready: true, can: 4, ...o});
-  function wallCrossing() {
-    let best = null;
-    for (let cy = 2; cy < N - 2; cy++) for (let cx = 1; cx < N - 2; cx++) {
-      if (!WALLS[cy * N + cx] && WALLS[cy * N + cx + 1] && !WALLS[cy * N + cx + 2]) {
-        const d = Math.hypot(cx - 15, cy - 15);
-        if (!best || d < best.d) best = {d, from: cellCenter(cx, cy), to: cellCenter(cx + 2, cy)};
-      }
-    }
-    return best;
+// Unchanged Akane Rust/WASM core, installed map, and explicitly modeled host.
+(async()=>{
+ const $=id=>document.getElementById(id),R=AKANE_RULES,canvas=$('arena'),ctx=canvas.getContext('2d');
+ const world=await new GameWorld().ready,painter=new AkanePainter(),clock=new KratosClock();
+ const wasm=(await WebAssembly.instantiate(await(await fetch('akane.wasm')).arrayBuffer(),{})).instance.exports;
+ const N=30,CELL=world.geometry.cell,WORLD=world.geometry.width,WALLS=world.walls,dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y),rp=p=>({x:Math.round(p.x),y:Math.round(p.y)}),copy=structuredClone;
+ const names=['ego','judgement','positioning','control_speed','skill_hit','skill_avoid','aggressive','order','roaming','macro','micro','awareness','strategy'];
+ $('stats').innerHTML=names.map(n=>`<span>${n}</span><input type="number" min="0" max="100" value="50">`).join('');
+ $('scenario').innerHTML=Object.entries(GameScenario.choices).map(([id,n])=>`<option value="${id}">${n}</option>`).join('');$('scenario').value='gank';
+ $('stockChampion').innerHTML=Object.entries(world.data.champions).map(([id,c])=>`<option value="${id}">${c.name}</option>`).join('');$('stockChampion').value='knight';
+ let tick,me,units,state,queue,glides,fx,hits,basicHits,takedowns,logLines,nightUntil,steer,lastRejection='',scene,fixture;
+ let running=true,held=new Set(),aim={x:480000,y:480000},selected=null,imagesReady=Promise.resolve(),lastTrace=null,recording=null,replay=null,replayIndex=0,demo=null;
+ let cam={x:480000,y:480000,s:.002},pinned=null,pan=null;
+ const wallAt=p=>world.wallAt(p),alive=u=>u.hp>0,find=id=>units.find(u=>u.id===id),nightOn=()=>tick<nightUntil;
+ const enemyEyes=()=>units.filter(u=>u.team===1&&alive(u)&&(u.champion||u.kind==='minion'||u.tower));
+ const roster=window.TFM2_ROSTER?.champions||[];
+ const capabilities=u=>{const key=u.sprite?.replace(/^champ-/,'');const def=roster.find(c=>c.id===key||c.id==='base_'+key);const kinds=new Set((def?.skills||[]).flatMap(s=>s.kinds));return[['Dash',1],['Blink',2],['Cc',4],['Heal',8],['Shield',16]].reduce((n,[k,b])=>n|(kinds.has(k)?b:0),0);};
+ function seenByEnemy(p){if(tick<me.soulUntil&&p===me.pos)return false;return!nightOn()||enemyEyes().some(e=>dist(e.pos,p)<=R.night.sight);}
+ const visible=u=>replay?u.visible!==false:!scene||scene.visible(u,0,me,units);
+ function wallCrossing(){let best;for(let y=2;y<N-2;y++)for(let x=1;x<N-2;x++)if(!WALLS[y*N+x]&&WALLS[y*N+x+1]&&!WALLS[y*N+x+2]){const d=Math.hypot(x-15,y-15);if(!best||d<best.d)best={d,from:{x:(x+.5)*CELL,y:(y+.5)*CELL},to:{x:(x+2.5)*CELL,y:(y+.5)*CELL}};}return best;}
+ function unit(id,team,pos,o={}){return{id,team,pos:{...pos},home:{...pos},hp:1000,max_hp:1000,radius:3000,champion:true,tower:false,farmable:false,stats:{attack:90,defence:25,move_speed:800},attack:{range:20000,cooltime:60,duration:24,start_timing:12},sprite:'champ-knight',name:'Knight',slowUntil:0,stunUntil:0,airborneUntil:0,vulnerableUntil:0,bleed:0,bleedUntil:0,crimsonUntil:0,markUntil:0,nextAttack:0,shields:[],...o};}
+ function reset(options={}){
+  wasm.akane_reset();tick=0;state={};queue=[];glides=[];fx=[];hits=[];basicHits=[];takedowns=[];logLines=[];nightUntil=0;steer=null;lastRejection='';held.clear();clock.reset();replay=null;replayIndex=0;lastTrace=null;demo=null;selected=null;pinned=null;world.routes.clear();fixture=!!options.fixture;scene=null;
+  const c=wallCrossing();me={id:1,team:0,champion:true,radius:fixture?3000:world.data.settings.champion_radius,pos:{...c.from},hp:1600,max_hp:1600,attack:180,stats:{attack:180,defence:20,move_speed:R.stat.move_speed},shields:[],soulUntil:0,speedPct:0,invulnUntil:0,stunUntil:0,pose:'',poseStart:0,poseUntil:0,attackStart:-100,attackReady:0,moving:false,moveStart:0,left:false};
+  const p=world.data.doc.towers.flatMap(t=>t.pos).sort((a,b)=>dist({x:a[0],y:a[1]},c.from)-dist({x:b[0],y:b[1]},c.from))[0];
+  units=[unit(2,1,{x:c.from.x+45000,y:c.from.y+25000}),unit(3,1,{x:c.from.x+70000,y:c.from.y-30000},{sprite:'champ-ninja',name:'Ninja'}),unit(4,0,{x:c.from.x-30000,y:c.from.y+10000},{sprite:'champ-archer',name:'Archer'}),
+   unit(10,1,{x:c.from.x-20000,y:c.from.y-30000},{champion:false,farmable:true,kind:'minion',sprite:'minions',minion:'melee',hp:300,max_hp:300,radius:2000}),unit(11,1,{x:c.from.x-24000,y:c.from.y-34000},{champion:false,farmable:true,kind:'minion',sprite:'minions',minion:'range',hp:300,max_hp:300,radius:2000}),
+   unit(20,9,{x:c.to.x,y:c.to.y+2000},{champion:false,farmable:true,kind:'camp',sprite:'rhino',name:'Rhino',hp:900,max_hp:900,radius:5000}),unit(30,1,{x:p[0],y:p[1]},{champion:false,tower:true,kind:'tower',sprite:'red_tower',name:'Tower',hp:3000,max_hp:3000,radius:8000})];
+  if(!fixture){const level=Math.max(1,Math.min(12,+$('level').value||8));scene=new GameScenario(world,options.scenario||$('scenario').value,level);const setup=scene.setup();tick=setup.clock;me.pos=setup.pos;units=setup.units;
+   me.stats=scene.stats({stat:R.stat,growth:R.growth});for(const[k,i]of[['attack',0],['magic_power',1],['hp',2],['defence',3],['magic_resistance',4],['move_speed',5]])me.stats[k]=Math.floor((me.stats[k]||0)*(100+R.modPower[i])/100);
+   me.hp=me.max_hp=me.stats.hp;me.attack=me.stats.attack;$('role').value=setup.role;
+   const base=scene.calculateVisible.bind(scene);scene.calculateVisible=(u,team,owner,list)=>{if(team===1&&u.id===1&&tick<me.soulUntil)return false;if(team===1&&u.team===0&&u.champion&&nightOn()&&!enemyEyes().some(e=>dist(e.pos,u.pos)<=R.night.sight))return false;return base(u,team,owner,list);};
+   const damage=scene.damage.bind(scene);scene.damage=(source,target,raw,t)=>damage(source,target,Math.floor(raw*(t<target.vulnerableUntil?1+R.edge.vulnerablePct/100:1)),t);
+   $('scenarioNote').textContent=setup.description+' Level '+level+', 8:00, no items; extracted base camp HP. Stock combat is modeled.';
+  }else $('scenarioNote').textContent='Isolated 180-Attack fixture. acceptedBasic injects a host-accepted impact for core tests; F retains normal modeled cadence.';
+  aim={x:me.pos.x+70000,y:me.pos.y-30000};imagesReady=world.loadSprites(units.map(u=>u.sprite));imagesReady.catch(e=>log(e.message));log('Verified installed map: 900 cells, 1,000 world/art pixel; original stock actors.');
+ }
+ function log(s){logLines.push(`[${tick}] ${s}`);if(logLines.length>200)logLines.shift();$('log').textContent=logLines.slice(-50).join('\n');}
+ function frame(){
+  if(scene)scene.refreshVisibility(me,units);const calm=!units.some(u=>u.team===1&&u.champion&&alive(u)&&visible(u)&&dist(u.pos,me.pos)<R.ai.calmRange),tanked=tw=>units.some(u=>u.team===0&&alive(u)&&dist(u.pos,tw.pos)<=R.ai.towerRange);
+  return{version:1,rules_revision:R.revision,frame:{tick,owner:1,team:0,alive:me.hp>0,pos:rp(me.pos),hp:Math.round(me.hp),max_hp:me.max_hp,attack:me.attack,armor:me.stats.defence,stunned:tick<me.stunUntil,ult_unlocked:$('ultUnlocked').checked,flash_ready:false,home:{x:96000,y:864000},
+   units:units.filter(alive).map(u=>{const v=visible(u);return{id:u.id,team:u.team,pos:v?rp(u.pos):{x:0,y:0},hp:v?Math.round(u.hp):0,max_hp:u.max_hp,shield:v?(u.shields||[]).filter(s=>tick<s.until).reduce((s,b)=>s+b.amount,0):0,radius:u.radius,armor:u.stats?.defence??25,attack:u.stats?.attack??90,champion:u.champion,tower:u.tower,visible:v,targetable:true,farmable:u.farmable&&calm&&(!scene||u.kind==='minion'||u.kind==='objective'||$('role').value==='jungle'),stunned:tick<u.stunUntil,velocity:v?rp(u.vel||{x:0,y:0}):{x:0,y:0},flash_ready:v&&u.champion&&$('enemyFlash').checked,skill_ready:v&&u.champion&&$('enemySkills').checked,can:u.champion?capabilities(u):0,cc_immune:false,reduce:0,parry:false,tanked:u.tower?tanked(u):false};}),
+   terrain:WALLS,bushes:[],profile:[...$('stats').querySelectorAll('input')].map(i=>Math.max(0,Math.min(100,+i.value||0))),basic_hits:basicHits.splice(0),takedowns:takedowns.splice(0),manual:!$('auto').checked,order:queue.shift()||null}};
+ }
+ function hurt(u,raw){if(!alive(u))return;const amount=Math.round(raw*(tick<u.vulnerableUntil?1+R.edge.vulnerablePct/100:1));let delivered;if(scene)delivered=scene.damage(me,u,Math.floor(raw),tick);else{delivered=Math.min(u.hp,amount);u.hp-=delivered;}hits.push({id:u.id,amount:delivered,raw,ally:u.team===0,tower:u.tower,until:tick+30});if(u.hp<=0){u.deadAt=tick;if(u.champion){takedowns.push([u.id,rp(u.pos)]);log(`#${u.id} slain: Soul Orb pending`);}}}
+ function glide(to,ticks){glides=[{from:{...me.pos},to:{...to},start:tick,end:tick+Math.max(1,ticks)}];}
+ function apply(out){for(const e of out.effects||[]){const d=e.data,u=d?.target!==undefined?find(d.target):null;switch(e.kind){
+  case'damage':if(u)hurt(u,d.amount);break;case'slow':if(u){u.slowUntil=tick+d.ticks;u.slowPct=d.percent;}break;case'knock_up':if(u){u.stunUntil=Math.max(u.stunUntil,tick+d.ticks);u.airborneUntil=tick+d.ticks;}break;
+  case'vulnerable':if(u)u.vulnerableUntil=tick+d.ticks;break;case'bleed':if(u){u.bleed=d.stacks;u.bleedUntil=tick+d.ticks;}break;case'crimson':if(u)u.crimsonUntil=tick+d.ticks;break;case'mark':if(u)u.markUntil=tick+d.ticks;break;
+  case'soul':me.soulUntil=tick+d.ticks;me.speedPct=d.speed_pct;me.invulnUntil=Math.max(me.invulnUntil,me.soulUntil);me.pendingBasic=null;break;case'heal':me.hp=Math.min(me.max_hp,me.hp+d.amount);break;case'invulnerable':me.invulnUntil=Math.max(me.invulnUntil,tick+d.ticks);break;
+  case'teleport':case'hop':glides=[];me.pos=fixture?{...d.to}:world.legal(d.to,me.radius);break;case'glide':glide(d.to,d.ticks);break;case'night':nightUntil=tick+d.ticks;break;case'steer':steer={...d.to,until:tick+6};break;
+  case'pose':me.pose=d.name==='skill2'&&d.ticks===14?'finale':d.name==='skill1'&&state.dash?'dash':d.name==='ult'&&d.ticks===14?'night_dash':d.name;me.poseStart=tick;me.poseUntil=tick+d.ticks;break;
+  case'fx':if(d.name!=='akn_orb')fx.push({name:d.name,at:{...d.at},from:{...me.pos},start:tick,until:tick+Math.max(1,d.ticks)});break;case'log':log(String(d));break;
+ }}}
+ function coreStep(input){const b=new TextEncoder().encode(JSON.stringify(input)),ptr=wasm.akane_input(b.length);new Uint8Array(wasm.memory.buffer,ptr,b.length).set(b);const p=wasm.akane_step(b.length),n=wasm.akane_output_len();return JSON.parse(new TextDecoder().decode(new Uint8Array(wasm.memory.buffer,p,n)));}
+ function step(){
+  if(replay){const e=replay.frames[replayIndex++];if(!e){running=false;return log('Replay complete: all core outputs matched.');}const out=coreStep(e.input);if(JSON.stringify(out)!==JSON.stringify(e.output))throw new Error('Akane replay mismatch');({tick,me,units,glides,fx,hits,nightUntil}=copy(e.host));state=out.state;return;}
+  if(demo)advanceDemo();const input=frame(),out=coreStep(input);let entry;lastTrace={input,output:out};if(recording){entry={input,output:out,host:null};if(recording.frames.length<7200&&recording.bytes<32*1024*1024)recording.frames.push(entry);else{recording=null;entry=null;log('Recording limit: two minutes / 32 MiB.');}}
+  if(out.error){running=false;return log(out.error);}state=out.state;if(out.rejection&&out.rejection!==lastRejection)log('Refused: '+out.rejection);lastRejection=out.rejection||'';apply(out);const before={...me.pos},wasMoving=me.moving;tick++;
+  if(me.hp<=0){me.deadAt??=tick;glides=[];fx=[];queue=[];held.clear();me.pendingBasic=null;}
+  if(me.hp>0){for(const g of glides){const k=Math.min(1,(tick-g.start)/(g.end-g.start)),to={x:g.from.x+(g.to.x-g.from.x)*k,y:g.from.y+(g.to.y-g.from.y)*k};me.pos=fixture?to:world.sweep(me.pos,to,me.radius);}glides=glides.filter(g=>tick<g.end);
+   if(tick>=me.stunUntil&&!glides.length&&tick>=(state.busy_until||0)&&(!scene||tick>=me.poseUntil)){
+    const dir={x:held.has('d')-held.has('a'),y:held.has('s')-held.has('w')},speed=me.stats.move_speed*(tick<me.soulUntil?1+me.speedPct/100:1);
+    if(dir.x||dir.y){const l=Math.hypot(dir.x,dir.y);me.pos=world.sweep(me.pos,{x:me.pos.x+dir.x/l*speed,y:me.pos.y+dir.y/l*speed},me.radius);}else if(steer&&tick<steer.until&&dist(steer,me.pos)>1500)world.move(me,steer,speed);
+   }
   }
-  function reset() {
-    wasm.akane_reset();
-    tick = 0; state = {}; queue = []; glides = []; fx = []; logLines = []; hits = []; basicHits = []; takedowns = []; nightUntil = 0; steer = null;
-    const c = wallCrossing();
-    me = {pos: {...c.from}, hp: 1600, max_hp: 1600, attack: 180, soulUntil: 0, speedPct: 0, invulnUntil: 0, stunUntil: 0};
-    const t = TOWERS.slice().sort((a, b) => Math.hypot(a[0] - c.from.x, a[1] - c.from.y) - Math.hypot(b[0] - c.from.x, b[1] - c.from.y))[0];
-    units = [
-      unit(2, 1, {x: c.from.x + 45000, y: c.from.y + 25000}),
-      unit(3, 1, {x: c.from.x + 70000, y: c.from.y - 30000}, {can: 1 | 8}),
-      unit(4, 0, {x: c.from.x - 30000, y: c.from.y + 10000}),
-      unit(10, 1, {x: c.from.x - 20000, y: c.from.y - 30000}, {champion: false, farmable: true, hp: 300, max_hp: 300, radius: 2000, attack: 20, armor: 0}),
-      unit(11, 1, {x: c.from.x - 24000, y: c.from.y - 34000}, {champion: false, farmable: true, hp: 300, max_hp: 300, radius: 2000, attack: 20, armor: 0}),
-      unit(20, 9, {x: c.to.x, y: c.to.y + 2000}, {champion: false, farmable: true, hp: 900, max_hp: 900, radius: 5000, attack: 30, armor: 10}),
-      unit(30, 1, {x: t[0], y: t[1]}, {champion: false, tower: true, hp: 3000, max_hp: 3000, radius: 8000, attack: 150}),
-    ];
-    log(`Reset on the real map: Akane west of a wall cell, a camp past it; two enemy champions, a wave and the nearest tower (${t}).`);
-  }
-  function log(s) { logLines.push(`[${tick}] ${s}`); if (logLines.length > 200) logLines.shift(); $('log').textContent = logLines.slice(-60).join('\n'); $('log').scrollTop = 1e9; }
-  const find = id => units.find(u => u.id === id);
-  const alive = u => u.hp > 0 && tick >= u.deadUntil;
-  function glide(who, to, ticks) { glides = glides.filter(g => g.who !== who); glides.push({who, from: {...who.pos}, to: {...to}, t0: tick, t1: tick + Math.max(1, ticks)}); }
-  const nightOn = () => tick < nightUntil;
-  /** Lab vision: can the enemy team see her? Not in Dismiss; in Crimson Night only within the nearsight radius. */
-  function seenByEnemy(p) {
-    if (tick < me.soulUntil && p === me.pos) return false;
-    const eyes = units.filter(u => u.team === 1 && alive(u));
-    if (!nightOn()) return true;
-    return eyes.some(e => dist(e.pos, p) <= R.night.sight);
-  }
-  function frame() {
-    const profile = [...$('stats').querySelectorAll('input')].map(i => Math.max(0, Math.min(100, +i.value || 0)));
-    const calm = !units.some(u => u.team === 1 && u.champion && alive(u) && dist(u.pos, me.pos) < R.ai.calmRange);
-    // towers: is one of hers (not her) inside for it to shoot first?
-    const tanked = tw => units.some(u => u.team === 0 && alive(u) && dist(u.pos, tw.pos) <= R.ai.towerRange);
-    return {version: 1, rules_revision: R.revision, frame: {
-      tick, owner: 1, team: 0, alive: me.hp > 0, pos: rp(me.pos), hp: Math.round(me.hp), max_hp: me.max_hp, attack: me.attack, armor: 20,
-      stunned: tick < me.stunUntil, ult_unlocked: true, flash_ready: false, home: {x: 96000, y: 864000},
-      units: units.filter(alive).map(u => ({id: u.id, team: u.team, pos: rp(u.pos), hp: Math.round(u.hp), max_hp: u.max_hp, shield: 0, radius: u.radius,
-        armor: u.armor, attack: u.attack, champion: u.champion, tower: u.tower, visible: true, targetable: true, farmable: u.farmable && calm,
-        stunned: tick < u.stunUntil, velocity: rp(u.vel || {x: 0, y: 0}), flash_ready: !!u.flash_ready, skill_ready: !!u.skill_ready, can: u.can || 0,
-        cc_immune: false, reduce: 0, parry: false, tanked: u.tower ? tanked(u) : false})),
-      terrain: WALLS, bushes: [], profile, basic_hits: basicHits.splice(0), takedowns: takedowns.splice(0), manual: !$('auto').checked, order: queue.shift() || null}};
-  }
-  function hurt(u, amount) {
-    if (!alive(u)) return;
-    const amp = tick < u.vulnerableUntil ? 1 + R.edge.vulnerablePct / 100 : 1;
-    u.hp = Math.max(0, u.hp - Math.round(amount * amp));
-    hits.push({id: u.id, amount: Math.round(amount * amp), ally: u.team === 0, tower: u.tower, until: tick + 30});
-    if (u.hp <= 0 && !u.tower) {
-      u.deadUntil = tick + (u.champion ? 300 : 120);
-      if (u.champion) { takedowns.push([u.id, rp(u.pos)]); log(`#${u.id} slain: a Soul Orb drops`); }
-    }
-  }
-  function apply(out) {
-    for (const e of out.effects || []) {
-      const d = e.data, u = d && d.target !== undefined ? find(d.target) : null;
-      switch (e.kind) {
-        case 'damage': if (u) { if (u.team === 0 || u.tower) log(`!! #${u.id} (${u.tower ? 'tower' : 'ally'}) hit by a skill (should never happen)`); hurt(u, d.amount); } break;
-        case 'slow': if (u) u.slowUntil = tick + d.ticks; break;
-        case 'knock_up': if (u) { u.stunUntil = Math.max(u.stunUntil, tick + d.ticks); u.airborneUntil = tick + d.ticks; } break;
-        case 'vulnerable': if (u) { u.vulnerableUntil = tick + d.ticks; log(`#${d.target} vulnerable +${d.percent}%`); } break;
-        case 'bleed': if (u) { u.bleed = d.stacks; u.bleedUntil = tick + d.ticks; } break;
-        case 'crimson': if (u) u.crimsonUntil = tick + d.ticks; break;
-        case 'mark': if (u) u.markUntil = tick + d.ticks; break;
-        case 'soul': me.soulUntil = tick + d.ticks; me.speedPct = d.speed_pct; me.invulnUntil = Math.max(me.invulnUntil, tick + d.ticks); log(`Dismiss: invisible, invulnerable, +${d.speed_pct}% for ${(d.ticks / 60).toFixed(1)} s (move only)`); break;
-        case 'heal': me.hp = Math.min(me.max_hp, me.hp + d.amount); break;
-        case 'invulnerable': me.invulnUntil = Math.max(me.invulnUntil, tick + d.ticks); break;
-        case 'teleport': case 'hop': glides = glides.filter(g => g.who !== me); me.pos = {...d.to}; if (e.kind === 'hop') log('Dash: over the wall'); break;
-        case 'glide': glide(me, d.to, d.ticks); break;
-        case 'night': nightUntil = tick + d.ticks; log('Crimson Night: every enemy is nearsighted'); break;
-        case 'steer': steer = {...d.to, until: tick + 6}; break;
-        case 'fx': fx.push({name: d.name, at: {...d.at}, start: tick, until: tick + Math.max(6, Math.min(d.ticks, 120))}); break;
-        case 'log': log(String(d)); break;
-      }
-    }
-  }
-  function step() {
-    const text = JSON.stringify(frame()), bytes = new TextEncoder().encode(text);
-    const ptr = wasm.akane_input(bytes.length);
-    new Uint8Array(wasm.memory.buffer, ptr, bytes.length).set(bytes);
-    const outPtr = wasm.akane_step(bytes.length), n = wasm.akane_output_len();
-    const out = JSON.parse(new TextDecoder().decode(new Uint8Array(wasm.memory.buffer, outPtr, n)));
-    if (out.error) { log('Lab error: ' + out.error); return; }
-    state = out.state;
-    if (out.rejection && out.rejection !== lastRejection) log('Refused: ' + out.rejection);
-    lastRejection = out.rejection || '';
-    apply(out);
-    tick++;
-    for (const g of glides) { const k = Math.min(1, (tick - g.t0) / (g.t1 - g.t0)); g.who.pos = {x: g.from.x + (g.to.x - g.from.x) * k, y: g.from.y + (g.to.y - g.from.y) * k}; }
-    glides = glides.filter(g => tick < g.t1);
-    // her walk: WASD, or the AI's steer
-    if (tick >= me.stunUntil && !glides.some(g => g.who === me)) {
-      let dir = {x: (held.has('d') - held.has('a')), y: (held.has('s') - held.has('w'))};
-      if (!dir.x && !dir.y && steer && tick < steer.until && dist(steer, me.pos) > 1500) dir = {x: steer.x - me.pos.x, y: steer.y - me.pos.y};
-      if (dir.x || dir.y) {
-        const l = Math.hypot(dir.x, dir.y), v = R.stat.move_speed * (tick < me.soulUntil ? 1 + me.speedPct / 100 : 1);
-        const next = {x: me.pos.x + dir.x / l * v, y: me.pos.y + dir.y / l * v};
-        if (!wallAt(next)) me.pos = next;
-      }
-    }
-    // the Lab's enemies: walk in when they can see her, hit her
-    for (const u of units) {
-      if (!alive(u) && u.hp <= 0 && tick >= u.deadUntil && u.deadUntil > 0) { u.hp = u.max_hp; u.pos = {...u.home}; u.deadUntil = 0; }
-    }
-    if ($('moving').checked) {
-      const seen = seenByEnemy(me.pos);
-      for (const u of units.filter(u => u.team === 1 && u.champion && alive(u))) {
-        const prev = {...u.pos};
-        if (tick < u.stunUntil) { u.vel = {x: 0, y: 0}; continue; }
-        const speed = tick < u.slowUntil ? 560 : 800, d = dist(u.pos, me.pos);
-        if (seen && !glides.some(g => g.who === u) && d > 20000) { const k = speed / d, next = {x: u.pos.x + (me.pos.x - u.pos.x) * k, y: u.pos.y + (me.pos.y - u.pos.y) * k}; if (!wallAt(next)) u.pos = next; }
-        u.vel = {x: u.pos.x - prev.x, y: u.pos.y - prev.y};
-        if (seen && d <= 25000 && tick >= u.nextAttack && tick >= me.invulnUntil) { u.nextAttack = tick + 60; me.hp = Math.max(1, me.hp - u.attack); }
-      }
-      const tw = units.find(u => u.tower && alive(u));
-      if (tw && seen && dist(tw.pos, me.pos) <= R.ai.towerRange && tick % 60 === 0 && tick >= me.invulnUntil
-        && !units.some(u => u.team === 0 && alive(u) && dist(u.pos, tw.pos) <= R.ai.towerRange)) { me.hp = Math.max(1, me.hp - tw.attack); log('The tower hits her'); }
-    }
-    // bleeds and crimson tick in the core; the Lab only expires the markers
-    fx = fx.filter(f => tick < f.until);
-    hits = hits.filter(h => tick < h.until);
-  }
-  function order(kind) {
-    if (kind === 'kunai') return queue.push(state.mark && tick < state.mark[1] ? {kind: 'kunai_recast'} : {kind: 'kunai', aim: rp(aim)});
-    if (kind === 'night') {
-      if (tick < (state.night_until || 0) && !state.night_dash_used) {
-        const t = units.filter(u => u.team === 1 && u.champion && alive(u)).sort((a, b) => dist(a.pos, aim) - dist(b.pos, aim))[0];
-        return t && queue.push({kind: 'night_dash', aim: t.id});
-      }
-      return queue.push({kind: 'night'});
-    }
-    queue.push({kind});
-  }
-  /** a basic attack on `id`, or on the nearest enemy in reach */
-  function basic(id) {
-    if (tick < me.soulUntil) return log('Dismiss: she can only move');
-    const t = units.filter(u => u.team !== 0 && alive(u) && (id === undefined || u.id === id) && dist(u.pos, me.pos) <= R.basic.range + u.radius + 3000).sort((a, b) => dist(a.pos, me.pos) - dist(b.pos, me.pos))[0];
-    if (!t) return log(`Nothing within basic reach (${R.basic.range})`);
-    hurt(t, me.attack * 100 / (100 + t.armor)); basicHits.push(t.id);
-  }
-  // ---------------------------------------------------------------- drawing (one world-to-screen scale for everything)
-  let cam = {x: 480000, y: 480000, s: 900 / WORLD};
-  const P = p => ({x: (p.x - cam.x) * cam.s + 450, y: (p.y - cam.y) * cam.s + 450});
-  const W = r => r * cam.s;
-  function circle(p, r, fill, stroke, width = 1) { const q = P(p); ctx.beginPath(); ctx.arc(q.x, q.y, Math.max(1.5, W(r)), 0, 7); if (fill) { ctx.fillStyle = fill; ctx.fill(); } if (stroke) { ctx.lineWidth = width; ctx.strokeStyle = stroke; ctx.stroke(); ctx.lineWidth = 1; } }
-  function line(a, b, stroke, width = 1) { const p = P(a), q = P(b); ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(q.x, q.y); ctx.lineWidth = width; ctx.strokeStyle = stroke; ctx.stroke(); ctx.lineWidth = 1; }
-  const toward = (a, b, len) => { const d = dist(a, b) || 1; return {x: a.x + (b.x - a.x) * len / d, y: a.y + (b.y - a.y) * len / d}; };
-  function draw() {
-    if ($('zoom').checked) cam = {x: me.pos.x, y: me.pos.y, s: 900 / 260000}; else cam = {x: 480000, y: 480000, s: 900 / WORLD};
-    ctx.fillStyle = '#2a3340'; ctx.fillRect(0, 0, 900, 900);
-    const o = P({x: 0, y: 0});
-    if ($('art').checked && art.complete) { ctx.globalAlpha = .75; ctx.drawImage(art, o.x, o.y, W(WORLD), W(WORLD)); ctx.globalAlpha = 1; }
-    ctx.fillStyle = 'rgba(20,20,26,.55)';
-    for (let i = 0; i < N * N; i++) if (WALLS[i]) { const q = P({x: i % N * CELL, y: Math.floor(i / N) * CELL}); ctx.fillRect(q.x, q.y, W(CELL) + .5, W(CELL) + .5); }
-    for (const [tx, ty] of TOWERS) { const q = P({x: tx, y: ty}); ctx.fillStyle = '#c9a94a'; ctx.fillRect(q.x - 4, q.y - 4, 8, 8); }
-    if (nightOn()) {
-      ctx.fillStyle = 'rgba(40,0,10,.45)'; ctx.fillRect(0, 0, 900, 900);
-      for (const u of units.filter(u => u.team === 1 && alive(u))) circle(u.pos, R.night.sight, 'rgba(255,255,255,.08)', 'rgba(255,200,200,.5)');
-    }
-    if ($('ranges').checked) {
-      circle(me.pos, R.kunai.range, null, 'rgba(248,113,113,.6)');
-      line(me.pos, toward(me.pos, aim, R.kunai.range), 'rgba(248,113,113,.7)', Math.max(1, W(R.kunai.width * 2)));
-      circle(me.pos, R.night.dashRange, null, 'rgba(190,24,93,.35)');
-      circle(me.pos, R.ai.towerRange, null, 'rgba(201,169,74,.15)');
-    }
-    for (const orb of state.orbs || []) {
-      const armed = tick >= orb.born + R.orb.armTicks;
-      circle(orb.pos, R.orb.range, null, armed ? 'rgba(244,114,182,.6)' : 'rgba(244,114,182,.25)');
-      circle(orb.pos, 3500, armed ? '#f472b6' : '#9d4b72', '#fff');
-      if (orb.since !== null && orb.since !== undefined) { const q = P(orb.pos); ctx.fillStyle = '#fff'; ctx.fillText(`${Math.min(100, Math.round((tick - orb.since) / R.orb.absorbTicks * 100))}%`, q.x + 8, q.y); }
-    }
-    for (const f of fx) {
-      if (f.name === 'akn_burst') circle(f.at, R.edge.burstRadius, 'rgba(220,38,38,.35)', '#fecaca', 2);
-      else if (f.name === 'akn_finale') circle(f.at, R.edge.knockRadius, 'rgba(244,63,94,.25)', '#fda4af', 2);
-      else if (f.name === 'akn_kunai') line(me.pos, f.at, '#e5e7eb', 2);
-      else if (f.name === 'akn_dismiss') circle(f.at, 6000, null, '#f9a8d4', 2);
-      else if (f.name === 'akn_dash_slash' || f.name === 'akn_night_slash') circle(f.at, 5000, 'rgba(255,255,255,.3)', '#fff', 2);
-    }
-    for (const u of units.filter(alive)) {
-      const col = u.tower ? '#c9a94a' : u.team === 0 ? '#60a5fa' : u.team === 9 ? '#a3e635' : u.champion ? '#f87171' : '#fb923c';
-      const hidden = u.team === 0 && nightOn() && !seenByEnemy(u.pos);
-      ctx.globalAlpha = hidden ? .35 : 1;
-      circle(u.pos, u.radius, tick < u.airborneUntil ? '#fff' : col, tick < u.vulnerableUntil ? '#fde047' : tick < u.markUntil ? '#e5e7eb' : null, 3);
-      ctx.globalAlpha = 1;
-      if (tick < u.crimsonUntil) circle(u.pos, u.radius + 1500, null, '#dc2626', 2);
-      const q = P(u.pos);
-      for (let i = 0; i < (tick < u.bleedUntil ? u.bleed : 0); i++) { ctx.fillStyle = '#ef4444'; ctx.fillRect(q.x - 12 + i * 7, q.y - W(u.radius) - 14, 5, 5); }
-      ctx.fillStyle = '#111'; ctx.fillRect(q.x - 14, q.y - W(u.radius) - 8, 28, 4); ctx.fillStyle = '#4ade80'; ctx.fillRect(q.x - 14, q.y - W(u.radius) - 8, 28 * u.hp / u.max_hp, 4);
-    }
-    // Akane: crimson body, faded while hidden (Dismiss, or the night outside every enemy's sight)
-    const hiddenMe = tick < me.soulUntil || (nightOn() && !seenByEnemy(me.pos));
-    ctx.globalAlpha = hiddenMe ? .4 : 1;
-    circle(me.pos, 3000, '#be123c', tick < me.invulnUntil ? '#fde047' : '#0b0f14', 3);
-    ctx.globalAlpha = 1;
-    const q = P(me.pos);
-    ctx.fillStyle = '#111'; ctx.fillRect(q.x - 22, q.y - W(3000) - 12, 44, 5);
-    ctx.fillStyle = '#ef4444'; ctx.fillRect(q.x - 22, q.y - W(3000) - 12, 44 * me.hp / me.max_hp, 5);
-    for (let i = 0; i < (state.charges ?? 0); i++) { ctx.fillStyle = '#f9a8d4'; ctx.beginPath(); ctx.arc(q.x - 6 + i * 12, q.y + W(3000) + 9, 4, 0, 7); ctx.fill(); }
-    for (const h of hits) { const u = find(h.id); if (u) { const p = P(u.pos); ctx.fillStyle = '#fde68a'; ctx.font = '11px monospace'; ctx.fillText(h.amount, p.x + 8, p.y - 10 - (30 - (h.until - tick))); } }
-    ctx.fillStyle = 'rgba(15,10,15,.8)'; ctx.fillRect(8, 870, 560, 22); ctx.fillStyle = '#e5d0d8'; ctx.font = '12px system-ui';
-    ctx.fillText(`Map: game 5v5 (levi-map.js) · scale 1:${Math.round(1 / cam.s)} · enemies/minions/tower/deaths: Lab model`, 14, 885);
-  }
-  function hud() {
-    const cd = i => Math.max(0, ((state.ready || [])[i] || 0) - tick) / 60;
-    const edge = state.edge ? `${state.edge[0]} / ${R.edge.hits} hits (${((state.edge[1] - tick) / 60).toFixed(1)} s)` : '—';
-    const orbs = (state.orbs || []).map(o => `${((o.until - tick) / 60).toFixed(0)} s${o.since != null ? ' absorbing' : ''}`).join(', ') || '—';
-    $('hud').innerHTML = [
-      ['HP', `${Math.round(me.hp)} / ${me.max_hp}`], ['Soul charges', `${state.charges ?? 2} / ${R.soul.charges}${state.next_charge ? ` (+1 in ${((state.next_charge - tick) / 60).toFixed(1)} s)` : ''}`],
-      ['Dismiss', tick < me.soulUntil ? `${((me.soulUntil - tick) / 60).toFixed(2)} s (move only)` : '—'], ['Crimson Edge', edge],
-      ['Kunai mark', state.mark && tick < state.mark[1] ? `#${state.mark[0]} (${((state.mark[1] - tick) / 60).toFixed(1)} s)` : '—'], ['Orbs', orbs],
-      ['Edge reset ready', (state.edge_reset_ready || 0) > tick ? `in ${((state.edge_reset_ready - tick) / 60).toFixed(0)} s` : 'yes'],
-      ['Crimson Night', nightOn() ? `${((nightUntil - tick) / 60).toFixed(1)} s${state.night_dash_used ? ' (dash used)' : ''}` : '—'],
-      ['Kunai', cd(0).toFixed(1)], ['Edge', cd(1).toFixed(1)], ['Night', cd(2).toFixed(1)], ['Chain', state.chain ?? 0],
-    ].map(([k, v]) => `<span>${k}</span><b>${v}</b>`).join('');
-    $('status').textContent = `tick ${tick} · ${running ? 'running' : 'paused'} · rules ${R.revision}`;
-  }
-  function frameLoop() { if (running) step(); draw(); hud(); requestAnimationFrame(frameLoop); }
-  canvas.addEventListener('mousemove', e => { const r = canvas.getBoundingClientRect(); aim = {x: (e.clientX - r.left - 450) / cam.s + cam.x, y: (e.clientY - r.top - 450) / cam.s + cam.y}; });
-  addEventListener('keydown', e => {
-    const k = e.key.toLowerCase();
-    if ('wasd'.includes(k) && k.length === 1) held.add(k);
-    if (k === '1') order('soul'); if (k === '2') order('kunai'); if (k === '3') order('edge'); if (k === '4') order('night'); if (k === 'f') basic();
-  });
-  addEventListener('keyup', e => held.delete(e.key.toLowerCase()));
-  $('play').onclick = () => { running = !running; $('play').textContent = running ? 'Pause' : 'Play'; };
-  $('step').onclick = () => { step(); draw(); hud(); };
-  $('reset').onclick = () => reset();
-  $('wallDemo').onclick = () => { const c = wallCrossing(); me.pos = {...c.from}; const f = find(2); f.pos = {...c.to}; f.hp = f.max_hp; f.deadUntil = 0; aim = {...c.to}; log('A foe across the wall: Kunai (2) flies over it, 2 again dashes over the wall'); };
-  $('lowFoe').onclick = () => { const f = find(2); f.hp = 220; f.flash_ready = false; log('#2 is low and has no Flash'); };
-  $('gank').onclick = () => { units.filter(u => u.team === 1 && u.champion).forEach((u, i) => { u.pos = {x: me.pos.x + 30000 + i * 8000, y: me.pos.y + (i ? 12000 : -12000)}; u.hp = u.max_hp; u.deadUntil = 0; }); log('Enemies converge on her'); };
-  reset();
-  window.akaneLab = {step, reset, order, basic, wallCrossing, pause() { running = false; }, setAim(p) { aim = {...p}; }, hurt,
-    get state() { return state; }, get me() { return me; }, get units() { return units; }, get hits() { return hits; }, get tick() { return tick; }, get walls() { return WALLS; }, wallAt, nightOn, seenByEnemy};
-  requestAnimationFrame(frameLoop);
-})();
+  me.moving=dist(before,me.pos)>.01;if(me.moving){if(!wasMoving)me.moveStart=tick;if(me.pos.x!==before.x)me.left=me.pos.x<before.x;}
+  if(scene){scene.refreshVisibility(me,units);for(const u of units)u._prev={...u.pos};if($('moving').checked)scene.advance(tick,me,units,{hitOwner:h=>{if(tick>=me.invulnUntil&&me.hp>0){const b=me.hp;scene.damage({id:h.from,team:1},me,h.amount,tick);scene.metrics.taken+=b-me.hp;}},hit:(u,hp)=>hits.push({id:u.id,amount:hp,until:tick+30})});for(const u of units){u.vel={x:u.pos.x-u._prev.x,y:u.pos.y-u._prev.y};delete u._prev;}}
+  else if($('moving').checked&&seenByEnemy(me.pos))for(const u of units.filter(u=>u.team===1&&u.champion&&alive(u))){if(tick>=u.stunUntil&&dist(u.pos,me.pos)>25000)world.move(u,me.pos,800);if(dist(u.pos,me.pos)<=25000&&tick>=u.nextAttack){u.nextAttack=tick+60;if(tick>=me.invulnUntil)me.hp=Math.max(0,me.hp-90);}}
+  if(me.pendingBasic&&tick>=me.pendingBasic.at){const u=find(me.pendingBasic.target);me.pendingBasic=null;if(u&&tick>=me.stunUntil&&tick>=me.soulUntil&&visible(u)&&world.clear(me.pos,u.pos)&&dist(me.pos,u.pos)<=R.basic.range+me.radius+u.radius)acceptedBasic(u.id);}
+  if(me.hp>0&&($('autoBasics').checked||held.has('f')||$('auto').checked)&&tick>=me.attackReady)basic();fx=fx.filter(f=>tick<f.until);hits=hits.filter(h=>tick<h.until);
+  if(entry){entry.host=copy({tick,me,units,glides,fx,hits,nightUntil});recording.bytes+=JSON.stringify(entry).length;}
+ }
+ function order(kind){if(kind==='kunai')queue.push(state.mark&&tick<state.mark[1]?{kind:'kunai_recast'}:{kind:'kunai',aim:rp(aim)});else if(kind==='night'&&nightOn()&&!state.night_dash_used){const u=units.filter(u=>u.team===1&&u.champion&&alive(u)&&visible(u)).sort((a,b)=>dist(a.pos,aim)-dist(b.pos,aim))[0];if(u)queue.push({kind:'night_dash',aim:u.id});}else queue.push({kind});if(aim.x!==me.pos.x)me.left=aim.x<me.pos.x;}
+ function acceptedBasic(id){const u=find(id);if(!u||!alive(u)||tick<me.soulUntil||me.hp<=0)return;hurt(u,me.attack*(fixture?100/(100+(u.stats?.defence??25)):1));basicHits.push(u.id);}
+ function basic(id){if(me.hp<=0||tick<me.soulUntil||tick<me.stunUntil||tick<me.attackReady||tick<me.poseUntil||tick<(state.busy_until||0))return;const u=units.filter(u=>u.team!==0&&alive(u)&&visible(u)&&(id===undefined?selected===null||u.id===selected:u.id===id)&&dist(u.pos,me.pos)<=R.basic.range+me.radius+u.radius&&world.clear(me.pos,u.pos)).sort((a,b)=>dist(a.pos,me.pos)-dist(b.pos,me.pos))[0];if(!u)return;me.pendingBasic={target:u.id,at:tick+R.basic.startTiming};me.attackStart=tick;me.attackReady=tick+Math.ceil(R.basic.cooldownTicks/(1+R.modPower[6]/100));me.left=u.pos.x<me.pos.x;}
+ function pose(){if(me.hp<=0)return{name:'dead',start:me.deadAt??tick};if(tick<me.stunUntil)return{name:'hit',start:me.stunStart??tick};if(tick<me.poseUntil)return{name:me.pose,start:me.poseStart};if(tick-me.attackStart<R.basic.duration)return{name:'attack',start:me.attackStart};return{name:me.moving?'run':'idle',start:me.moving?me.moveStart:0};}
+ const P=p=>({x:(p.x-cam.x)*cam.s+450,y:(p.y-cam.y)*cam.s+450}),W=n=>n*cam.s;
+ function circle(p,r,fill,stroke){const q=P(p);ctx.beginPath();ctx.arc(q.x,q.y,Math.max(1,W(r)),0,7);if(fill){ctx.fillStyle=fill;ctx.fill();}if(stroke){ctx.strokeStyle=stroke;ctx.stroke();}}
+ function line(a,b,col,width=1){const x=P(a),y=P(b);ctx.strokeStyle=col;ctx.lineWidth=width;ctx.beginPath();ctx.moveTo(x.x,x.y);ctx.lineTo(y.x,y.y);ctx.stroke();ctx.lineWidth=1;}
+ function draw(){
+  cam=$('zoom').checked?{x:pinned?.x??me.pos.x,y:pinned?.y??me.pos.y,s:(+$('worldZoom').value||2)/1000}:{x:WORLD/2,y:WORLD/2,s:900/WORLD};ctx.imageSmoothingEnabled=false;ctx.fillStyle='#20333b';ctx.fillRect(0,0,900,900);if($('art').checked)world.drawMap(ctx,P,W);
+  if($('colliders').checked){ctx.fillStyle='rgba(255,60,60,.22)';WALLS.forEach((b,i)=>{if(b){const p=P({x:i%30*CELL,y:Math.floor(i/30)*CELL});ctx.fillRect(p.x,p.y,W(CELL),W(CELL));}});}
+  if($('ranges').checked){circle(me.pos,R.kunai.range,null,'#bf6679');circle(me.pos,R.night.dashRange,null,'#734955');const d=dist(me.pos,aim)||1;line(me.pos,{x:me.pos.x+(aim.x-me.pos.x)*R.kunai.range/d,y:me.pos.y+(aim.y-me.pos.y)*R.kunai.range/d},'rgba(255,170,185,.3)',Math.max(1,W(R.kunai.width*2)));}
+  for(const o of state.orbs||[]){const q=P(o.pos);if($('ranges').checked)circle(o.pos,R.orb.range,null,'rgba(250,130,170,.3)');if(!painter.effect(ctx,'orb',tick-o.born,q.x,q.y,W(1000),true))circle(o.pos,3500,'#ec407a');if(o.since!=null){line(o.pos,me.pos,'#fcb3c9');ctx.fillStyle='#fff';ctx.font='11px system-ui';ctx.fillText(Math.min(100,Math.round((tick-o.since)/R.orb.absorbTicks*100))+'%',q.x+8,q.y-8);}}
+  for(const f of fx){const q=P(f.at);if($('bodies').checked&&painter.effect(ctx,f.name,tick-f.start,q.x,q.y,W(1000)))continue;if(f.name==='akn_burst')circle(f.at,R.edge.burstRadius,'rgba(220,38,70,.25)','#ffb0c0');else if(f.name==='akn_finale')circle(f.at,R.edge.knockRadius,'rgba(240,70,110,.2)','#f7b1c7');}
+  const owner=()=>{const q=P(me.pos),v=pose();if(nightOn())painter.effect(ctx,'night_aura',tick-(nightUntil-R.night.ticks),q.x,q.y,W(1000),true);ctx.globalAlpha=(tick<me.soulUntil||(nightOn()&&!seenByEnemy(me.pos))) ? 0.4 : 1;if($('bodies').checked&&painter.loaded)painter.body(ctx,v.name,tick-v.start,q.x,q.y,W(1000),me.left);else circle(me.pos,me.radius,'#be123c');ctx.globalAlpha=1;};
+  let drew=false;for(const u of units.filter(u=>alive(u)||tick-(u.deadAt??-1000)<60).sort((a,b)=>a.pos.y-b.pos.y)){
+   if(!visible(u)&&!u.tower&&!$('overviewActors').checked)continue;if(!drew&&u.pos.y>=me.pos.y){owner();drew=true;}ctx.globalAlpha=(u.team===0&&u.champion&&nightOn()&&!seenByEnemy(u.pos))?.4:(visible(u)?1:.25);world.drawUnit(ctx,u,tick,P,W);ctx.globalAlpha=1;
+   const q=P(u.pos),spec=world.data.sprites[u.sprite],a=spec?.anims.idle||Object.values(spec?.anims||{})[0],h=(a?.frames[0]?.data.h||40)/2,y=q.y-W(h*1000)-7;if($('colliders').checked||selected===u.id)circle(u.pos,u.radius,null,u.team?'#f77b86':'#7bbfff');
+   if(alive(u)){const width=u.kind==='minion'?18:34;ctx.fillStyle='#121319';ctx.fillRect(q.x-width/2,y,width,4);ctx.fillStyle=u.team===0?'#68bcf8':u.team===9?'#c8b273':'#ef8398';ctx.fillRect(q.x-width/2,y,width*u.hp/u.max_hp,4);}if($('labels').checked&&(u.champion||u.kind==='objective'||selected===u.id)){ctx.fillStyle='#f4e8e9';ctx.font='10px system-ui';ctx.textAlign='center';ctx.fillText(u.name||u.kind,q.x,y-3);ctx.textAlign='left';}
+   for(const[name,on]of[['mark',tick<u.markUntil],['vulnerable',tick<u.vulnerableUntil],['crimson',tick<u.crimsonUntil],['bleed'+u.bleed,tick<u.bleedUntil]])if(on)painter.effect(ctx,name,tick,q.x,q.y,W(1000),true);
+  }if(!drew)owner();
+  const q=P(me.pos);ctx.fillStyle='#101218';ctx.fillRect(q.x-22,q.y-W(22000)-10,44,5);ctx.fillStyle='#ef426c';ctx.fillRect(q.x-22,q.y-W(22000)-10,44*me.hp/me.max_hp,5);const charges=state.charges??2;for(let i=0;i<Math.min(5,charges);i++){ctx.fillStyle='#fbb5ca';ctx.fillRect(q.x-14+i*7,q.y+W(22000)+7,4,4);}if(charges>5){ctx.fillStyle='#fff';ctx.fillText('+'+(charges-5),q.x+24,q.y+W(22000)+12);}
+  for(const h of hits){const u=find(h.id);if(u&&visible(u)){const p=P(u.pos);ctx.fillStyle='#ffe5a3';ctx.font='11px monospace';ctx.fillText(h.amount,p.x+8,p.y-10-(30-(h.until-tick)));}}
+  if(nightOn()&&$('enemyView').checked){ctx.fillStyle='rgba(45,0,20,.2)';ctx.fillRect(0,0,900,900);for(const e of enemyEyes())circle(e.pos,R.night.sight,null,'#bd6c83');}if($('art').checked)world.drawMap(ctx,P,W,true);
+  ctx.fillStyle='rgba(14,12,19,.8)';ctx.fillRect(8,870,650,22);ctx.fillStyle='#d9dce2';ctx.font='12px system-ui';ctx.fillText('Verified game map · 1 art px = 1,000 world · '+(fixture?'isolated fixture':'8:00 situation')+' · modeled stock host',14,885);minimap();
+ }
+ function minimap(){const c=$('minimap').getContext('2d'),s=190/WORLD;c.imageSmoothingEnabled=false;c.drawImage(world.ground,160,160,960,960,0,0,190,190);for(const u of[me,...units].filter(u=>alive(u)&&(u.id===1||visible(u)||u.tower))){c.fillStyle=u.id===1?'#fff':u.team===0?'#6ac5ff':u.team===9?'#d0b777':'#ff759c';c.fillRect(u.pos.x*s-1,u.pos.y*s-1,3,3);}c.strokeStyle='#fff';c.strokeRect((cam.x-450/cam.s)*s,(cam.y-450/cam.s)*s,900/cam.s*s,900/cam.s*s);}
+ function hud(){const cd=i=>Math.max(0,((state.ready||[])[i]||0)-tick)/60;const rows=[['HP',Math.ceil(me.hp)+' / '+me.max_hp],['Soul charges',state.charges??2],['Automatic recharge',state.next_charge?Math.max(0,(state.next_charge-tick)/60).toFixed(1)+'s':'—'],['Dismiss',tick<me.soulUntil?((me.soulUntil-tick)/60).toFixed(2)+'s · move only':'—'],['Crimson Edge',state.edge?state.edge[0]+' / 5':'—'],['Mark',state.mark?'#'+state.mark[0]:'—'],['Orbs',(state.orbs||[]).length],['Kunai / Edge / Night',[0,1,2].map(i=>cd(i).toFixed(1)).join(' / ')],['Night',nightOn()?((nightUntil-tick)/60).toFixed(1)+'s':'—'],['Chain',state.chain||0],['Attack / armour',me.attack+' / '+me.stats.defence],['Body',painter.manifest?.complete_body?'Complete animation set':'Appearance concepts'],['Last rejection',lastRejection||'—'],['Raw / delivered',scene?scene.metrics.requested+' / '+scene.metrics.hp_damage:'fixture'],['Selected',find(selected)?.name||'—']];$('hud').innerHTML=rows.map(([k,v])=>`<span>${k}</span><b>${v}</b>`).join('');$('status').textContent=Math.floor(tick/3600)+':'+String(Math.floor(tick/60)%60).padStart(2,'0')+' · '+R.revision+' · '+(running?'running':'paused');$('play').textContent=running?'Pause':'Play';}
+ function loadRecording(data){if(data.version!==1||data.rules_revision!==R.revision||!Array.isArray(data.frames)||!data.frames.length||data.frames.length>7200)throw new Error('Inspect as JSON; replay requires original Akane rules and transport v1.');reset();recording=null;scene=null;fixture=true;replay=copy(data);running=false;log('Saved host observations replayed; every core output is verified.');}
+ function startDemo(kind){reset({fixture:true});$('moving').checked=false;$('auto').checked=false;me.pos={x:440000,y:520000};const foe=find(2);foe.pos={x:me.pos.x+18000,y:me.pos.y};foe.hp=foe.max_hp=5000;aim={...foe.pos};demo={kind,start:tick};running=true;clock.reset();}
+ function advanceDemo(){const age=tick-demo.start;if(age===0)order(demo.kind);if(demo.kind==='kunai'&&age===15)order('kunai');if(demo.kind==='edge'&&[15,60,105,150,195].includes(age))basic(2);if(demo.kind==='night'&&age===30)order('night');if(age>=300){demo=null;running=false;}}
+ function point(e){const r=canvas.getBoundingClientRect();return{x:((e.clientX-r.left)*900/r.width-450)/cam.s+cam.x,y:((e.clientY-r.top)*900/r.height-450)/cam.s+cam.y};}
+ canvas.addEventListener('pointerdown',e=>{canvas.focus();if(e.button===1||e.altKey){pan={x:e.clientX,y:e.clientY,from:{...cam}};canvas.setPointerCapture(e.pointerId);e.preventDefault();}else{const p=point(e);selected=units.filter(u=>alive(u)&&visible(u)&&dist(u.pos,p)<u.radius+8000).sort((a,b)=>dist(a.pos,p)-dist(b.pos,p))[0]?.id??null;}});
+ canvas.addEventListener('pointermove',e=>{aim=point(e);if(pan){const r=canvas.getBoundingClientRect();pinned={x:pan.from.x-(e.clientX-pan.x)*900/r.width/pan.from.s,y:pan.from.y-(e.clientY-pan.y)*900/r.height/pan.from.s};$('zoom').checked=true;}});canvas.addEventListener('pointerup',()=>pan=null);
+ canvas.addEventListener('wheel',e=>{e.preventDefault();$('zoom').checked=true;$('worldZoom').value=Math.max(.5,Math.min(4,+$('worldZoom').value*(e.deltaY<0?1.1:1/1.1)));},{passive:false});
+ addEventListener('keydown',e=>{if(document.activeElement!==canvas||replay)return;const k=e.key.toLowerCase();if(!['w','a','s','d','1','2','3','4','f'].includes(k))return;e.preventDefault();if(e.repeat)return;if('wasdf'.includes(k))held.add(k);if(k==='1')order('soul');if(k==='2')order('kunai');if(k==='3')order('edge');if(k==='4')order('night');if(k==='f')basic();});addEventListener('keyup',e=>held.delete(e.key.toLowerCase()));
+ const clear=()=>{held.clear();clock.reset();};addEventListener('blur',clear);canvas.addEventListener('blur',clear);document.addEventListener('visibilitychange',clear);
+ $('play').onclick=()=>{running=!running;clock.reset();};$('step').onclick=()=>{running=false;clock.reset();step();draw();hud();};$('reset').onclick=()=>reset();$('loadScenario').onclick=()=>{reset();running=true;clock.reset();};$('follow').onclick=()=>{pinned=null;$('zoom').checked=true;};$('nativeSize').onclick=()=>{$('worldZoom').value=1;$('zoom').checked=true;};
+ $('minimap').onclick=e=>{const r=e.currentTarget.getBoundingClientRect();pinned={x:(e.clientX-r.left)/r.width*WORLD,y:(e.clientY-r.top)/r.height*WORLD};$('zoom').checked=true;};
+ $('spawnStock').onclick=()=>{const old=find(selected)?.champion?find(selected):find(2),id=$('stockChampion').value,s=scene||new GameScenario(world,'laning',+$('level').value||8);if(old){const u=s.make(old.id,old.team,old.pos,'champion','champ-'+id,world.data.champions[id],{name:world.data.champions[id].name,job:old.job});units[units.indexOf(old)]=u;imagesReady=world.loadSprites([u.sprite]);}};
+ $('wallDemo').onclick=()=>{const c=wallCrossing();me.pos={...c.from};find(2).pos={...c.to};find(2).hp=find(2).max_hp;aim={...c.to};};$('lowFoe').onclick=()=>find(2).hp=220;$('gank').onclick=()=>units.filter(u=>u.team===1&&u.champion).forEach((u,i)=>u.pos=world.legal({x:me.pos.x+30000+i*8000,y:me.pos.y+(i?12000:-12000)},u.radius));
+ $('stunMe').onclick=()=>{if(tick>=me.invulnUntil){me.stunUntil=tick+60;me.stunStart=tick;}};$('defeat').onclick=()=>{me.hp=0;me.deadAt=tick;};$('preview').onclick=()=>startDemo($('demo').value);
+ $('record').onclick=()=>{if(recording){recording=null;$('record').textContent='Start recording';}else{reset();window.akaneRecording=recording={version:1,host_revision:'akane-game-world-1',rules_revision:R.revision,map_sha256:world.data.source.map_sha256,bytes:0,frames:[]};$('record').textContent='Stop recording';}};
+ $('saveRecording').onclick=()=>{if(!window.akaneRecording)return;const url=URL.createObjectURL(new Blob([JSON.stringify(window.akaneRecording)],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download='akane-lab-recording.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};$('loadRecording').onchange=async e=>{try{loadRecording(JSON.parse(await e.target.files[0].text()));}catch(e){log(e.message);}};
+ reset();painter.ready.catch(e=>log(e.message));window.akaneLab={step,reset,order,basic,acceptedBasic,wallCrossing,hurt,world,painter,clock,pose,render:draw,startDemo,loadRecording,nightOn,seenByEnemy,wallAt,pause(){running=false;clock.reset();},setAim(p){aim={...p};},get me(){return me;},get units(){return units;},get state(){return state;},get hits(){return hits;},get tick(){return tick;},get walls(){return WALLS;},get lastTrace(){return lastTrace;},get held(){return[...held];},get scene(){return scene;},get imagesReady(){return imagesReady;},get camera(){return cam;},get replayIndex(){return replayIndex;}};
+ function loop(now){clock.advance(now,running&&!document.hidden,step);draw();hud();requestAnimationFrame(loop);}requestAnimationFrame(loop);
+})().catch(e=>{document.getElementById('status').textContent='Akane Lab unavailable: '+e.message;console.error(e);});
