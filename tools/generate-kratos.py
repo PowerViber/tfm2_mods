@@ -8,7 +8,7 @@ import copy, json, re, sys
 ROOT = Path(__file__).resolve().parents[1]
 rules = json.loads((ROOT / 'rules/kratos.json').read_text())
 ID = rules['id']
-GROUPS = ['basic', 'passive', 'sight', 'rampage', 'guard', 'dash', 'link', 'fenrir', 'immune', 'ai']
+GROUPS = ['basic', 'passive', 'sight', 'rampage', 'guard', 'dash', 'link', 'fenrir', 'speed', 'immune', 'ai']
 FAMILY = ('gow', {'name': 'God of War', 'about': 'Two god-slaying weapons, frost and fire; Spartan rage and Norse beasts.'})
 
 
@@ -25,7 +25,7 @@ for group in GROUPS:
 lines.append(f'pub const FX_TOKENS: usize = {rules["fxTokens"]};')
 rust = '\n'.join(lines) + '\n'
 
-b, p, si, ra, gu, da, li, fe, im = (rules[k] for k in GROUPS[:-1])
+b, p, si, ra, gu, da, li, fe, sp, im = (rules[k] for k in GROUPS[:-1])
 sec = lambda n: f'{n / 60:g} s'
 text = {
     'name': rules['name'],
@@ -33,10 +33,12 @@ text = {
               f"Axe hits add Frost (at {p['frostStacks']} stacks the target freezes {sec(p['freezeTicks'])}, then can't freeze again for "
               f"{sec(p['freezeImmuneTicks'])}); Blade hits burn for {p['burnBase']} + {p['burnAdRatio']}% Attack a second for {sec(p['burnTicks'])} "
               f"and his basic attacks reach {b['bladesRange']} instead of {b['axeRange']}. Spartan Armor: every weapon swap gives a shield of "
-              f"{p['swapShieldPct']}% of his max HP for {sec(p['swapShieldTicks'])}, up to {p['swapShieldCapPct']}%. "
-              f"Heimdall's Sight ({sec(si['cooldownTicks'])}): for {sec(si['ticks'])} he can't be crowd-controlled and dodges the first hit "
-              f"from each enemy champion."),
-    'skill2': (f"Leviathan Rampage ({sec(ra['cooldownTicks'])}): three heavy advancing swings, {ra['travel']} total travel over {sec(3 * ra['stageTicks'])}, stopped by walls: "
+              f"{p['swapShieldPct']}% of his max HP for {sec(p['swapShieldTicks'])}, up to {p['swapShieldCapPct']}%, and {sp['swapPct']}% move speed for {sec(sp['swapTicks'])}. "
+              f"Spartan Charge: heading at an enemy champion within {sp['chargeRange']} gives {sp['chargePct']}% move speed for {sec(sp['chargeTicks'])} "
+              f"(every {sec(sp['chargeCooldownTicks'])}). His speed bonuses never stack: the strongest applies. "
+              f"Heimdall's Sight ({sec(si['cooldownTicks'])}): for {sec(si['ticks'])} he can't be crowd-controlled, dodges the first hit "
+              f"from each enemy champion and gains {sp['sightPct']}% move speed."),
+    'skill2': (f"Leviathan Rampage ({sec(ra['cooldownTicks'])}): three heavy advancing swings, {ra['travel']} total travel over {sec(3 * ra['stageTicks'])}, stopped by walls; each advance stops at the enemy in front of him and never carries him into enemy tower range: "
                f"an axe cleave ({ra['cleaveBase']} + {ra['cleaveAdRatio']}% Attack, Frost, {ra['slowPct']}% slow), a Blades sweep "
                f"({ra['sweepBase']} + {ra['sweepAdRatio']}% Attack, burn) and a frost-and-fire smash (radius {ra['smashRadius']}, "
                f"{ra['smashBase']} + {ra['smashAdRatio']}% Attack, knock-up {sec(ra['knockUpTicks'])}). It cleanses him, and during it he "

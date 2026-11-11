@@ -18,6 +18,7 @@ const BLADES: &str = "krt_blades";
 const IMMUNE: &str = "krt_immune";
 const REDUCE: &str = "krt_reduce";
 const SIGHT: &str = "krt_sight";
+const HASTE: &str = "krt_haste";
 const HARD: [CcKindV1; 6] = [CcKindV1::Stun, CcKindV1::Airborne, CcKindV1::Taunt, CcKindV1::Fear, CcKindV1::Charm, CcKindV1::BlockSkill];
 
 fn named(kind: CcKindV1, ticks: u64, name: &str) -> CcV1 {
@@ -230,6 +231,12 @@ impl Kratos {
                     sim.entity_clear_cc(owner);
                 }
                 Effect::Sight { ticks } => replace_buff(sim, owner, &crate::timed(SIGHT, ticks as usize)),
+                Effect::Haste { percent, ticks } => {
+                    // one engage-speed buff: the core already picked the strongest, this replaces the old one
+                    let mut b = crate::timed(HASTE, ticks as usize);
+                    b.move_speed_mult = percent as i32;
+                    replace_buff(sim, owner, &b);
+                }
                 Effect::Glide { to, ticks } => {
                     crate::motion::glide(sim, owner, (to.x, to.y), ticks, crate::motion::Kind::SelfMove);
                 }
@@ -274,7 +281,7 @@ impl StablePassive for Kratos {
     fn on_spawn(&mut self, sim: &mut StableSim, _: usize, id: usize) {
         self.presentation.respawn(sim);
         self.core.respawn(sim.tick() as u64);
-        for b in [BLADES, IMMUNE, REDUCE, SIGHT] {
+        for b in [BLADES, IMMUNE, REDUCE, SIGHT, HASTE] {
             sim.entity_remove_buff(id, b);
         }
         self.basic_hits.clear();

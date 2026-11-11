@@ -231,9 +231,9 @@ fn rampage_plays_three_advancing_swings_and_hits_each_enemy_once_per_swing() {
     assert_eq!(hits, 3, "{out:?}");
     let knock = out.iter().filter(|e| matches!(e, Effect::KnockUp { target: FOE, ticks } if *ticks == d::RAMPAGE_KNOCK_UP_TICKS as u64)).count();
     assert_eq!(knock, 1);
+    // round 162: the advances stop at the foe (the stick gap short of it) instead of running past it
     let advanced = f.pos.x - 400_000;
-    assert!((d::RAMPAGE_TRAVEL - 3..=d::RAMPAGE_TRAVEL + 3).contains(&advanced), "advanced {advanced}");
-    // the foe was knocked nowhere in this model; he walked through it: still one hit per swing
+    assert!((78_000 - d::RAMPAGE_STICK_GAP - 3..=78_000 - d::RAMPAGE_STICK_GAP + 3).contains(&advanced), "advanced {advanced}");
     // the cleave freezes nothing yet (1 stack) and the finisher adds Frost and a burn
     assert!(out.iter().any(|e| matches!(e, Effect::Burn { target: FOE, .. })));
     assert!(out.iter().any(|e| matches!(e, Effect::Slow { target: FOE, percent, .. } if *percent == d::RAMPAGE_SLOW_PCT)));
@@ -539,11 +539,12 @@ mod glue {
         let mut out = vec![];
         k.core.execute(&f, crate::kratos_core::Order::Dash(Point::new((x + 40_000) as i64, y as i64)), &mut out);
         with_sim(&host, |sim| k.apply(sim, 0, out));
+        // the dash itself is an engine glide (checked now: a later Rampage's cleanse clears the mock's CC list)
+        assert!(host.borrow().ccs[0].iter().any(|c| c.0.kind == CcKindV1::ForceMove.code() && c.0.name() == crate::motion::SELF), "an engine glide");
         // the mock host never moves units on ForceMove: put him next to the foe as the engine would
         host.borrow_mut().units[0].pos = (x + 30_000, y);
         run(&host, &mut k, 101, 30);
         let g = host.borrow();
-        assert!(g.ccs[0].iter().any(|c| c.0.kind == CcKindV1::ForceMove.code() && c.0.name() == crate::motion::SELF), "an engine glide");
         assert!(g.moves.iter().all(|m| m.0 != 0), "no hand-set position on a clear line: {:?}", g.moves);
         assert!(g.damage.iter().any(|dm| dm.0 == 0 && dm.1 == 1 && dm.3 == AttackTypeV1::Skill.code()), "{:?}", g.damage);
         // and he now holds the Blades: the longer basic reach
@@ -561,6 +562,18 @@ mod glue {
         let mut out=vec![];k.core.execute(&f,crate::kratos_core::Order::Guard,&mut out);with_sim(&host,|s|k.apply(s,0,out));
         let h=host.borrow();assert!(h.ccs[1].iter().any(|c|c.0.kind==CcKindV1::Taunt.code()&&c.0.target==0&&c.0.tick==d::GUARD_TAUNT_TICKS as u64));
         assert!(!h.ccs[2].iter().any(|c|c.0.kind==CcKindV1::Taunt.code()));
+    }
+
+    #[test]
+    fn engage_speed_is_one_replaced_buff() {
+        let (x, y) = open_spot(80_000);
+        let host = Host::new(vec![champ(0, (x, y), "tfm2_custom_kratos")]);
+        let mut k = Kratos::default();
+        with_sim(&host, |sim| k.apply(sim, 0, vec![Effect::Haste { percent: 20, ticks: 120 }, Effect::Haste { percent: 25, ticks: 90 }]));
+        let g = host.borrow();
+        let hastes: Vec<_> = g.buffs[0].iter().filter(|b| b.name() == "krt_haste").collect();
+        assert_eq!(hastes.len(), 1);
+        assert_eq!(hastes[0].move_speed_mult, 25);
     }
 
     #[test]
@@ -663,4 +676,104 @@ fn slammed_fenrir_flies_back_faster_than_it_charged_in_and_still_hits_once() {
     out.extend(run(&mut c, &mut f, 160, 400));
     assert_eq!(out.iter().filter(|e| matches!(e, Effect::KnockUp { target: FOE, .. })).count(), 1, "hit once on the fast return");
     assert_eq!(damage_to(&out, FOE), d::FENRIR_RETURN_BASE + d::FENRIR_RETURN_AD_RATIO);
+}
+
+// ------------------------------------------------------------------ round 162: Rampage on target, no tower dives, engage speed
+
+#[test]
+fn rampage_with_nobody_ahead_still_travels_its_full_length() {
+    let mut c = Core::default();
+    let mut f = frame(0, vec![]);
+    run_order(&mut c, &mut f, Some(Order::Rampage(Point::new(500_000, 400_000))), 0, 3 * d::RAMPAGE_STAGE_TICKS as u64 + 5);
+    let advanced = f.pos.x - 400_000;
+    assert!((d::RAMPAGE_TRAVEL - 3..=d::RAMPAGE_TRAVEL + 3).contains(&advanced), "advanced {advanced}");
+}
+
+#[test]
+fn rampage_stays_on_a_close_target_instead_of_running_to_the_front() {
+    let mut c = Core::default();
+    let mut f = frame(0, vec![unit(FOE, 2, 420_000, 400_000)]);
+    let out = run_order(&mut c, &mut f, Some(Order::Rampage(Point::new(420_000, 400_000))), 0, 3 * d::RAMPAGE_STAGE_TICKS as u64 + 5);
+    assert!(f.pos.dist(Point::new(420_000, 400_000)) <= 25_000.0, "ended at {:?}, not 108,000 forward", f.pos);
+    assert_eq!(out.iter().filter(|e| matches!(e, Effect::Damage { target: FOE, direct: false, .. })).count(), 3, "all three swings land");
+}
+
+#[test]
+fn rampage_never_walks_into_enemy_tower_range_unless_already_inside() {
+    let tower_x = 400_000 + 120_000;
+    let mut c = Core::default();
+    let mut f = frame(0, vec![tower(20, tower_x, 400_000)]);
+    run_order(&mut c, &mut f, Some(Order::Rampage(Point::new(500_000, 400_000))), 0, 3 * d::RAMPAGE_STAGE_TICKS as u64 + 5);
+    assert!(!f.pos.within(Point::new(tower_x, 400_000), d::RAMPAGE_TOWER_RANGE), "stopped outside the tower: {:?}", f.pos);
+    assert!(f.pos.x - 400_000 >= 120_000 - d::RAMPAGE_TOWER_RANGE - 2_500, "but went as far as it could: {:?}", f.pos);
+    // already under the tower: he chose to be there, the steps aren't cut
+    let mut c = Core::default();
+    let mut f = frame(0, vec![tower(20, 400_000 + 60_000, 400_000)]);
+    run_order(&mut c, &mut f, Some(Order::Rampage(Point::new(500_000, 400_000))), 0, 3 * d::RAMPAGE_STAGE_TICKS as u64 + 5);
+    assert!(f.pos.x - 400_000 >= d::RAMPAGE_TRAVEL - 3, "inside already: full travel {:?}", f.pos);
+}
+
+#[test]
+fn the_athlete_wont_rampage_a_healthy_foe_under_their_tower_but_will_dive_a_low_one() {
+    let mut c = Core::default();
+    let mut f = frame(0, vec![unit(FOE, 2, 470_000, 400_000), tower(20, 530_000, 400_000)]);
+    f.manual = false;
+    c.ready[DASH] = u64::MAX;
+    c.ready[GUARD] = u64::MAX;
+    c.ready[SIGHT] = u64::MAX;
+    c.ready[FENRIR] = u64::MAX;
+    c.step(&f);
+    assert_ne!(c.last_skill, "rampage", "no Rampage onto a healthy foe under the tower");
+    let mut c = Core::default();
+    let mut low = unit(FOE, 2, 470_000, 400_000);
+    low.hp = 200;
+    let mut f = frame(0, vec![low, tower(20, 530_000, 400_000)]);
+    f.manual = false;
+    c.ready[DASH] = u64::MAX;
+    c.ready[GUARD] = u64::MAX;
+    c.ready[SIGHT] = u64::MAX;
+    c.ready[FENRIR] = u64::MAX;
+    c.step(&f);
+    assert_eq!(c.last_skill, "rampage", "a nearly dead foe is worth the dive");
+}
+
+fn haste(out: &[Effect]) -> Vec<(i64, u64)> {
+    out.iter().filter_map(|e| match e { Effect::Haste { percent, ticks } => Some((*percent, *ticks)), _ => None }).collect()
+}
+
+#[test]
+fn sight_and_swaps_give_speed_and_the_strongest_one_wins_without_stacking() {
+    let mut c = Core::default();
+    let out = order(&mut c, &frame(0, vec![]), Order::Sight);
+    assert_eq!(haste(&out), vec![(d::SPEED_SIGHT_PCT, d::SIGHT_TICKS as u64)]);
+    // a swap during Sight: the weaker 20% doesn't lower the 25%
+    let out = order(&mut c, &frame(10, vec![]), Order::Guard);
+    assert!(haste(&out).is_empty(), "weaker ask ignored while Sight's is up: {out:?}");
+    assert_eq!(c.haste.0, d::SPEED_SIGHT_PCT);
+    // after Sight ends, a swap gives its own 20% for 2 s
+    let out = order(&mut c, &frame(200, vec![]), Order::Dash(Point::new(450_000, 400_000)));
+    assert_eq!(haste(&out), vec![(d::SPEED_SWAP_PCT, d::SPEED_SWAP_TICKS as u64)]);
+}
+
+#[test]
+fn spartan_charge_speeds_him_toward_a_champion_then_waits_its_cooldown() {
+    let mut c = Core::default();
+    let mut f = frame(0, vec![unit(FOE, 2, 450_000, 400_000)]);
+    assert!(haste(&c.step(&f)).is_empty(), "standing still: no charge");
+    f.tick = 1;
+    f.pos.x += 1_000;
+    assert_eq!(haste(&c.step(&f)), vec![(d::SPEED_CHARGE_PCT, d::SPEED_CHARGE_TICKS as u64)]);
+    f.tick = 200;
+    f.pos.x += 1_000;
+    assert!(haste(&c.step(&f)).is_empty(), "on cooldown");
+    f.tick = 1 + d::SPEED_CHARGE_COOLDOWN_TICKS as u64;
+    f.pos.x += 1_000;
+    assert_eq!(haste(&c.step(&f)).len(), 1);
+    // walking away from it never triggers
+    let mut c = Core::default();
+    let mut f = frame(0, vec![unit(FOE, 2, 450_000, 400_000)]);
+    c.step(&f);
+    f.tick = 1;
+    f.pos.x -= 1_000;
+    assert!(haste(&c.step(&f)).is_empty());
 }
