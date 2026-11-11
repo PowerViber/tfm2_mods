@@ -438,6 +438,9 @@ impl Core {
     /// each at most once every `knockUpLockTicks`. Never towers or allies. (The water bounce is gone.)
     fn tsunami(&mut self, f: &Frame, out: &mut Vec<Effect>) {
         self.knock_lock.retain(|l| f.tick < l.1);
+        // The water-mode basic keeps its accepted-hit timing; land bolts stay
+        // single-target. Wet/Dive state follows the existing water rules.
+        if !self.water_at(f.pos,f.tick) { return; }
         let wave = pct(d::BASIC_WAVE_BASE, d::BASIC_WAVE_AP_RATIO, f.ap);
         for &t in &f.basic_hits {
             let Some(target) = f.units.iter().find(|u| u.id == t && u.hp > 0).cloned() else { continue };
@@ -738,7 +741,7 @@ impl Core {
     /// never past the leash. Returns where to glide over the next 6 ticks, if anywhere.
     fn footwork(&self, f: &Frame, body: Point, anchor: Point, leash: i64, target: Option<&Unit>) -> Option<Point> {
         let wet = self.water_at(body, f.tick);
-        let range = d::BASIC_RANGE * (100 + if wet { d::WATER_RANGE_PCT } else { 0 }) / 100;
+        let range = d::BASIC_RANGE * (100 + if wet { d::WATER_CLONE_RANGE_PCT } else { 0 }) / 100;
         let step = d::TWIN_WALK_SPEED * (100 + if wet { d::WATER_MOVE_SPEED_PCT } else { 0 }) / 100 * 6;
         let goal = match target {
             Some(u) => {
@@ -762,7 +765,7 @@ impl Core {
     fn twin_play(&mut self, f: &Frame, c: CloneView, out: &mut Vec<Effect>) {
         let Some(mut t) = self.twin else { return };
         let wet = self.water_at(c.pos, f.tick);
-        let range = d::BASIC_RANGE * (100 + if wet { d::WATER_RANGE_PCT } else { 0 }) / 100;
+        let range = d::BASIC_RANGE * (100 + if wet { d::WATER_CLONE_RANGE_PCT } else { 0 }) / 100;
         let target = Self::body_target(f, c.pos, f.pos, d::TWIN_LEASH);
         // harp bolts on its own clock, at copyPct of hers
         if let Some(u) = target {
@@ -811,7 +814,7 @@ impl Core {
             return;
         }
         let wet = self.water_at(c.pos, f.tick);
-        let range = d::BASIC_RANGE * (100 + if wet { d::WATER_RANGE_PCT } else { 0 }) / 100;
+        let range = d::BASIC_RANGE * (100 + if wet { d::WATER_CLONE_RANGE_PCT } else { 0 }) / 100;
         let target = Self::body_target(f, c.pos, e.anchor, d::ULT_ECHO_LEASH);
         let free = f.tick >= e.moving_until;
         let low = c.hp * 100 <= e.max_hp * d::ULT_ECHO_LOW_HP_PCT;

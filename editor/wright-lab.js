@@ -9,7 +9,7 @@
   const rp = p => ({x: Math.round(p.x), y: Math.round(p.y)});
   const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
   const clock=new WrightClock();
-  const painter=new WrightPainter();let recorder=null,visual;
+  const painter=new WrightPainter(),roundArt=new Round165Painter();roundArt.ready.catch(console.warn);let recorder=null,visual;
   let tick, me, units, carriers, glides, state, queue, fx, logLines, attackTarget, hits, guard, taken, running = true, aim = {x: 480000, y: 480000}, held = new Set();
   const unit = (id, team, x, y, champion = true, farmable = false) => ({id, team, pos: {x, y}, hp: 1000, max_hp: 1000, radius: 8000, champion, tower: false, visible: true, targetable: true, farmable, slowUntil: 0, stunUntil: 0});
   function reset() {
@@ -128,7 +128,7 @@
       const point=f.target===1?me.pos:f.target!==null&&f.target!==undefined?(find(f.target)?.pos||f.at):f.at;
       if(art){
         const tag=painter.effectTag(f.name,f.ticks);
-        const q=P(point);painter.effect(ctx,tag,tick-f.start,q.x,q.y,pixel);continue;
+        const q=P(point);if(!roundArt.wright(ctx,f.name,f.ticks,tick-f.start,q.x,q.y,pixel))painter.effect(ctx,tag,tick-f.start,q.x,q.y,pixel);continue;
       }
       if (/^wrt_warn[123]?$/.test(f.name)) circle(point,R.bomber.radius,'rgba(248,113,113,.08)','#f87171');
       else if (f.name==='wrt_carrier_shadow')circle(point,R.carrier.knockRadius,'rgba(0,0,0,.25)','#9ca3af');
@@ -147,6 +147,7 @@
     }
     if(art){const q=P(me.pos),pose=me.hp<=0?'dead':tick<visual.until?visual.pose:visual.moving?'run':'idle';painter.body(ctx,pose,pose==='dead'?tick-visual.deadSince:tick<visual.until?tick-visual.start:tick,q.x,q.y,pixel,visual.left,pose==='run'||pose==='idle');if(me.hp>0)painter.effect(ctx,'airframes'+(state.stock??0),0,q.x,q.y,pixel);}
     else circle(me.pos,8000,'#f59e0b','#fff');
+    if(art&&me.hp>0&&state.carrier&&state.carrier.guarding){const q=P(me.pos);roundArt.effect(ctx,'carrier_empowered',0,q.x,q.y,pixel);}
     // the carrier's guard: its pool over him
     if (state.carrier && state.carrier.guarding) { const q = P(me.pos); ctx.fillStyle = '#111827'; ctx.fillRect(q.x - 30, q.y - W(14000) - 10, 60, 5); ctx.fillStyle = '#38bdf8'; ctx.fillRect(q.x - 30, q.y - W(14000) - 10, 60 * Math.max(0, state.carrier.pool / state.carrier.max_pool), 5); }
     // hit markers: who took damage from him (magenta on an ally: should never happen)
@@ -202,7 +203,7 @@
     if(demo==='carrier'){$('moving').checked=true;order('carrier');}
     running=true;clock.reset();$('play').textContent='Pause';canvas.focus();
   };
-  window.wrightLab = {get state() { return state; }, get tick() { return tick; }, get me() { return me; }, get units() { return units; }, get carriers() { return carriers; }, get hits() { return hits; }, hitMe,
+  window.wrightLab = {roundArt,get state() { return state; }, get tick() { return tick; }, get me() { return me; }, get units() { return units; }, get carriers() { return carriers; }, get hits() { return hits; }, hitMe,
     painter,step,reset,order,setRecorder:fn=>{recorder=fn;},setAim: p => { aim = {...p}; }, pause: () => { running = false;clock.reset();$('play').textContent = 'Play'; }};
   reset(); canvas.focus(); requestAnimationFrame(loop);
 })();

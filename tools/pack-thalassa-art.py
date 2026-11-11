@@ -225,3 +225,9 @@ for row,pose in enumerate(COUNTS):
     gifs[0].save(REVIEW/(pose+'.gif'),save_all=True,append_images=gifs[1:],duration=[round(t*1000/60) for t in TICKS[pose]],loop=0)
 board.save(REVIEW/'complete-body-contact.png')
 print(json.dumps({'body_frames':sum(COUNTS.values()),'body_atlas':atlas.size,'fx_atlas':fx_atlas.size,'fx_tags':len(fx_anims),'decoded_bytes':decoded,'body_sha256':sha(BODY/'tfm2_custom_thalassa#sheet.png'),'fx_sha256':sha(VFX/'thalassa#sheet.png')}))
+
+# Preserve the approved Round 165 overlays and compact legacy layout.
+_r165=Path(__file__).resolve().parents[1]/'docs/round-165-art-review/approval.json'
+if _r165.exists() and json.loads(_r165.read_text())['effects'].get('approved'):
+    import subprocess
+    subprocess.run(['rtk','proxy','python',str(Path(__file__).with_name('build-round-165-art.py')),'--integrate'],check=True)

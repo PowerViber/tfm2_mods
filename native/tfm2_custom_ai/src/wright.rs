@@ -23,6 +23,7 @@ fn named(kind: CcKindV1, ticks: u64, name: &str) -> CcV1 {
 #[derive(Clone, Default)]
 pub struct Wright {
     pub core: Core,
+    r165_art: bool,
     profile: Option<crate::athlete_ai_core::Profile>,
     terrain: Option<(u64, Vec<bool>)>,
     /// plane key -> its carrier unit
@@ -279,7 +280,7 @@ impl Wright {
                 }
                 Effect::Fx { name, at, ticks, ambient } => {
                     if !ambient || self.fx_ok(tick as u64, true) {
-                        let tag=crate::wright_art::effect_name(&name,ticks);
+                        let tag=if self.r165_art {crate::round_165_art::wright_effect(&name,ticks).map(str::to_owned).unwrap_or_else(||crate::wright_art::effect_name(&name,ticks))}else{crate::wright_art::effect_name(&name,ticks)};
                         // The carrier's shadow follows him while it falls.
                         let target=if name=="wrt_carrier_shadow" {Some(owner)}else{None};
                         if let Some(id)=target {crate::fx_unit(sim,&tag,owner,id,ticks);}
@@ -300,6 +301,7 @@ impl Wright {
 }
 
 impl StablePassive for Wright {
+    fn configure(&mut self,params:&str){self.r165_art=serde_json::from_str::<serde_json::Value>(params).ok().and_then(|v|v.get("r165_art").and_then(|x|x.as_i64())).is_some_and(|v|v==1);}
     fn clone_box(&self) -> Box<dyn StablePassive> {
         Box::new(self.clone())
     }

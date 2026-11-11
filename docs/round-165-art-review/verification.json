@@ -1,0 +1,39 @@
+{
+  "approved": true,
+  "legacy_thalassa_frames_exact_rgba_and_timing": 252,
+  "atlas_frame_bounds_checked": 4986,
+  "decoded_bytes_per_owner": {
+    "akane": 17465344,
+    "wright": 25165824,
+    "thalassa": 32980992
+  },
+  "unchanged_from_round_165": [
+    "mods/tfm2_custom/champions/tfm2_custom_akane#sheet.png",
+    "mods/tfm2_custom/champions/tfm2_custom_akane#anim.fanim",
+    "mods/tfm2_custom/vfx/akane#sheet.png",
+    "mods/tfm2_custom/vfx/akane#anim.fanim",
+    "rules/akane.json",
+    "native/tfm2_custom_ai/src/akane_core.rs",
+    "editor/akane.wasm",
+    "mods/tfm2_custom/champions/tfm2_custom_wright#sheet.png",
+    "mods/tfm2_custom/champions/tfm2_custom_wright#anim.fanim",
+    "mods/tfm2_custom/vfx/wright#sheet.png",
+    "mods/tfm2_custom/vfx/wright#anim.fanim",
+    "rules/wright.json",
+    "native/tfm2_custom_ai/src/wright_core.rs",
+    "editor/wright.wasm",
+    "mods/tfm2_custom/champions/tfm2_custom_thalassa#sheet.png",
+    "mods/tfm2_custom/champions/tfm2_custom_thalassa#anim.fanim"
+  ],
+  "authorized_gameplay_delta": "thalassa-1.7: water-only tsunami, owner water range 82500; clone range unchanged; 120-tick cadence preserved",
+  "reproducible": true,
+  "asset_sha256": {
+    "mods\\tfm2_custom\\vfx\\round_165#sheet.png": "405a8411e1caa3d687ab1ec6c8767efcab84be44c315835308c1dded0c937077",
+    "mods\\tfm2_custom\\vfx\\round_165#anim.fanim": "792c12c76165704e58c1961203aaf26c1196561eef16d18b6aedd1eacf4c1efe",
+    "mods\\tfm2_custom\\vfx\\thalassa#sheet.png": "cb9ee9bc5b3b656cde568b1c84a3872fb1df786c96f5b768f62c34e50fcc61ae",
+    "mods\\tfm2_custom\\vfx\\thalassa#anim.fanim": "109026c521ee0b5cd46a7515e824895890ff1214c1fd1870d4d0d508501e25fd",
+    "editor\\round-165-art.js": "428f7d317cac471d00fc0ea93f2a9eb52ab82739fe48904ff536de6045f60563",
+    "native\\tfm2_custom_ai\\src\\round_165_art.rs": "2916e04fbfb933514b008e466804d952b035667614812077a6c6bd6578a43c82"
+  },
+  "live_game_acceptance": "pending"
+}

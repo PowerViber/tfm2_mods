@@ -79,6 +79,16 @@ if art_path.exists():
 if not (ROOT / 'mods/tfm2_custom/vfx/akane#sheet.png').exists():
     # no VFX sheet yet: the effects stay native-only (nothing drawn) rather than point at a missing sheet
     champ['view_effects'], champ['view_buffs'] = [], []
+addon_path = ROOT / 'docs/round-165-art-review/manifest.json'
+if addon_path.exists():
+    addon = json.loads(addon_path.read_text(encoding='utf-8'))
+    if addon['integrated']:
+        for binding in addon['bindings']['akane']:
+            spec = dict(type='Animated' if binding['kind']=='buff' else 'Animation', name=binding['name'], anim=addon['asset'], tag=binding['tag'], z=binding['z'])
+            if binding['kind']=='effect': spec['is_follow']=False
+            champ['view_buffs' if binding['kind']=='buff' else 'view_effects'].append(spec)
+        pass
+
 data = json.dumps(champ, indent=2) + '\n'
 
 roster = dict(id=ID, name=rules['name'], family='original', role='Assassin', native=True,

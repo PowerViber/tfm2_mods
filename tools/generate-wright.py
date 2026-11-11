@@ -79,6 +79,16 @@ if art_path.exists():
         champ['view_effects']=[dict(type='Animation',name='wrt_'+tag,anim=VFX,tag=tag,z=spec['z'],is_follow=spec.get('follow',False))
                                for tag,spec in art['effects'].items() if spec['kind']=='effect']
         champ['view_buffs'] += [dict(type='Animated',name='wrt_airframes:'+str(i),anim=VFX,tag='airframes'+str(i),z=7) for i in range(4)]
+addon_path = ROOT / 'docs/round-165-art-review/manifest.json'
+if addon_path.exists():
+    addon = json.loads(addon_path.read_text(encoding='utf-8'))
+    if addon['integrated']:
+        for binding in addon['bindings']['wright']:
+            spec = dict(type='Animated' if binding['kind']=='buff' else 'Animation', name=binding['name'], anim=addon['asset'], tag=binding['tag'], z=binding['z'])
+            if binding['kind']=='effect': spec['is_follow']=False
+            champ['view_buffs' if binding['kind']=='buff' else 'view_effects'].append(spec)
+        champ['passive']['params']['r165_art']=1
+
 data = json.dumps(champ, indent=2) + '\n'
 
 roster = dict(id=ID, name=rules['name'], family='original', role='Magician', native=True,

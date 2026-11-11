@@ -71,6 +71,16 @@ if art_manifest.exists():
     art = json.loads(art_manifest.read_text(encoding='utf-8'))
     champ['view_effects'] = [dict(type='Animation', name='tls_' + tag, anim=spec.get('asset',VFX), tag=tag, z=spec['z'], is_follow=False)
                             for tag, spec in art['effects'].items() if spec['kind'] == 'effect']
+addon_path = ROOT / 'docs/round-165-art-review/manifest.json'
+if addon_path.exists():
+    addon = json.loads(addon_path.read_text(encoding='utf-8'))
+    if addon['integrated']:
+        for binding in addon['bindings']['thalassa']:
+            spec = dict(type='Animated' if binding['kind']=='buff' else 'Animation', name=binding['name'], anim=addon['asset'], tag=binding['tag'], z=binding['z'])
+            if binding['kind']=='effect': spec['is_follow']=False
+            champ['view_buffs' if binding['kind']=='buff' else 'view_effects'].append(spec)
+        champ['passive']['params']['r165_art']=1
+
 data = json.dumps(champ, indent=2) + '\n'
 
 roster = dict(id=ID, name=rules['name'], family='original', role='Magician', native=True,

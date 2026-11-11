@@ -118,7 +118,9 @@
   },
   "passive": {
     "passive_ref": "tfm2_custom_ai:thalassa",
-    "params": {}
+    "params": {
+      "r165_art": 1
+    }
   },
   "passive_ult": {
     "passive_ref": "tfm2_custom_ai:ult_learned",
@@ -2915,6 +2917,2310 @@
       "anim": "asset/tfm2_custom/vfx/thalassa_links",
       "tag": "tide_link_8_8",
       "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l8_d0",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l8_d0",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l8_d1",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l8_d1",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l8_d2",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l8_d2",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l8_d3",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l8_d3",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l8_d4",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l8_d4",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l8_d5",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l8_d5",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l8_d6",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l8_d6",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l8_d7",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l8_d7",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l8_d8",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l8_d8",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l8_d9",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l8_d9",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l8_d10",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l8_d10",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l8_d11",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l8_d11",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l8_d12",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l8_d12",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l8_d13",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l8_d13",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l8_d14",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l8_d14",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l8_d15",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l8_d15",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l8_d16",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l8_d16",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l8_d17",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l8_d17",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l8_d18",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l8_d18",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l8_d19",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l8_d19",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l8_d20",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l8_d20",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l8_d21",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l8_d21",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l8_d22",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l8_d22",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l8_d23",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l8_d23",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l8_d24",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l8_d24",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l8_d25",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l8_d25",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l8_d26",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l8_d26",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l8_d27",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l8_d27",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l8_d28",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l8_d28",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l8_d29",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l8_d29",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l8_d30",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l8_d30",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l8_d31",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l8_d31",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l16_d0",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l16_d0",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l16_d1",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l16_d1",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l16_d2",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l16_d2",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l16_d3",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l16_d3",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l16_d4",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l16_d4",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l16_d5",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l16_d5",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l16_d6",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l16_d6",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l16_d7",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l16_d7",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l16_d8",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l16_d8",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l16_d9",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l16_d9",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l16_d10",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l16_d10",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l16_d11",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l16_d11",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l16_d12",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l16_d12",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l16_d13",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l16_d13",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l16_d14",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l16_d14",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l16_d15",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l16_d15",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l16_d16",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l16_d16",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l16_d17",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l16_d17",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l16_d18",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l16_d18",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l16_d19",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l16_d19",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l16_d20",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l16_d20",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l16_d21",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l16_d21",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l16_d22",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l16_d22",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l16_d23",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l16_d23",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l16_d24",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l16_d24",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l16_d25",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l16_d25",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l16_d26",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l16_d26",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l16_d27",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l16_d27",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l16_d28",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l16_d28",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l16_d29",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l16_d29",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l16_d30",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l16_d30",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l16_d31",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l16_d31",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l24_d0",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l24_d0",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l24_d1",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l24_d1",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l24_d2",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l24_d2",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l24_d3",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l24_d3",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l24_d4",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l24_d4",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l24_d5",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l24_d5",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l24_d6",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l24_d6",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l24_d7",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l24_d7",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l24_d8",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l24_d8",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l24_d9",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l24_d9",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l24_d10",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l24_d10",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l24_d11",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l24_d11",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l24_d12",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l24_d12",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l24_d13",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l24_d13",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l24_d14",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l24_d14",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l24_d15",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l24_d15",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l24_d16",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l24_d16",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l24_d17",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l24_d17",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l24_d18",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l24_d18",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l24_d19",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l24_d19",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l24_d20",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l24_d20",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l24_d21",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l24_d21",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l24_d22",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l24_d22",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l24_d23",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l24_d23",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l24_d24",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l24_d24",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l24_d25",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l24_d25",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l24_d26",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l24_d26",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l24_d27",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l24_d27",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l24_d28",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l24_d28",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l24_d29",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l24_d29",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l24_d30",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l24_d30",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l24_d31",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l24_d31",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l32_d0",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l32_d0",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l32_d1",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l32_d1",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l32_d2",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l32_d2",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l32_d3",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l32_d3",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l32_d4",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l32_d4",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l32_d5",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l32_d5",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l32_d6",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l32_d6",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l32_d7",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l32_d7",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l32_d8",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l32_d8",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l32_d9",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l32_d9",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l32_d10",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l32_d10",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l32_d11",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l32_d11",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l32_d12",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l32_d12",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l32_d13",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l32_d13",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l32_d14",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l32_d14",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l32_d15",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l32_d15",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l32_d16",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l32_d16",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l32_d17",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l32_d17",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l32_d18",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l32_d18",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l32_d19",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l32_d19",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l32_d20",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l32_d20",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l32_d21",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l32_d21",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l32_d22",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l32_d22",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l32_d23",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l32_d23",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l32_d24",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l32_d24",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l32_d25",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l32_d25",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l32_d26",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l32_d26",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l32_d27",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l32_d27",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l32_d28",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l32_d28",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l32_d29",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l32_d29",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l32_d30",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l32_d30",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l32_d31",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l32_d31",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l48_d0",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l48_d0",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l48_d1",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l48_d1",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l48_d2",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l48_d2",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l48_d3",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l48_d3",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l48_d4",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l48_d4",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l48_d5",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l48_d5",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l48_d6",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l48_d6",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l48_d7",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l48_d7",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l48_d8",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l48_d8",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l48_d9",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l48_d9",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l48_d10",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l48_d10",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l48_d11",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l48_d11",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l48_d12",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l48_d12",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l48_d13",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l48_d13",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l48_d14",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l48_d14",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l48_d15",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l48_d15",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l48_d16",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l48_d16",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l48_d17",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l48_d17",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l48_d18",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l48_d18",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l48_d19",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l48_d19",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l48_d20",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l48_d20",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l48_d21",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l48_d21",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l48_d22",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l48_d22",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l48_d23",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l48_d23",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l48_d24",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l48_d24",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l48_d25",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l48_d25",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l48_d26",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l48_d26",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l48_d27",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l48_d27",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l48_d28",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l48_d28",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l48_d29",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l48_d29",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l48_d30",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l48_d30",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l48_d31",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l48_d31",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l64_d0",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l64_d0",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l64_d1",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l64_d1",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l64_d2",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l64_d2",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l64_d3",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l64_d3",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l64_d4",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l64_d4",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l64_d5",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l64_d5",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l64_d6",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l64_d6",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l64_d7",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l64_d7",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l64_d8",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l64_d8",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l64_d9",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l64_d9",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l64_d10",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l64_d10",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l64_d11",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l64_d11",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l64_d12",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l64_d12",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l64_d13",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l64_d13",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l64_d14",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l64_d14",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l64_d15",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l64_d15",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l64_d16",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l64_d16",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l64_d17",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l64_d17",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l64_d18",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l64_d18",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l64_d19",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l64_d19",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l64_d20",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l64_d20",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l64_d21",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l64_d21",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l64_d22",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l64_d22",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l64_d23",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l64_d23",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l64_d24",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l64_d24",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l64_d25",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l64_d25",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l64_d26",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l64_d26",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l64_d27",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l64_d27",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l64_d28",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l64_d28",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l64_d29",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l64_d29",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l64_d30",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l64_d30",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l64_d31",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l64_d31",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l80_d0",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l80_d0",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l80_d1",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l80_d1",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l80_d2",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l80_d2",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l80_d3",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l80_d3",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l80_d4",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l80_d4",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l80_d5",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l80_d5",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l80_d6",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l80_d6",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l80_d7",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l80_d7",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l80_d8",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l80_d8",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l80_d9",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l80_d9",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l80_d10",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l80_d10",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l80_d11",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l80_d11",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l80_d12",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l80_d12",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l80_d13",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l80_d13",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l80_d14",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l80_d14",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l80_d15",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l80_d15",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l80_d16",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l80_d16",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l80_d17",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l80_d17",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l80_d18",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l80_d18",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l80_d19",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l80_d19",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l80_d20",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l80_d20",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l80_d21",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l80_d21",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l80_d22",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l80_d22",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l80_d23",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l80_d23",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l80_d24",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l80_d24",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l80_d25",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l80_d25",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l80_d26",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l80_d26",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l80_d27",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l80_d27",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l80_d28",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l80_d28",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l80_d29",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l80_d29",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l80_d30",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l80_d30",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l80_d31",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l80_d31",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l96_d0",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l96_d0",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l96_d1",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l96_d1",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l96_d2",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l96_d2",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l96_d3",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l96_d3",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l96_d4",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l96_d4",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l96_d5",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l96_d5",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l96_d6",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l96_d6",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l96_d7",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l96_d7",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l96_d8",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l96_d8",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l96_d9",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l96_d9",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l96_d10",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l96_d10",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l96_d11",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l96_d11",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l96_d12",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l96_d12",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l96_d13",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l96_d13",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l96_d14",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l96_d14",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l96_d15",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l96_d15",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l96_d16",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l96_d16",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l96_d17",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l96_d17",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l96_d18",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l96_d18",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l96_d19",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l96_d19",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l96_d20",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l96_d20",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l96_d21",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l96_d21",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l96_d22",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l96_d22",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l96_d23",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l96_d23",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l96_d24",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l96_d24",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l96_d25",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l96_d25",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l96_d26",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l96_d26",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l96_d27",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l96_d27",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l96_d28",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l96_d28",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l96_d29",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l96_d29",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l96_d30",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l96_d30",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l96_d31",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l96_d31",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l112_d0",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l112_d0",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l112_d1",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l112_d1",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l112_d2",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l112_d2",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l112_d3",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l112_d3",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l112_d4",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l112_d4",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l112_d5",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l112_d5",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l112_d6",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l112_d6",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l112_d7",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l112_d7",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l112_d8",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l112_d8",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l112_d9",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l112_d9",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l112_d10",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l112_d10",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l112_d11",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l112_d11",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l112_d12",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l112_d12",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l112_d13",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l112_d13",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l112_d14",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l112_d14",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l112_d15",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l112_d15",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l112_d16",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l112_d16",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l112_d17",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l112_d17",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l112_d18",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l112_d18",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l112_d19",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l112_d19",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l112_d20",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l112_d20",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l112_d21",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l112_d21",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l112_d22",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l112_d22",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l112_d23",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l112_d23",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l112_d24",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l112_d24",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l112_d25",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l112_d25",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l112_d26",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l112_d26",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l112_d27",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l112_d27",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l112_d28",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l112_d28",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l112_d29",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l112_d29",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l112_d30",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l112_d30",
+      "z": 2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "tls_tsunami_l112_d31",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "tsunami_l112_d31",
+      "z": 2,
       "is_follow": false
     }
   ],

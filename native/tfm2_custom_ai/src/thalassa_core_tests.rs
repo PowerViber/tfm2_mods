@@ -177,6 +177,15 @@ fn land_is_neutral() {
     assert!(log.is_empty(), "nothing on land without orders: {log:?}");
 }
 
+#[test]
+fn tsunami_is_water_only_with_longer_water_reach_and_unchanged_attack_cadence(){
+    let mut c=Core::default();let mut f=frame(0,300000,300000,vec![unit(5,1,380000,300000),unit(6,1,385000,300000)]);f.basic_hits=vec![5];
+    let land=c.step(&f);assert!(knockups(&land).is_empty());assert_eq!(damage_to(&land,6),0);assert!(!land.iter().any(|e|matches!(e,Effect::Fx{name,..}if name=="tls_surge")));
+    c.wet_until=10;f.tick=1;let water=c.step(&f);assert_eq!(knockups(&water),vec![5,6]);assert!(damage_to(&water,6)>0);
+    assert_eq!(d::BASIC_RANGE*(100+d::WATER_RANGE_PCT)/100,82500);assert_eq!(d::BASIC_COOLDOWN_TICKS,120);
+    f.tick=10;let dry=c.step(&f);assert!(knockups(&dry).is_empty());assert_eq!(damage_to(&dry,6),0);
+}
+
 // ------------------------------------------------------------------ round 165: the tsunami basic attack
 
 fn knockups(log: &[Effect]) -> Vec<usize> {
@@ -187,6 +196,7 @@ fn knockups(log: &[Effect]) -> Vec<usize> {
 fn harp_bolts_send_a_small_tsunami_through_the_target_and_no_longer_bounce() {
     // her at 300,000; target 5 at 340,000; 6 inside the wave just past it; 7 beside the wave; 8 well past it
     let mut core = Core::default();
+    core.wet_until=100000;
     let units = vec![unit(5, 1, 340_000, 300_000), unit(6, 1, 345_000, 302_000), unit(7, 1, 320_000, 330_000), unit(8, 1, 380_000, 300_000)];
     let mut f = frame(0, 300_000, 300_000, units);
     let mut log = vec![];
@@ -207,6 +217,7 @@ fn harp_bolts_send_a_small_tsunami_through_the_target_and_no_longer_bounce() {
 #[test]
 fn the_tsunami_knocks_each_unit_up_at_most_once_every_three_seconds_and_never_towers_or_allies() {
     let mut core = Core::default();
+    core.wet_until=100000;
     let mut tower = unit(30, 1, 345_000, 300_000);
     tower.tower = true;
     tower.champion = false;

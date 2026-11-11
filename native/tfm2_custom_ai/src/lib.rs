@@ -45,6 +45,8 @@ mod contender;
 mod rally;
 mod grimhald;
 mod thalassa;
+mod round_165_art;
+#[cfg(test)] mod round_165_art_tests;
 #[allow(dead_code)] mod thalassa_core;
 mod thalassa_data;
 #[allow(dead_code)] mod thalassa_art;

@@ -169,6 +169,55 @@
       "anim": "asset/tfm2_custom/vfx/akane",
       "tag": "night_aura",
       "z": -2
+    },
+    {
+      "type": "Animated",
+      "name": "akn_rhythm:1",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "rhythm1",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "akn_rhythm:2",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "rhythm2",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "akn_rhythm:3",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "rhythm3",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "akn_rhythm:4",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "rhythm4",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "akn_rhythm:5",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "rhythm5",
+      "z": 8
+    },
+    {
+      "type": "Animated",
+      "name": "akn_ambush",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "ambush",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "akn_soul",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "dismiss_aura",
+      "z": 3
     }
   ],
   "view_effects": [

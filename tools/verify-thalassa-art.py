@@ -3,6 +3,12 @@ from pathlib import Path
 from PIL import Image,ImageOps
 import hashlib,json,subprocess,sys,re
 
+# Round 165 preserves bodies/legacy pixels and owns updated range assertions.
+_r165=Path(__file__).resolve().parents[1]/'docs/round-165-art-review/manifest.json'
+if _r165.exists() and json.loads(_r165.read_text())['integrated']:
+    import runpy
+    runpy.run_path(str(Path(__file__).with_name('verify-round-165-art.py')),run_name='__main__')
+    raise SystemExit(0)
 ROOT=Path(__file__).resolve().parents[1]; REVIEW=ROOT/'docs/thalassa-art-review'
 def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
 approval=json.loads((REVIEW/'approval.json').read_text(encoding='utf-8'))
