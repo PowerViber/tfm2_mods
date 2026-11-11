@@ -1,0 +1,14 @@
+
+==============================  TFM2 Mod Manager  ==============================
+ repo: C:\Users\arian\.codex\worktrees\round-165-art\tfm2_mods [codex/round-165-art] 2712b46 Merge latest Round 165 Akane wave-clear changes without reverting approved art
+ game: C:\Users\arian\.codex\worktrees\round-165-art\tfm2_mods\backups\round-165-art-manager-0ui_2b9_
+ installed: native 0.10.99  champions 0.2.102
+ log: C:\Users\arian\.codex\worktrees\round-165-art\tfm2_mods\logs\manager-20261111_210321.txt
+================================================================================
+Game folder: C:\Users\arian\.codex\worktrees\round-165-art\tfm2_mods\backups\round-165-art-manager-0ui_2b9_
+  native (tfm2_custom_ai): repo 0.10.99  game 0.10.99
+  champions (tfm2_custom): repo 0.2.102  game 0.2.102
+  772 champion files compared, 0 differ, 0 missing; native DLL identical
+
+  UP TO DATE: the game has exactly the repo's mods.
+Log saved: C:\Users\arian\.codex\worktrees\round-165-art\tfm2_mods\logs\manager-20261111_210321.txt

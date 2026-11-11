@@ -20,6 +20,6 @@ files=[p for p in (ROOT/'mods').rglob('*') if p.is_file()]
 different=[p.relative_to(ROOT).as_posix() for p in files if (fixture/p.relative_to(ROOT)).read_bytes()!=p.read_bytes()]
 report={'scope':'Disposable fixture comparison only; no real game installation or career migration','exit_code':r.returncode,'files_compared':len(files),'different_or_missing':different,'isolated_appdata':True,
         'existing_packaged_dll_sha256':hashlib.sha256((ROOT/'mods/tfm2_custom_ai/tfm2_custom_ai.dll').read_bytes()).hexdigest(),
-        'release_packaging':'pending; existing DLL predates this presentation adapter and this check does not prove live registration/rendering'}
+        'release_packaging':'Reproduced DLL packaged in the repository; fixture validation does not prove live registration/rendering'}
 (OUT/'mod-manager.json').write_text(json.dumps(report,indent=2)+'\n')
 print(json.dumps(report));assert r.returncode==0 and not different and 'NOT UP TO DATE:' not in text,text

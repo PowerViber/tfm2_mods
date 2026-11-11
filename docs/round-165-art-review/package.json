@@ -1,0 +1,31 @@
+{
+  "native": "0.10.99",
+  "baseCommit": "a0171ba35822a6726533076c790f564b9036d97c",
+  "sourceDateEpoch": "1794428815",
+  "nativeSourcesSha256": "178b9547931c65b4e82a4134d1e028271f9a8ba7c9654325e906b328fb87bf8f",
+  "toolchain": "rustc 1.98.1 (48a229cea 2026-09-01)",
+  "builtDllSha256": "31d966664c5117363c8cb7414d7d4ec64c8df4b5635a73a32296c22e94de7475",
+  "reproducedDllSha256": "31d966664c5117363c8cb7414d7d4ec64c8df4b5635a73a32296c22e94de7475",
+  "packagedDllSha256": "31d966664c5117363c8cb7414d7d4ec64c8df4b5635a73a32296c22e94de7475",
+  "labs": {
+    "akane": "bb1d7738a1c3e45a8d4e572b37643b250f4cfca37cf76c1906d23356d439723f",
+    "wright": "326d56c744f02b5fea68e0d6a68d50b3ee37604666cda2e9152f51e6b6f8b75a",
+    "thalassa": "3c939feb7fd40daaf11c4c4bca60c6e7facded1ae6372e2b2a54897e4fa03a5e"
+  },
+  "packs": {
+    "tfm2_blockcraft": "0.1.24",
+    "tfm2_custom": "0.2.102",
+    "tfm2_custom_ai": "0.10.99",
+    "tfm2_cyberpunk": "0.1.15",
+    "tfm2_frieren": "0.1.23",
+    "tfm2_jjk": "0.1.35",
+    "tfm2_jojo": "0.1.20",
+    "tfm2_starwars": "0.1.14",
+    "tfm2_toon": "0.1.7",
+    "tfm2_ultrakill": "0.1.17",
+    "tfm2_valorant": "0.1.33"
+  },
+  "installedByThisScript": false,
+  "careerMigrationApplied": false,
+  "liveAcceptance": "Pending actual-game visual, carrier guard receipt, targeting and item observations."
+}
