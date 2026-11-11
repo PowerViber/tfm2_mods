@@ -5195,62 +5195,6 @@
    ]
   },
   {
-   "id": "tfm2_custom_akane",
-   "name": "Akane",
-   "family": "original",
-   "role": "Assassin",
-   "native": true,
-   "basicAttack": {
-    "name": "Katana",
-    "kind": "melee",
-    "range": 22000
-   },
-   "skills": [
-    {
-     "slot": "skill",
-     "name": "Soul Harvest / Dismiss & Devour",
-     "kinds": [
-      "Heal",
-      "Buff"
-     ],
-     "intents": [
-      "Escape",
-      "Protect"
-     ],
-     "summary": "Soul Harvest (passive): a champion kill or assist leaves a Soul Orb for 15 s. After 0.5 s, staying within 25000 of it for 0.75 s (she can move) absorbs it: a Soul charge back, Kunai Flip's cooldown reset, and Crimson Edge's reset at most once every 30 s. Blood Rhythm: each basic attack adds a stack (up to 5, 4 s): +6% basic-attack damage per stack. Dismiss & Devour (2 charges, 10 s each): for 1.5 s she's invulnerable, 60% faster and invisible until she casts a skill or attacks; she can cast skills, but a second basic attack ends it. She heals 6% max HP + 30% Attack, and when it ends her damage is 20% higher for 3 s."
-    },
-    {
-     "slot": "skill2",
-     "name": "Kunai Flip / Crimson Edge",
-     "kinds": [
-      "Dash",
-      "Projectile",
-      "Aoe",
-      "Cc"
-     ],
-     "intents": [
-      "Engage",
-      "Escape",
-      "Clear"
-     ],
-     "summary": "Kunai Flip (10 s): she flips back 30000 over 0.5 s and throws a non-homing kunai (120000, 180000 units/s); the first enemy hit (never a tower) takes 30 + 60% Attack and is marked for 3 s. Recast: she dashes to it, over walls too, and slashes for 40 + 80% Attack. Crimson Edge (12 s): her next 5 basic attacks within 6 s: a bleed (6 + 10% Attack a second per stack, up to 4); a bleed and 30% slow; a bleed and 15% vulnerable; the 4th stack bursts for 8% max HP + 40% Attack (half around it within 18000) with a crimson bleed of 1% max HP a second; the 5th: invulnerable, she teleports behind the target and knocks up enemies within 20000 for 0.75 s."
-    },
-    {
-     "slot": "ult",
-     "name": "Crimson Night",
-     "kinds": [
-      "Buff",
-      "Dash"
-     ],
-     "intents": [
-      "Engage",
-      "Vision"
-     ],
-     "summary": "Crimson Night (100 s): for 4 s every enemy is nearsighted: her team is hidden from them beyond 20000. Recast once to dash, over walls, to a visible enemy champion within 240000 and slash for 100 + 90% Attack. Her skills never hit towers."
-    }
-   ]
-  },
-  {
    "id": "tfm2_custom_wright",
    "name": "Wright",
    "family": "original",
@@ -5363,6 +5307,62 @@
       "Poke"
      ],
      "summary": "Trident of the Deep (100 s): a slow trident with global range, steerable 25 degrees in total. The first enemy champion hit is stunned 3 s (4 s if thrown from water) and enemies around take 120 + 70% AP. It leaves a pool where it lands (from water it flies faster and the pool is a whirlpool) and a clone of her there for 8 s (25% of her HP) that fights on its own with harp bolts, Tide Pool and Dive at 40% damage."
+    }
+   ]
+  },
+  {
+   "id": "tfm2_custom_akane",
+   "name": "Akane",
+   "family": "original",
+   "role": "Assassin",
+   "native": true,
+   "basicAttack": {
+    "name": "Katana",
+    "kind": "melee",
+    "range": 22000
+   },
+   "skills": [
+    {
+     "slot": "skill",
+     "name": "Soul Harvest / Dismiss & Devour",
+     "kinds": [
+      "Heal",
+      "Buff"
+     ],
+     "intents": [
+      "Escape",
+      "Protect"
+     ],
+     "summary": "Soul Harvest (passive): a champion kill or assist leaves a Soul Orb for 15 s. After 0.5 s, staying within 25000 of it for 0.75 s (she can move) absorbs it: a Soul charge back, Kunai Flip's cooldown reset, and Crimson Edge's reset at most once every 30 s. Blood Rhythm: each basic attack adds a stack (up to 5, 4 s): +6% basic-attack damage per stack; at 3+ stacks her basic attacks cleave enemies within 12000 of the target (80% to minions and creeps, 40% to champions). Dismiss & Devour (2 charges, 10 s each): for 1.5 s she's invulnerable, 60% faster and invisible until she casts a skill or attacks; she can cast skills, but a second basic attack ends it. She heals 6% max HP + 30% Attack, and when it ends her damage is 20% higher for 3 s."
+    },
+    {
+     "slot": "skill2",
+     "name": "Kunai Flip / Crimson Edge",
+     "kinds": [
+      "Dash",
+      "Projectile",
+      "Aoe",
+      "Cc"
+     ],
+     "intents": [
+      "Engage",
+      "Escape",
+      "Clear"
+     ],
+     "summary": "Kunai Flip (10 s): she flips back 30000 over 0.5 s and throws a non-homing kunai (120000, 180000 units/s); it pierces up to 4 minions and creeps (each takes 30 + 60% Attack) and stops at the first champion, who takes it and is marked for 3 s (with no champion, the last minion or creep hit is marked; never a tower). Recast: she dashes to it, over walls too, and slashes for 40 + 80% Attack. Crimson Edge (12 s): her next 5 basic attacks within 6 s, each also slashing enemies within 14000 of the target for 50%: a bleed (6 + 10% Attack a second per stack, up to 4); a bleed and 30% slow; a bleed and 15% vulnerable; the 4th stack bursts (on a minion or creep the 4th hit always bursts) for 8% max HP + 40% Attack (half around it within 18000) with a crimson bleed of 1% max HP a second; the 5th: invulnerable, she teleports behind the target and knocks up enemies within 20000 for 0.75 s."
+    },
+    {
+     "slot": "ult",
+     "name": "Crimson Night",
+     "kinds": [
+      "Buff",
+      "Dash"
+     ],
+     "intents": [
+      "Engage",
+      "Vision"
+     ],
+     "summary": "Crimson Night (100 s): for 4 s every enemy is nearsighted: her team is hidden from them beyond 20000. Recast once to dash, over walls, to a visible enemy champion within 240000 and slash for 100 + 90% Attack. Her skills never hit towers."
     }
    ]
   }

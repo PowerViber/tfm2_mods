@@ -13,6 +13,20 @@ Reihan wanted a stack of her own on her basic attacks; attacking and casting ins
 - **Her AI:** inside Dismiss she now engages a target she can kill with Crimson Edge or the Kunai, counting the Ambush. Otherwise she slips away.
 - **Level 10:** her basic attack goes from about 180 to about 234 at 5 stacks, and about 281 with Ambush.
 
+### Akane wave clear (`akane-1.3`, added before merge)
+Reihan: she can't clear waves fast, with no area damage skill. He picked three of the ideas:
+- **Rhythm cleave:** at 3+ Blood Rhythm stacks, her basic attacks cleave enemies within 12,000 of the target: 80% of the hit to minions and creeps, 40% to champions. Never towers.
+- **The Kunai pierces:**
+  - it passes through up to 4 minions or creeps, damaging each;
+  - it stops at the first champion, who is marked;
+  - with no champion, it marks the last one it went through (the recast still crosses walls on a camp).
+  - The AI only needs no *other champion* in front, not a clear line.
+- **Crimson Edge splash:**
+  - each of the 5 empowered hits also deals 50% to enemies within 14,000 of the target;
+  - on a minion or creep the 4th hit always bursts; champions still need the 4 stacks;
+  - the splash deals damage only, never the slow, vulnerable or knock-up.
+- **Tests:** 3 new, and the kunai test is updated (a minion in front is now pierced). 1,200 native tests.
+
 ## Wright (`wright-6`)
 Reihan: the ult spawned so much that no AI could react, and it one-tapped.
 - **Before:** the carrier launched a jet every 1 s (up to 6 on top of his own 4), repair choppers, and up to 3 ready bombers with a 0.3 s mark.

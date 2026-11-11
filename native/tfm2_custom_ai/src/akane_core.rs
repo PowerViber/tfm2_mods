@@ -323,6 +323,8 @@ pub struct KunaiFlight {
     pub end: Point,
     pub pos: Point,
     pub attack: i64,
+    /// minions and creeps it already passed through (round 165: it pierces them)
+    pub pierced: Vec<usize>,
 }
 
 #[derive(Clone, Debug, Serialize)]
@@ -479,6 +481,10 @@ impl Core {
                     let stacks = (self.rhythm.0 + 1).min(d::RHYTHM_MAX_STACKS);
                     self.rhythm = (stacks, f.tick + t(d::RHYTHM_TICKS));
                     out.push(Effect::Rhythm { stacks, ticks: t(d::RHYTHM_TICKS) });
+                    // round 165: at 3+ stacks her basic attacks cleave around the target (waves take more)
+                    if stacks >= d::RHYTHM_CLEAVE_STACKS {
+                        self.splash(f, &u, d::RHYTHM_CLEAVE_RADIUS, d::RHYTHM_CLEAVE_PCT, d::RHYTHM_CLEAVE_MINION_PCT, &mut out);
+                    }
                 }
                 self.edge_hit(f, &u, &mut out);
             }
@@ -617,11 +623,23 @@ impl Core {
     }
 
     /// An empowered basic attack. Towers take the hit but no debuff, and don't use an empowered attack.
+    /// A share of her basic hit to the other enemies near `u` (never towers): `pct` to champions, `minion_pct` to the
+    /// rest. Damage only, never CC.
+    fn splash(&mut self, f: &Frame, u: &Unit, radius: i64, pct: i64, minion_pct: i64, out: &mut Vec<Effect>) {
+        let hit = f.attack * self.basic_multiplier(f.tick) / 100;
+        for o in f.units.iter().filter(|o| o.id != u.id && f.skill_target(o) && o.pos.within(u.pos, radius + o.radius)) {
+            let share = if o.champion { pct } else { minion_pct };
+            out.push(Effect::Damage { target: o.id, amount: (hit * share / 100).max(1), direct: false });
+        }
+    }
+
     fn edge_hit(&mut self, f: &Frame, u: &Unit, out: &mut Vec<Effect>) {
         let Some((done, until)) = self.edge else { return };
         if u.tower || !f.skill_target(u) {
             return;
         }
+        // round 165: each empowered hit also slashes a small arc around the target
+        self.splash(f, u, d::EDGE_SPLASH_RADIUS, d::EDGE_SPLASH_PCT, d::EDGE_SPLASH_PCT, out);
         let n = done + 1;
         self.edge = if n as i64 >= d::EDGE_HITS { None } else { Some((n, until)) };
         match n {
@@ -638,7 +656,8 @@ impl Core {
             }
             4 => {
                 let stacks = self.add_bleed(f, u.id, out);
-                if stacks >= d::EDGE_MAX_STACKS {
+                // on a minion or creep the 4th hit always bursts (wave clear); champions need the 4 stacks
+                if stacks >= d::EDGE_MAX_STACKS || !u.champion {
                     self.burst(f, u, out);
                 }
             }
@@ -837,7 +856,7 @@ impl Core {
                 out.push(Effect::Fx { name: "akn_kunai".into(), at: f.pos, ticks: 1, ambient: false });
                 out.push(Effect::Pose { name: "skill1", ticks: t(d::KUNAI_FLIP_TICKS) });
                 self.last_skill = "kunai";
-                self.kunai_flights.push(KunaiFlight{born:f.tick,from:f.pos,end,pos:f.pos,attack:f.attack});
+                self.kunai_flights.push(KunaiFlight{born:f.tick,from:f.pos,end,pos:f.pos,attack:f.attack,pierced:vec![]});
             }
             Order::KunaiRecast => {
                 let Some(id) = self.marked(f.tick) else { return reject(self, "nothing marked") };
@@ -888,25 +907,76 @@ impl Core {
     }
 
     fn run_kunai(&mut self, f: &Frame, out: &mut Vec<Effect>) {
-        let mut active=vec![];
+        let mut active = vec![];
         for mut shot in std::mem::take(&mut self.kunai_flights) {
-            let distance=(f.tick.saturating_sub(shot.born) as i64).saturating_mul(d::KUNAI_SPEED);
-            let end_distance=shot.from.dist(shot.end);
-            let to=if distance as f64>=end_distance {shot.end}else{shot.from.toward(shot.end,distance)};
-            // Each tick sweeps the traversed segment; it never homes or hits a tower.
-            if let Some(u)=Self::kunai_target(f,shot.pos,to) {
-                out.push(Effect::Damage{target:u.id,amount:pct(d::KUNAI_BASE,d::KUNAI_AD_RATIO,shot.attack),direct:false});
-                if let Some((old,_))=self.mark.filter(|m|m.0!=u.id){out.push(Effect::Mark{target:old,ticks:0});}
-                self.mark=Some((u.id,f.tick+t(d::KUNAI_MARK_TICKS)));
-                out.push(Effect::Mark{target:u.id,ticks:t(d::KUNAI_MARK_TICKS)});
-                out.push(Effect::Fx{name:"akn_kunai_hit".into(),at:u.pos,ticks:12,ambient:false});
-            }else if to!=shot.end {shot.pos=to;active.push(shot);}
-            else {out.push(Effect::Log("kunai missed".into()));}
+            let distance = (f.tick.saturating_sub(shot.born) as i64).saturating_mul(d::KUNAI_SPEED);
+            let end_distance = shot.from.dist(shot.end);
+            let to = if distance as f64 >= end_distance { shot.end } else { shot.from.toward(shot.end, distance) };
+            // Each tick sweeps the traversed segment; it never homes or hits a tower. Round 165: it pierces minions and
+            // creeps (up to pierceMax) and stops at the first champion, who is marked.
+            let damage = pct(d::KUNAI_BASE, d::KUNAI_AD_RATIO, shot.attack);
+            let mut marked: Option<Unit> = None;
+            for u in Self::kunai_line(f, shot.pos, to) {
+                if shot.pierced.contains(&u.id) {
+                    continue;
+                }
+                out.push(Effect::Damage { target: u.id, amount: damage, direct: false });
+                out.push(Effect::Fx { name: "akn_kunai_hit".into(), at: u.pos, ticks: 12, ambient: false });
+                if u.champion {
+                    marked = Some(u);
+                    break;
+                }
+                shot.pierced.push(u.id);
+                if shot.pierced.len() as i64 >= d::KUNAI_PIERCE_MAX {
+                    marked = Some(u);
+                    break;
+                }
+            }
+            if marked.is_none() && to == shot.end {
+                // the end of its flight with no champion: the last minion or creep it went through is marked
+                marked = shot.pierced.last().and_then(|id| f.unit(*id)).cloned();
+                if marked.is_none() {
+                    out.push(Effect::Log("kunai missed".into()));
+                }
+            }
+            match marked {
+                Some(u) => {
+                    if let Some((old, _)) = self.mark.filter(|m| m.0 != u.id) {
+                        out.push(Effect::Mark { target: old, ticks: 0 });
+                    }
+                    self.mark = Some((u.id, f.tick + t(d::KUNAI_MARK_TICKS)));
+                    out.push(Effect::Mark { target: u.id, ticks: t(d::KUNAI_MARK_TICKS) });
+                }
+                None if to != shot.end => {
+                    shot.pos = to;
+                    active.push(shot);
+                }
+                None => {}
+            }
         }
-        self.kunai_flights=active;
+        self.kunai_flights = active;
     }
 
-    /// The first enemy the kunai's segment touches (never a tower; it flies over terrain).
+    /// Every enemy (never a tower) a kunai's segment touches, in order along it.
+    pub fn kunai_line(f: &Frame, from: Point, end: Point) -> Vec<Unit> {
+        let mut hits: Vec<(f64, Unit)> = f
+            .units
+            .iter()
+            .filter(|u| f.skill_target(u))
+            .filter_map(|u| {
+                let (dist, k) = u.pos.seg(from, end);
+                (dist <= (d::KUNAI_WIDTH + u.radius) as f64 && (k > 0.0 || from == end)).then(|| (k, u.clone()))
+            })
+            .collect();
+        hits.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap_or(std::cmp::Ordering::Equal).then(a.1.id.cmp(&b.1.id)));
+        hits.into_iter().map(|h| h.1).collect()
+    }
+
+    /// The champion the kunai would stop on along this line (it pierces minions and creeps).
+    pub fn kunai_champion(f: &Frame, from: Point, end: Point) -> Option<Unit> {
+        Self::kunai_line(f, from, end).into_iter().find(|u| u.champion)
+    }
+
     pub fn kunai_target(f: &Frame, from: Point, end: Point) -> Option<Unit> {
         f.units
             .iter()
@@ -1147,7 +1217,7 @@ impl Core {
                 Some(u) if self.ready(EDGE, f.tick) && self.edge.is_none() && u.pos.within(f.pos, d::BASIC_RANGE + u.radius + 3_000) => return Some(Order::Edge),
                 Some(u) if self.ready(KUNAI, f.tick) && self.kunai_flights.is_empty() && self.marked(f.tick).is_none() => {
                     let aim = Self::aim_at(f, &u);
-                    if Self::kunai_target(f, f.pos, f.pos.toward(aim, d::KUNAI_RANGE)).is_some_and(|first| first.id == u.id) {
+                    if Self::kunai_champion(f, f.pos, f.pos.toward(aim, d::KUNAI_RANGE)).is_some_and(|first| first.id == u.id) {
                         return Some(Order::Kunai(aim));
                     }
                 }
@@ -1261,7 +1331,7 @@ impl Core {
             if self.ready(KUNAI, f.tick) && u.pos.within(f.pos, d::KUNAI_RANGE) && (near_lethal || Self::isolated(f, u)) && tower_ok && out_after && survivable {
                 let aim = Self::aim_at(f, u);
                 let end = f.pos.toward(aim, d::KUNAI_RANGE);
-                if Self::kunai_target(f, f.pos, end).is_some_and(|first| first.id == u.id) {
+                if Self::kunai_champion(f, f.pos, end).is_some_and(|first| first.id == u.id) {
                     return Some(Order::Kunai(aim));
                 }
             }
