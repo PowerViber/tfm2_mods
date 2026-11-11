@@ -64,3 +64,9 @@ Reihan: "the bounce is too much", "make her BA slower but [it] does an area rect
 - **Akane:** that the reveal and the end of Dismiss really work in the game.
 - **Wright:** that the ult reads as fair now.
 - **Thalassa:** that the knock-ups don't chain; the 3 s lock should stop that.
+
+## Codex approved-art follow-up (2026-11-12)
+
+Reihan approved the corrected Round 165 effects. The tsunami is **water-only** (wet/Dive included), with prototype owner water range **82,500** and unchanged **120-tick** basic cadence; land stays **55,000** and clone range stays +20%. Akane has Rhythm/Ambush/Dismiss indicators. Wright has a carrier-empowerment indicator and corrected **30,000-radius / 60/96/132-tick** bomber warnings. Claude’s newer **akane-1.3** changes are included.
+
+See [approved sources, previews, budgets, reproduction and separate evidence](round-165-art-review/README.md). Final Windows suite: **1,202 passed, 13 ignored**; four inherited test-fixture dead-code warnings. All three existing browser suites and the new 23-check art suite pass; complete native/WASM traces match. All 252 old Thalassa FX frames retain exact pixels/timing, and presentation stays below 32 MiB per owner. The rebuilt 0.10.99 DLL reproduces byte-for-byte; isolated Mod Manager verification passes. No installation or real-career migration was performed. Actual-game acceptance remains pending.

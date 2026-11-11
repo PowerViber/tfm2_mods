@@ -7330,7 +7330,7 @@
       "asset": "asset/tfm2_custom/vfx/thalassa_links"
     }
   },
-  "decoded_bytes": 32980992,
+  "decoded_bytes": 33005568,
   "frame_counts": {
     "idle": 4,
     "run": 6,

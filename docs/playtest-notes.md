@@ -3878,3 +3878,7 @@ To check in game: close the game, Update/Check, confirm native 0.10.36 and champ
   - The Kunai pierces up to 4 minions or creeps and marks the champion behind them.
   - Crimson Edge splashes 50% per hit, and the 4th hit always bursts on a minion or creep.
   - 1,200 native tests.
+
+## Round 165 approved effects — 2026-11-12
+
+Approved effects are integrated in PR #77. Check Thalassa’s water-only wave and prototype 82,500 water basic range (55,000 on land), preserving the two-second clock and clone bolts; check Akane Rhythm/Ambush/Dismiss timers and Wright’s carrier indicator. Bomber warnings use the actual 30,000 radius and 60/96/132 ticks. Evidence: docs/round-165-art-review/. Actual-game visual, item/targeting and carrier receipt observations remain pending. Installation and real-career migration were not performed.

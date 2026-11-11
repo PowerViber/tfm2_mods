@@ -5,7 +5,7 @@ const {chromium}=require(require.resolve('playwright',{paths:[process.cwd(),requ
 const root = path.resolve(__dirname, '..'), port = 7331;
 (async () => {
   const server = spawn('node', ['server.js', '--port', String(port), '--no-open'], {cwd: path.join(root, 'editor'), stdio: 'ignore'});
-  await new Promise(r => setTimeout(r, 1500));
+  for(let i=0;i<100;i++){try{if((await fetch('http://127.0.0.1:'+port+'/')).ok)break;}catch{}await new Promise(r=>setTimeout(r,100));}
   const browser = await chromium.launch({channel:'msedge',headless:true}), page = await browser.newPage({viewport: {width: 1300, height: 950}}), errors = [];
   page.on('pageerror', e => errors.push(e.message));
   let checks = 0;
@@ -17,8 +17,8 @@ const root = path.resolve(__dirname, '..'), port = 7331;
       const L = akaneLab, R = AKANE_RULES, out = {}, run = n => { for (let i = 0; i < n; i++) L.step(); };
       L.pause(); L.reset({fixture:true}); document.querySelector('#moving').checked = false;
       out.realWalls = L.walls.filter(Boolean).length;
-      const foe = L.units.find(u => u.id === 2), tower = L.units.find(u => u.tower), towerHp = tower.hp;
-      // S1: invisible, invulnerable, move only; no dash
+      let foe = L.units.find(u => u.id === 2), tower = L.units.find(u => u.tower), towerHp = tower.hp;
+      // S1: invisible/invulnerable until acting; casting remains available
       const before = {...L.me.pos};
       L.order('soul'); run(1);
       out.soul = L.me.soulUntil > L.tick && L.me.invulnUntil > L.tick && !L.seenByEnemy(L.me.pos);
@@ -38,7 +38,9 @@ const root = path.resolve(__dirname, '..'), port = 7331;
       out.knocked = foe.airborneUntil > 0 || foe.hp <= 0;
       out.vulnerable = foe.vulnerableUntil > 0 || foe.hp <= 0;
       // a kill drops an orb; standing on it 0.75 s absorbs it and resets the kunai
-      foe.deadUntil = 0; foe.hp = 30; foe.pos = {x: L.me.pos.x + 10000, y: L.me.pos.y};
+      // Isolate this fixture: the stronger wave-clear can kill during the preceding five-hit check.
+      L.reset({fixture:true}); foe=L.units.find(u=>u.id===2); L.setAim(foe.pos); L.order('kunai'); run(35);
+      L.me.pos={x:foe.pos.x-10000,y:foe.pos.y}; foe.hp = 30; foe.pos = {x: L.me.pos.x + 10000, y: L.me.pos.y};
       L.acceptedBasic(2); run(2);
       out.orb = (L.state.orbs || []).length === 1;
       run(R.orb.armTicks + R.orb.absorbTicks + 3);

@@ -14,7 +14,7 @@ def materials():
     waves=[fit(im,(66,15)) for im in cells(OUT/'tsunami-source-v2.png')];a=cells(OUT/'accents-source-v1.png');icons={}
     pip=fit(a[0],(4,7))
     for n in range(1,6):
-        im=Image.new('RGBA',(48,80))
+        im=Image.new('RGBA',(48,104))
         for i in range(5):
             p=pip.copy()
             if i>=n:p.putalpha(p.getchannel('A').point(lambda x:x//4))

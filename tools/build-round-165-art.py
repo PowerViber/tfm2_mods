@@ -8,7 +8,7 @@ from io import BytesIO
 import hashlib,json,math,runpy,subprocess,sys
 from PIL import Image,ImageOps
 ROOT=Path(__file__).resolve().parents[1];OUT=ROOT/'docs/round-165-art-review'
-BASE='0d7ec96587ba576dc91d9022be810cedfc3cf4da';ASSET='asset/tfm2_custom/vfx/round_165';N=Image.Resampling.NEAREST
+BASE='a0171ba35822a6726533076c790f564b9036d97c';ASSET='asset/tfm2_custom/vfx/round_165';N=Image.Resampling.NEAREST
 APP=json.loads((OUT/'approval.json').read_text());INTEGRATE='--integrate' in sys.argv
 LENGTHS=[8,16,24,32,48,64,80,96,112];DIRECTIONS=32
 prep=runpy.run_path(str(ROOT/'tools/prepare-round-165-art.py'));fit=prep['fit']

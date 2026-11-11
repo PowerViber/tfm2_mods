@@ -16,8 +16,8 @@
  const base=location.pathname.startsWith('/editor/')?'../docs/round-165-art-review/':'round-165-review-assets/';$('sheet').src=base+'effects-comparison.png';
  const opts=['tsunami_l96_d0','tsunami_l96_d4','tsunami_l96_d8','tsunami_l96_d12','tsunami_l96_d16','rhythm1','rhythm2','rhythm3','rhythm4','rhythm5','ambush','dismiss_aura','carrier_empowered','wright_warn1_t60','wright_warn2_t96','wright_warn3_t132','wright_bomb_t18'];$('effect').innerHTML=opts.map(t=>`<option>${t}</option>`).join('');
  function draw(now){
-  const inspect=$('arena').getContext('2d'),tag=$('effect').value,total=art.manifest.frames[tag].frames.reduce((s,f)=>s+f.duration*60,0),age=now*.06%(total+45);inspect.fillStyle='#203747';inspect.fillRect(0,0,560,260);inspect.fillStyle='#bec9b0';inspect.fillRect(560,0,560,260);
-  if(age<total||art.manifest.frames[tag].frames.length===1)for(const[x,s]of[[100,1],[350,3],[660,1],[910,3]]){inspect.save();inspect.translate(x,130);if($('facing').value==='Left')inspect.scale(-1,1);art.effect(inspect,tag,age,0,0,s);inspect.restore();}
+  const inspect=$('arena').getContext('2d'),tag=$('effect').value,total=art.manifest.frames[tag].frames.reduce((s,f)=>s+f.duration*60,0),age=now*.06%(total+45);inspect.fillStyle='#203747';inspect.fillRect(0,0,560,320);inspect.fillStyle='#bec9b0';inspect.fillRect(560,0,560,320);
+  if(age<total||art.manifest.frames[tag].frames.length===1)for(const[x,s]of[[100,1],[350,3],[660,1],[910,3]]){inspect.save();inspect.translate(x,160);if($('facing').value==='Left')inspect.scale(-1,1);art.effect(inspect,tag,age,0,0,s);inspect.restore();}
   const scale=.003,P=p=>({x:560+(p.x-origin.x)*scale,y:380+(p.y-origin.y)*scale}),W=v=>v*scale;ctx.fillStyle='#17313c';ctx.fillRect(0,0,1120,600);world.drawMap(ctx,P,W);const q=P(origin),e=P(enemy),t=(now-begin)*.06;
   const range=THALASSA_RULES.basic.range*(water?1+THALASSA_RULES.water.rangePct/100:1);ctx.strokeStyle=water?'#8fe7df':'#e8cf92';ctx.beginPath();ctx.arc(q.x,q.y,W(range),0,Math.PI*2);ctx.stroke();
   if(water)body.effect(ctx,'pool_p0',0,q.x,q.y,W(950));body.body(ctx,t<22?'attack':'idle',t<22?t:now*.06,q.x,q.y,W(950),false,false,t>=22);

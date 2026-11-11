@@ -3,7 +3,7 @@ from pathlib import Path
 from io import BytesIO
 import hashlib,json,subprocess,copy
 from PIL import Image,ImageOps
-ROOT=Path(__file__).resolve().parents[1];OUT=ROOT/'docs/round-165-art-review';BASE='0d7ec96587ba576dc91d9022be810cedfc3cf4da'
+ROOT=Path(__file__).resolve().parents[1];OUT=ROOT/'docs/round-165-art-review';BASE='a0171ba35822a6726533076c790f564b9036d97c'
 def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
 def old(p):return subprocess.check_output(['rtk','proxy','git','show',BASE+':'+p],cwd=ROOT)
 def crop(im,f):
