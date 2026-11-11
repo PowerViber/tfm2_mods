@@ -246,6 +246,7 @@ STATIC['/rally-white.png']='../mods/tfm2_custom/vfx/rally-white#sheet.png';
 STATIC['/rally-white.fanim']='../mods/tfm2_custom/vfx/rally-white#anim.fanim';
 for(const f of ['grimhald.html','grimhald-review.html','grimhald-lab.js','grimhald-data.js','grimhald-art.json','grimhald.wasm'])STATIC['/'+f]=f;
 for(const f of ['thalassa.html','thalassa-lab.js','thalassa-data.js','thalassa.wasm','thalassa-review.html','thalassa-art.js','thalassa-renderer.js'])STATIC['/'+f]=f;
+for(const f of ['akane.html','akane-lab.js','akane-data.js','akane.wasm'])STATIC['/'+f]=f;
 for(const f of ['kratos.html','kratos-lab.js','kratos-data.js','kratos.wasm','kratos-clock.js','kratos-renderer.js','kratos-review.html'])STATIC['/'+f]=f;
 for(const f of ['game-world.js','lab-scenarios.js'])STATIC['/'+f]=f;
 const gameReferenceDir=path.join(HERE,'game-reference');

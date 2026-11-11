@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Akane Lab</title>
+<style>
+body{margin:0;background:#140f14;color:#eee3e7;font:13px/1.4 system-ui,sans-serif;display:flex;gap:12px;padding:12px}
+canvas{background:#2a3340;border:1px solid #5a3a46;border-radius:6px;outline:none}
+#side{width:340px;display:flex;flex-direction:column;gap:8px}
+button{background:#5c1f2e;color:#fde8ee;border:1px solid #a33a55;border-radius:4px;padding:5px 8px;cursor:pointer}
+button:hover{background:#7a2840}
+.row{display:flex;flex-wrap:wrap;gap:6px}
+#log{height:220px;overflow:auto;background:#0f0b0f;border:1px solid #3b2a33;border-radius:4px;padding:6px;font:11px monospace;white-space:pre-wrap}
+.keys{font-size:12px;color:#d6b3bf}
+.note{color:#a8939c;font-size:12px}
+label{display:flex;gap:6px;align-items:center}
+#hud{font-size:12px;display:grid;grid-template-columns:1fr 1fr;gap:2px 8px}
+.stat{display:grid;grid-template-columns:1fr 60px;gap:2px 6px;font-size:12px}
+.stat input{width:56px}
+</style></head>
+<body>
+<canvas id="arena" width="900" height="900" tabindex="0"></canvas>
+<div id="side">
+  <h2 style="margin:0">Akane Lab</h2>
+  <div class="note"><b>Map:</b> the game's 5v5 wall grid and map art (<code>editor/levi-map.js</code>, read off the game's wall layer) at gameplay scale: bodies and every range share one world-to-screen scale, and the core gets the same wall grid. <b>Simulated layer:</b> enemies, minions and the tower's behaviour, deaths and respawns are a Lab model, not the game's. Art is pending (Codex): bodies and effects are placeholders. This is not live acceptance.</div>
+  <div id="status">Loading…</div>
+  <div class="keys">Mouse aims · WASD move · <b>1</b> Dismiss &amp; Devour · <b>2</b> Kunai Flip, <b>2</b> again to dash to the mark · <b>3</b> Crimson Edge · <b>4</b> Crimson Night, <b>4</b> again to dash to the champion nearest the mouse · <b>F</b> basic attack the nearest enemy</div>
+  <div class="row"><button id="play">Pause</button><button id="step">Step</button><button id="reset">Reset</button></div>
+  <div class="row"><button id="wallDemo">Place a foe across a wall</button><button id="lowFoe">Make a foe low</button><button id="gank">Three enemies converge</button></div>
+  <label><input type="checkbox" id="zoom" checked> Follow camera (zoomed); off = full-map overview</label>
+  <label><input type="checkbox" id="ranges" checked> Range overlays (Kunai 60,000, Night dash 120,000, nearsight 20,000, orb 25,000)</label>
+  <label><input type="checkbox" id="art" checked> Map art</label>
+  <label><input type="checkbox" id="auto"> Athlete AI plays her</label>
+  <label><input type="checkbox" id="moving" checked> Enemies walk and attack (Lab model)</label>
+  <details><summary>Athlete attributes (13)</summary><div class="stat" id="stats"></div></details>
+  <div id="hud"></div>
+  <div id="log"></div>
+</div>
+<script src="akane-data.js"></script>
+<script src="levi-map.js"></script>
+<script src="akane-lab.js"></script>
+</body></html>
