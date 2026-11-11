@@ -5349,7 +5349,7 @@
       "Escape",
       "Clear"
      ],
-     "summary": "Kunai Flip (10 s): she flips back 15000 and throws a kunai (60000); the first enemy hit (never a tower) takes 30 + 60% Attack and is marked for 3 s. Recast: she dashes to it, over walls too, and slashes for 40 + 80% Attack. Crimson Edge (12 s): her next 5 basic attacks within 6 s: a bleed (6 + 10% Attack a second per stack, up to 4); a bleed and 30% slow; a bleed and 15% vulnerable; the 4th stack bursts for 8% max HP + 40% Attack (half around it within 18000) with a crimson bleed of 1% max HP a second; the 5th: invulnerable, she teleports behind the target and knocks up enemies within 20000 for 0.75 s."
+     "summary": "Kunai Flip (10 s): she flips back 30000 over 0.5 s and throws a non-homing kunai (120000, 180000 units/s); the first enemy hit (never a tower) takes 30 + 60% Attack and is marked for 3 s. Recast: she dashes to it, over walls too, and slashes for 40 + 80% Attack. Crimson Edge (12 s): her next 5 basic attacks within 6 s: a bleed (6 + 10% Attack a second per stack, up to 4); a bleed and 30% slow; a bleed and 15% vulnerable; the 4th stack bursts for 8% max HP + 40% Attack (half around it within 18000) with a crimson bleed of 1% max HP a second; the 5th: invulnerable, she teleports behind the target and knocks up enemies within 20000 for 0.75 s."
     },
     {
      "slot": "ult",
@@ -5362,7 +5362,7 @@
       "Engage",
       "Vision"
      ],
-     "summary": "Crimson Night (100 s): for 4 s every enemy is nearsighted: her team is hidden from them beyond 20000. Recast once to dash, over walls, to a visible enemy champion within 120000 and slash for 100 + 90% Attack. Her skills never hit towers."
+     "summary": "Crimson Night (100 s): for 4 s every enemy is nearsighted: her team is hidden from them beyond 20000. Recast once to dash, over walls, to a visible enemy champion within 240000 and slash for 100 + 90% Attack. Her skills never hit towers."
     }
    ]
   }

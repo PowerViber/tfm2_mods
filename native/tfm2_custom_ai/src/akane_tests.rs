@@ -248,11 +248,11 @@ fn soul_charges_recharge_ten_seconds_each() {
 fn kunai_flips_back_marks_the_first_enemy_and_the_recast_dashes_and_slashes() {
     let mut c = Core::default();
     let mut f = frame(0, vec![minion(30, 430_000, 400_000), champ(FOE, 2, 450_000, 400_000), tower(40, 420_000, 400_000)]);
-    let mut out = run_order(&mut c, &mut f, Some(Order::Kunai(Point::new(450_000, 400_000))), 0, 20);
+    let mut out = run_order(&mut c, &mut f, Some(Order::Kunai(Point::new(450_000, 400_000))), 0, 40);
     assert!(f.pos.x < 400_000 - d::KUNAI_FLIP + 1_000, "flipped back: {:?}", f.pos);
-    assert_eq!(c.marked(20), Some(30), "the minion in front is hit first, never the tower");
+    assert_eq!(c.marked(40), Some(30), "the minion in front is hit first, never the tower");
     assert_eq!(damage_to(&out, 40), 0);
-    out.extend(run_order(&mut c, &mut f, Some(Order::KunaiRecast), 20, 60));
+    out.extend(run_order(&mut c, &mut f, Some(Order::KunaiRecast), 40, 100));
     assert!(f.pos.x > 420_000, "dashed to the mark: {:?}", f.pos);
     assert!(out.iter().any(|e| matches!(e, Effect::Damage { target: 30, direct: true, .. })), "the slash is a committed strike");
     // a miss means no recast; the mark expires after 3 s
@@ -270,9 +270,9 @@ fn the_recast_dashes_over_a_wall() {
     let mut f = frame(0, vec![champ(FOE, 2, 14 * CELL + 16_000, 400_000)]);
     f.pos = Point::new(12 * CELL + 16_000, 400_000);
     f.terrain = wall_grid(&[(13, 12)]);
-    run_order(&mut c, &mut f, Some(Order::Kunai(Point::new(14 * CELL + 16_000, 400_000))), 0, 20);
-    assert_eq!(c.marked(20), Some(FOE), "the kunai flies over terrain");
-    let out = run_order(&mut c, &mut f, Some(Order::KunaiRecast), 20, 60);
+    run_order(&mut c, &mut f, Some(Order::Kunai(Point::new(14 * CELL + 16_000, 400_000))), 0, 40);
+    assert_eq!(c.marked(40), Some(FOE), "the kunai flies over terrain");
+    let out = run_order(&mut c, &mut f, Some(Order::KunaiRecast), 40, 110);
     assert!(out.iter().any(|e| matches!(e, Effect::Hop { .. })));
     assert!(f.pos.x > 14 * CELL && !f.terrain_at(f.pos), "past the wall on open ground: {:?}", f.pos);
 }
@@ -341,11 +341,11 @@ fn bleed_stacks_cap_at_four_and_tick_each_second() {
 #[test]
 fn crimson_night_lasts_four_seconds_and_dashes_once_to_a_visible_champion_in_reach() {
     let mut c = Core::default();
-    let mut f = frame(0, vec![champ(FOE, 2, 500_000, 400_000), champ(11, 2, 600_000, 400_000)]);
+    let mut f = frame(0, vec![champ(FOE, 2, 500_000, 400_000), champ(11, 2, 700_000, 400_000)]);
     let out = order(&mut c, &f, Order::Night);
     assert!(out.contains(&Effect::Night { ticks: d::NIGHT_TICKS as u64 }));
     let far = order(&mut c, &frame(1, f.units.clone()), Order::NightDash(11));
-    assert!(c.rejection.contains("no visible"), "200,000 is out of reach: {far:?}");
+    assert!(c.rejection.contains("no visible"), "300,000 is out of reach: {far:?}");
     let out = run_order(&mut c, &mut f, Some(Order::NightDash(FOE)), 2, 40);
     assert!(out.iter().any(|e| matches!(e, Effect::Damage { target: FOE, direct: true, amount } if *amount == d::NIGHT_BASE + d::NIGHT_AD_RATIO * 180 / 100)));
     order(&mut c, &frame(50, f.units.clone()), Order::NightDash(FOE));
@@ -376,6 +376,10 @@ fn ai_holds_the_recast_when_the_target_flashed_away_and_uses_it_when_it_lands_in
     low.hp = 250;
     low.flash_ready = true;
     order(&mut c, &frame(0, vec![low.clone()]), Order::Kunai(Point::new(440_000, 400_000)));
+    c.step(&frame(12,vec![low.clone()])); // the projectile has now reached the target
+    // Isolate Kunai's hold/recast decision. The newly extended Night can also
+    // reach the flashed target and is covered by its own opportunity fixture.
+    c.ready[NIGHT]=u64::MAX;
     // it Flashes far away
     let mut gone = low.clone();
     gone.pos = Point::new(530_000, 400_000);
@@ -581,9 +585,9 @@ fn stats_shape_choices_never_damage() {
     fa.profile = [0; 13];
     let mut fb = frame(0, units);
     fb.profile = [100; 13];
-    let da = damage_to(&order(&mut a, &fa, Order::Kunai(Point::new(440_000, 400_000))), FOE);
-    let db = damage_to(&order(&mut b, &fb, Order::Kunai(Point::new(440_000, 400_000))), FOE);
-    assert_eq!(da, db);
+    let da = damage_to(&run_order(&mut a,&mut fa,Some(Order::Kunai(Point::new(440_000,400_000))),0,50),FOE);
+    let db = damage_to(&run_order(&mut b,&mut fb,Some(Order::Kunai(Point::new(440_000,400_000))),0,50),FOE);
+    assert_eq!(da, db);assert!(da>0);
 }
 
 #[test]

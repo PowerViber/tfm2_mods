@@ -246,9 +246,25 @@
     },
     {
       "type": "Animation",
+      "name": "akn_kunai_flight_e",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "kunai_flight_e",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "akn_kunai_se",
       "anim": "asset/tfm2_custom/vfx/akane",
       "tag": "kunai_se",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_kunai_flight_se",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "kunai_flight_se",
       "z": 6,
       "is_follow": false
     },
@@ -262,9 +278,25 @@
     },
     {
       "type": "Animation",
+      "name": "akn_kunai_flight_s",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "kunai_flight_s",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "akn_kunai_sw",
       "anim": "asset/tfm2_custom/vfx/akane",
       "tag": "kunai_sw",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_kunai_flight_sw",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "kunai_flight_sw",
       "z": 6,
       "is_follow": false
     },
@@ -278,9 +310,25 @@
     },
     {
       "type": "Animation",
+      "name": "akn_kunai_flight_w",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "kunai_flight_w",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "akn_kunai_nw",
       "anim": "asset/tfm2_custom/vfx/akane",
       "tag": "kunai_nw",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_kunai_flight_nw",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "kunai_flight_nw",
       "z": 6,
       "is_follow": false
     },
@@ -294,9 +342,25 @@
     },
     {
       "type": "Animation",
+      "name": "akn_kunai_flight_n",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "kunai_flight_n",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
       "name": "akn_kunai_ne",
       "anim": "asset/tfm2_custom/vfx/akane",
       "tag": "kunai_ne",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "akn_kunai_flight_ne",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "kunai_flight_ne",
       "z": 6,
       "is_follow": false
     },

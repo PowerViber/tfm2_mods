@@ -104,11 +104,23 @@
       "follow": false,
       "ticks": 10
     },
+    "kunai_flight_e": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false,
+      "ticks": 1
+    },
     "kunai_se": {
       "kind": "effect",
       "z": 6,
       "follow": false,
       "ticks": 10
+    },
+    "kunai_flight_se": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false,
+      "ticks": 1
     },
     "kunai_s": {
       "kind": "effect",
@@ -116,11 +128,23 @@
       "follow": false,
       "ticks": 10
     },
+    "kunai_flight_s": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false,
+      "ticks": 1
+    },
     "kunai_sw": {
       "kind": "effect",
       "z": 6,
       "follow": false,
       "ticks": 10
+    },
+    "kunai_flight_sw": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false,
+      "ticks": 1
     },
     "kunai_w": {
       "kind": "effect",
@@ -128,11 +152,23 @@
       "follow": false,
       "ticks": 10
     },
+    "kunai_flight_w": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false,
+      "ticks": 1
+    },
     "kunai_nw": {
       "kind": "effect",
       "z": 6,
       "follow": false,
       "ticks": 10
+    },
+    "kunai_flight_nw": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false,
+      "ticks": 1
     },
     "kunai_n": {
       "kind": "effect",
@@ -140,11 +176,23 @@
       "follow": false,
       "ticks": 10
     },
+    "kunai_flight_n": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false,
+      "ticks": 1
+    },
     "kunai_ne": {
       "kind": "effect",
       "z": 6,
       "follow": false,
       "ticks": 10
+    },
+    "kunai_flight_ne": {
+      "kind": "effect",
+      "z": 6,
+      "follow": false,
+      "ticks": 1
     },
     "kunai_hit": {
       "kind": "effect",
@@ -160,7 +208,7 @@
       "kind": "effect",
       "z": 5,
       "follow": false,
-      "ticks": 14,
+      "ticks": 30,
       "geometry_pixels": [
         30,
         26

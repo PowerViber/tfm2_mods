@@ -33,7 +33,7 @@ text = {
               f"Crimson Edge's reset at most once every {sec(o['s3ResetCooldownTicks'])}. "
               f"Dismiss & Devour ({so['charges']} charges, {sec(so['rechargeTicks'])} each): for {sec(so['ticks'])} she's invisible and invulnerable "
               f"and moves {so['speedPct']}% faster, but can only move; she heals {so['healPctMaxHp']}% max HP + {so['healAdRatio']}% Attack."),
-    'skill2': (f"Kunai Flip ({sec(ku['cooldownTicks'])}): she flips back {ku['flip']} and throws a kunai ({ku['range']}); the first enemy hit (never a tower) "
+    'skill2': (f"Kunai Flip ({sec(ku['cooldownTicks'])}): she flips back {ku['flip']} over {sec(ku['flipTicks'])} and throws a non-homing kunai ({ku['range']}, {ku['speed'] * 60} units/s); the first enemy hit (never a tower) "
                f"takes {ku['base']} + {ku['adRatio']}% Attack and is marked for {sec(ku['markTicks'])}. Recast: she dashes to it, over walls too, and "
                f"slashes for {ku['slashBase']} + {ku['slashAdRatio']}% Attack. "
                f"Crimson Edge ({sec(ed['cooldownTicks'])}): her next {ed['hits']} basic attacks within {sec(ed['windowTicks'])}: a bleed "

@@ -32,7 +32,7 @@ try{
    L.reset({fixture:true});L.pause();document.querySelector('#moving').checked=false;document.querySelector('#auto').checked=false;document.querySelector('#bodies').checked=art;[...document.querySelectorAll('#stats input')].forEach((e,i)=>e.value=profile?.[i]??50);
    L.me.pos={x:440000,y:520000};const foe=L.units.find(u=>u.id===2);foe.pos={x:458000,y:520000};foe.hp=foe.max_hp=5000;L.setAim(foe.pos);const trace=[],all=[];
    for(let t=0;t<90;t++){
-    if(t===0)L.order(['edge','kunai','soul'][seed%3]);if(t===15&&seed%3===1)L.order('kunai');if(t===35)L.order('night');if(t===37)L.order('night');
+    if(t===0)L.order(['edge','kunai','soul'][seed%3]);if(t===32&&seed%3===1)L.order('kunai');if(t===65)L.order('night');if(t===67)L.order('night');
     if(seed%3===0&&[12,24,36,48,60].includes(t))L.acceptedBasic(2);if(t===70&&seed%4===0)L.me.hp=0;
     L.step();L.render();trace.push(structuredClone(L.lastTrace));all.push(JSON.stringify({output:L.lastTrace.output,me:L.me,units:L.units}));
    }return{trace,all:all.join('\n')};
@@ -43,6 +43,17 @@ try{
  });
  check('24 development + 12 holdout art-on/off complete combat traces match',result.parity.length===3240);check('All 13 stats at 20/80 retain manual mechanics across three fixtures',result.stat.length===39);fs.writeFileSync(path.join(tmp,'parity.json'),JSON.stringify(result.parity));
  const cadence=await page.evaluate(()=>{const L=akaneLab;L.reset({fixture:true});L.pause();document.querySelector('#auto').checked=false;document.querySelector('#moving').checked=false;L.me.pos={x:440000,y:520000};const u=L.units.find(u=>u.id===2);u.pos={x:452000,y:520000};u.hp=u.max_hp=5000;const hp=u.hp;L.basic(2);L.step();const early=u.hp===hp;for(let i=0;i<7;i++)L.step();const release=u.hp<hp;const after=u.hp;L.basic(2);for(let i=0;i<5;i++)L.step();return early&&release&&u.hp===after;});check('Normal basics keep release and attack cadence',cadence);
+ const flight=await page.evaluate(async()=>{
+  const w=(await WebAssembly.instantiate(await(await fetch('akane.wasm')).arrayBuffer(),{})).instance.exports;
+  const run=frame=>{const b=new TextEncoder().encode(JSON.stringify({version:1,rules_revision:AKANE_RULES.revision,frame})),p=w.akane_input(b.length);new Uint8Array(w.memory.buffer,p,b.length).set(b);const q=w.akane_step(b.length);return JSON.parse(new TextDecoder().decode(new Uint8Array(w.memory.buffer,q,w.akane_output_len())));};
+  const f={tick:0,owner:1,team:0,alive:true,pos:{x:400000,y:400000},hp:1600,max_hp:1600,attack:180,stunned:false,ult_unlocked:true,profile:Array(13).fill(50),basic_hits:[],takedowns:[],manual:true,order:{kind:'kunai',aim:{x:500000,y:400000}},units:[{id:2,team:1,pos:{x:500000,y:400000},hp:1000,max_hp:1000,radius:3000,champion:true,tower:false,visible:true,targetable:true}]};
+  w.akane_reset();const first=run(f);f.order=null;let out;for(let t=1;t<=30;t++){f.tick=t;out=run(f);}const before=out;f.tick=31;const hit=run(f);
+  return{first,before,hit};
+ });
+ check('Kunai launches without instant damage and starts at caster',flight.first.state.kunai_flights.length===1&&!flight.first.effects.some(e=>e.kind==='damage')&&flight.first.state.kunai_flights[0].pos.x===400000);
+ check('100,000-distance hit takes 31 ticks and marks once on arrival',flight.before.state.mark===null&&flight.hit.state.mark[0]===2&&flight.hit.effects.filter(e=>e.kind==='damage').length===1&&flight.hit.effects.find(e=>e.kind==='damage').data.amount===138);
+ check('Canonical extended ranges and slower movement reach the browser',await page.evaluate(()=>AKANE_RULES.kunai.flip===30000&&AKANE_RULES.kunai.flipTicks===30&&AKANE_RULES.kunai.range===120000&&AKANE_RULES.kunai.dashSpeed===3000&&AKANE_RULES.night.dashRange===240000&&AKANE_RULES.night.dashSpeed===4000));
+
  await page.click('#record');await page.evaluate(()=>{akaneLab.pause();for(let i=0;i<30;i++){if(i===2)akaneLab.order('soul');akaneLab.step();}});await page.click('#record');const replay=await page.evaluate(()=>{const L=akaneLab,saved=structuredClone(window.akaneRecording),end=JSON.stringify({me:L.me,units:L.units});L.loadRecording(saved);for(let i=0;i<saved.frames.length;i++)L.step();return saved.frames.length===30&&end===JSON.stringify({me:L.me,units:L.units})&&L.replayIndex===30;});check('Recording replays complete core outputs and visible host state',replay);
  const perf=await page.evaluate(()=>{const L=akaneLab,runs=[],p=(v,q)=>v.sort((a,b)=>a-b)[Math.floor((v.length-1)*q)];for(let k=0;k<5;k++){L.reset({scenario:'gank'});L.pause();document.querySelector('#auto').checked=true;document.querySelector('#moving').checked=true;for(let i=0;i<60;i++)L.step();let steps=[],draw=[];for(let i=0;i<300;i++){let t=performance.now();L.step();steps.push(performance.now()-t);t=performance.now();L.render();draw.push(performance.now()-t);}runs.push({ticks:300,step_p95_ms:p(steps,.95),draw_p95_ms:p(draw,.95)});}return runs;});
  const cold=[];for(let i=0;i<3;i++){const p=await browser.newPage(),start=Date.now();await p.goto('http://localhost:7334/akane.html');await p.waitForFunction(()=>window.akaneLab?.painter.loaded);await p.evaluate(async()=>{akaneLab.pause();await akaneLab.imagesReady;});cold.push(Date.now()-start);await p.close();}

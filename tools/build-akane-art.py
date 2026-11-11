@@ -103,6 +103,8 @@ def effects():
                 for im,t in frames:
                     c=Image.new('RGBA',(side,side));c.alpha_composite(im,((side-im.width)//2,(side-im.height)//2));seq.append((c.rotate(-i*45,N,expand=False),t))
                 tag=name+'_'+heading;anims[tag]=seq;bindings[tag]={'kind':'effect','z':z,'follow':False,'ticks':ticks}
+                if name=='kunai':
+                    tag='kunai_flight_'+heading;anims[tag]=[(seq[2][0],1)];bindings[tag]={'kind':'effect','z':z,'follow':False,'ticks':1}
     return pack('effects',anims,512),bindings
 
 def reviews(body,fx,metadata):

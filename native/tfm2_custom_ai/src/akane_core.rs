@@ -307,6 +307,16 @@ pub struct Bleed {
     pub per_stack: i64,
 }
 
+/// A released non-homing kunai. Its Attack and endpoint are fixed on acceptance.
+#[derive(Clone, Debug, PartialEq, Serialize)]
+pub struct KunaiFlight {
+    pub born: u64,
+    pub from: Point,
+    pub end: Point,
+    pub pos: Point,
+    pub attack: i64,
+}
+
 #[derive(Clone, Debug, Serialize)]
 pub struct Core {
     /// tick each skill is ready again: [Kunai, Edge, Night]
@@ -321,6 +331,7 @@ pub struct Core {
     pub edge_reset_ready: u64,
     /// the kunai's mark: (target, until)
     pub mark: Option<(usize, u64)>,
+    pub kunai_flights: Vec<KunaiFlight>,
     pub dash: Option<DashPlan>,
     /// Crimson Edge: empowered hits landed so far, and the window's end
     pub edge: Option<(u8, u64)>,
@@ -358,6 +369,7 @@ impl Default for Core {
             orbs: vec![],
             edge_reset_ready: 0,
             mark: None,
+            kunai_flights: vec![],
             dash: None,
             edge: None,
             bleeds: vec![],
@@ -409,6 +421,7 @@ impl Core {
     pub fn step(&mut self, f: &Frame) -> Vec<Effect> {
         let mut out = vec![];
         if !f.alive {
+            self.kunai_flights.clear();
             return out;
         }
         self.recharge(f);
@@ -437,6 +450,7 @@ impl Core {
             }
         }
         self.run_bleeds(f, &mut out);
+        self.run_kunai(f, &mut out);
         self.run_dash(f, &mut out);
         let order = if f.manual { f.order } else { self.decide(f, &mut out) };
         if let Some(o) = order {
@@ -732,20 +746,12 @@ impl Core {
                     out.push(Effect::Glide { to: back, ticks: t(d::KUNAI_FLIP_TICKS) });
                     self.busy_until = f.tick + t(d::KUNAI_FLIP_TICKS);
                 }
-                let end = f.pos.toward(aim, d::KUNAI_RANGE);
-                out.push(Effect::Fx { name: "akn_flip".into(), at: f.pos, ticks: 14, ambient: false });
-                out.push(Effect::Fx { name: "akn_kunai".into(), at: end, ticks: 10, ambient: false });
-                out.push(Effect::Pose { name: "skill1", ticks: 12 });
+                let end = f.pos.toward(aim, d::KUNAI_RANGE).clamp_map();
+                out.push(Effect::Fx { name: "akn_flip".into(), at: f.pos, ticks: t(d::KUNAI_FLIP_TICKS), ambient: false });
+                out.push(Effect::Fx { name: "akn_kunai".into(), at: f.pos, ticks: 1, ambient: false });
+                out.push(Effect::Pose { name: "skill1", ticks: t(d::KUNAI_FLIP_TICKS) });
                 self.last_skill = "kunai";
-                match Self::kunai_target(f, f.pos, end) {
-                    Some(u) => {
-                        out.push(Effect::Damage { target: u.id, amount: pct(d::KUNAI_BASE, d::KUNAI_AD_RATIO, f.attack), direct: false });
-                        self.mark = Some((u.id, f.tick + t(d::KUNAI_MARK_TICKS)));
-                        out.push(Effect::Mark { target: u.id, ticks: t(d::KUNAI_MARK_TICKS) });
-                        out.push(Effect::Fx { name: "akn_kunai_hit".into(), at: u.pos, ticks: 12, ambient: false });
-                    }
-                    None => out.push(Effect::Log("kunai missed".into())),
-                }
+                self.kunai_flights.push(KunaiFlight{born:f.tick,from:f.pos,end,pos:f.pos,attack:f.attack});
             }
             Order::KunaiRecast => {
                 let Some(id) = self.marked(f.tick) else { return reject(self, "nothing marked") };
@@ -795,14 +801,33 @@ impl Core {
         }
     }
 
-    /// The first enemy the kunai's line touches (never a tower; it flies over terrain).
+    fn run_kunai(&mut self, f: &Frame, out: &mut Vec<Effect>) {
+        let mut active=vec![];
+        for mut shot in std::mem::take(&mut self.kunai_flights) {
+            let distance=(f.tick.saturating_sub(shot.born) as i64).saturating_mul(d::KUNAI_SPEED);
+            let end_distance=shot.from.dist(shot.end);
+            let to=if distance as f64>=end_distance {shot.end}else{shot.from.toward(shot.end,distance)};
+            // Each tick sweeps the traversed segment; it never homes or hits a tower.
+            if let Some(u)=Self::kunai_target(f,shot.pos,to) {
+                out.push(Effect::Damage{target:u.id,amount:pct(d::KUNAI_BASE,d::KUNAI_AD_RATIO,shot.attack),direct:false});
+                if let Some((old,_))=self.mark.filter(|m|m.0!=u.id){out.push(Effect::Mark{target:old,ticks:0});}
+                self.mark=Some((u.id,f.tick+t(d::KUNAI_MARK_TICKS)));
+                out.push(Effect::Mark{target:u.id,ticks:t(d::KUNAI_MARK_TICKS)});
+                out.push(Effect::Fx{name:"akn_kunai_hit".into(),at:u.pos,ticks:12,ambient:false});
+            }else if to!=shot.end {shot.pos=to;active.push(shot);}
+            else {out.push(Effect::Log("kunai missed".into()));}
+        }
+        self.kunai_flights=active;
+    }
+
+    /// The first enemy the kunai's segment touches (never a tower; it flies over terrain).
     pub fn kunai_target(f: &Frame, from: Point, end: Point) -> Option<Unit> {
         f.units
             .iter()
             .filter(|u| f.skill_target(u))
             .filter_map(|u| {
                 let (dist, k) = u.pos.seg(from, end);
-                (dist <= (d::KUNAI_WIDTH + u.radius) as f64 && k > 0.0).then_some((k, u))
+                (dist <= (d::KUNAI_WIDTH + u.radius) as f64 && (k > 0.0 || from.within(u.pos,d::KUNAI_WIDTH+u.radius))).then_some((k, u))
             })
             .min_by(|a, b| a.0.partial_cmp(&b.0).unwrap_or(std::cmp::Ordering::Equal).then(a.1.id.cmp(&b.1.id)))
             .map(|(_, u)| u.clone())

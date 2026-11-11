@@ -353,7 +353,7 @@ impl Akane {
                 Effect::Fx { name, at, ticks, ambient } => {
                     // The original long orb remains the fallback for old definitions.
                     // New sheets renew one-frame phases from the orb's birth clock.
-                    if self.art_v1 && name == "akn_orb" { continue; }
+                    if self.art_v1 && matches!(name.as_str(),"akn_orb"|"akn_kunai") { continue; }
                     let (name, ticks) = if self.art_v1 {
                         let direction = if name == "akn_kunai" {
                             let p = sim.get_entity(owner).map(|e|e.pos()).unwrap_or_default();
@@ -447,6 +447,7 @@ impl StablePassive for Akane {
     fn on_update(&mut self, sim: &mut StableSim, _: u64, _: usize, id: usize) {
         let f = self.frame(sim, id);
         if !f.alive {
+            self.core.kunai_flights.clear();
             if self.art_v1 { sim.entity_remove_buff(id, art::NIGHT_AURA); }
             self.art_pos=None;
             return;
@@ -458,6 +459,12 @@ impl StablePassive for Akane {
         let effects = self.core.step(&f);
         self.apply(sim, id, effects);
         self.darkness(sim, id);
+        if self.art_v1 && f.tick % 2 == 0 {
+            let shots:Vec<_>=self.core.kunai_flights.iter().map(|s|(s.pos,art::heading(s.end.x-s.from.x,s.end.y-s.from.y))).collect();
+            for (p,heading) in shots {
+                if self.fx_ok(f.tick,false){crate::fx_point(sim,&format!("akn_kunai_flight_{heading}"),id,p.x,p.y,2);}
+            }
+        }
         if self.art_v1 && f.tick % art::ORB_RENEW == 0 {
             let phases: Vec<_>=self.core.orbs.iter().map(|o|(o.pos,art::orb_phase(f.tick,o.born))).collect();
             for (p,phase) in phases {

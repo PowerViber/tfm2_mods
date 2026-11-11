@@ -8,7 +8,7 @@
     "CC",
     "Dot"
   ],
-  "revision": "akane-1",
+  "revision": "akane-1.1",
   "stat": {
     "attack": 78,
     "magic_power": 0,
@@ -58,15 +58,15 @@
   },
   "kunai": {
     "cooldownTicks": 600,
-    "flip": 15000,
-    "flipTicks": 12,
-    "range": 60000,
+    "flip": 30000,
+    "flipTicks": 30,
+    "range": 120000,
     "width": 5000,
-    "speed": 6000,
+    "speed": 3000,
     "base": 30,
     "adRatio": 60,
     "markTicks": 180,
-    "dashSpeed": 4500,
+    "dashSpeed": 3000,
     "slashBase": 40,
     "slashAdRatio": 80
   },
@@ -96,8 +96,8 @@
     "cooldownTicks": 6000,
     "ticks": 240,
     "sight": 20000,
-    "dashRange": 120000,
-    "dashSpeed": 6000,
+    "dashRange": 240000,
+    "dashSpeed": 4000,
     "base": 100,
     "adRatio": 90
   },

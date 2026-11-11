@@ -27,8 +27,8 @@ const root = path.resolve(__dirname, '..'), port = 7331;
       run(100);
       // Kunai Flip over a real map wall
       const c = L.wallCrossing(); L.me.pos = {...c.from}; foe.pos = {...c.to}; foe.hp = foe.max_hp; L.setAim(foe.pos);
-      L.order('kunai'); run(15); out.marked = L.state.mark && L.state.mark[0] === 2;
-      L.order('kunai'); run(40);
+      L.order('kunai'); run(35); out.marked = L.state.mark && L.state.mark[0] === 2;
+      L.order('kunai'); run(60);
       out.crossed = Math.floor(L.me.pos.x / 32000) > Math.floor(c.from.x / 32000) + 1 && !L.wallAt(L.me.pos);
       // Crimson Edge: 5 hits
       foe.hp = foe.max_hp; foe.pos = {x: L.me.pos.x + 12000, y: L.me.pos.y};
