@@ -1010,8 +1010,8 @@ impl StablePlayerAi for WallAi {
                 let me = sim.get_player(pid).and_then(|p| p.champion())?;
                 (0..me.buff_count()).filter_map(|i| me.buff_at(i)).find_map(|b| crate::akane::steer_of(b.name()))
             });
-            if let Some((x, y)) = go {
-                let walk = InputV1::move_to(x.max(0) as u64, y.max(0) as u64);
+            // round 166: only a walk is rewritten; an attack or cast the engine wanted always passes through
+            if let Some(walk) = crate::akane::steer_input(go, base) {
                 if ctx.is_valid_input(&walk) {
                     return Some(walk);
                 }

@@ -56,6 +56,16 @@ pub fn steer_of(name: &str) -> Option<(i64, i64)> {
     Some((it.next()?, it.next()?))
 }
 
+/// Round 166: what her steer makes of the engine's input. Only a walk (or no input) becomes the steer's walk; an
+/// attack or a cast the engine wanted always passes through (None keeps it), like every input layer here.
+pub fn steer_input(go: Option<(i64, i64)>, base: Option<mod_api_stable::InputV1>) -> Option<mod_api_stable::InputV1> {
+    let (x, y) = go?;
+    if base.is_some_and(|inp| inp.kind != mod_api_stable::InputKindV1::Move.code()) {
+        return None;
+    }
+    Some(mod_api_stable::InputV1::move_to(x.max(0) as u64, y.max(0) as u64))
+}
+
 #[derive(Clone, Default)]
 pub struct Akane {
     pub core: Core,
@@ -98,6 +108,21 @@ impl Akane {
         for (kind, bit) in [(Kind::Dash, core::CAN_DASH), (Kind::Blink, core::CAN_BLINK), (Kind::Cc, core::CAN_CC), (Kind::Heal, core::CAN_HEAL), (Kind::Shield, core::CAN_SHIELD)] {
             if def.has(kind) {
                 bits |= bit;
+            }
+        }
+        bits
+    }
+
+    /// What one slot of a champion can do (CAN_* bits, from the roster's kinds for that slot).
+    fn slot_bits(name: Option<&str>, slot: SkillSlotV1) -> u8 {
+        use crate::roster::Kind;
+        let Some(def) = name.and_then(crate::roster::def) else { return 0 };
+        let mut bits = 0;
+        for s in def.skills.iter().filter(|s| s.slot.code() == slot.code()) {
+            for (kind, bit) in [(Kind::Dash, core::CAN_DASH), (Kind::Blink, core::CAN_BLINK), (Kind::Cc, core::CAN_CC), (Kind::Heal, core::CAN_HEAL), (Kind::Shield, core::CAN_SHIELD)] {
+                if s.is(kind) {
+                    bits |= bit;
+                }
             }
         }
         bits
@@ -148,11 +173,23 @@ impl Akane {
             let targetable = e.is_targetable() && reach;
             let kind = e.kind();
             let champion = e.is_champion();
-            let skill_ready = champion
-                && [SkillSlotV1::Skill, SkillSlotV1::Skill2, SkillSlotV1::Ult].iter().any(|&s| {
-                    // a native kit's data slot never comes off cooldown: its real readiness is unknown, so assume ready
-                    e.cooldown(s).is_some_and(|c| c.remaining == 0 || c.cooltime >= 5_000_000)
-                });
+            // round 166: readiness per slot, with what that slot can do. A native kit's data slot never comes off
+            // cooldown (cooltime ≥ 5,000,000): its real readiness is unknown, so it goes in `maybe_can`.
+            let (mut ready_can, mut maybe_can, mut skill_ready) = (0u8, 0u8, false);
+            if champion {
+                let name = e.name();
+                for slot in [SkillSlotV1::Skill, SkillSlotV1::Skill2, SkillSlotV1::Ult] {
+                    let Some(c) = e.cooldown(slot) else { continue };
+                    let bits = Self::slot_bits(name.as_deref(), slot);
+                    if c.cooltime >= 5_000_000 {
+                        maybe_can |= bits;
+                        skill_ready = true;
+                    } else if c.remaining == 0 {
+                        ready_can |= bits;
+                        skill_ready = true;
+                    }
+                }
+            }
             let stat = e.stat();
             units.push(Unit {
                 id: e.id(),
@@ -183,6 +220,8 @@ impl Akane {
                 reduce: buffs.iter().map(|b| b.damaged_reduce as i64).max().unwrap_or(0),
                 parry: champion && buffs.iter().any(|b| b.name() == "v1_guard") && !buffs.iter().any(|b| b.name() == "v1_parry_cd"),
                 tanked: false,
+                ready_can: champion.then_some(ready_can),
+                maybe_can,
             });
         }
         // towers: is someone of her team (a minion or a champion, not her) inside for it to shoot first?

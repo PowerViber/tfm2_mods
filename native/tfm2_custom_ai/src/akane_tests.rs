@@ -570,24 +570,44 @@ fn ai_dodges_with_a_soul_charge_after_her_reaction_time() {
     stunner.attack = 400;
     f.units = vec![stunner, champ(11, 2, 425_000, 410_000)];
     c.ready = [9_999, 9_999, 9_999];
+    // round 166: two enemies next to her at full HP aren't a reason by themselves
+    c.step(&f);
+    assert_ne!(c.last_skill, "soul", "nothing has hit her yet");
+    // a real hit (10% in a tick) is
+    f.tick = 1;
+    f.hp = f.max_hp * 90 / 100;
     c.step(&f);
     assert_eq!(c.last_skill, "soul");
 }
 
 #[test]
-fn ai_disengages_after_a_kill_when_the_next_one_isnt_worth_it() {
+fn after_a_kill_she_has_no_retreat_of_her_own_and_a_modest_athlete_starts_nothing_new() {
+    // round 166 (Reihan): retreating belongs to the game's AI
+    let three = vec![champ(11, 2, 430_000, 400_000), champ(12, 2, 440_000, 410_000), champ(13, 2, 435_000, 390_000)];
+    for ego in [20, 50, 80] {
+        let mut c = Core::default();
+        c.charges = 1;
+        c.ready = [9_999, 9_999, 9_999];
+        let mut f = auto(frame(0, three.clone()));
+        f.takedowns = vec![(FOE, Point::new(405_000, 400_000))];
+        f.profile[EGO] = ego;
+        for tick in 0..60 {
+            f.tick = tick;
+            let out = c.step(&f);
+            f.takedowns.clear();
+            assert!(!out.iter().any(|e| matches!(e, Effect::Steer { .. })), "ego {ego}: no steer away after a kill");
+        }
+    }
+    // a modest athlete starts no new fight this chain, even on a lone low enemy
+    let mut next = champ(11, 2, 440_000, 400_000);
+    next.hp = 200;
     let mut c = Core::default();
-    c.charges = 1;
-    let mut f = auto(frame(0, vec![champ(11, 2, 430_000, 400_000), champ(12, 2, 440_000, 410_000), champ(13, 2, 435_000, 390_000)]));
+    let mut f = auto(frame(0, vec![next.clone()]));
     f.takedowns = vec![(FOE, Point::new(405_000, 400_000))];
-    f.profile[MACRO] = 30;
-    c.ready = [9_999, 9_999, 9_999];
+    f.profile[EGO] = 20;
+    c.ready[NIGHT] = 9_999;
     c.step(&f);
-    assert!(c.disengage_until > 0, "three healthy enemies converging: get out");
-    f.takedowns.clear();
-    f.tick = 1;
-    let out = c.step(&f);
-    assert!(out.iter().any(|e| matches!(e, Effect::Steer { .. })), "she runs to a safe spot");
+    assert_ne!(c.last_skill, "kunai");
 }
 
 #[test]
@@ -597,8 +617,9 @@ fn ai_chains_a_second_kill_when_it_is_still_safe() {
     next.hp = 200;
     let mut f = auto(frame(0, vec![next]));
     f.takedowns = vec![(FOE, Point::new(405_000, 400_000))];
+    c.ready[NIGHT] = 9_999;
     c.step(&f);
-    assert_eq!(c.disengage_until, 0, "a lone low enemy: go again");
+    assert_eq!(c.last_skill, "kunai", "a lone low enemy: go again");
 }
 
 #[test]
@@ -699,6 +720,202 @@ fn ego_leaves_a_kill_to_a_closer_teammate_and_order_joins_the_team_fight() {
     assert_eq!(c.hunt(&orderly).map(|t| t.id), Some(FOE), "joins the teammate's fight");
 }
 
+// ------------------------------------------------------------------ round 166: she engages while healthy
+
+fn cc_enemy(id: usize, x: i64) -> Unit {
+    Unit { hp: 900, max_hp: 900, attack: 70, armor: 25, flash_ready: true, skill_ready: true, can: CAN_CC, ..champ(id, 2, x, 400_000) }
+}
+fn level_one(units: Vec<Unit>) -> Frame {
+    let mut f = auto(frame(0, units));
+    f.hp = 850;
+    f.max_hp = 850;
+    f.attack = 78;
+    f.flash_ready = true;
+    f
+}
+/// run her own AI for `ticks` (the engine doesn't move anyone): the skills she used and whether she ever steered
+/// away from every enemy
+fn play(c: &mut Core, f: &mut Frame, ticks: u64) -> (Vec<&'static str>, bool) {
+    let mut used = vec![];
+    let mut fled = false;
+    for tick in 0..ticks {
+        f.tick = tick;
+        let out = c.step(f);
+        if !c.last_skill.is_empty() && used.last() != Some(&c.last_skill) {
+            used.push(c.last_skill);
+        }
+        for e in &out {
+            if let Effect::Steer { to } = e {
+                let nearest_now = f.enemy_champions().map(|u| u.pos.dist(f.pos) as i64).min().unwrap_or(0);
+                let nearest_there = f.enemy_champions().map(|u| u.pos.dist(*to) as i64).min().unwrap_or(0);
+                fled |= nearest_there > nearest_now;
+            }
+        }
+    }
+    (used, fled)
+}
+
+#[test]
+fn a_healthy_akane_no_longer_burns_dismiss_on_a_cc_enemy_that_hasnt_hit_her() {
+    // scenario A from the round-166 review: one CC enemy 35,000 away, full HP, average athlete
+    let mut c = Core::default();
+    let mut f = level_one(vec![cc_enemy(FOE, 435_000)]);
+    let (used, fled) = play(&mut c, &mut f, 300);
+    assert!(used.contains(&"kunai"), "{used:?}");
+    assert!(!used.contains(&"soul") || c.charges >= 1, "no Dismiss burned without being hit: {used:?}");
+    assert!(!fled, "never steers away");
+}
+
+#[test]
+fn a_lane_two_v_two_at_full_hp_starts_a_fight_instead_of_running() {
+    // scenario C: two CC enemies 60,000 away, an ally beside her
+    let mut c = Core::default();
+    let ally = champ(5, 1, 405_000, 400_000);
+    let mut f = level_one(vec![cc_enemy(FOE, 460_000), cc_enemy(11, 460_000), ally]);
+    let (used, fled) = play(&mut c, &mut f, 300);
+    assert!(!fled, "{used:?}");
+    assert!(!used.contains(&"soul") || used.first() != Some(&"soul"), "Dismiss isn't her opener as a dodge: {used:?}");
+}
+
+#[test]
+fn ego_decides_whether_she_starts_the_fight() {
+    // a target 50% short of lethal for an average athlete's margin, two enemies, nobody of hers on it
+    let target = || Unit { hp: 700, max_hp: 900, ..cc_enemy(FOE, 470_000) };
+    let second = cc_enemy(11, 480_000);
+    let run = |ego: i64| {
+        let mut c = Core::default();
+        let mut f = level_one(vec![target(), second.clone()]);
+        f.profile[EGO] = ego;
+        c.ready[NIGHT] = 9_999;
+        play(&mut c, &mut f, 120).0
+    };
+    let bold = run(90);
+    let modest = run(10);
+    assert!(bold.contains(&"kunai") || bold.contains(&"soul"), "bold: {bold:?}");
+    assert!(modest.is_empty(), "modest waits: {modest:?}");
+    // a modest athlete joins once a teammate is on the target
+    let mut c = Core::default();
+    let mut f = level_one(vec![target(), second, champ(5, 1, 468_000, 400_000)]);
+    f.profile[EGO] = 10;
+    c.ready[NIGHT] = 9_999;
+    assert!(play(&mut c, &mut f, 120).0.contains(&"kunai"));
+}
+
+#[test]
+fn ego_moves_her_lines_and_fifty_is_the_baseline() {
+    let mut low = frame(0, vec![]);
+    low.profile[EGO] = 20;
+    let mid = frame(0, vec![]);
+    let mut high = frame(0, vec![]);
+    high.profile[EGO] = 80;
+    assert_eq!((Core::near_lethal_pct(&low), Core::near_lethal_pct(&mid), Core::near_lethal_pct(&high)), (5, 20, 35));
+    assert_eq!((Core::hurt_line(&low), Core::hurt_line(&mid), Core::hurt_line(&high)), (45, 35, 25));
+    assert!(Core::danger_limit(&low, true) < Core::danger_limit(&mid, true));
+    assert!(Core::danger_limit(&high, true) > Core::danger_limit(&mid, true));
+}
+
+#[test]
+fn dismiss_is_a_fighting_window_not_a_way_home() {
+    // healthy, Dismiss up, an enemy 50,000 away: she goes to it, never away
+    let mut c = Core::default();
+    c.ready = [9_999, 9_999, 9_999];
+    let mut f = level_one(vec![cc_enemy(FOE, 450_000)]);
+    let o = order(&mut c, &Frame { manual: true, ..f.clone() }, Order::Soul);
+    assert!(o.iter().any(|e| matches!(e, Effect::Soul { .. })));
+    f.tick = 1;
+    let out = c.step(&f);
+    let steer = out.iter().find_map(|e| match e { Effect::Steer { to } => Some(*to), _ => None });
+    assert_eq!(steer, Some(Point::new(450_000, 400_000)), "{out:?}");
+    // in reach: no steer, the engine swings (and with the Edge ready she empowers it)
+    let mut c = Core::default();
+    c.ready = [9_999, 0, 9_999];
+    let f = level_one(vec![Unit { hp: 400, ..cc_enemy(FOE, 420_000) }]);
+    order(&mut c, &Frame { manual: true, ..f.clone() }, Order::Soul);
+    let mut g = f.clone();
+    g.tick = 1;
+    let out = c.step(&g);
+    assert!(!out.iter().any(|e| matches!(e, Effect::Steer { .. })));
+    assert_eq!(c.last_skill, "edge");
+}
+
+#[test]
+fn hurt_in_dismiss_she_leaves_the_walking_to_the_game() {
+    let mut c = Core::default();
+    c.ready = [9_999, 9_999, 9_999];
+    let mut f = level_one(vec![cc_enemy(FOE, 430_000), cc_enemy(11, 440_000)]);
+    f.hp = 250; // 29%
+    order(&mut c, &Frame { manual: true, ..f.clone() }, Order::Soul);
+    f.tick = 1;
+    let out = c.step(&f);
+    assert!(!out.iter().any(|e| matches!(e, Effect::Steer { .. })), "no steer of hers: {out:?}");
+}
+
+#[test]
+fn a_bold_athlete_dismisses_in_when_the_kunai_is_down_a_modest_one_does_not() {
+    let target = Unit { hp: 180, ..cc_enemy(FOE, 450_000) };
+    let run = |ego: i64, charges: i64| {
+        let mut c = Core::default();
+        c.ready = [9_999, 9_999, 9_999]; // Kunai, Edge and ult down
+        c.charges = charges;
+        let mut f = level_one(vec![target.clone()]);
+        f.profile[EGO] = ego;
+        f.flash_ready = false;
+        c.step(&f);
+        c.last_skill
+    };
+    assert_eq!(run(80, 2), "soul");
+    assert_ne!(run(20, 2), "soul");
+    // the last charge is kept by an average athlete unless the kill is sure
+    assert_ne!(run(50, 1), "soul");
+}
+
+#[test]
+fn readiness_is_per_slot_a_ready_damage_skill_is_not_a_ready_stun() {
+    let c = Core::default();
+    let f = frame(0, vec![]);
+    let mut u = cc_enemy(FOE, 420_000);
+    u.ready_can = Some(0); // its damage slot is up, its CC slot isn't
+    let mut stun_up = u.clone();
+    stun_up.ready_can = Some(CAN_CC);
+    let mut unknown = u.clone();
+    unknown.maybe_can = CAN_CC;
+    let here = Point::new(400_000, 400_000);
+    let (a, b, m) = (c.danger_at(&f, here, None), {
+        let mut g = f.clone();
+        g.units = vec![stun_up];
+        c.danger_at(&g, here, None)
+    }, {
+        let mut g = f.clone();
+        g.units = vec![unknown];
+        c.danger_at(&g, here, None)
+    });
+    let mut g = f.clone();
+    g.units = vec![u];
+    let none = c.danger_at(&g, here, None);
+    assert_eq!(a, 0, "no enemies in the empty frame");
+    assert_eq!(b - none, 200);
+    assert_eq!(m - none, 100);
+}
+
+#[test]
+fn danger_counts_a_far_enemy_at_half_and_leaves_out_her_target() {
+    let c = Core::default();
+    let near = frame(0, vec![Unit { can: 0, ..cc_enemy(FOE, 420_000) }]);
+    let far = frame(0, vec![Unit { can: 0, ..cc_enemy(FOE, 470_000) }]);
+    let here = Point::new(400_000, 400_000);
+    assert_eq!(c.danger_at(&far, here, None) * 2, c.danger_at(&near, here, None));
+    assert_eq!(c.danger_at(&near, here, Some(FOE)), 0);
+}
+
+#[test]
+fn orbs_wait_until_the_fight_is_over() {
+    let mut c = Core::default();
+    c.ready = [9_999, 9_999, 9_999];
+    c.orbs.push(Orb { pos: Point::new(450_000, 400_000), born: 0, until: 900, since: None });
+    let out = c.step(&auto(frame(40, vec![Unit { hp: 300, ..champ(FOE, 2, 415_000, 400_000) }])));
+    assert!(!out.iter().any(|e| matches!(e, Effect::Steer { .. })), "mid-fight: no orb walk");
+}
+
 // ------------------------------------------------------------------ glue (the mock host)
 
 mod glue {
@@ -749,6 +966,8 @@ mod glue {
         let (x, y) = open_spot(80_000);
         let host = Host::new(vec![champ(0, (x, y), "tfm2_custom_akane"), champ(1, (x + 15_000, y), "foe")]);
         let mut k = Akane::default();
+        // round 166: with the Edge up she'd empower her swing in Dismiss (a cast reveals her); keep it down here
+        k.core.ready = [9_999, 9_999, 9_999];
         host.borrow_mut().tick = 10;
         let f = with_sim(&host, |sim| k.frame(sim, 0));
         let mut out = vec![];
@@ -909,6 +1128,20 @@ mod glue {
         let g = host.borrow();
         let go: Vec<_> = g.buffs[0].iter().filter_map(|b| crate::akane::steer_of(b.name())).collect();
         assert_eq!(go, vec![(124_000, 457_000)], "one, the latest");
+    }
+
+    #[test]
+    fn her_steer_rewrites_walks_only_never_an_attack_or_a_cast() {
+        use mod_api_stable::{InputKindV1, InputTargetV1, InputV1};
+        let go = Some((123_000, 456_000));
+        let walk = InputV1::move_to(1, 2);
+        let attack = InputV1::action(InputKindV1::Attack, InputTargetV1::target(7));
+        let cast = InputV1::action(InputKindV1::Skill, InputTargetV1::target(7));
+        assert_eq!(crate::akane::steer_input(go, Some(walk)).map(|i| (i.kind, i.x, i.y)), Some((InputKindV1::Move.code(), 123_000, 456_000)));
+        assert_eq!(crate::akane::steer_input(go, None).map(|i| i.x), Some(123_000));
+        assert!(crate::akane::steer_input(go, Some(attack)).is_none(), "the swing goes through");
+        assert!(crate::akane::steer_input(go, Some(cast)).is_none(), "the cast goes through");
+        assert!(crate::akane::steer_input(None, Some(walk)).is_none());
     }
 
     #[test]
