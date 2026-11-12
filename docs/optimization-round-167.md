@@ -1,6 +1,8 @@
-# Round 166: native optimization pass for every modded champion (native 0.10.100, tfm2_custom 0.2.103)
+# Round 167: native optimization pass for every modded champion (native 0.10.101, tfm2_custom 0.2.104)
 
 Reihan: the game launch, and mostly **Proceed**, felt slow; optimize every modded character and add-on.
+
+It builds on round 166 (`akane-1.5`, Akane engages while healthy).
 
 - **Why Proceed:** it simulates the day's other matches in the background, so the per-tick cost of the native passives is paid in every background match that drafts a modded champion.
 - **What doesn't change:** gameplay, AI decisions, art and data. Every test gives the same answers as before.
@@ -12,17 +14,19 @@ Reihan: the game launch, and mostly **Proceed**, felt slow; optimize every modde
   - **`mixed_match_tick_cost`:** three 5v5s of ten modded champions, each ticking every tick (`BENCH_MIXED=<0..2>`), which is what a background match looks like.
 - **Numbers are instruction counts** (valgrind callgrind), because wall-clock time on a shared machine is too noisy. The mock host's own cost is included, so read them relative to each other.
 
-## Results (round 165 → round 166)
+## Results (round 165 → round 167)
 
-| Ten modded champions in one match | Round 165 | Round 166 | Change |
+| Ten modded champions in one match | Round 165 | Round 167 | Change |
 |---|---|---|---|
-| Akane, Thalassa, Wright, Kratos, Grimhald, Raze, Rally, Gojo, Steve, Magnus | 378 M | 236 M | **−38%** |
-| Vesper, Scribble, Unified, Contender, Frieren, Coder, Omen, Isliid, DIO, Levi | 224 M | 141 M | **−37%** |
-| David, Aegis Zero, Vader, V1, Minato, Akane, Thalassa, Raze, Rally, Magnus | 477 M | 164 M | **−66%** |
+| Akane, Thalassa, Wright, Kratos, Grimhald, Raze, Rally, Gojo, Steve, Magnus | 378 M | 224 M | **−41%** |
+| Vesper, Scribble, Unified, Contender, Frieren, Coder, Omen, Isliid, DIO, Levi | 224 M | 142 M | **−37%** |
+| David, Aegis Zero, Vader, V1, Minato, Akane, Thalassa, Raze, Rally, Magnus | 477 M | 154 M | **−68%** |
+
+The match numbers were measured on the tree merged with round 166, so they include `akane-1.5`.
 
 **Each champion alone,** in thousands of instructions per tick (the harness cost is subtracted):
 
-| Champion | Round 165 | Round 166 | Change |
+| Champion | Round 165 | Round 167 | Change |
 |---|---|---|---|
 | Raze | 2,424 | 399 | −84% |
 | Rally | 347 | 234 | −33% |
@@ -78,13 +82,13 @@ Reihan: the game launch, and mostly **Proceed**, felt slow; optimize every modde
 
 ## Verification
 - **Tests:**
-  - `cargo test --release`: **1,206 passed**, 0 failed, 0 warnings;
+  - `cargo test --release` (merged with round 166): **1,217 passed**, 0 failed, 0 warnings;
   - generators current;
   - Mod Manager tests (15) pass.
 - **Lab crates:**
   - all pass: Rally 130, Raze 136, Thalassa 45, Wright 29, Grimhald 40, Akane 9, Kratos 2, Steve 50, Gojo 86, Magnus 88, Frieren 22, Unified 2, Universal 14, Contender 49;
   - `raze_lab`'s `raze-bench` binary target fails to compile on main as well (`valorant_guns::basic_raw` is configured out). It is unrelated to this change, and its library tests pass.
-- **DLL:** the Windows DLL reports **0.10.100**.
+- **DLL:** the Windows DLL reports **0.10.101**.
 
 ## Not changed
 - **Launch:** what the game reads at launch (mod data and art) is unchanged. Round 165 added only 1.4% text and 0.6% decoded art (see `main-review-round-165.md`), and the Gundam review images in `mods/tfm2_gundam/source` are never installed.

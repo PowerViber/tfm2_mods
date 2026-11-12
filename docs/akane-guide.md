@@ -26,16 +26,29 @@ She reads, through her frame, each enemy champion's:
 
 She also reads towers and whether something of hers is tanking them, plus walls and bushes. She remembers who used Flash and who has gone missing.
 
-- **Engage** only on a lethal or near-lethal champion, with a real way out (a Soul charge or Flash) and a landing she can survive.
-  - Her combo's estimated damage has to cover the target's effective HP plus a margin for its own outs: +25% if Flash is ready, +15% if a dash or blink is ready, +15% if a heal or shield is ready.
-  - CC immunity means not now; V1's parry means she never slashes into it.
+- **Retreating is the game's job** (round 166, `akane-1.5`). She has no disengage of her own: the engine's AI walks her and decides when to back off. Her own steering is only toward her target while Dismiss is up, and toward an orb between fights. A steer never replaces an attack or a cast the engine wanted (`akane::steer_input`).
+- **Her athlete's ego decides whether she starts a fight:**
+
+  | | Low ego (below 35) | 50 | High ego (70+) |
+  |---|---|---|---|
+  | Starts a fight | only when a teammate is already on the target, or the target is isolated **and** lethal | a near-kill (20% short), an isolated target, or a teammate's fight while she's at 60%+ HP | a near-kill down to 35% short, and into a 2v1 if she has an out |
+  | Danger she accepts | −15 points of HP | as before | +15 points |
+  | Counts as hurt below | 45% HP | 35% | 25% |
+  | After a takedown | starts nothing new in that fight | re-scores with the chain bar | the same |
+
+  A modest athlete still leaves a kill to a closer teammate. Each teammate on the target (up to two) also adds 15 points to the danger she accepts.
+- **Engage:** the Kunai on a target her ego will fight, with an out (a Soul charge or Flash) and a landing she can stand. Her combo's estimated damage is weighed against the target's effective HP plus a margin for its outs: +25% for Flash, +15% for a ready dash or blink, +15% for a ready heal or shield. CC immunity means not now; V1's parry means she never slashes into it.
+- **Readiness per slot:** an enemy's CC counts only if its CC slot is off cooldown, so a ready damage skill is no longer read as a ready stun. Native kits' slots can't be read, so they count half.
+- **Danger is weighted by distance:** an enemy within a short step counts fully; one that needs a dash or Flash to reach her counts half; the target she's going in on doesn't count against its own landing.
+- **Dismiss & Devour:**
+  - **As a dodge:** only against something real: damage just taken (8% in half a second with an enemy around), a tower on her, being hurt (the ego line above), or danger over her limit below 70% HP. A ready CC nearby alone is no longer a reason.
+  - **As a fighting window:** invulnerable and hidden, she goes to her target. In reach, the engine swings (the 2nd swing ends it into Ambush); she empowers it with Crimson Edge, or uses the Kunai on a near-kill. If she's really hurt, she issues no steer and the game's AI walks her out.
+  - **As an engage:** when the Kunai can't reach the target (on cooldown, or a wave in the way), a healthy Akane may Dismiss in on a near-kill within 60,000. An average athlete keeps one charge in reserve unless the kill is sure; a high-ego one spends it.
 - **Kunai recast**, re-judged in the moment:
   - not into an untanked tower, unless it kills and she has a charge to leave;
   - **held** when the target Flashes away, and used if it lands back in reach.
-- **Chaining:** after a kill she re-scores the next target with her current HP and charges. Each extra kill in the fight raises the bar; otherwise she **disengages** to the safest spot.
-- **Soul charges:** she uses one to dodge a ready CC or burst, or a tower turning on her, after her reaction time. While diving she keeps one in reserve unless the kill is certain.
-- **Orbs:** she absorbs one only when the 0.75 s is safe.
-- **Crimson Night:** cast to pick an isolated kill or to escape. The recast dash waits for the target's Flash, or for the end of the window.
+- **Orbs:** she walks to one only between fights (no enemy champion within her reach plus 20,000), and only when the 0.75 s is safe.
+- **Crimson Night:** cast to pick an isolated kill, or to hide her team when she's hurt with no charge left (the game walks her). The recast dash waits for the target's Flash, or for the end of the window.
 - **The 13 athlete values** change her choices, never her damage:
 
 | Stat | What it changes |
@@ -45,7 +58,7 @@ She also reads towers and whether something of hers is tanking them, plus walls 
 | positioning | where the finale lands her (target between her and its allies), and her danger tolerance |
 | control_speed, skill_avoid | her reaction time for dodges |
 | skill_hit | how far the Kunai's aim leads the target |
-| ego | whether she leaves a kill to a closer teammate |
+| ego | **whether she starts a fight** (see the table above), the danger she accepts, when she counts as hurt, Dismiss as an engage, and leaving a kill to a closer teammate |
 | order | whether she joins the team's fight |
 | roaming | how far she hunts |
 | macro | pushing on after a kill rather than resetting |

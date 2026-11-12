@@ -8,7 +8,7 @@
     "CC",
     "Dot"
   ],
-  "revision": "akane-1.4",
+  "revision": "akane-1.5",
   "stat": {
     "attack": 78,
     "magic_power": 0,
@@ -126,7 +126,16 @@
     "calmRange": 90000,
     "flashMarginPct": 25,
     "dashMarginPct": 15,
-    "sustainMarginPct": 15
+    "sustainMarginPct": 15,
+    "closeReach": 35000,
+    "ccReach": 40000,
+    "modestEgo": 35,
+    "boldEgo": 70,
+    "healthyPct": 60,
+    "hurtLossPct": 15,
+    "dodgeLossPct": 8,
+    "soulEngageRange": 60000,
+    "allySharePct": 15
   },
   "fxTokens": 12
 }
