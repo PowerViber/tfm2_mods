@@ -8,7 +8,7 @@ use crate::mastery::{signature, Book, Record};
 use crate::vesper_core::{Cc, Cmd, Core, Dmg, Fighter, Input, Mods};
 use crate::vesper_data::{MODULES, MOVE_IDS, RANKS, STRESS_CAP, TOP_NAME};
 use crate::vesper_math::modules_of;
-use crate::{champions, fx_point, fx_unit, timed, walls, Champ};
+use crate::{champions_shared, fx_point, fx_unit, timed, walls, Champ};
 use mod_api_stable::{AttackTypeV1, BuffV1, CcKindV1, CcV1, DamageTypeV1, StablePassive, StableSim};
 use std::io::Write;
 
@@ -462,7 +462,7 @@ impl StablePassive for Vesper {
         }
         self.profile.bind(sim,entity);
         let snapshot_at=self.profile.start();
-        let all = champions(sim);
+        let all = champions_shared(sim);
         let Some(m) = all.iter().find(|c| c.id == entity).cloned() else {
             if self.core.as_ref().is_some_and(|c| !c.rifts.is_empty()) || !self.visual_buffs.is_empty() {
                 self.on_dead(sim, player);

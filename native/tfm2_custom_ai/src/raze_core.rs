@@ -502,10 +502,24 @@ impl Frame {
     }
     pub fn sweep(&self, from: Point, to: Point, r: i64) -> (Point, bool) {
         let n = (distance(from, to) / 1000 + 1).min(2000);
+        // optimization pass: only walls and surfaces near the segment can block a point on it (same answers as
+        // `blocked` against all of them)
+        let (lo, hi) = (Point::new(from.x.min(to.x), from.y.min(to.y)), Point::new(from.x.max(to.x), from.y.max(to.y)));
+        let near = |b: &Rect| b.min.x - r <= hi.x && b.max.x + r >= lo.x && b.min.y - r <= hi.y && b.max.y + r >= lo.y;
+        let blocks: Vec<&Rect> = self.blocks.iter().filter(|b| near(b)).collect();
+        let surfaces: Vec<&Rect> = self.surfaces.iter().map(|s| &s.bounds).filter(|b| near(b)).collect();
+        let blocked = |p: Point| {
+            p.x < r
+                || p.y < r
+                || p.x > MAP_SIZE - r
+                || p.y > MAP_SIZE - r
+                || blocks.iter().any(|b| b.contains(p, r))
+                || surfaces.iter().any(|b| b.contains(p, r))
+        };
         let mut prev = from;
         for k in 1..=n {
             let p = from.add(to.sub(from).scale(k, n));
-            if self.blocked(p, r) {
+            if blocked(p) {
                 return (prev, true);
             }
             prev = p;
@@ -3984,7 +3998,8 @@ impl Core {
                         .iter()
                         .chain(f.surfaces.iter().map(|s| &s.bounds))
                         .collect();
-                    walls.sort_by_key(|r| {
+                    // optimization pass: the key (two square roots) once per wall, not per comparison; same stable order
+                    walls.sort_by_cached_key(|r| {
                         let middle = r.min.add(r.max).scale(1, 2);
                         (
                             distance(me.pos, middle) + distance(aim, middle),

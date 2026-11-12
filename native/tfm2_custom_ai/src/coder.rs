@@ -23,7 +23,7 @@
 
 
 use crate::mastery::{signature, Book, Record};
-use crate::{champions, d2, sq, timed, walls, Champ};
+use crate::{champions_shared, d2, sq, timed, walls, Champ};
 use mod_api_stable::{AttackTypeV1, BuffDurationV1, BuffV1, CcKindV1, CcV1, StablePassive, StableSim};
 use std::collections::{HashMap, HashSet, VecDeque};
 use std::sync::{Arc, Mutex};
@@ -3015,7 +3015,7 @@ impl StablePassive for Coder {
             // round 108: a data center comes with credit on the account (its parts bill every second)
             if self.tiers.contains(&MAX_TIER) { self.btc += START_CREDIT; }
         }
-        let all_raw = champions(sim);
+        let all_raw = champions_shared(sim);
         let Some(m) = all_raw.iter().find(|c| c.id == entity).cloned() else { return };
         if self.team.is_none() { self.team = Some(m.team); }
         // he only acts on enemies his team can see

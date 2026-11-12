@@ -872,9 +872,17 @@ impl BuffV1 {
         self.name_len = len;
     }
 
+    #[inline]
     pub fn name(&self) -> &str {
         let len = self.name_len.min(BUFF_NAME_CAP);
-        std::str::from_utf8(&self.name_buf[..len]).unwrap_or("")
+        let bytes = &self.name_buf[..len];
+        // nearly every name is ASCII: the cheap check stands in for full UTF-8 validation (same result)
+        if bytes.is_ascii() {
+            // SAFETY: ASCII bytes are valid UTF-8
+            unsafe { std::str::from_utf8_unchecked(bytes) }
+        } else {
+            std::str::from_utf8(bytes).unwrap_or("")
+        }
     }
 }
 
@@ -922,9 +930,17 @@ impl CcV1 {
         Self::of_kind(CcKindV1::Stun, tick)
     }
 
+    #[inline]
     pub fn name(&self) -> &str {
         let len = self.name_len.min(BUFF_NAME_CAP);
-        std::str::from_utf8(&self.name_buf[..len]).unwrap_or("")
+        let bytes = &self.name_buf[..len];
+        // nearly every name is ASCII: the cheap check stands in for full UTF-8 validation (same result)
+        if bytes.is_ascii() {
+            // SAFETY: ASCII bytes are valid UTF-8
+            unsafe { std::str::from_utf8_unchecked(bytes) }
+        } else {
+            std::str::from_utf8(bytes).unwrap_or("")
+        }
     }
 
     pub fn set_name(&mut self, name: &str) {

@@ -83,6 +83,7 @@ impl Wright {
         values[..9].copy_from_slice(&profile.values);
         values[9..].copy_from_slice(&profile.sense.0);
         let farming = crate::farming::Context::new(sim, owner);
+        let snapshot = crate::champions_shared(sim);
         let realms = crate::realm::realms(sim);
         let my_realm = crate::realm::realm_of(&realms, owner);
         let mine: Vec<usize> = self.carriers.values().copied().collect();
@@ -95,7 +96,7 @@ impl Wright {
             let visible = e_team == team || sim.is_visible(team, e.id());
             let p = e.pos();
             let h = e.hp();
-            let buffs: Vec<_> = (0..e.buff_count()).filter_map(|i| e.buff_at(i)).collect();
+            let buffs = crate::entity_buffs(&snapshot, &e);
             let targetable = e.is_targetable();
             let kind = e.kind();
             units.push(Unit {

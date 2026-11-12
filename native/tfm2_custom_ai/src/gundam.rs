@@ -14,7 +14,7 @@
 //!   live game shows whether the skills fire.
 use mod_api_stable::{AttackTypeV1, BuffV1, CastingTargetV1, CcKindV1, CcV1, InputTargetV1, ProjectileMoveKindV1,
     ProjectileSpawnV1, StablePassive, StableSim};
-use crate::{champions, d2, sq, walls, Champ, MOD_ID};
+use crate::{champions_shared, d2, sq, walls, Champ, MOD_ID};
 
 const ID: &str = "tfm2_gundam_aegis_zero";
 const PROTECT_R: i64 = 60_000;
@@ -653,7 +653,7 @@ impl StablePassive for Gundam {
     fn on_update(&mut self, sim: &mut StableSim<'_>, _seed: u64, player: usize, entity: usize) {
         self.me = Some(entity);
         if sim.is_end() { self.clean(sim); return; }
-        let all = champions(sim);
+        let all = champions_shared(sim);
         let Some(me) = living(&all, entity).cloned() else { self.clean(sim); return };
         let tick = sim.tick();
         if tick < 3 { log(sim, "spawn", &format!("Aegis Zero native {} is running (player {player})", crate::VERSION)); }

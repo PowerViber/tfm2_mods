@@ -706,7 +706,7 @@ impl StablePassive for Steve {
         // V1's successful parry destroys this owner's whole ultimate, including empty boat.
         if let Some(r) = &self.core.ride {
             let (p, _) = at(&r.path, t.saturating_sub(r.start) as i64 * 2500);
-            let champs = crate::champions(sim);
+            let champs = crate::champions_shared(sim);
             if champs
                 .iter()
                 .filter(|e| {
@@ -729,7 +729,7 @@ impl StablePassive for Steve {
             .unwrap_or_default();
         let haste = buffs.iter().map(|b| b.skill_cooldown_mult as i64).sum();
         let ult_haste = buffs.iter().map(|b| b.ult_cooldown_mult as i64).sum();
-        let world=crate::champions(sim);let barriers:Vec<_>=crate::steve::walls_up(&world,t).iter().map(|w|((w.ax,w.ay),w.built_end(t))).collect();
+        let world=crate::champions_shared(sim);let barriers:Vec<_>=crate::steve::walls_up(&world,t).iter().map(|w|((w.ax,w.ay),w.built_end(t))).collect();
         let reserved_returns:Vec<_>=crate::contender_arena::rings(sim).iter().flat_map(|r|r.entries).map(|p|(p.x,p.y)).collect();
         let input = Input {
             tick: t,

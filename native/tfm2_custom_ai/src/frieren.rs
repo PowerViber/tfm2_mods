@@ -143,7 +143,7 @@ impl StablePassive for Frieren {
             return;
         };
         // The shared farming safety window is a decision gate, not a damage-immunity rule.
-        let heroes = crate::champions(sim);
+        let heroes = crate::champions_shared(sim);
         let safe = heroes.iter().find(|u| u.id == owner).is_some_and(|u| {
             crate::farming::window(sim,u,&heroes)
         });

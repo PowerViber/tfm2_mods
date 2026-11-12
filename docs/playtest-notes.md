@@ -3889,3 +3889,9 @@ Approved effects are integrated in PR #77. Check Thalassa’s water-only wave and 
   - that the fear sends them away from her, and doesn't pull them through walls;
   - that a V1 parry cancels it;
   - that it reads as a pick tool, not a team wipe.
+
+## Nov 12: round 166 (native 0.10.100, tfm2_custom 0.2.103): optimization pass for every modded champion
+- **Why:** Reihan said Proceed (the day's background matches) was slow.
+- **Result:** the native passives now do 36-66% less work per tick in a 10-modded-champion match. Raze does 84% less, Rally 33%. No gameplay changes.
+- **Details:** `docs/optimization-round-166.md`.
+- **Watch for:** Proceed and launch times compared with round 165, and any AI behaviour that looks different (none is expected).

@@ -157,7 +157,7 @@ impl Gojo {
                 Cmd::Heal(n) => sim.heal(owner, owner, n.max(0) as usize),
                 Cmd::Infinity { active, shield } => self.infinity(sim, active, shield),
                 Cmd::Seal { target, ticks } => {
-                    if let Some(c) = crate::champions(sim).iter().find(|c| c.id == target) {
+                    if let Some(c) = crate::champions_shared(sim).iter().find(|c| c.id == target) {
                         crate::strip_cc_immunity(sim, c);
                     }
                     for k in [
@@ -531,7 +531,7 @@ impl StablePassive for Gojo {
         .into_iter()
         .any(|k| cc(sim, owner, k));
         let bound = cc(sim, owner, CcKindV1::Bind) || cc(sim, owner, CcKindV1::BlockMoveSkill);
-        let champs = crate::champions(sim);
+        let champs = crate::champions_shared(sim);
         let dynamic = crate::steve::walls_up(&champs, t);
         let smokes = crate::valorant::smokes_up(&champs, t);
         let domains = domain_zones(&champs, owner, t);

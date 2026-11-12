@@ -56,6 +56,8 @@ pub struct Raze {
     enemy_guides: BTreeMap<(usize, u64), String>,
     guide: Option<String>,
     terrain: Vec<Rect>,
+    /// optimization pass: built at least once (an open map has no wall rects, which used to rebuild it every tick)
+    terrain_built: bool,
     perf: crate::adapter_perf::Profile,
     projectiles: Vec<ProjectileTrack>,
     next_projectile: u64,
@@ -985,7 +987,7 @@ impl StablePassive for Raze {
         let k = crate::valorant_guns::shotgun_percent(Gun::from_index(self.core.gun), d);
         let base = *damage;
         *damage = base * k as usize / 100;
-        let all = crate::champions(sim);
+        let all = crate::champions_shared(sim);
         for e in all.iter().filter(|c| {
             c.team != team
                 && c.id != target
@@ -1326,7 +1328,8 @@ impl StablePassive for Raze {
             hp: sim.get_entity(*host).map_or(0, |e| e.hp().0 as i64),
         }));
         let all = crate::champions_shared(sim);
-        if self.terrain.is_empty() || tick % 60 == 0 {
+        if !self.terrain_built || tick % 60 == 0 {
+            self.terrain_built = true;
             self.terrain.clear();
             for gy in 0..30 {
                 for gx in 0..30 {

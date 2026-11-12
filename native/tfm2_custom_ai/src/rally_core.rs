@@ -347,12 +347,23 @@ impl Frame {
             return false;
         }
         let n = (a.distance(b) / 1000 + 1).max(1);
+        // optimization pass: every sample lies in the segment's box, so only blocks touching that box (grown by r)
+        // can make one illegal (same answers as `legal` against all of them)
+        let (lo, hi) = (Point { x: a.x.min(b.x), y: a.y.min(b.y) }, Point { x: a.x.max(b.x), y: a.y.max(b.y) });
+        let near: Vec<Rect> = self
+            .blocks
+            .iter()
+            .copied()
+            .filter(|k| hi.x + r >= k.min.x && hi.y + r >= k.min.y && lo.x - r <= k.max.x && lo.y - r <= k.max.y)
+            .collect();
         (0..=n).all(|i| {
             let p = Point {
                 x: a.x + (b.x - a.x) * i / n,
                 y: a.y + (b.y - a.y) * i / n,
             };
-            self.legal(p, r) && (!sight || !self.smoke.iter().any(|s| s.touches(p, 0)))
+            self.bounds.contains(p, r)
+                && !near.iter().any(|k| k.touches(p, r))
+                && (!sight || !self.smoke.iter().any(|s| s.touches(p, 0)))
         })
     }
 }

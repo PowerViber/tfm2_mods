@@ -5,7 +5,7 @@
 use crate::mastery::{signature, Book, Record};
 use crate::unified_core::{Cmd, Core, Fighter, Input, RANKS};
 use crate::unified_eq_data::Kind;
-use crate::{champions, d2, fx_point, fx_unit, sq, timed, Champ};
+use crate::{champions_shared, d2, fx_point, fx_unit, sq, timed, Champ};
 use mod_api_stable::{AttackTypeV1, CcKindV1, CcV1, DamageTypeV1, StablePassive, StableSim};
 use std::collections::VecDeque;
 use std::io::Write;
@@ -340,7 +340,7 @@ impl StablePassive for UnifiedTheory {
             self.log(format!("seed {} athlete {:?} rank {} ({}) equation kit", sim.seed(), self.athlete, self.rank, RANKS[self.rank]));
         }
         self.profile.bind(sim,entity);let snapshot_at=self.profile.start();
-        let all = champions(sim);
+        let all = champions_shared(sim);
         let Some(m) = all.iter().find(|c| c.id == entity).cloned() else {
             // Some hosts remove an entity before its next passive callback.
             if !self.visual_buffs.is_empty() || self.core.as_ref().is_some_and(|c| !c.live.is_empty()) {

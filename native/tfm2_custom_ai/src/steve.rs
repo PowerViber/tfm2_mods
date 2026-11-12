@@ -1559,7 +1559,7 @@ impl StablePassive for Steve {
     }
     fn on_update(&mut self, sim: &mut StableSim<'_>, _seed: u64, _player: usize, entity: usize) {
         let tick = sim.tick();
-        let all = champions(sim);
+        let all = champions_shared(sim);
         let Some(m) = all.iter().find(|c| c.id == entity).cloned() else { return };
         let enemies: Vec<&Champ> = all.iter().filter(|c| c.team != m.team).collect();
 
