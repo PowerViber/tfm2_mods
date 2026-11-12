@@ -1,0 +1,66 @@
+{
+  "checks": 23,
+  "passed": [
+    "Editor route round-165-art-review.html",
+    "Editor route round-165-art.js",
+    "Editor route round-165-renderer.js",
+    "Editor route round-165-fx.png",
+    "Editor route round-165-review-assets/effects-comparison.png",
+    "Editor route editor/round-165-art-review.html",
+    "Actual WASM review triggers a wave only in water",
+    "Review uses the installed 900-cell map and packaged auxiliary atlas",
+    "All supplemental frames/headings have visible pixels",
+    "Akane renders five Rhythm states, Dismiss and Ambush",
+    "Dead owners have no remaining Akane indicators",
+    "wright: complete combat state/commands equal with artwork on/off",
+    "Wright carrier indicator follows guard; carrier spawns no aircraft",
+    "Bomber warning phases preserve 60/96/132 ticks",
+    "wright: direct /editor route loads packaged artwork",
+    "thalassa: complete combat state/commands equal with artwork on/off",
+    "thalassa: direct /editor route loads packaged artwork",
+    "Held F lands one ordinary bolt within the 120-tick cadence on land",
+    "Water basic reaches 80,000 and emits exactly one tsunami",
+    "Direct combined review route loads packaged assets",
+    "No browser page errors",
+    "wright: complete native/WASM traces match",
+    "thalassa: complete native/WASM traces match"
+  ],
+  "parity_frames": {
+    "wright": 360,
+    "thalassa": 360
+  },
+  "cold_page_assets_ms": [
+    {
+      "name": "wright",
+      "ready_ms": 94
+    },
+    {
+      "name": "thalassa",
+      "ready_ms": 65
+    }
+  ],
+  "five_run_lab_step": [
+    {
+      "name": "wright",
+      "step_p95_ms": [
+        0.10000038146972656,
+        0.10000038146972656,
+        0.10000038146972656,
+        0.10000038146972656,
+        0.10000038146972656
+      ]
+    },
+    {
+      "name": "thalassa",
+      "step_p95_ms": [
+        0.19999980926513672,
+        0.10000038146972656,
+        0.10000038146972656,
+        0.19999980926513672,
+        0.19999980926513672
+      ]
+    }
+  ],
+  "all_supplement_frames": 1208,
+  "scope": "Browser/WASM + modeled host; actual-game acceptance pending"
+}

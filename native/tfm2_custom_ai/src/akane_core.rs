@@ -258,7 +258,20 @@ pub enum Effect {
     Mark { target: usize, ticks: u64 },
     /// Dismiss & Devour: invisible, invulnerable, fast and move-only until `ticks` from now (replaces a shorter one)
     Soul { ticks: u64, speed_pct: i64 },
+    /// she acted (a skill or a basic attack) during Dismiss: she's seen again, still invulnerable
+    Reveal,
+    /// Dismiss ended (its time ran out, or her 2nd basic attack): invulnerability and speed end now
+    SoulEnd,
+    /// Ambush: her damage is `percent` higher for `ticks` (basic attacks scaled by the bridge, skills by the core)
+    Ambush { percent: i64, ticks: u64 },
+    /// Blood Rhythm stacks shown on her
+    Rhythm { stacks: i64, ticks: u64 },
     Heal { amount: i64 },
+    /// fears `target` away from `from` (Crimson Night's explosion)
+    Fear { target: usize, from: Point, ticks: u64 },
+    /// the explosion of a strike on `target` follows, up to `ExplodeEnd` (dropped if that strike was parried)
+    Explode { target: usize },
+    ExplodeEnd,
     /// invulnerable (damage and CC) for `ticks` (the Crimson Edge finale)
     Invulnerable { ticks: u64 },
     /// a teleport (the finale: behind the target)
@@ -296,6 +309,9 @@ pub struct DashPlan {
     pub base: i64,
     pub ratio: i64,
     pub fx: &'static str,
+    /// Crimson Night's slash: it sets off a lesser crimson explosion that fears (round 165)
+    #[serde(default)]
+    pub explode: bool,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize)]
@@ -315,6 +331,8 @@ pub struct KunaiFlight {
     pub end: Point,
     pub pos: Point,
     pub attack: i64,
+    /// minions and creeps it already passed through (round 165: it pierces them)
+    pub pierced: Vec<usize>,
 }
 
 #[derive(Clone, Debug, Serialize)]
@@ -325,6 +343,16 @@ pub struct Core {
     pub next_charge: u64,
     /// Dismiss & Devour's window (invisible, invulnerable, move only)
     pub soul_until: u64,
+    /// Dismiss is running (to notice its end)
+    pub soul_on: bool,
+    /// still invisible in this Dismiss (until she acts)
+    pub soul_hidden: bool,
+    /// basic attacks landed in this Dismiss
+    pub soul_hits: i64,
+    /// Ambush: her damage is higher until
+    pub ambush_until: u64,
+    /// Blood Rhythm: (stacks, until)
+    pub rhythm: (i64, u64),
     pub invuln_until: u64,
     pub orbs: Vec<Orb>,
     /// an orb may reset Crimson Edge again from
@@ -365,6 +393,11 @@ impl Default for Core {
             charges: d::SOUL_CHARGES,
             next_charge: 0,
             soul_until: 0,
+            soul_on: false,
+            soul_hidden: false,
+            soul_hits: 0,
+            ambush_until: 0,
+            rhythm: (0, 0),
             invuln_until: 0,
             orbs: vec![],
             edge_reset_ready: 0,
@@ -444,10 +477,28 @@ impl Core {
         if self.edge.is_some_and(|e| f.tick >= e.1) {
             self.edge = None;
         }
+        if self.rhythm.0 > 0 && f.tick >= self.rhythm.1 {
+            self.rhythm = (0, 0);
+            out.push(Effect::Rhythm { stacks: 0, ticks: 0 });
+        }
         for &target in &f.basic_hits {
             if let Some(u) = f.unit(target).cloned() {
+                self.soul_basic(f, &mut out);
+                if !u.tower && f.skill_target(&u) {
+                    // Blood Rhythm: her own basic-attack stacks
+                    let stacks = (self.rhythm.0 + 1).min(d::RHYTHM_MAX_STACKS);
+                    self.rhythm = (stacks, f.tick + t(d::RHYTHM_TICKS));
+                    out.push(Effect::Rhythm { stacks, ticks: t(d::RHYTHM_TICKS) });
+                    // round 165: at 3+ stacks her basic attacks cleave around the target (waves take more)
+                    if stacks >= d::RHYTHM_CLEAVE_STACKS {
+                        self.splash(f, &u, d::RHYTHM_CLEAVE_RADIUS, d::RHYTHM_CLEAVE_PCT, d::RHYTHM_CLEAVE_MINION_PCT, &mut out);
+                    }
+                }
                 self.edge_hit(f, &u, &mut out);
             }
+        }
+        if self.soul_on && f.tick >= self.soul_until {
+            self.end_soul(f, &mut out);
         }
         self.run_bleeds(f, &mut out);
         self.run_kunai(f, &mut out);
@@ -455,8 +506,55 @@ impl Core {
         let order = if f.manual { f.order } else { self.decide(f, &mut out) };
         if let Some(o) = order {
             self.execute(f, o, &mut out);
+            // casting a skill during Dismiss reveals her (she stays invulnerable)
+            if o != Order::Soul && self.rejection.is_empty() && self.soul_on && self.soul_hidden {
+                self.soul_hidden = false;
+                out.push(Effect::Reveal);
+            }
+        }
+        // Ambush: every damage of hers this tick is higher (the bridge scales her basic attacks)
+        if f.tick < self.ambush_until {
+            for e in out.iter_mut() {
+                if let Effect::Damage { amount, .. } = e {
+                    *amount = *amount * (100 + d::SOUL_AMBUSH_PCT) / 100;
+                }
+            }
         }
         out
+    }
+
+    /// Her basic-attack damage multiplier, percent (Blood Rhythm and Ambush), for the bridge.
+    pub fn basic_multiplier(&self, tick: u64) -> i64 {
+        let stacks = if tick < self.rhythm.1 { self.rhythm.0 } else { 0 };
+        let ambush = if tick < self.ambush_until { d::SOUL_AMBUSH_PCT } else { 0 };
+        (100 + stacks * d::RHYTHM_PCT_PER_STACK) * (100 + ambush) / 100
+    }
+
+    /// A basic attack during Dismiss: the 1st reveals her (she stays invulnerable), one more ends it.
+    fn soul_basic(&mut self, f: &Frame, out: &mut Vec<Effect>) {
+        if !self.soul_on {
+            return;
+        }
+        self.soul_hits += 1;
+        if self.soul_hidden {
+            self.soul_hidden = false;
+            out.push(Effect::Reveal);
+        }
+        if self.soul_hits > d::SOUL_HITS_ALLOWED {
+            self.end_soul(f, out);
+        }
+    }
+
+    /// Dismiss is over (time, or her 2nd basic attack): invulnerability ends now, Ambush starts.
+    fn end_soul(&mut self, f: &Frame, out: &mut Vec<Effect>) {
+        self.soul_on = false;
+        self.soul_hidden = false;
+        self.soul_hits = 0;
+        self.soul_until = self.soul_until.min(f.tick);
+        self.invuln_until = self.invuln_until.min(f.tick);
+        self.ambush_until = f.tick + t(d::SOUL_AMBUSH_TICKS);
+        out.push(Effect::SoulEnd);
+        out.push(Effect::Ambush { percent: d::SOUL_AMBUSH_PCT, ticks: t(d::SOUL_AMBUSH_TICKS) });
     }
 
     fn recharge(&mut self, f: &Frame) {
@@ -533,11 +631,23 @@ impl Core {
     }
 
     /// An empowered basic attack. Towers take the hit but no debuff, and don't use an empowered attack.
+    /// A share of her basic hit to the other enemies near `u` (never towers): `pct` to champions, `minion_pct` to the
+    /// rest. Damage only, never CC.
+    fn splash(&mut self, f: &Frame, u: &Unit, radius: i64, pct: i64, minion_pct: i64, out: &mut Vec<Effect>) {
+        let hit = f.attack * self.basic_multiplier(f.tick) / 100;
+        for o in f.units.iter().filter(|o| o.id != u.id && f.skill_target(o) && o.pos.within(u.pos, radius + o.radius)) {
+            let share = if o.champion { pct } else { minion_pct };
+            out.push(Effect::Damage { target: o.id, amount: (hit * share / 100).max(1), direct: false });
+        }
+    }
+
     fn edge_hit(&mut self, f: &Frame, u: &Unit, out: &mut Vec<Effect>) {
         let Some((done, until)) = self.edge else { return };
         if u.tower || !f.skill_target(u) {
             return;
         }
+        // round 165: each empowered hit also slashes a small arc around the target
+        self.splash(f, u, d::EDGE_SPLASH_RADIUS, d::EDGE_SPLASH_PCT, d::EDGE_SPLASH_PCT, out);
         let n = done + 1;
         self.edge = if n as i64 >= d::EDGE_HITS { None } else { Some((n, until)) };
         match n {
@@ -554,7 +664,8 @@ impl Core {
             }
             4 => {
                 let stacks = self.add_bleed(f, u.id, out);
-                if stacks >= d::EDGE_MAX_STACKS {
+                // on a minion or creep the 4th hit always bursts (wave clear); champions need the 4 stacks
+                if stacks >= d::EDGE_MAX_STACKS || !u.champion {
                     self.burst(f, u, out);
                 }
             }
@@ -564,9 +675,17 @@ impl Core {
 
     /// The 4th stack bursts: % max HP + Attack on the target, half around it, crimson bleed on everyone hit.
     fn burst(&mut self, f: &Frame, u: &Unit, out: &mut Vec<Effect>) {
-        self.bleeds.retain(|b| b.target != u.id);
-        out.push(Effect::Bleed { target: u.id, stacks: 0, ticks: 0 });
-        let main = u.max_hp * d::EDGE_BURST_PCT_MAX_HP / 100 + d::EDGE_BURST_AD_RATIO * f.attack / 100;
+        self.burst_scaled(f, u, 100, true, out);
+    }
+
+    /// The crimson burst at `pct`% (Crimson Edge's 4th hit at 100% consumes the bleed stacks; Crimson Night's lesser
+    /// explosion at 50% keeps them).
+    fn burst_scaled(&mut self, f: &Frame, u: &Unit, pct: i64, consume: bool, out: &mut Vec<Effect>) {
+        if consume {
+            self.bleeds.retain(|b| b.target != u.id);
+            out.push(Effect::Bleed { target: u.id, stacks: 0, ticks: 0 });
+        }
+        let main = (u.max_hp * d::EDGE_BURST_PCT_MAX_HP / 100 + d::EDGE_BURST_AD_RATIO * f.attack / 100) * pct / 100;
         out.push(Effect::Fx { name: "akn_burst".into(), at: u.pos, ticks: 20, ambient: false });
         out.push(Effect::Damage { target: u.id, amount: main, direct: false });
         self.add_crimson(f, u, out);
@@ -577,7 +696,7 @@ impl Core {
             .cloned()
             .collect();
         for o in around {
-            let amount = (o.max_hp * d::EDGE_BURST_PCT_MAX_HP / 100 + d::EDGE_BURST_AD_RATIO * f.attack / 100) / 2;
+            let amount = (o.max_hp * d::EDGE_BURST_PCT_MAX_HP / 100 + d::EDGE_BURST_AD_RATIO * f.attack / 100) * pct / 100 / 2;
             out.push(Effect::Damage { target: o.id, amount, direct: false });
             self.add_crimson(f, &o, out);
         }
@@ -651,7 +770,7 @@ impl Core {
         }
         let speed = speed.max(1);
         let clear = f.clip(f.pos, land);
-        let mut plan = DashPlan { target: u.id, hop: None, after_hop: None, strike_at: 0, base, ratio, fx };
+        let mut plan = DashPlan { target: u.id, hop: None, after_hop: None, strike_at: 0, base, ratio, fx, explode: false };
         if clear == land {
             let ticks = ((f.pos.dist(land) as i64) / speed).max(2) as u64;
             out.push(Effect::Glide { to: land, ticks });
@@ -699,6 +818,17 @@ impl Core {
             if let Some(u) = f.unit(p.target).filter(|u| f.skill_target(u)).cloned() {
                 out.push(Effect::Fx { name: p.fx.into(), at: u.pos, ticks: 14, ambient: false });
                 out.push(Effect::Damage { target: u.id, amount: pct(p.base, p.ratio, f.attack), direct: true });
+                if p.explode {
+                    // Crimson Night: a lesser crimson explosion that fears; a parried slash cancels it (the bridge
+                    // drops everything between Explode and ExplodeEnd)
+                    out.push(Effect::Explode { target: u.id });
+                    self.burst_scaled(f, &u, d::NIGHT_BURST_PCT, false, out);
+                    let from = f.pos;
+                    for o in f.units.iter().filter(|o| f.skill_target(o) && (o.id == u.id || o.pos.within(u.pos, d::EDGE_BURST_RADIUS + o.radius))) {
+                        out.push(Effect::Fear { target: o.id, from, ticks: t(d::NIGHT_FEAR_TICKS) });
+                    }
+                    out.push(Effect::ExplodeEnd);
+                }
             }
         }
     }
@@ -712,9 +842,6 @@ impl Core {
             return reject(self, "crowd-controlled");
         }
         // Dismiss & Devour: move only, until it ends (another charge may extend it)
-        if self.in_soul(f.tick) && o != Order::Soul {
-            return reject(self, "Dismiss: she can only move");
-        }
         if f.tick < self.busy_until && o != Order::Soul {
             return reject(self, "mid-dash");
         }
@@ -730,6 +857,11 @@ impl Core {
                 // windows never stack: an overlap only extends to the new end
                 self.soul_until = self.soul_until.max(f.tick + t(d::SOUL_TICKS));
                 self.invuln_until = self.invuln_until.max(self.soul_until);
+                if !self.soul_on {
+                    self.soul_hits = 0;
+                }
+                self.soul_on = true;
+                self.soul_hidden = true;
                 out.push(Effect::Soul { ticks: self.soul_until - f.tick, speed_pct: d::SOUL_SPEED_PCT });
                 out.push(Effect::Heal { amount: f.max_hp * d::SOUL_HEAL_PCT_MAX_HP / 100 + d::SOUL_HEAL_AD_RATIO * f.attack / 100 });
                 out.push(Effect::Fx { name: "akn_dismiss".into(), at: f.pos, ticks: 20, ambient: false });
@@ -751,7 +883,7 @@ impl Core {
                 out.push(Effect::Fx { name: "akn_kunai".into(), at: f.pos, ticks: 1, ambient: false });
                 out.push(Effect::Pose { name: "skill1", ticks: t(d::KUNAI_FLIP_TICKS) });
                 self.last_skill = "kunai";
-                self.kunai_flights.push(KunaiFlight{born:f.tick,from:f.pos,end,pos:f.pos,attack:f.attack});
+                self.kunai_flights.push(KunaiFlight{born:f.tick,from:f.pos,end,pos:f.pos,attack:f.attack,pierced:vec![]});
             }
             Order::KunaiRecast => {
                 let Some(id) = self.marked(f.tick) else { return reject(self, "nothing marked") };
@@ -796,31 +928,85 @@ impl Core {
                 self.night_dash_used = true;
                 out.push(Effect::Pose { name: "ult", ticks: 14 });
                 self.start_dash(f, &u, d::NIGHT_DASH_SPEED, d::NIGHT_BASE, d::NIGHT_AD_RATIO, "akn_night_slash", out);
+                if let Some(p) = self.dash.as_mut() {
+                    p.explode = true;
+                }
                 self.last_skill = "night_dash";
             }
         }
     }
 
     fn run_kunai(&mut self, f: &Frame, out: &mut Vec<Effect>) {
-        let mut active=vec![];
+        let mut active = vec![];
         for mut shot in std::mem::take(&mut self.kunai_flights) {
-            let distance=(f.tick.saturating_sub(shot.born) as i64).saturating_mul(d::KUNAI_SPEED);
-            let end_distance=shot.from.dist(shot.end);
-            let to=if distance as f64>=end_distance {shot.end}else{shot.from.toward(shot.end,distance)};
-            // Each tick sweeps the traversed segment; it never homes or hits a tower.
-            if let Some(u)=Self::kunai_target(f,shot.pos,to) {
-                out.push(Effect::Damage{target:u.id,amount:pct(d::KUNAI_BASE,d::KUNAI_AD_RATIO,shot.attack),direct:false});
-                if let Some((old,_))=self.mark.filter(|m|m.0!=u.id){out.push(Effect::Mark{target:old,ticks:0});}
-                self.mark=Some((u.id,f.tick+t(d::KUNAI_MARK_TICKS)));
-                out.push(Effect::Mark{target:u.id,ticks:t(d::KUNAI_MARK_TICKS)});
-                out.push(Effect::Fx{name:"akn_kunai_hit".into(),at:u.pos,ticks:12,ambient:false});
-            }else if to!=shot.end {shot.pos=to;active.push(shot);}
-            else {out.push(Effect::Log("kunai missed".into()));}
+            let distance = (f.tick.saturating_sub(shot.born) as i64).saturating_mul(d::KUNAI_SPEED);
+            let end_distance = shot.from.dist(shot.end);
+            let to = if distance as f64 >= end_distance { shot.end } else { shot.from.toward(shot.end, distance) };
+            // Each tick sweeps the traversed segment; it never homes or hits a tower. Round 165: it pierces minions and
+            // creeps (up to pierceMax) and stops at the first champion, who is marked.
+            let damage = pct(d::KUNAI_BASE, d::KUNAI_AD_RATIO, shot.attack);
+            let mut marked: Option<Unit> = None;
+            for u in Self::kunai_line(f, shot.pos, to) {
+                if shot.pierced.contains(&u.id) {
+                    continue;
+                }
+                out.push(Effect::Damage { target: u.id, amount: damage, direct: false });
+                out.push(Effect::Fx { name: "akn_kunai_hit".into(), at: u.pos, ticks: 12, ambient: false });
+                if u.champion {
+                    marked = Some(u);
+                    break;
+                }
+                shot.pierced.push(u.id);
+                if shot.pierced.len() as i64 >= d::KUNAI_PIERCE_MAX {
+                    marked = Some(u);
+                    break;
+                }
+            }
+            if marked.is_none() && to == shot.end {
+                // the end of its flight with no champion: the last minion or creep it went through is marked
+                marked = shot.pierced.last().and_then(|id| f.unit(*id)).cloned();
+                if marked.is_none() {
+                    out.push(Effect::Log("kunai missed".into()));
+                }
+            }
+            match marked {
+                Some(u) => {
+                    if let Some((old, _)) = self.mark.filter(|m| m.0 != u.id) {
+                        out.push(Effect::Mark { target: old, ticks: 0 });
+                    }
+                    self.mark = Some((u.id, f.tick + t(d::KUNAI_MARK_TICKS)));
+                    out.push(Effect::Mark { target: u.id, ticks: t(d::KUNAI_MARK_TICKS) });
+                }
+                None if to != shot.end => {
+                    shot.pos = to;
+                    active.push(shot);
+                }
+                None => {}
+            }
         }
-        self.kunai_flights=active;
+        self.kunai_flights = active;
     }
 
-    /// The first enemy the kunai's segment touches (never a tower; it flies over terrain).
+    /// Every enemy (never a tower) a kunai's segment touches, in order along it.
+    pub fn kunai_line(f: &Frame, from: Point, end: Point) -> Vec<Unit> {
+        let mut hits: Vec<(f64, Unit)> = f
+            .units
+            .iter()
+            .filter(|u| f.skill_target(u))
+            .filter_map(|u| {
+                let (dist, k) = u.pos.seg(from, end);
+                (dist <= (d::KUNAI_WIDTH + u.radius) as f64 && (k > 0.0 || from == end)).then(|| (k, u.clone()))
+            })
+            .collect();
+        hits.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap_or(std::cmp::Ordering::Equal).then(a.1.id.cmp(&b.1.id)));
+        hits.into_iter().map(|h| h.1).collect()
+    }
+
+    /// The champion the kunai would stop on along this line (it pierces minions and creeps).
+    pub fn kunai_champion(f: &Frame, from: Point, end: Point) -> Option<Unit> {
+        Self::kunai_line(f, from, end).into_iter().find(|u| u.champion)
+    }
+
     pub fn kunai_target(f: &Frame, from: Point, end: Point) -> Option<Unit> {
         f.units
             .iter()
@@ -1053,11 +1239,25 @@ impl Core {
         let escape = self.has_escape(f);
         let limit = Self::danger_limit(f, escape);
         let _ = escape;
-        // ---- in Dismiss: move only, to safety (or to an orb that's safe)
+        // ---- in Dismiss: she can cast now. Engage a killable target with her skills (the Ambush after Dismiss adds
+        // 20%); otherwise slip away to safety or a safe orb.
         if self.in_soul(f.tick) {
-            let to = self.safe_orb(f).unwrap_or_else(|| self.safe_spot(f));
-            out.push(Effect::Steer { to });
-            return None;
+            let engage = self.hunt(f).filter(|u| self.lethal(f, u, -d::SOUL_AMBUSH_PCT) && u.pos.within(f.pos, d::KUNAI_RANGE));
+            match engage {
+                Some(u) if self.ready(EDGE, f.tick) && self.edge.is_none() && u.pos.within(f.pos, d::BASIC_RANGE + u.radius + 3_000) => return Some(Order::Edge),
+                Some(u) if self.ready(KUNAI, f.tick) && self.kunai_flights.is_empty() && self.marked(f.tick).is_none() => {
+                    let aim = Self::aim_at(f, &u);
+                    if Self::kunai_champion(f, f.pos, f.pos.toward(aim, d::KUNAI_RANGE)).is_some_and(|first| first.id == u.id) {
+                        return Some(Order::Kunai(aim));
+                    }
+                }
+                Some(_) => {}
+                None => {
+                    let to = self.safe_orb(f).unwrap_or_else(|| self.safe_spot(f));
+                    out.push(Effect::Steer { to });
+                    return None;
+                }
+            }
         }
         if f.tick < self.busy_until {
             return None;
@@ -1161,7 +1361,7 @@ impl Core {
             if self.ready(KUNAI, f.tick) && u.pos.within(f.pos, d::KUNAI_RANGE) && (near_lethal || Self::isolated(f, u)) && tower_ok && out_after && survivable {
                 let aim = Self::aim_at(f, u);
                 let end = f.pos.toward(aim, d::KUNAI_RANGE);
-                if Self::kunai_target(f, f.pos, end).is_some_and(|first| first.id == u.id) {
+                if Self::kunai_champion(f, f.pos, end).is_some_and(|first| first.id == u.id) {
                     return Some(Order::Kunai(aim));
                 }
             }

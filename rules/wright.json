@@ -10,7 +10,7 @@
     "Dot",
     "Shield"
   ],
-  "revision": "wright-5",
+  "revision": "wright-6",
   "stat": {
     "attack": 28,
     "magic_power": 60,
@@ -122,16 +122,15 @@
     "slowPct": 15,
     "slowTicks": 90,
     "ticks": 600,
-    "fighterEveryTicks": 60,
-    "maxFighters": 6,
-    "fighterTicks": 360,
-    "bomberEveryTicks": 180,
-    "chopperEveryTicks": 180,
     "poolPct": 100,
     "guardPct": 80,
     "kitRadius": 60000,
-    "maxReadyBombers": 3,
-    "pressureRange": 60000
+    "pressureRange": 60000,
+    "cooldownPct": 50,
+    "bomberDamagePct": 125,
+    "rearmPct": 50,
+    "bonusAmmo": 1,
+    "kitPct": 150
   },
   "drone": {
     "hpPct": 15,

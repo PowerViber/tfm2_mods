@@ -45,6 +45,8 @@ mod contender;
 mod rally;
 mod grimhald;
 mod thalassa;
+mod round_165_art;
+#[cfg(test)] mod round_165_art_tests;
 #[allow(dead_code)] mod thalassa_core;
 mod thalassa_data;
 #[allow(dead_code)] mod thalassa_art;
@@ -414,7 +416,7 @@ pub(crate) fn set_snapshot_cache_for_test(on: bool) {
 /// A view effect at a point / on a unit (named `<champion id>_<tag>` in the data's view_effects).
 /// Round 91: the native version, written in the game log and the champions' logs (gundam_log.txt / isliid_log.txt) so a
 /// game shows which build ran.
-pub(crate) const VERSION: &str = "0.10.98";
+pub(crate) const VERSION: &str = "0.10.99";
 
 static LOGGED: std::sync::Mutex<Option<std::collections::HashSet<String>>> = std::sync::Mutex::new(None);
 

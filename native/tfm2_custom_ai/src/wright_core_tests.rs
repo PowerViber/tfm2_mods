@@ -457,57 +457,61 @@ fn the_carrier_follows_him_and_guards_until_its_pool_runs_out() {
 }
 
 #[test]
-fn the_carrier_readies_bombers_that_s2_uses_without_airframe_or_cooldown() {
+fn the_carrier_empowers_his_skills_no_airframe_half_cooldown_full_warning_stronger_bombs() {
+    // round 165: it launches nothing; S1-S3 cost no airframe and recharge in half the time while it's up
     let mut core = Core::default();
     core.stock = 0;
-    core.ready[1] = 99_999;
     let mut f = frame(0, 400_000, 400_000, vec![unit(7, 1, 460_000, 400_000)]);
     let mut log = vec![];
     land_carrier(&mut core, &mut f, &mut log);
-    run(&mut core, &mut f, (d::CARRIER_BOMBER_EVERY_TICKS * d::CARRIER_MAX_READY_BOMBERS) as u64 + 2, &mut log);
-    assert_eq!(core.ready_bombers(f.tick), d::CARRIER_MAX_READY_BOMBERS, "stacked up to the cap");
+    assert!(core.empowered(f.tick));
     log.clear();
-    let stock = core.stock;
+    let cast = f.tick;
     order(&mut core, &mut f, Order::Bomber(Point::new(460_000, 400_000)), &mut log);
-    assert_eq!(core.ready_bombers(f.tick), d::CARRIER_MAX_READY_BOMBERS - 1, "used one");
-    assert_eq!(core.stock, stock, "no airframe");
-    run(&mut core, &mut f, (d::BOMBER_READY_MARK_TICKS + d::BOMBER_WAVES * d::BOMBER_WAVE_EVERY_TICKS) as u64 + 5, &mut log);
-    let (_, _, stuns) = waves_on(&log, 7);
-    assert_eq!(stuns, 1, "the same three waves after a short mark");
-    // lost when it leaves
-    run(&mut core, &mut f, d::CARRIER_TICKS as u64, &mut log);
-    assert!(core.carrier.is_none());
-    assert_eq!(core.ready_bombers(f.tick), 0);
+    assert!(log.iter().any(|e| matches!(e, Effect::Pose { name: "skill2", .. })), "no airframe needed: {log:?}");
+    assert_eq!(core.stock, 0);
+    assert_eq!(core.ready[1], cast + (d::BOMBER_COOLDOWN_TICKS * d::CARRIER_COOLDOWN_PCT / 100) as u64, "half the cooldown");
+    // the full 1 s warning, then stronger explosions on the same footprints
+    let warned = log.iter().filter_map(|e| if let Effect::Fx { name, ticks, .. } = e { name.starts_with("wrt_warn1").then_some(*ticks) } else { None }).next();
+    assert_eq!(warned, Some(d::BOMBER_WARN_TICKS as u64), "the full warning");
+    run(&mut core, &mut f, (d::BOMBER_WARN_TICKS + d::BOMBER_WAVES * d::BOMBER_WAVE_EVERY_TICKS) as u64 + 5, &mut log);
+    let per = ap(d::BOMBER_WAVE_BASE, d::BOMBER_WAVE_AP_RATIO) * d::CARRIER_BOMBER_DAMAGE_PCT / 100;
+    let hits = damage(&log, 7);
+    assert!(!hits.is_empty() && hits.iter().all(|h| h.0 == per), "{hits:?} vs {per}");
+    // kits are stronger and jets rearm faster with an extra strike while it's up
+    log.clear();
+    { let at = f.pos; order(&mut core, &mut f, Order::Fighters(at), &mut log); }
+    assert!(core.planes.iter().filter(|p| p.kind == Kind::Fighter).all(|p| p.ammo == d::FIGHTER_AMMO + d::CARRIER_BONUS_AMMO));
 }
 
 #[test]
-fn the_carrier_launches_jets_and_choppers_and_never_hurts_allies_or_turrets() {
+fn the_carrier_launches_nothing_and_never_hurts_allies_or_turrets() {
     let mut core = Core::default();
     let mut tower = unit(30, 1, 430_000, 400_000);
     tower.tower = true;
     tower.champion = false;
     let mut f = frame(0, 400_000, 400_000, vec![unit(4, 0, 405_000, 405_000), unit(7, 1, 440_000, 410_000), unit(8, 1, 445_000, 395_000), tower]);
-    f.hp = 500;
     let mut log = vec![];
     land_carrier(&mut core, &mut f, &mut log);
-    // the drop knocked them away; they come back in
-    f.units[1].pos = Point::new(440_000, 410_000);
-    f.units[2].pos = Point::new(445_000, 395_000);
-    run(&mut core, &mut f, d::CARRIER_BOMBER_EVERY_TICKS as u64, &mut log);
-    order(&mut core, &mut f, Order::Bomber(Point::new(430_000, 400_000)), &mut log);
-    let mut most = 0;
-    for _ in 0..d::CARRIER_TICKS - d::CARRIER_BOMBER_EVERY_TICKS {
-        run(&mut core, &mut f, 1, &mut log);
-        most = most.max(core.planes.iter().filter(|p| p.kind == Kind::Fighter && p.from_carrier && !p.kamikaze).count() as i64);
-    }
-    assert!(most >= 3 && most <= d::CARRIER_MAX_FIGHTERS, "jets: {most}");
-    assert!(log.iter().any(|e| matches!(e, Effect::Heal { target: ME, .. })), "its choppers repair him");
-    assert!(!damage(&log, 7).is_empty(), "enemies are hit");
+    let planes = core.planes.len();
+    run(&mut core, &mut f, d::CARRIER_TICKS as u64, &mut log);
+    assert!(core.planes.len() <= planes, "no planes from the carrier");
+    assert!(!log.iter().any(|e| matches!(e, Effect::SpawnPlane { .. })), "it spawns nothing");
     for id in [ME, 4, 30] {
-        assert!(damage(&log, id).is_empty(), "never {id}: an ally, himself or a turret");
-        assert!(!log.iter().any(|e| matches!(e, Effect::Knock { target, .. } | Effect::Stun { target, .. } | Effect::Slow { target, .. } | Effect::Burn { target, .. } if *target == id)));
+        assert!(damage(&log, id).is_empty(), "never {id}");
     }
-    assert_eq!(core.own_fighters(), 0, "carrier jets don't count as his");
+    // his own jet cap holds while it's up
+    let mut core = Core::default();
+    core.stock = 3;
+    let mut f = frame(0, 400_000, 400_000, vec![]);
+    let mut log = vec![];
+    land_carrier(&mut core, &mut f, &mut log);
+    for _ in 0..4 {
+        core.ready[0] = 0;
+        { let at = f.pos; order(&mut core, &mut f, Order::Fighters(at), &mut log); }
+        run(&mut core, &mut f, 2, &mut log);
+    }
+    assert!(core.own_fighters() as i64 <= d::FIGHTER_MAX_ALIVE, "still at most {} jets", d::FIGHTER_MAX_ALIVE);
 }
 
 #[test]

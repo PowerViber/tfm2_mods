@@ -3865,3 +3865,27 @@ To check in game: close the game, Update/Check, confirm native 0.10.36 and champ
 - **Akane** joins the game with Codex's approved art and the `akane-1.1` ranges: a 120,000 kunai flying with a delay, a 30,000 flip, and a 240,000 Crimson Night dash.
 - **Checks:** 1,193 native tests, 0 warnings; DLL reports 0.10.98; Mod Manager load. Codex's browser and art checks need the local game-reference cache, so they run on Reihan's PC. Review: `docs/main-review-round-164.md`.
 - **Pending:** live acceptance and balance. Watch her long reach, and the kill chain once orbs start resetting her.
+## Nov 11: round 165 (native 0.10.99, tfm2_custom 0.2.102): Akane buff, Wright's carrier, Thalassa's tsunami
+- **Akane (`akane-1.2`):**
+  - Blood Rhythm: basic-attack stacks, +6% each, up to 5.
+  - Dismiss: she can cast skills now; the 1st basic attack reveals her and the 2nd ends it; she's invisible until she acts.
+  - Ambush: +20% damage for 3 s after Dismiss.
+- **Wright (`wright-6`):** the Sky Carrier launches nothing. It empowers his skills instead: no airframe, half cooldown, faster rearm and +1 strike, 125% bombs with the same warning and size, 150% kits. It still guards him for 80%.
+- **Thalassa (`thalassa-1.6`):** no bounce. A slower basic attack (2 s) sends a tsunami through the target: the wave's damage to others, a 0.35 s knock-up, each unit at most once every 3 s.
+- **Checks:** 1,197 native tests, 0 warnings; Wright 12 and Thalassa 10 browser checks; DLL 0.10.99. Review: `docs/main-review-round-165.md`.
+- **Akane wave clear (`akane-1.3`, same round):**
+  - Rhythm cleave at 3+ stacks: 80% to minions and creeps, 40% to champions.
+  - The Kunai pierces up to 4 minions or creeps and marks the champion behind them.
+  - Crimson Edge splashes 50% per hit, and the 4th hit always bursts on a minion or creep.
+  - 1,200 native tests.
+
+## Round 165 approved effects — 2026-11-12
+
+Approved effects are integrated in PR #77. Check Thalassa’s water-only wave and prototype 82,500 water basic range (55,000 on land), preserving the two-second clock and clone bolts; check Akane Rhythm/Ambush/Dismiss timers and Wright’s carrier indicator. Bomber warnings use the actual 30,000 radius and 60/96/132 ticks. Evidence: docs/round-165-art-review/. Actual-game visual, item/targeting and carrier receipt observations remain pending. Installation and real-career migration were not performed.
+
+## Nov 12: round 165 add-on, `akane-1.4`: Crimson Night's lesser explosion
+- **What changed:** the ult's dash slash now sets off a lesser crimson explosion. It deals 50% of the 4th-hit burst (half that to anyone around it), applies the crimson bleed, and fears everyone it hits for 0.75 s.
+- **Watch for:**
+  - that the fear sends them away from her, and doesn't pull them through walls;
+  - that a V1 parry cancels it;
+  - that it reads as a pick tool, not a team wipe.

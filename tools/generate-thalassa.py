@@ -27,8 +27,10 @@ w, t, d, tw, u, b = (rules[k] for k in ['water', 'tidePool', 'dive', 'twin', 'ul
 sec = lambda n: f'{n / 60:g} s'
 text = {
     'name': rules['name'],
-    'skill': (f"Tidebound (passive): in water (her pools, or wet) she gains +{w['moveSpeedPct']}% move speed and +{w['rangePct']}% range, her harp bolts bounce to a second enemy "
-              f"for {w['bouncePct']}%, and she regenerates {w['regenPerMillePerSecond'] / 10:g}% max HP a second; at full HP it becomes a shield up to {w['overhealCapPct']}% max HP. Enemies in any of her pools are slowed {w['poolSlowPct']}% (not stacking). "
+    'skill': (f"Tidebound (passive): in water (her pools, or wet) she gains +{w['moveSpeedPct']}% move speed and +{w['rangePct']}% range, and she regenerates {w['regenPerMillePerSecond'] / 10:g}% max HP a second; at full HP it becomes a shield up to {w['overhealCapPct']}% max HP. Enemies in any of her pools are slowed {w['poolSlowPct']}% (not stacking). "
+              f"Tsunami bolts: every {sec(b['cooldownTicks'])} her harp bolt hits its target, and a small tsunami sweeps from her through it ({b['waveBeyond']} past it, "
+              f"{b['waveWidth']} wide): other enemies in it take {b['waveBase']} + {b['waveApRatio']}% AP, and everyone in it is knocked up {sec(b['knockUpTicks'])} "
+              f"(each enemy at most once every {sec(b['knockUpLockTicks'])}). "
               f"Tide Pool ({sec(t['cooldownTicks'])}): on land, a pool forms below her. In water, the pool she stands in surges up to {t['range']} to the target and becomes a whirlpool "
               f"({t['whirlScalePct']}% size) that pulls enemies inward once and deals {t['base']} + {t['apRatio']}% AP, slowing {t['slowPct']}% while it swirls ({sec(t['whirlTicks'])}, then it "
               f"calms into a pool); if two or more champions are caught, up to {t['bumpMaxChampions']} bump and are stunned {sec(t['bumpStunTicks'])}. A new whirlpool forms below her."),
@@ -69,6 +71,16 @@ if art_manifest.exists():
     art = json.loads(art_manifest.read_text(encoding='utf-8'))
     champ['view_effects'] = [dict(type='Animation', name='tls_' + tag, anim=spec.get('asset',VFX), tag=tag, z=spec['z'], is_follow=False)
                             for tag, spec in art['effects'].items() if spec['kind'] == 'effect']
+addon_path = ROOT / 'docs/round-165-art-review/manifest.json'
+if addon_path.exists():
+    addon = json.loads(addon_path.read_text(encoding='utf-8'))
+    if addon['integrated']:
+        for binding in addon['bindings']['thalassa']:
+            spec = dict(type='Animated' if binding['kind']=='buff' else 'Animation', name=binding['name'], anim=addon['asset'], tag=binding['tag'], z=binding['z'])
+            if binding['kind']=='effect': spec['is_follow']=False
+            champ['view_buffs' if binding['kind']=='buff' else 'view_effects'].append(spec)
+        champ['passive']['params']['r165_art']=1
+
 data = json.dumps(champ, indent=2) + '\n'
 
 roster = dict(id=ID, name=rules['name'], family='original', role='Magician', native=True,

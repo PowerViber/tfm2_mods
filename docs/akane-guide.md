@@ -6,10 +6,11 @@ Akane is an Original-family **assassin**, designed by Reihan (Nov 11): **fast an
 | | Skill | What it does |
 |---|---|---|
 | Passive | **Soul Harvest** | A **champion kill or assist** leaves a **Soul Orb** where the enemy died, for **15 s**. After **0.5 s**, staying within **25,000** of it for **0.75 s** absorbs it. She can move meanwhile; leaving the range or being stunned cancels it.<br>Absorbing gives back **one Soul charge** (no limit on how often) and **resets Kunai Flip**. It also **resets Crimson Edge at most once every 30 s**. It never resets the ult. |
+| Passive | **Blood Rhythm** (round 165) | Each basic attack on a champion, minion or creep (never a tower) adds a stack, up to **5**, for **4 s**: **+6% basic-attack damage** per stack (+30% at 5). It multiplies with Ambush. |
 | S1 | **Dismiss & Devour** (2 charges, 10 s each) | Not a dash. For **1.5 s** she's **invisible and invulnerable** (100% damage reduction, CC-immune) and **60% faster**, but she **can only move** (no attacks or skills) until it ends. She **heals 6% max HP + 30% Attack**. Windows never stack: a second charge extends to its own end. |
 | S2 | **Kunai Flip** (10 s) | She **flips back 30,000 over 0.5 s** and throws a kunai (**120,000** line at 180,000 units/s; it flies over walls). The first enemy hit takes **30 + 60% Attack** and is **marked for 3 s**; it can be a champion, minion or creep, never a tower. **Recast:** she dashes to the mark, **over walls too**, and slashes for **40 + 80% Attack**. V1 can parry the slash. A miss means no recast. |
 | S3 | **Crimson Edge** (12 s) | Her **next 5 basic attacks** within 6 s:<br>1. bleed;<br>2. bleed and **30% slow**;<br>3. bleed and **+15% damage taken** for 3 s;<br>4. the 4th stack **bursts** for **8% of the target's max HP + 40% Attack**, half of that to enemies within 18,000, plus a **crimson bleed** of 1% max HP a second for 3 s;<br>5. she's **invulnerable for 0.4 s**, **teleports behind the target** and **knocks up** enemies within **20,000** for **0.75 s**.<br>Bleed: 6 + 10% Attack a second per stack, up to 4. Towers take her basic attacks but no debuffs, and don't use up a hit. |
-| Ult | **Crimson Night** (100 s) | For **4 s** every enemy is **nearsighted**: her whole team is hidden from them except within **20,000** of an enemy champion, minion or tower. **Recast once** to dash, over walls, to a visible enemy champion within **240,000** and slash for **100 + 90% Attack**. |
+| Ult | **Crimson Night** (100 s) | For **4 s** every enemy is **nearsighted**: her whole team is hidden from them except within **20,000** of an enemy champion, minion or tower. **Recast once** to dash, over walls, to a visible enemy champion within **240,000** and slash for **100 + 90% Attack**; the slash sets off a **lesser crimson explosion** (50% of Crimson Edge's burst, half that within 18,000, with the crimson bleed) that **fears** everyone hit for **0.75 s**. |
 
 **Stats (fragile):** category Assassin; tags AD, Melee, CC, Dot. Attack 78 + 8, HP **850 + 85**, armor 18 + 3, MR 20 + 3, move speed **1,080 + 10**. Basic range 22,000, a fast swing (48 ticks).
 
@@ -60,6 +61,17 @@ She also reads towers and whether something of hers is tanking them, plus walls 
   - the AI walks her through a short `akn_go:x:y` buff that the shared input AI (`steve::WallAi`) turns into a move order, for her only.
 - **Lab:** `native/akane_lab` → `editor/akane.html`, on the real 5v5 map. Browser test: `node tools/test-akane-lab.cjs`.
 - **Art:** `docs/akane-art-handoff.md`.
+
+## Wave clear (round 165, `akane-1.3`)
+- **Rhythm cleave:** at 3+ Blood Rhythm stacks, her basic attacks cleave within 12,000 of the target: 80% to minions and creeps, 40% to champions.
+- **Kunai Flip pierces** up to 4 minions or creeps. It marks the first champion behind them, or the last one it went through.
+- **Crimson Edge** splashes 50% around each empowered hit, and on a minion or creep the 4th hit always bursts.
+- **No extra CC** on champions from any of these, and never towers.
+
+## Crimson Night explosion (round 165, `akane-1.4`)
+- The ult's slash sets off a lesser crimson explosion: **4% max HP + 20% Attack** on the target, half that within 18,000, crimson bleed, and a **0.75 s fear** away from her.
+- **Kept:** the target's bleed stacks, so a following 4th empowered hit still bursts.
+- **Never:** towers or allies. A V1 parry cancels it.
 
 ## Known limits
 - **Released in round 164** (native 0.10.98, tfm2_custom 0.2.101) with Codex's approved art and the `akane-1.1` ranges. Live acceptance is still pending.

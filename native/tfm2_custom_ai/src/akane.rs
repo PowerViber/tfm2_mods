@@ -259,8 +259,35 @@ impl Akane {
         let realms = crate::realm::realms(sim);
         let reach = |a: usize, b: usize| crate::realm::can_interact(&realms, a, b) && crate::grimhald_cage::can_interact(&all, a, b);
         let not_tower = |sim: &StableSim, id: usize| sim.get_entity(id).is_some_and(|e| !e.is_tower());
+        // a parried strike cancels the explosion that follows it (Explode .. ExplodeEnd)
+        let mut parried: Vec<usize> = vec![];
+        let mut skipping = false;
+        let mut skipped_crimson: Vec<usize> = vec![];
         for e in effects {
+            if skipping {
+                match e {
+                    Effect::ExplodeEnd => skipping = false,
+                    Effect::Crimson { target, .. } => skipped_crimson.push(target),
+                    _ => {}
+                }
+                continue;
+            }
             match e {
+                Effect::Explode { target } => skipping = parried.contains(&target),
+                Effect::ExplodeEnd => {}
+                Effect::Fear { target, from, ticks } => {
+                    if reach(owner, target) && not_tower(sim, target) {
+                        let to = sim.get_entity(target).map(|e| e.pos()).map_or((from.x + 1, from.y), |p| (p.0 as i64, p.1 as i64));
+                        let mut cc = CcV1::of_kind(CcKindV1::Fear, ticks);
+                        (cc.dx, cc.dy) = (to.0 - from.x, to.1 - from.y);
+                        if (cc.dx, cc.dy) == (0, 0) {
+                            cc.dx = 1;
+                        }
+                        cc.speed = d::NIGHT_FEAR_SPEED.max(0) as u64;
+                        cc.set_name("akn_fear");
+                        sim.apply_cc(target, &cc);
+                    }
+                }
                 Effect::Damage { target, amount, direct } => {
                     if !reach(owner, target) || !not_tower(sim, target) {
                         continue;
@@ -269,6 +296,7 @@ impl Akane {
                         if let Some(c) = all.iter().find(|c| c.id == target) {
                             if crate::batch2::try_parry(sim, c, owner, amount.max(0) as usize) {
                                 crate::mod_log(sim, "akane_log.txt", &format!("parry{tick}"), &format!("slash parried by {target}"));
+                                parried.push(target);
                                 continue;
                             }
                         }
@@ -310,8 +338,8 @@ impl Akane {
                     }
                 }
                 Effect::Soul { ticks, speed_pct } => {
-                    // invisible, invulnerable and fast; her own locks make her move-only until it ends
-                    sim.entity_set_invisible(owner, ticks as usize);
+                    // invulnerable and fast; invisible until she acts (renewed each tick in `on_update`). She can cast
+                    // and attack: the core ends it on her 2nd basic attack.
                     let mut b = crate::timed(SOUL, ticks as usize);
                     b.damaged_reduce = 100;
                     b.base_attack_damaged_reduce = 100;
@@ -319,8 +347,17 @@ impl Akane {
                     b.cc_immune = true;
                     b.move_speed_mult = speed_pct as i32;
                     replace_buff(sim, owner, &b);
-                    for k in [CcKindV1::BlockAttack, CcKindV1::BlockSkill] {
-                        sim.apply_cc(owner, &named(k, ticks, "akn_soul_lock"));
+                    sim.entity_set_invisible(owner, 3);
+                }
+                Effect::Reveal => {}
+                Effect::SoulEnd => {
+                    sim.entity_remove_buff(owner, SOUL);
+                }
+                Effect::Ambush { ticks, .. } => replace_buff(sim, owner, &crate::timed("akn_ambush", ticks as usize)),
+                Effect::Rhythm { stacks, ticks } => {
+                    remove_prefix(sim, owner, "akn_rhythm:");
+                    if stacks > 0 {
+                        sim.add_buff(owner, &crate::timed(&format!("akn_rhythm:{stacks}"), ticks as usize));
                     }
                 }
                 Effect::Heal { amount } => sim.heal(owner, owner, amount.max(0) as usize),
@@ -373,6 +410,10 @@ impl Akane {
                 }
                 Effect::Log(line) => crate::mod_log(sim, "akane_log.txt", &format!("{tick}:{line}"), &line),
             }
+        }
+        // the crimson bleed of a cancelled explosion never ticks
+        if !skipped_crimson.is_empty() {
+            self.core.crimson.retain(|c| !skipped_crimson.contains(&c.0));
         }
     }
 
@@ -431,8 +472,13 @@ impl StablePassive for Akane {
             *damage = 0;
             return;
         }
-        if !self.in_skill && !self.basic_hits.contains(&target) {
-            self.basic_hits.push(target);
+        if !self.in_skill {
+            // Blood Rhythm and Ambush raise her basic attacks (her skills are scaled in the core)
+            let mult = self.core.basic_multiplier(sim.tick() as u64);
+            *damage = (*damage as i64 * mult / 100).max(0) as usize;
+            if !self.basic_hits.contains(&target) {
+                self.basic_hits.push(target);
+            }
         }
     }
     fn on_kill(&mut self, sim: &mut StableSim, _: usize, _: usize, victim: usize) {
@@ -458,6 +504,10 @@ impl StablePassive for Akane {
         }
         let effects = self.core.step(&f);
         self.apply(sim, id, effects);
+        // Dismiss: invisible until she acts, renewed a few ticks at a time so a reveal is immediate
+        if self.core.soul_on && self.core.soul_hidden {
+            sim.entity_set_invisible(id, 3);
+        }
         self.darkness(sim, id);
         if self.art_v1 && f.tick % 2 == 0 {
             let shots:Vec<_>=self.core.kunai_flights.iter().map(|s|(s.pos,art::heading(s.end.x-s.from.x,s.end.y-s.from.y))).collect();

@@ -1,0 +1,9 @@
+{
+  "scope": "Disposable fixture comparison only; no real game installation or career migration",
+  "exit_code": 0,
+  "files_compared": 885,
+  "different_or_missing": [],
+  "isolated_appdata": true,
+  "existing_packaged_dll_sha256": "31d966664c5117363c8cb7414d7d4ec64c8df4b5635a73a32296c22e94de7475",
+  "release_packaging": "Reproduced DLL packaged in the repository; fixture validation does not prove live registration/rendering"
+}

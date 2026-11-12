@@ -1,7 +1,7 @@
 // Actual browser, installed map/actors, unchanged core and labelled modeled host.
 const fs=require('fs'),path=require('path'),os=require('os'),assert=require('assert'),{spawn}=require('child_process');
 const {chromium}=require(require.resolve('playwright',{paths:[process.cwd(),path.join(os.homedir(),'.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules')]}));
-const root=path.resolve(__dirname,'..'),out=path.join(root,'docs/akane-art-review'),tmp=path.join(root,'backups/akane-art-tests');fs.mkdirSync(tmp,{recursive:true});
+const root=path.resolve(__dirname,'..'),out=path.resolve(root,process.argv[2]||process.env.TFM2_ART_RESULTS||'docs/akane-art-review'),tmp=path.join(root,'backups/akane-art-tests');fs.mkdirSync(tmp,{recursive:true});fs.mkdirSync(out,{recursive:true});
 const server=spawn('node',['server.js','--port','7334','--no-open'],{cwd:path.join(root,'editor'),stdio:'ignore'});
 const direct=spawn('python',['-m','http.server','7335','--bind','127.0.0.1','--directory',root],{cwd:root,stdio:'ignore'});
 (async()=>{await new Promise(r=>setTimeout(r,1500));const browser=await chromium.launch({channel:'msedge',headless:true});const checks=[];

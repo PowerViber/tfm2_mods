@@ -228,3 +228,9 @@ if '--integrate' in sys.argv:
     shutil.copyfile(OUT/'candidate-fx.png',dest/'vfx/wright#sheet.png');(dest/'vfx/wright#anim.fanim').write_text(json.dumps({'anims':anims},separators=(',',':'))+'\n')
     (OUT/'art-manifest.json').write_text(json.dumps(manifest,indent=2)+'\n');(ROOT/'editor/wright-art.js').write_text('window.WRIGHT_ART='+json.dumps(manifest,separators=(',',':'))+';\n')
 print(json.dumps({'complete_body':complete,'fx_tags':len(meta),'body_atlas':body_atlas.size,'fx_atlas':atlas.size,'decoded_bytes':decoded,'integrated':'--integrate' in sys.argv}))
+
+# Preserve the approved Round 165 overlays and compact legacy layout.
+_r165=Path(__file__).resolve().parents[1]/'docs/round-165-art-review/approval.json'
+if _r165.exists() and json.loads(_r165.read_text())['effects'].get('approved'):
+    import subprocess
+    subprocess.run(['rtk','proxy','python',str(Path(__file__).with_name('build-round-165-art.py')),'--integrate'],check=True)

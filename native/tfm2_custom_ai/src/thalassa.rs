@@ -29,6 +29,7 @@ pub fn pools_of(c: &crate::Champ) -> Vec<(i64, i64, i64, usize, bool)> {
 #[derive(Clone, Default)]
 pub struct Thalassa {
     pub core: Core,
+    r165_art: bool,
     profile: Option<crate::athlete_ai_core::Profile>,
     history: BTreeMap<usize, (u64, Point)>,
     terrain: Option<(u64, Vec<bool>)>,
@@ -260,6 +261,11 @@ impl Thalassa {
                         sim.apply_cc(target, &named(CcKindV1::Stun, ticks, "tls_stun"));
                     }
                 }
+                Effect::KnockUp { target, ticks } => {
+                    if reach(owner, target) && sim.get_entity(target).is_some_and(|e| !e.is_tower()) {
+                        sim.apply_cc(target, &named(CcKindV1::Airborne, ticks, "tls_knockup"));
+                    }
+                }
                 Effect::Slow { target, percent, ticks } => {
                     if reach(owner, target) {
                         sim.entity_remove_buff(target, "tls_slow");
@@ -402,6 +408,17 @@ impl Thalassa {
                     }
                 }
                 Effect::Fx { name, at, ticks, ambient } => {
+                    // The 18-tick surge is the accepted water-basic footprint;
+                    // ordinary Tide Pool's surge retains its original artwork.
+                    if self.r165_art && name=="tls_surge" && ticks==18 {
+                        if let Some(p)=sim.get_entity(owner).map(|e|e.pos()) {
+                            for (tag,x,y) in crate::round_165_art::wave_parts((p.0 as i64,p.1 as i64),(at.x,at.y)) {
+                                if !self.fx_ok(tick as u64,false){break;}
+                                crate::fx_point(sim,&format!("tls_{tag}"),owner,x,y,ticks);
+                            }
+                        }
+                        continue;
+                    }
                     if name.starts_with("tls_twin_p") || name == "tls_tide_link" {
                         // One body frame per tick is emitted by present(), including both facings.
                         continue;
@@ -496,6 +513,7 @@ impl Thalassa {
 }
 
 impl StablePassive for Thalassa {
+    fn configure(&mut self,params:&str){self.r165_art=serde_json::from_str::<serde_json::Value>(params).ok().and_then(|v|v.get("r165_art").and_then(|x|x.as_i64())).is_some_and(|v|v==1);}
     fn clone_box(&self) -> Box<dyn StablePassive> {
         Box::new(self.clone())
     }
@@ -516,7 +534,7 @@ impl StablePassive for Thalassa {
         self.dive_exit_at = None;
         self.twin_dive_exit_at = None;
     }
-    /// Her own hits never cross a cage or a Main Event ring; accepted harp bolts feed the bounce and the twin's echo.
+    /// Her own hits never cross a cage or a Main Event ring; accepted harp bolts feed the tsunami and the twin's echo.
     fn on_attack(&mut self, sim: &mut StableSim, _: usize, id: usize, target: usize, damage: &mut usize) {
         let all = crate::champions_shared(sim);
         if !crate::grimhald_cage::can_interact(&all, id, target) {

@@ -119,7 +119,9 @@
   },
   "passive": {
     "passive_ref": "tfm2_custom_ai:wright",
-    "params": {}
+    "params": {
+      "r165_art": 1
+    }
   },
   "passive_ult": {
     "passive_ref": "tfm2_custom_ai:ult_learned",
@@ -167,6 +169,13 @@
       "anim": "asset/tfm2_custom/vfx/wright",
       "tag": "airframes3",
       "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "wrt_guard",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "carrier_empowered",
+      "z": 8
     }
   ],
   "view_effects": [
@@ -1016,6 +1025,54 @@
       "anim": "asset/tfm2_custom/vfx/wright",
       "tag": "taunt",
       "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_wright_warn1_t60",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "wright_warn1_t60",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_wright_warn2_t96",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "wright_warn2_t96",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_wright_warn3_t132",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "wright_warn3_t132",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_wright_bomb_t14",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "wright_bomb_t14",
+      "z": 4,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_wright_bomb_t16",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "wright_bomb_t16",
+      "z": 4,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "wrt_wright_bomb_t18",
+      "anim": "asset/tfm2_custom/vfx/round_165",
+      "tag": "wright_bomb_t18",
+      "z": 4,
       "is_follow": false
     }
   ],

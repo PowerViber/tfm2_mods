@@ -5,7 +5,7 @@ const {chromium}=require(require.resolve('playwright',{paths:[process.cwd(),requ
 const root = path.resolve(__dirname, '..'), port = 7331;
 (async () => {
   const server = spawn('node', ['server.js', '--port', String(port), '--no-open'], {cwd: path.join(root, 'editor'), stdio: 'ignore'});
-  await new Promise(r => setTimeout(r, 1500));
+  for(let i=0;i<100;i++){try{if((await fetch('http://127.0.0.1:'+port+'/')).ok)break;}catch{}await new Promise(r=>setTimeout(r,100));}
   const browser = await chromium.launch({channel:'msedge',headless:true}), page = await browser.newPage({viewport: {width: 1300, height: 950}}), errors = [];
   page.on('pageerror', e => errors.push(e.message));
   let checks = 0;
@@ -17,13 +17,13 @@ const root = path.resolve(__dirname, '..'), port = 7331;
       const L = akaneLab, R = AKANE_RULES, out = {}, run = n => { for (let i = 0; i < n; i++) L.step(); };
       L.pause(); L.reset({fixture:true}); document.querySelector('#moving').checked = false;
       out.realWalls = L.walls.filter(Boolean).length;
-      const foe = L.units.find(u => u.id === 2), tower = L.units.find(u => u.tower), towerHp = tower.hp;
-      // S1: invisible, invulnerable, move only; no dash
+      let foe = L.units.find(u => u.id === 2), tower = L.units.find(u => u.tower), towerHp = tower.hp;
+      // S1: invisible/invulnerable until acting; casting remains available
       const before = {...L.me.pos};
       L.order('soul'); run(1);
       out.soul = L.me.soulUntil > L.tick && L.me.invulnUntil > L.tick && !L.seenByEnemy(L.me.pos);
       out.noDash = Math.hypot(L.me.pos.x - before.x, L.me.pos.y - before.y) < 2000;
-      L.order('edge'); run(1); out.moveOnly = !L.state.edge;
+      L.order('edge'); run(1); out.castInSoul = !!L.state.edge && L.me.invulnUntil > L.tick && L.seenByEnemy(L.me.pos);
       run(100);
       // Kunai Flip over a real map wall
       const c = L.wallCrossing(); L.me.pos = {...c.from}; foe.pos = {...c.to}; foe.hp = foe.max_hp; L.setAim(foe.pos);
@@ -38,7 +38,9 @@ const root = path.resolve(__dirname, '..'), port = 7331;
       out.knocked = foe.airborneUntil > 0 || foe.hp <= 0;
       out.vulnerable = foe.vulnerableUntil > 0 || foe.hp <= 0;
       // a kill drops an orb; standing on it 0.75 s absorbs it and resets the kunai
-      foe.deadUntil = 0; foe.hp = 30; foe.pos = {x: L.me.pos.x + 10000, y: L.me.pos.y};
+      // Isolate this fixture: the stronger wave-clear can kill during the preceding five-hit check.
+      L.reset({fixture:true}); foe=L.units.find(u=>u.id===2); L.setAim(foe.pos); L.order('kunai'); run(35);
+      L.me.pos={x:foe.pos.x-10000,y:foe.pos.y}; foe.hp = 30; foe.pos = {x: L.me.pos.x + 10000, y: L.me.pos.y};
       L.acceptedBasic(2); run(2);
       out.orb = (L.state.orbs || []).length === 1;
       run(R.orb.armTicks + R.orb.absorbTicks + 3);
@@ -56,7 +58,7 @@ const root = path.resolve(__dirname, '..'), port = 7331;
     });
     check(`The Lab loads the game's real wall grid (${r.realWalls} wall cells)`, r.realWalls > 20);
     check('Dismiss & Devour: invisible and invulnerable, no dash', r.soul && r.noDash);
-    check('During Dismiss she can only move (Crimson Edge refused)', r.moveOnly);
+    check('During Dismiss she can cast (Crimson Edge) and it reveals her while she stays invulnerable', r.castInSoul);
     check('Kunai Flip marks the foe, and the recast dashes over a real map wall', r.marked && r.crossed);
     check('Crimson Edge: vulnerable, the crimson burst and the finale knock-up', r.vulnerable && r.burstFx && r.knocked);
     check('A kill drops a Soul Orb; absorbing it resets Kunai Flip', r.orb && r.absorbed);

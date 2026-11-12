@@ -8,7 +8,7 @@
     "CC",
     "Dot"
   ],
-  "revision": "akane-1.1",
+  "revision": "akane-1.4",
   "stat": {
     "attack": 78,
     "magic_power": 0,
@@ -54,7 +54,19 @@
     "ticks": 90,
     "speedPct": 60,
     "healPctMaxHp": 6,
-    "healAdRatio": 30
+    "healAdRatio": 30,
+    "hitsAllowed": 1,
+    "ambushPct": 20,
+    "ambushTicks": 180
+  },
+  "rhythm": {
+    "maxStacks": 5,
+    "ticks": 240,
+    "pctPerStack": 6,
+    "cleaveStacks": 3,
+    "cleaveRadius": 12000,
+    "cleavePct": 40,
+    "cleaveMinionPct": 80
   },
   "kunai": {
     "cooldownTicks": 600,
@@ -68,7 +80,8 @@
     "markTicks": 180,
     "dashSpeed": 3000,
     "slashBase": 40,
-    "slashAdRatio": 80
+    "slashAdRatio": 80,
+    "pierceMax": 4
   },
   "edge": {
     "cooldownTicks": 720,
@@ -90,7 +103,9 @@
     "finaleInvulnTicks": 24,
     "finaleBehind": 8000,
     "knockRadius": 20000,
-    "knockTicks": 45
+    "knockTicks": 45,
+    "splashRadius": 14000,
+    "splashPct": 50
   },
   "night": {
     "cooldownTicks": 6000,
@@ -99,7 +114,10 @@
     "dashRange": 240000,
     "dashSpeed": 4000,
     "base": 100,
-    "adRatio": 90
+    "adRatio": 90,
+    "burstPct": 50,
+    "fearTicks": 45,
+    "fearSpeed": 700
   },
   "ai": {
     "towerRange": 85000,

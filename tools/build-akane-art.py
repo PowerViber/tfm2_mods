@@ -148,3 +148,9 @@ def main():
     for name in ['presentation.json','art-manifest.json']:(OUT/name).write_text(json.dumps(manifest,indent=2)+'\n')
     print(json.dumps({'poses':len(body),'body_frames':len(bm)*8,'effect_tags':len(fm),'decoded_bytes':manifest['decoded_bytes'],'body_integrated':body_ok,'effects_integrated':effects_ok}))
 if __name__=='__main__':main()
+
+# Preserve the approved Round 165 overlays and compact legacy layout.
+_r165=Path(__file__).resolve().parents[1]/'docs/round-165-art-review/approval.json'
+if _r165.exists() and json.loads(_r165.read_text())['effects'].get('approved'):
+    import subprocess
+    subprocess.run(['rtk','proxy','python',str(Path(__file__).with_name('build-round-165-art.py')),'--integrate'],check=True)
