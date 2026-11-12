@@ -139,6 +139,24 @@ pub struct Unit {
     /// towers: someone of her team (a minion or champion) is inside its range for it to shoot first
     #[serde(default)]
     pub tanked: bool,
+    /// champions (round 166): CAN_* bits of the slots known to be off cooldown. None: the frame only gives
+    /// `skill_ready` and `can` (older frames, the Lab), read as "any slot ready means all of them".
+    #[serde(default)]
+    pub ready_can: Option<u8>,
+    /// champions: CAN_* bits of slots whose readiness can't be read (native kits' data shells)
+    #[serde(default)]
+    pub maybe_can: u8,
+}
+
+impl Unit {
+    /// What it can do right now, as CAN_* bits (known-ready slots only).
+    pub fn ready_bits(&self) -> u8 {
+        self.ready_can.unwrap_or(if self.skill_ready { self.can } else { 0 })
+    }
+    /// Known-ready or unknown: what it might do.
+    pub fn might(&self, bits: u8) -> bool {
+        (self.ready_bits() | self.maybe_can) & bits != 0
+    }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -379,8 +397,8 @@ pub struct Core {
     /// kills chained in this fight, and when the fight calms down
     pub chain: u32,
     pub chain_until: u64,
-    /// running home after the objective until
-    pub disengage_until: u64,
+    /// her HP over the last `HURT_WINDOW` ticks (tick, hp), to tell damage taken from danger nearby
+    pub hp_log: Vec<(u64, i64)>,
     /// danger first noticed at (her reaction time)
     pub alarm_since: Option<u64>,
     pub rejection: String,
@@ -415,13 +433,16 @@ impl Default for Core {
             flash_was: vec![],
             chain: 0,
             chain_until: 0,
-            disengage_until: 0,
+            hp_log: vec![],
             alarm_since: None,
             rejection: String::new(),
             last_skill: "",
         }
     }
 }
+
+/// How far back her HP log looks (round 166): half a second.
+pub const HURT_WINDOW: u64 = 30;
 
 pub const KUNAI: usize = 0;
 pub const EDGE: usize = 1;
@@ -459,6 +480,8 @@ impl Core {
         }
         self.recharge(f);
         self.remember(f);
+        self.hp_log.retain(|h| f.tick < h.0 + HURT_WINDOW);
+        self.hp_log.push((f.tick, f.hp));
         for &(_, at) in &f.takedowns {
             self.orbs.push(Orb { pos: at, born: f.tick, until: f.tick + t(d::ORB_TICKS), since: None });
             out.push(Effect::Fx { name: "akn_orb".into(), at, ticks: t(d::ORB_TICKS), ambient: false });
@@ -1077,10 +1100,10 @@ impl Core {
         if u.flash_ready && !self.just_flashed(u.id, f.tick, 600) {
             m += d::AI_FLASH_MARGIN_PCT;
         }
-        if u.skill_ready && u.can & (CAN_DASH | CAN_BLINK) != 0 {
+        if u.might(CAN_DASH | CAN_BLINK) {
             m += d::AI_DASH_MARGIN_PCT;
         }
-        if u.skill_ready && u.can & (CAN_HEAL | CAN_SHIELD) != 0 {
+        if u.might(CAN_HEAL | CAN_SHIELD) {
             m += d::AI_SUSTAIN_MARGIN_PCT;
         }
         m * (130 - f.p(AGGRESSIVE) * 6 / 10) / 100
@@ -1126,22 +1149,38 @@ impl Core {
         !f.enemy_champions().any(|o| o.id != u.id && o.pos.within(u.pos, d::AI_ISOLATION))
     }
 
-    /// Expected damage on her at `p` in the next couple of seconds: enemies who can reach it (their attacks, a CC
-    /// chain if ready, Flash), enemies she can't see but remembers nearby, and a tower with nobody else to shoot.
-    pub fn danger_at(&self, f: &Frame, p: Point) -> i64 {
+    /// Expected damage on her at `p` in the next couple of seconds (round 166: weighted by distance). An enemy
+    /// within a short step of it counts fully; one that could only get there with a dash or Flash counts half; a
+    /// CC counts only if a CC slot is actually ready (half if its readiness is unknown) and it is close. Enemies
+    /// she can't see but remembers nearby, and a tower with nobody else to shoot, add to it. `skip`: the target
+    /// she is going in on (its own threat is what she's killing).
+    pub fn danger_at(&self, f: &Frame, p: Point, skip: Option<usize>) -> i64 {
         let awareness = 80 + f.p(AWARENESS) * 2 / 5; // 80..120% of the threat radius
         let mut danger = 0;
-        for u in f.enemy_champions() {
-            let mut reach = 35_000 + if u.skill_ready && u.can & (CAN_DASH | CAN_BLINK) != 0 { 30_000 } else { 0 };
+        for u in f.enemy_champions().filter(|u| Some(u.id) != skip && !u.stunned) {
+            let close = d::AI_CLOSE_REACH * awareness / 100;
+            let mut reach = d::AI_CLOSE_REACH + if u.might(CAN_DASH | CAN_BLINK) { 30_000 } else { 0 };
             if u.flash_ready && !self.just_flashed(u.id, f.tick, 600) {
                 reach += 40_000;
             }
-            if u.pos.within(p, reach * awareness / 100) && !u.stunned {
-                danger += u.attack.max(60) * d::AI_THREAT_SECONDS * 2 + if u.skill_ready && u.can & CAN_CC != 0 { 200 } else { 0 };
+            let hits = u.attack.max(60) * d::AI_THREAT_SECONDS * 2;
+            if u.pos.within(p, close) {
+                danger += hits;
+            } else if u.pos.within(p, reach * awareness / 100) {
+                danger += hits / 2;
+            } else {
+                continue;
+            }
+            if u.pos.within(p, d::AI_CC_REACH * awareness / 100) {
+                if u.ready_bits() & CAN_CC != 0 {
+                    danger += 200;
+                } else if u.maybe_can & CAN_CC != 0 {
+                    danger += 100;
+                }
             }
         }
         let memory = Self::memory_ticks(f);
-        for s in self.seen.iter().filter(|s| f.tick > s.2 && f.tick < s.2 + memory) {
+        for s in self.seen.iter().filter(|s| f.tick > s.2 && f.tick < s.2 + memory && Some(s.0) != skip) {
             let visible = f.units.iter().any(|u| u.id == s.0 && u.visible && u.hp > 0);
             if !visible && s.1.within(p, 70_000 * awareness / 100) {
                 danger += 150;
@@ -1154,39 +1193,62 @@ impl Core {
         }
         danger
     }
-    /// the danger she'll stand: her HP, more for bolder athletes, less for cautious positioning
+    /// the danger she'll stand: her HP, more for bolder (aggressive, high-ego) athletes, less for cautious
+    /// positioning, more with an out
     pub fn danger_limit(f: &Frame, escape: bool) -> i64 {
-        let pct = 35 + f.p(AGGRESSIVE) * 3 / 10 - f.p(POSITIONING) / 10 + if escape { 25 } else { 0 };
-        f.hp * pct / 100
+        let pct = 35 + f.p(AGGRESSIVE) * 3 / 10 - f.p(POSITIONING) / 10 + (f.p(EGO) - 50) / 2 + if escape { 25 } else { 0 };
+        f.hp * pct.max(5) / 100
     }
     /// an out after a dive: a Soul charge, Flash, or Kunai Flip's backflip
     pub fn has_escape(&self, f: &Frame) -> bool {
         self.charges > 0 || f.flash_ready || self.ready(KUNAI, f.tick)
     }
 
-    /// The safest nearby spot: least danger, out of tower range, toward home, bushes preferred.
-    pub fn safe_spot(&self, f: &Frame) -> Point {
-        let mut best = (i64::MAX, f.pos);
-        for r in [30_000i64, 60_000] {
-            for i in 0..8 {
-                let a = (i as f64) * std::f64::consts::TAU / 8.0;
-                let p = f.clip(f.pos, Point::new(f.pos.x + (r as f64 * a.cos()) as i64, f.pos.y + (r as f64 * a.sin()) as i64)).clamp_map();
-                if p == f.pos {
-                    continue;
-                }
-                let mut score = self.danger_at(f, p) * 10 - (f.pos.dist(f.home) - p.dist(f.home)) as i64 / 100;
-                if f.bush_at(p) {
-                    score -= 300;
-                }
-                if f.enemy_tower_at(p).is_some() {
-                    score += 4_000;
-                }
-                if score < best.0 {
-                    best = (score, p);
-                }
-            }
+    // ---- the athlete's ego decides whether she starts a fight (round 166, Reihan): 50 picks fights
+    /// How far short of lethal she still goes in (percent of the kill): 5 at ego 20, 20 at 50, 35 at 80, 40 cap.
+    pub fn near_lethal_pct(f: &Frame) -> i64 {
+        (20 + (f.p(EGO) - 50) / 2).clamp(0, 40)
+    }
+    /// Below this HP percent, with danger around, she counts as hurt: 45 at ego 20, 35 at 50, 25 at 80.
+    pub fn hurt_line(f: &Frame) -> i64 {
+        (35 - (f.p(EGO) - 50) / 3).clamp(15, 55)
+    }
+    /// A modest athlete only joins fights, never starts them alone.
+    pub fn modest(f: &Frame) -> bool {
+        f.p(EGO) < d::AI_MODEST_EGO
+    }
+    /// HP lost over the last `HURT_WINDOW` ticks, percent of max.
+    pub fn recent_loss(&self, f: &Frame) -> i64 {
+        let peak = self.hp_log.iter().map(|h| h.1).max().unwrap_or(f.hp);
+        (peak - f.hp).max(0) * 100 / f.max_hp.max(1)
+    }
+    pub fn hp_pct(f: &Frame) -> i64 {
+        f.hp * 100 / f.max_hp.max(1)
+    }
+    /// Actually hurt: under the ego line with danger around, or a big chunk lost just now.
+    pub fn hurt(&self, f: &Frame, danger: i64) -> bool {
+        Self::hp_pct(f) < Self::hurt_line(f) && danger > 0 || self.recent_loss(f) >= d::AI_HURT_LOSS_PCT
+    }
+    /// Whether her athlete starts (or joins) a fight on `u`: a modest one only joins a teammate or takes a sure,
+    /// isolated kill; an average one goes in on a near-kill, an isolated target or a teammate's fight while healthy;
+    /// a high-ego one also on a near-kill into a 2v1.
+    pub fn would_start(&self, f: &Frame, u: &Unit) -> bool {
+        let ally_on = f.allies().any(|a| a.pos.within(u.pos, 30_000));
+        if Self::modest(f) {
+            return ally_on || Self::isolated(f, u) && self.lethal(f, u, 0);
         }
-        best.1
+        let near = self.lethal(f, u, -Self::near_lethal_pct(f) + self.chain_extra(f));
+        near || Self::isolated(f, u) || ally_on && Self::hp_pct(f) >= d::AI_HEALTHY_PCT
+    }
+    /// how far she's willing to dive for this fight: a high-ego athlete goes into a 2v1 for a near-kill
+    fn dive_ok(&self, f: &Frame, u: &Unit, out_after: bool) -> bool {
+        let lethal = self.lethal(f, u, 0);
+        // teammates on the target share the enemies' attention: each one (up to two) adds 15 points of HP
+        let allies = f.allies().filter(|a| a.pos.within(u.pos, 30_000)).count().min(2) as i64;
+        let limit = Self::danger_limit(f, out_after) + f.hp * allies * d::AI_ALLY_SHARE_PCT / 100;
+        self.danger_at(f, u.pos, Some(u.id)) <= limit
+            || lethal && self.charges >= 1
+            || f.p(EGO) >= d::AI_BOLD_EGO && out_after && self.lethal(f, u, -Self::near_lethal_pct(f))
     }
 
     /// The champion she'd hunt: lethal or nearly, isolated and low preferred, within her roaming reach; teammates'
@@ -1231,47 +1293,66 @@ impl Core {
         self.chain as i64 * (20 - f.p(AGGRESSIVE) / 10)
     }
 
+    fn melee(f: &Frame, u: &Unit) -> bool {
+        u.pos.within(f.pos, d::BASIC_RANGE + u.radius + 3_000)
+    }
+
+    /// Round 166 (Reihan): she has no retreat of her own. The game's AI walks her and decides when to back off;
+    /// she only casts, and steers toward a target while Dismiss is up or toward an orb between fights.
     pub fn decide(&mut self, f: &Frame, out: &mut Vec<Effect>) -> Option<Order> {
         if f.stunned {
             return None;
         }
-        let me_danger = self.danger_at(f, f.pos);
+        let me_danger = self.danger_at(f, f.pos, None);
         let escape = self.has_escape(f);
         let limit = Self::danger_limit(f, escape);
-        let _ = escape;
-        // ---- in Dismiss: she can cast now. Engage a killable target with her skills (the Ambush after Dismiss adds
-        // 20%); otherwise slip away to safety or a safe orb.
+        let hurt = self.hurt(f, me_danger);
+        // ---- in Dismiss: invulnerable, hidden, and she can swing once and cast. Unless she's really hurt (then the
+        // game's AI walks her out), it's a fighting window: go to the target, swing into Ambush, Edge or Kunai it.
         if self.in_soul(f.tick) {
-            let engage = self.hunt(f).filter(|u| self.lethal(f, u, -d::SOUL_AMBUSH_PCT) && u.pos.within(f.pos, d::KUNAI_RANGE));
-            match engage {
-                Some(u) if self.ready(EDGE, f.tick) && self.edge.is_none() && u.pos.within(f.pos, d::BASIC_RANGE + u.radius + 3_000) => return Some(Order::Edge),
-                Some(u) if self.ready(KUNAI, f.tick) && self.kunai_flights.is_empty() && self.marked(f.tick).is_none() => {
+            if hurt {
+                return None;
+            }
+            if let Some(u) = self.hunt(f).filter(|u| self.would_start(f, u) || self.lethal(f, u, -d::SOUL_AMBUSH_PCT)) {
+                if Self::melee(f, &u) {
+                    if self.ready(EDGE, f.tick) && self.edge.is_none() && self.kill_share(f, &u) >= 30 {
+                        return Some(Order::Edge);
+                    }
+                    return None; // in reach: the engine swings
+                }
+                if self.ready(KUNAI, f.tick)
+                    && self.kunai_flights.is_empty()
+                    && self.marked(f.tick).is_none()
+                    && u.pos.within(f.pos, d::KUNAI_RANGE)
+                    && self.lethal(f, &u, -(d::SOUL_AMBUSH_PCT + Self::near_lethal_pct(f)))
+                {
                     let aim = Self::aim_at(f, &u);
                     if Self::kunai_champion(f, f.pos, f.pos.toward(aim, d::KUNAI_RANGE)).is_some_and(|first| first.id == u.id) {
                         return Some(Order::Kunai(aim));
                     }
                 }
-                Some(_) => {}
-                None => {
-                    let to = self.safe_orb(f).unwrap_or_else(|| self.safe_spot(f));
-                    out.push(Effect::Steer { to });
-                    return None;
-                }
+                out.push(Effect::Steer { to: u.pos });
+                return None;
             }
+            if let Some(o) = self.safe_orb(f) {
+                out.push(Effect::Steer { to: o });
+            }
+            return None;
         }
         if f.tick < self.busy_until {
             return None;
         }
-        // ---- dodge: a ready CC or burst about to land on her, noticed in time
-        let cc_close = f.enemy_champions().any(|u| u.skill_ready && u.can & CAN_CC != 0 && u.pos.within(f.pos, 40_000) && !u.stunned);
+        // ---- dodge: something real coming in (damage taken just now, a tower on her, or hurt with danger
+        // around), noticed in time. A ready CC nearby alone isn't a reason any more.
         let tower_on_me = f.enemy_tower_at(f.pos).is_some_and(|tw| !tw.tanked);
-        let alarmed = (cc_close && me_danger > limit / 2) || me_danger > limit || tower_on_me || f.hp * 100 < f.max_hp * 25 && me_danger > 0;
+        let alarmed = me_danger > 0 && self.recent_loss(f) >= d::AI_DODGE_LOSS_PCT
+            || tower_on_me
+            || hurt
+            || me_danger > limit && Self::hp_pct(f) < 70;
         if alarmed {
             let since = *self.alarm_since.get_or_insert(f.tick);
-            let reserve_ok = self.charges > 0;
-            if f.tick >= since + Self::reaction_ticks(f) && reserve_ok {
+            if f.tick >= since + Self::reaction_ticks(f) && self.charges > 0 {
                 self.alarm_since = None;
-                self.disengage_until = f.tick + 120;
                 return Some(Order::Soul);
             }
         } else {
@@ -1287,7 +1368,7 @@ impl Core {
                 .max_by_key(|(s, u)| (*s, std::cmp::Reverse(u.id)));
             if let Some((share, u)) = target {
                 let flashed = self.just_flashed(u.id, f.tick, 60);
-                let out_of_outs = !u.flash_ready && !(u.skill_ready && u.can & (CAN_DASH | CAN_BLINK) != 0);
+                let out_of_outs = !u.flash_ready && !u.might(CAN_DASH | CAN_BLINK);
                 let patience = 30 + f.p(STRATEGY) / 2; // ticks before the end she waits for
                 if self.lethal(f, u, 0) && (flashed || out_of_outs || left <= patience as u64) || left <= 20 && share >= 70 {
                     return Some(Order::NightDash(u.id));
@@ -1302,67 +1383,64 @@ impl Core {
                 }
             }
         }
-        // ---- after the objective: chain if it's still worth it, else get out
-        if f.tick < self.disengage_until {
-            if let Some(next) = self.hunt(f).filter(|u| self.lethal(f, u, self.chain_extra(f)) && escape) {
-                if self.danger_at(f, next.pos) <= limit {
-                    self.disengage_until = 0;
+        // ---- after a takedown: a modest athlete starts nothing new this fight; the others re-score with the chain bar
+        let chain_blocked = Self::modest(f) && self.chain > 0;
+        // ---- orbs: absorb between fights, when the 0.75 s is safe
+        let fighting = f.enemy_champions().any(|u| u.pos.within(f.pos, d::BASIC_RANGE + 20_000));
+        if !fighting {
+            if let Some(o) = self.safe_orb(f) {
+                if !o.within(f.pos, d::ORB_RANGE - 3_000) {
+                    out.push(Effect::Steer { to: o });
                 }
             }
-            if f.tick < self.disengage_until {
-                let to = self.safe_orb(f).unwrap_or_else(|| self.safe_spot(f));
-                out.push(Effect::Steer { to });
-                return None;
-            }
         }
-        if !f.takedowns.is_empty() && f.p(MACRO) < 70 {
-            // the kill is done: re-score before going again
-            let worth = self.hunt(f).is_some_and(|u| self.lethal(f, &u, self.chain_extra(f)) && escape && self.danger_at(f, u.pos) <= limit);
-            if !worth {
-                self.disengage_until = f.tick + 120;
-                return None;
-            }
-        }
-        // ---- orbs: absorb when the 0.75 s is safe
-        if let Some(o) = self.safe_orb(f) {
-            if !o.within(f.pos, d::ORB_RANGE - 3_000) {
-                out.push(Effect::Steer { to: o });
-            }
-        }
-        // ---- Crimson Night: pick or escape
+        // ---- Crimson Night: pick, or hide her team when she's hurt and out of charges
         if f.ult_unlocked && self.ready(NIGHT, f.tick) {
-            let pick = f.enemy_champions().any(|u| u.pos.within(f.pos, d::NIGHT_DASH_RANGE) && self.lethal(f, u, 0) && (Self::isolated(f, u) || f.p(STRATEGY) >= 60));
-            let flee = f.hp * 100 < f.max_hp * 35 && me_danger > limit / 2 && self.charges == 0;
-            if pick || flee {
-                if flee {
-                    self.disengage_until = f.tick + 240;
-                }
+            let pick = !chain_blocked
+                && f.enemy_champions().any(|u| u.pos.within(f.pos, d::NIGHT_DASH_RANGE) && self.lethal(f, u, 0) && (Self::isolated(f, u) || f.p(STRATEGY) >= 60));
+            let hide = hurt && self.charges == 0;
+            if pick || hide {
                 return Some(Order::Night);
             }
         }
+        if chain_blocked {
+            return None;
+        }
         let target = self.hunt(f);
+        let cc_close = f.enemy_champions().any(|u| u.ready_bits() & CAN_CC != 0 && u.pos.within(f.pos, d::AI_CC_REACH) && !u.stunned);
         // ---- Crimson Edge in melee on a killable champion (not if she'd be stunned before the burst)
         if let Some(u) = &target {
-            let melee = u.pos.within(f.pos, d::BASIC_RANGE + u.radius + 3_000);
             let would_be_stopped = cc_close && self.charges == 0;
             let micro_ok = f.p(MICRO) < 50 || self.kill_share(f, u) >= 60;
-            if melee && self.ready(EDGE, f.tick) && self.edge.is_none() && !would_be_stopped && micro_ok && self.kill_share(f, u) >= 45 {
+            if Self::melee(f, u) && self.ready(EDGE, f.tick) && self.edge.is_none() && !would_be_stopped && micro_ok && self.kill_share(f, u) >= 45 && self.would_start(f, u) {
                 return Some(Order::Edge);
             }
         }
-        // ---- the engage: Kunai Flip on a lethal or near-lethal target, with an out
+        // ---- the engage: Kunai Flip on a target her ego will fight, with an out
         if let Some(u) = &target {
-            // near-lethal: bolder athletes go in on less
-            let near_lethal = self.lethal(f, u, -(20 + f.p(AGGRESSIVE) / 5));
             let tower_ok = f.enemy_tower_at(u.pos).map_or(true, |tw| tw.tanked) || self.lethal(f, u, 0);
-            // an out that isn't the kunai itself (a Soul charge or Flash), and a landing she can stand
+            // an out that isn't the kunai itself (a Soul charge or Flash)
             let out_after = self.charges >= 1 || f.flash_ready;
-            let survivable = self.danger_at(f, u.pos) <= Self::danger_limit(f, out_after) || self.lethal(f, u, 0) && self.charges >= 1;
-            if self.ready(KUNAI, f.tick) && u.pos.within(f.pos, d::KUNAI_RANGE) && (near_lethal || Self::isolated(f, u)) && tower_ok && out_after && survivable {
-                let aim = Self::aim_at(f, u);
-                let end = f.pos.toward(aim, d::KUNAI_RANGE);
-                if Self::kunai_champion(f, f.pos, end).is_some_and(|first| first.id == u.id) {
-                    return Some(Order::Kunai(aim));
+            let start = self.would_start(f, u);
+            if start && tower_ok && out_after && self.dive_ok(f, u, out_after) {
+                if self.ready(KUNAI, f.tick) && u.pos.within(f.pos, d::KUNAI_RANGE) && !Self::melee(f, u) {
+                    let aim = Self::aim_at(f, u);
+                    let end = f.pos.toward(aim, d::KUNAI_RANGE);
+                    if Self::kunai_champion(f, f.pos, end).is_some_and(|first| first.id == u.id) {
+                        return Some(Order::Kunai(aim));
+                    }
+                }
+                // ---- Dismiss as the engage: close in hidden and invulnerable when the Kunai can't, keeping a
+                // charge in reserve unless the athlete is bold or the kill is sure
+                let reserve = if f.p(EGO) >= d::AI_BOLD_EGO { 1 } else { 2 };
+                let charges_ok = self.charges >= reserve || self.lethal(f, u, 0) && self.charges >= 1;
+                if charges_ok
+                    && Self::hp_pct(f) >= d::AI_HEALTHY_PCT
+                    && !Self::melee(f, u)
+                    && u.pos.within(f.pos, d::AI_SOUL_ENGAGE_RANGE + d::BASIC_RANGE)
+                    && self.lethal(f, u, -(Self::near_lethal_pct(f) + d::SOUL_AMBUSH_PCT))
+                {
+                    return Some(Order::Soul);
                 }
             }
         }
@@ -1387,7 +1465,7 @@ impl Core {
         self.orbs
             .iter()
             .filter(|o| f.tick + 10 < o.until && o.pos.within(f.pos, 90_000))
-            .filter(|o| self.danger_at(f, o.pos) <= limit && f.enemy_tower_at(o.pos).map_or(true, |tw| tw.tanked))
+            .filter(|o| self.danger_at(f, o.pos, None) <= limit && f.enemy_tower_at(o.pos).map_or(true, |tw| tw.tanked))
             .min_by_key(|o| o.pos.d2(f.pos))
             .map(|o| o.pos)
     }
@@ -1399,8 +1477,8 @@ impl Core {
             return false;
         }
         if !u.champion {
-            // a minion or creep: farming when calm, or crossing a wall to get out
-            return f.calm() || f.tick < self.disengage_until && self.danger_at(f, u.pos) < self.danger_at(f, f.pos);
+            // a minion or creep: farming when calm
+            return f.calm();
         }
         if !u.pos.within(f.pos, 90_000) {
             return false; // it ran or Flashed away: hold the mark
@@ -1415,6 +1493,6 @@ impl Core {
                 return false;
             }
         }
-        self.danger_at(f, u.pos) <= Self::danger_limit(f, escape) || lethal && escape
+        self.danger_at(f, u.pos, Some(u.id)) <= Self::danger_limit(f, escape) || lethal && escape
     }
 }

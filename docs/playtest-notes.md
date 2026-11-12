@@ -3889,3 +3889,14 @@ Approved effects are integrated in PR #77. Check Thalassa’s water-only wave and 
   - that the fear sends them away from her, and doesn't pull them through walls;
   - that a V1 parry cancels it;
   - that it reads as a pick tool, not a team wipe.
+## Nov 12: round 166 (native 0.10.100, tfm2_custom 0.2.103), `akane-1.5`: Akane engages while healthy
+- **Cause:** her own AI ran from potential danger. One CC enemy nearby, or any two enemies, spent a Dismiss charge and steered her home at full HP. Her steering also dropped the attacks the engine wanted, and Dismiss was spent running instead of fighting.
+- **Now:**
+  - no retreat of her own (the game's AI decides);
+  - her steer never replaces an attack or cast;
+  - ego decides whether she starts a fight (50 picks fights; below 35 she joins teammates; 70+ dives near-kills);
+  - Dismiss is a fighting window, or an engage when the Kunai can't reach;
+  - the dodge needs a real hit (8% in 0.5 s);
+  - CC readiness is read per slot.
+- **Watch for:** healthy 1v1s and 2v2s taken; Dismiss only out of real burst; whether 8% spends charges too fast in long trades.
+- **Checks:** 1,217 native tests, 0 warnings. Review: `docs/main-review-round-166.md`.
