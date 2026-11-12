@@ -918,3 +918,23 @@ fn round_160_her_ap_growth_and_mod_power_are_cut() {
     assert_eq!((d::TWIN_COPY_PCT, d::ULT_ECHO_DAMAGE_PCT), (40, 40));
 }
 
+
+#[test]
+#[ignore]
+fn bench_tick_cost() {
+    let mut units = vec![];
+    for i in 0..5 { units.push(unit(10 + i, 1, 340_000 + i as i64 * 6_000, 300_000 + i as i64 * 4_000)); }
+    for i in 0..4 { units.push(unit(2 + i, 0, 290_000, 295_000 + i as i64 * 5_000)); }
+    for i in 0..12 { let mut m = unit(30 + i, 1, 320_000 + (i % 6) as i64 * 5_000, 280_000 + (i / 6) as i64 * 8_000); m.champion = false; m.farmable = true; units.push(m); }
+    let mut f = frame(0, 300_000, 300_000, units);
+    f.manual = false;
+    let mut c = Core::default();
+    let (mut fx, t0) = (0usize, std::time::Instant::now());
+    for tick in 0..36_000u64 {
+        f.tick = tick;
+        c.wet_until = tick + 10;
+        f.basic_hits = if tick % 120 == 0 { vec![10 + (tick / 120 % 5) as usize] } else { vec![] };
+        fx += c.step(&f).len();
+    }
+    println!("BENCH thalassa ns/tick {} effects {}", t0.elapsed().as_nanos() / 36_000, fx);
+}

@@ -3900,3 +3900,9 @@ Approved effects are integrated in PR #77. Check Thalassa’s water-only wave and 
   - CC readiness is read per slot.
 - **Watch for:** healthy 1v1s and 2v2s taken; Dismiss only out of real burst; whether 8% spends charges too fast in long trades.
 - **Checks:** 1,217 native tests, 0 warnings. Review: `docs/main-review-round-166.md`.
+
+## Nov 12: round 167 (native 0.10.101, tfm2_custom 0.2.104): optimization pass for every modded champion
+- **Why:** Reihan said Proceed (the day's background matches) was slow.
+- **Result:** the native passives now do 37-68% less work per tick in a 10-modded-champion match. Raze does 84% less, Rally 33%. No gameplay changes.
+- **Details:** `docs/optimization-round-167.md`.
+- **Watch for:** Proceed and launch times compared with round 165, and any AI behaviour that looks different (none is expected).

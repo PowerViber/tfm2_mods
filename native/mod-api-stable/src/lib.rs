@@ -102,7 +102,7 @@ pub use host::{
 };
 pub use server::{ServerCtxV1, ServerExtRegV1, ServerExtVtableV1, ServerVtableV1};
 pub use server_ctx::{StableCommand, StableManagementEvent, StableServerCtx};
-pub use sim::{StableEntity, StableEntityView, StablePlayer, StableSim};
+pub use sim::{removal_epoch, StableEntity, StableEntityView, StablePlayer, StableSim};
 pub use traits::{
     StableAction, StableChampion, StableDraftHook, StableEffectSpec, StableEffectType,
     StableExtension, StableItem, StableItemBuildHook, StableMapCustomizer, StableMatchHook,

@@ -641,7 +641,7 @@ impl Dio {
                     point.1 - STAND_UP,
                     TS_TICKS as u64,
                 );
-                let guest = champions(sim)
+                let guest = champions_shared(sim)
                     .iter()
                     .filter(|u| {
                         u.team == m.team
@@ -797,7 +797,7 @@ impl StablePassive for Dio {
             let tick = sim.tick();
             self.tower_until = tick + TOWER_HOLD;
             if self.out {
-                let all = champions(sim);
+                let all = champions_shared(sim);
                 if let Some(m) = all.iter().find(|c| c.id == entity).cloned() {
                     self.set_mode(sim, &m, false, tick);
                 }
@@ -823,7 +823,7 @@ impl StablePassive for Dio {
         let guarded = sim.get_entity(entity)
             .is_some_and(|e| (0..e.buff_count()).filter_map(|i| e.buff_at(i)).any(|b| b.name() == "dio_guard"));
         if !guarded { return; }
-        let all = champions(sim);
+        let all = champions_shared(sim);
         let Some(m) = all.iter().find(|c| c.id == entity).cloned() else { return };
         if !m.has("dio_guard") || m.stunned || m.has("dio_timestop") {
             return;
@@ -848,7 +848,7 @@ impl StablePassive for Dio {
     }
     fn on_update(&mut self, sim: &mut StableSim<'_>, _seed: u64, _player: usize, entity: usize) {
         let tick = sim.tick();
-        let all = champions(sim);
+        let all = champions_shared(sim);
         let Some(m) = all.iter().find(|c| c.id == entity).cloned() else { return };
         let enemies: Vec<&Champ> = all.iter().filter(|c| c.team != m.team).collect();
         let v = |n: &str| vname(&m.name, DIO_ID, n);
@@ -1722,7 +1722,7 @@ impl StablePassive for V1 {
     }
     fn on_attack(&mut self, sim: &mut StableSim<'_>, _player: usize, entity: usize, target: usize, damage: &mut usize) {
         let tick = sim.tick();
-        let all = champions(sim);
+        let all = champions_shared(sim);
         let Some(m) = all.iter().find(|c| c.id == entity).cloned() else { return };
         // a coin in the air: this basic attack shoots the coin instead (with the shotgun loaded: a split shot)
         let shotgun = m.has("v1_shotgun");
@@ -1752,7 +1752,7 @@ impl StablePassive for V1 {
     }
     fn on_update(&mut self, sim: &mut StableSim<'_>, _seed: u64, _player: usize, entity: usize) {
         let tick = sim.tick();
-        let all = champions(sim);
+        let all = champions_shared(sim);
         let Some(m) = all.iter().find(|c| c.id == entity).cloned() else { return };
         let enemies: Vec<&Champ> = all.iter().filter(|c| c.team != m.team).collect();
         let v = |n: &str| vname(&m.name, V1_ID, n);
@@ -1991,7 +1991,7 @@ impl StablePassive for Vader {
     }
     fn on_update(&mut self, sim: &mut StableSim<'_>, _seed: u64, _player: usize, entity: usize) {
         let tick = sim.tick();
-        let all = champions(sim);
+        let all = champions_shared(sim);
         let Some(m) = all.iter().find(|c| c.id == entity).cloned() else { return };
         let enemies: Vec<&Champ> = all.iter().filter(|c| c.team != m.team).collect();
 
@@ -2249,7 +2249,7 @@ impl StablePassive for David {
     }
     fn on_attack(&mut self, sim: &mut StableSim<'_>, _player: usize, entity: usize, target: usize, damage: &mut usize) {
         let tick = sim.tick();
-        let all = champions(sim);
+        let all = champions_shared(sim);
         let Some(m) = all.iter().find(|c| c.id == entity) else { return };
         let allies: Vec<&Champ> = all.iter().filter(|c| c.team == m.team && c.id != entity).collect();
         // Sandevistan vs Infinity (see INF_SHATTER_HITS)
@@ -2284,7 +2284,7 @@ impl StablePassive for David {
     }
     fn on_update(&mut self, sim: &mut StableSim<'_>, _seed: u64, _player: usize, entity: usize) {
         let tick = sim.tick();
-        let all = champions(sim);
+        let all = champions_shared(sim);
         let Some(m) = all.iter().find(|c| c.id == entity).cloned() else { return };
         let enemies: Vec<&Champ> = all.iter().filter(|c| c.team != m.team).collect();
         let v = |n: &str| vname(&m.name, DAVID_ID, n);

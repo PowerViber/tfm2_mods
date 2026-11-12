@@ -1220,3 +1220,22 @@ fn crimson_edge_splashes_each_hit_and_bursts_on_a_minion_at_the_fourth() {
     let o4 = hit(&mut c, &mut f, 8, FOE);
     assert!(!o4.iter().any(|e| matches!(e, Effect::Fx { name, .. } if name == "akn_burst")), "1 stack on a champion: no burst");
 }
+
+#[test]
+#[ignore]
+fn bench_tick_cost() {
+    let mut units = vec![];
+    for i in 0..5 { units.push(champ(10 + i, 2, 430_000 + i as i64 * 6_000, 400_000 + i as i64 * 4_000)); }
+    for i in 0..4 { units.push(champ(2 + i, 1, 390_000, 395_000 + i as i64 * 5_000)); }
+    for i in 0..12 { units.push(minion(30 + i, 420_000 + (i % 6) as i64 * 5_000, 380_000 + (i / 6) as i64 * 8_000)); }
+    let mut f = frame(0, units);
+    f.manual = false;
+    let mut c = Core::default();
+    let (mut fx, t0) = (0usize, std::time::Instant::now());
+    for tick in 0..36_000u64 {
+        f.tick = tick;
+        f.basic_hits = if tick % 50 == 0 { vec![10 + (tick / 50 % 5) as usize] } else { vec![] };
+        fx += c.step(&f).len();
+    }
+    println!("BENCH akane ns/tick {} effects {}", t0.elapsed().as_nanos() / 36_000, fx);
+}

@@ -62,7 +62,7 @@
 //! lines), levi_pending.txt (g / r lines, merged at the next launch), levi_history.txt. No spell meta.
 
 use crate::scribble::Memory;
-use crate::{champions, d2, sq, timed, walls, Champ};
+use crate::{champions_shared, d2, sq, timed, walls, Champ};
 use mod_api_stable::{AttackTypeV1, BuffV1, CcKindV1, CcV1, SimOriginV1, StablePassive, StableSim};
 use std::collections::{BTreeMap, HashMap, HashSet, VecDeque};
 use std::io::Write;
@@ -1927,7 +1927,7 @@ impl StablePassive for Levi {
             let _ = memory();
         }
         if self.rank.is_none() && tick >= 60 { self.latch_rank(sim, player); }
-        let all = champions(sim);
+        let all = champions_shared(sim);
         let Some(m) = all.iter().find(|c| c.id == entity).cloned() else { return };
         if self.team.is_none() { self.team = Some(m.team); }
         if self.sig.is_none() && tick >= 1800 && self.rank.is_some() { self.make_sig(sim, &all); }

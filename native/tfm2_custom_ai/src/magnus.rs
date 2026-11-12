@@ -1,7 +1,7 @@
 //! Thin host adapter: targetable carriers, conservative damage receipts and shared CC immunity.
 use crate::magnus_core::*;
 use crate::mastery::{signature, Book, Record};
-use crate::{champions, fx_point, fx_unit, timed, walls};
+use crate::{champions_shared, fx_point, fx_unit, timed, walls};
 use mod_api_stable::{
     AttackTypeV1, BuffV1, CcKindV1, CcV1, StablePassive, StableSim, StatV1, UnitAttackV1,
 };
@@ -639,7 +639,7 @@ impl StablePassive for Magnus {
                 });
             }
         }
-        let champs = champions(sim);
+        let champs = champions_shared(sim);
         let dynamic = crate::steve::walls_up(&champs, tick);
         let smokes = crate::valorant::smokes_up(&champs, tick);
         let wall = |x: i64, y: i64| {

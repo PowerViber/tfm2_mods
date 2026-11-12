@@ -150,6 +150,8 @@ mod query_perf_tests;
 mod tick_budget_tests;
 #[cfg(test)]
 mod glue_tests;
+#[cfg(test)]
+mod perf_bench_tests;
 mod servers;
 pub mod roster;
 mod settings;
@@ -336,7 +338,13 @@ pub(crate) fn match_key(sim: &StableSim<'_>) -> u64 {
 }
 
 fn champions(sim: &StableSim<'_>) -> Vec<Champ> {
-    let mut out = Vec::new();
+    champions_counted(sim).0
+}
+
+/// The living champions, and each one's CC count (the shared snapshot's fingerprint needs it).
+fn champions_counted(sim: &StableSim<'_>) -> (Vec<Champ>, Vec<usize>) {
+    let mut out = Vec::with_capacity(sim.champion_count());
+    let mut ccs = Vec::with_capacity(out.capacity());
     for i in 0..sim.champion_count() {
         let id = sim.champion_id_at(i);
         let Some(e) = sim.get_entity(id) else { continue };
@@ -347,14 +355,16 @@ fn champions(sim: &StableSim<'_>) -> Vec<Champ> {
         let (hp, max_hp) = e.hp();
         let attack = e.stat().attack;
         let name = e.name().unwrap_or_default();
-        let mut buffs = Vec::new();
-        for b in 0..e.buff_count() {
+        let count = e.buff_count();
+        let mut buffs = Vec::with_capacity(count);
+        for b in 0..count {
             if let Some(buff) = e.buff_at(b) {
                 buffs.push(buff);
             }
         }
         let (mut stunned, mut pushed) = (false, false);
-        for c in 0..e.cc_count() {
+        let cc_count = e.cc_count();
+        for c in 0..cc_count {
             if let Some(cc) = e.cc_at(c) {
                 if cc.kind == CcKindV1::Stun.code() {
                     stunned = true;
@@ -365,8 +375,23 @@ fn champions(sim: &StableSim<'_>) -> Vec<Champ> {
             }
         }
         out.push(Champ { id, team: e.team(), x: x as i64, y: y as i64, buffs, stunned, pushed, hp, max_hp, attack, name });
+        ccs.push(cc_count);
     }
-    out
+    (out, ccs)
+}
+
+/// Optimization pass: an entity's buffs, borrowed from this tick's shared champion snapshot when it is a living
+/// champion in it (every frame builder used to read all of them again), read from the host otherwise.
+pub(crate) fn entity_buffs<'a>(all: &'a [Champ], e: &mod_api_stable::StableEntity<'_, '_>) -> std::borrow::Cow<'a, [BuffV1]> {
+    if e.is_champion() {
+        if let Some(c) = all.iter().find(|c| c.id == e.id()) {
+            return std::borrow::Cow::Borrowed(&c.buffs);
+        }
+    }
+    let count = e.buff_count();
+    let mut out = Vec::with_capacity(count);
+    out.extend((0..count).filter_map(|i| e.buff_at(i)));
+    std::borrow::Cow::Owned(out)
 }
 
 /// Round 141: the input AI asks for every champion with every buff several times per player per tick (the
@@ -376,32 +401,41 @@ fn champions(sim: &StableSim<'_>) -> Vec<Champ> {
 /// change between two readers in the same tick rebuilds it. Only the read-only input path uses it.
 pub(crate) fn champions_shared(sim: &StableSim<'_>) -> std::sync::Arc<Vec<Champ>> {
     type Print = Vec<(usize, i64, i64, usize, usize, usize)>;
-    static CACHE: std::sync::Mutex<Vec<(u64, usize, Print, std::sync::Arc<Vec<Champ>>)>> = std::sync::Mutex::new(Vec::new());
+    static CACHE: std::sync::Mutex<Vec<(u64, usize, u64, Print, std::sync::Arc<Vec<Champ>>)>> = std::sync::Mutex::new(Vec::new());
     let build = || std::sync::Arc::new(champions(sim));
     if !SNAPSHOT_CACHE.load(std::sync::atomic::Ordering::Relaxed) {
         return build();
     }
-    let (key, tick) = (match_key(sim), sim.tick());
-    let print: Print = (0..sim.champion_count())
-        .filter_map(|i| sim.get_entity(sim.champion_id_at(i)))
-        .filter(|e| e.is_alive())
-        .map(|e| {
-            let (x, y) = e.pos();
-            (e.id(), x as i64, y as i64, e.hp().0, e.buff_count(), e.cc_count())
-        })
-        .collect();
-    if let Ok(cache) = CACHE.lock() {
-        if let Some(hit) = cache.iter().find(|c| c.0 == key && c.1 == tick && c.2 == print) {
-            return hit.3.clone();
+    // optimization pass: a buff removed and another added keeps the counts the fingerprint reads, so a removal (the
+    // SDK counts them per thread) also starts a fresh snapshot
+    let (key, tick, removals) = (match_key(sim), sim.tick(), mod_api_stable::removal_epoch());
+    // the first reader of a tick builds straight away (its fingerprint comes from what it read); later readers
+    // compare a fresh fingerprint with the kept one
+    let kept = CACHE.lock().ok().and_then(|cache| {
+        cache.iter().find(|c| c.0 == key && c.1 == tick && c.2 == removals).map(|c| (c.3.clone(), c.4.clone()))
+    });
+    if let Some((print, snapshot)) = kept {
+        let now: Print = (0..sim.champion_count())
+            .filter_map(|i| sim.get_entity(sim.champion_id_at(i)))
+            .filter(|e| e.is_alive())
+            .map(|e| {
+                let (x, y) = e.pos();
+                (e.id(), x as i64, y as i64, e.hp().0, e.buff_count(), e.cc_count())
+            })
+            .collect();
+        if now == print {
+            return snapshot;
         }
     }
-    let fresh = build();
+    let (built, ccs) = champions_counted(sim);
+    let print: Print = built.iter().zip(&ccs).map(|(c, n)| (c.id, c.x, c.y, c.hp, c.buffs.len(), *n)).collect();
+    let fresh = std::sync::Arc::new(built);
     if let Ok(mut cache) = CACHE.lock() {
         cache.retain(|c| c.0 != key);
         if cache.len() >= 8 {
             cache.remove(0);
         }
-        cache.push((key, tick, print, fresh.clone()));
+        cache.push((key, tick, removals, print, fresh.clone()));
     }
     fresh
 }
@@ -416,7 +450,7 @@ pub(crate) fn set_snapshot_cache_for_test(on: bool) {
 /// A view effect at a point / on a unit (named `<champion id>_<tag>` in the data's view_effects).
 /// Round 91: the native version, written in the game log and the champions' logs (gundam_log.txt / isliid_log.txt) so a
 /// game shows which build ran.
-pub(crate) const VERSION: &str = "0.10.100";
+pub(crate) const VERSION: &str = "0.10.101";
 
 static LOGGED: std::sync::Mutex<Option<std::collections::HashSet<String>>> = std::sync::Mutex::new(None);
 
@@ -711,7 +745,7 @@ impl StableMatchHook for VoidField {
     fn on_match_tick(&self, sim: &mut StableSim<'_>, _rng_seed: u64) {
         native_bridge::tick(sim);
         contender_arena::tick(sim);
-        let all = champions(sim);
+        let all = champions_shared(sim);
         universal_ai::tick(sim,&all);
         mod_power(sim, &all);
         for g in all.iter().filter(|c| c.has(ACTIVE) && !c.has("gj_rework")) {

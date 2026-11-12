@@ -1697,7 +1697,7 @@ impl StablePassive for Omen {
             let k = crate::valorant_guns::judge_percent(d as i64) as usize;
             let base = *damage;
             *damage = base * k / 100;
-            let all = champions(sim);
+            let all = champions_shared(sim);
             for e in all.iter().filter(|c| c.team != team && c.id != target && d2(c.x, c.y, tx, ty) <= sq(9_000)) {
                 sim.deal_damage(entity, e.id, base * k * crate::valorant_guns::JUDGE_SPLASH_PERCENT as usize / 10_000, 0, AttackTypeV1::Skill);
                 crate::wave_near(sim, entity, e.id, 9_000, base * k * crate::valorant_guns::JUDGE_SPLASH_PERCENT as usize / 10_000, 0);
@@ -1708,7 +1708,7 @@ impl StablePassive for Omen {
     }
     fn on_update(&mut self, sim: &mut StableSim<'_>, _seed: u64, player: usize, entity: usize) {
         let tick = sim.tick();
-        let all = champions(sim);
+        let all = champions_shared(sim);
         let Some(m) = all.iter().find(|c| c.id == entity).cloned() else { return };
         if !self.started { self.started = true; self.credits = START_CREDITS; }
 
@@ -1770,7 +1770,7 @@ impl StablePassive for Omen {
 
         // ---- velocities (for the shadows' drift)
         if self.native_casts {self.vel.retain(|v|all.iter().any(|c|c.id==v.0&&(c.team==m.team||sim.is_visible(m.team,c.id))));}
-        for c in &all {
+        for c in all.iter() {
             if self.native_casts&&c.team!=m.team&&!sim.is_visible(m.team,c.id){continue}
             match self.vel.iter_mut().find(|v| v.0 == c.id) {
                 Some(v) => {

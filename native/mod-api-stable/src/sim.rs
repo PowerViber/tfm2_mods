@@ -10,6 +10,21 @@ use crate::{
     ProjectileInfoV1, SimCtxV1, SimVtableV1, SkillSlotV1, StatV1,
 };
 
+thread_local! {
+    static REMOVALS: std::cell::Cell<u64> = const { std::cell::Cell::new(0) };
+}
+
+/// How many buff removals and CC clears this thread has made through any [`StableSim`]. A mod that shares a per-tick
+/// snapshot keyed on buff and CC *counts* reads this too: a removal followed by an add keeps the count but changes
+/// the buffs. Mod-side only; the ABI is unchanged.
+pub fn removal_epoch() -> u64 {
+    REMOVALS.with(|m| m.get())
+}
+
+fn note_removal() {
+    REMOVALS.with(|m| m.set(m.get().wrapping_add(1)));
+}
+
 /// Size-guarded view over the per-callback simulation context. Valid only
 /// inside the callback that received it.
 pub struct StableSim<'a> {
@@ -392,16 +407,24 @@ impl<'a> StableSim<'a> {
     /// Removes every stat buff with the given name from the entity; returns
     /// the number removed.
     pub fn entity_remove_buff(&mut self, entity_id: usize, name: &str) -> usize {
-        slot!(self.sim(), SimVtableV1, entity_remove_buff).map_or(0, |f| unsafe {
+        let removed = slot!(self.sim(), SimVtableV1, entity_remove_buff).map_or(0, |f| unsafe {
             f(self.state(), EntityHandleV1::from_id(entity_id), name.as_ptr(), name.len())
-        })
+        });
+        if removed > 0 {
+            note_removal();
+        }
+        removed
     }
 
     /// Clears every crowd-control effect on the entity; returns the number
     /// removed.
     pub fn entity_clear_cc(&mut self, entity_id: usize) -> usize {
-        slot!(self.sim(), SimVtableV1, entity_clear_cc)
-            .map_or(0, |f| unsafe { f(self.state(), EntityHandleV1::from_id(entity_id)) })
+        let cleared = slot!(self.sim(), SimVtableV1, entity_clear_cc)
+            .map_or(0, |f| unsafe { f(self.state(), EntityHandleV1::from_id(entity_id)) });
+        if cleared > 0 {
+            note_removal();
+        }
+        cleared
     }
 
     /// Grants a damage-absorbing shield expiring after `duration_ticks`.

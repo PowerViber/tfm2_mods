@@ -113,7 +113,7 @@ impl Grimhald {
                 Point::default()
             };
             let h = e.hp();
-            let buffs: Vec<_> = (0..e.buff_count()).filter_map(|i| e.buff_at(i)).collect();
+            let buffs = crate::entity_buffs(&all, &e);
             let targetable = e.is_targetable();
             let controlled = (0..e.cc_count()).filter_map(|i| e.cc_at(i)).any(|c| c.kind == CcKindV1::Stun.code() || c.kind == CcKindV1::Airborne.code());
             let kind = e.kind();

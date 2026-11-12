@@ -89,7 +89,7 @@ impl Kratos {
             let visible = e_team == team || sim.is_visible(team, e.id());
             let p = e.pos();
             let h = e.hp();
-            let buffs: Vec<_> = (0..e.buff_count()).filter_map(|i| e.buff_at(i)).collect();
+            let buffs = crate::entity_buffs(&all, &e);
             // a cage wall or another Main Event realm between them: nothing of his reaches it
             let reach = crate::realm::can_interact(&realms, owner, e.id()) && crate::grimhald_cage::can_interact(&all, owner, e.id());
             let targetable = e.is_targetable() && reach;
