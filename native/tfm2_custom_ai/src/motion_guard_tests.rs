@@ -19,6 +19,7 @@ const ALLOWED: &[(&str, usize, &str)] = &[
     ("grimhald_weapon.rs", 1, "a test string asserting the weapon layer never moves him"),
     ("gundam.rs", 1, "Wings of Light flight while banished (unseen) and its landing"),
     ("akane.rs", 1, "Kunai Flip and Crimson Night dashes hop over walls; the Crimson Edge finale teleports behind the target"),
+    ("kicker.rs", 1, "Second Wind sends him back to his tag (a teleport by design)"),
     ("kratos.rs", 1, "the Chain Dash's hop over a wall (a blink across terrain, the rest of the dash glides)"),
     ("isliid.rs", 6, "small sword displacements (candidates for motion::step later)"),
     ("lib.rs", 12, "Minato's Flying Raijin teleports, Gojo domain snaps, place::move_unit (instant placement helper)"),
