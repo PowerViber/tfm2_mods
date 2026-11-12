@@ -17,7 +17,7 @@
 <body>
 <div id="side">
   <h3>Kicker Lab <small id="rev"></small></h3>
-  <p>Runs the game's own core (<code>kicker_core.rs</code>, compiled to wasm) on a 30×30 wall grid. The page plays the host: glides, kicks, carries, the ult's return, simple enemies.</p>
+  <p>Runs the game's own core (<code>kicker_core.rs</code>, compiled to wasm) on a 30Ãƒâ€”30 wall grid. The page plays the host: glides, kicks, carries, the ult's return, simple enemies.</p>
   <label>Click the map: <select id="tool">
     <option value="aim">aim the next order</option>
     <option value="wall">toggle a wall cell</option>
@@ -39,7 +39,7 @@
   <div id="log"></div>
 </div>
 <canvas id="map" width="720" height="720"></canvas>
-<script src="kicker-data.js"></script>
+<script src="game-world.js"></script><script src="lab-scenarios.js"></script><script src="kratos-clock.js"></script><script src="kicker-art.js"></script><script src="kicker-renderer.js"></script><script src="kicker-data.js"></script>
 <script>
 const R = window.KICKER_RULES, CELL = 32000, N = 30, MAP = 960000, S = 720 / MAP;
 const $ = id => document.getElementById(id);
@@ -83,9 +83,9 @@ function step() {
   }
   glides = glides.filter(g => tick < g.start + g.ticks);
   const frame = {
-    tick, owner: 1, team: 0, alive: true, pos: me.pos, hp: me.hp, max_hp: me.max_hp, attack: 150, stunned: false,
-    ult_unlocked: true, flash_ready: $('flash').checked, home: { x: 96000, y: 864000 }, units, terrain: walls,
-    profile: Array(13).fill(60), basic_hits: [], manual: !$('ai').checked, order: $('ai').checked ? null : pending,
+    tick, owner: 1, team: 0, alive: me.hp > 0, pos: me.pos, hp: me.hp, max_hp: me.max_hp, attack: me.attack || 150, stunned: false,
+    ult_unlocked: true, flash_ready: $('flash').checked, home: { x: 96000, y: 864000 }, units: units.filter(u=>u.hp>0).map(u=>({id:u.id,team:u.team,pos:u.pos,hp:Math.round(u.hp),max_hp:u.max_hp,radius:u.radius,attack:u.stats?.attack||0,champion:u.champion,tower:u.tower,visible:u.visible!==false,targetable:true,farmable:!!u.farmable,stunned:false,parry:false})), terrain: walls,
+    profile: [...document.querySelectorAll("#athleteStats input")].map(e=>Math.max(0,Math.min(100,+e.value||0))), basic_hits: [], manual: !$('ai').checked, order: $('ai').checked ? null : pending,
   };
   pending = null;
   const text = new TextEncoder().encode(JSON.stringify({ version: 1, rules_revision: R.revision, frame }));
@@ -133,7 +133,7 @@ function draw(state) {
   if (state && state.ult) { c.strokeStyle = '#7fffd4'; c.beginPath(); c.arc(state.ult.anchor.x * S, state.ult.anchor.y * S, 10, 0, 7); c.stroke(); }
   dot(me.pos, 8, state && state.roof ? '#ffe066' : '#f2f2f2');
   c.strokeStyle = '#888'; c.beginPath(); c.moveTo(aim.x * S - 6, aim.y * S); c.lineTo(aim.x * S + 6, aim.y * S); c.moveTo(aim.x * S, aim.y * S - 6); c.lineTo(aim.x * S, aim.y * S + 6); c.stroke();
-  if (state) $('state').innerHTML = `HP ${me.hp}/${me.max_hp} · ${state.roof ? 'on a wall' : 'ground'} · hops ${state.hops} · dashes ${state.dashes} · kicks ${state.kicks} · last: ${state.last_skill}`;
+  if (state) $('state').innerHTML = `HP ${me.hp}/${me.max_hp} Ã‚Â· ${state.roof ? 'on a wall' : 'ground'} Ã‚Â· hops ${state.hops} Ã‚Â· dashes ${state.dashes} Ã‚Â· kicks ${state.kicks} Ã‚Â· last: ${state.last_skill}`;
 }
 
 $('map').onclick = ev => {
@@ -150,8 +150,8 @@ document.querySelectorAll('[data-o]').forEach(b => b.onclick = () => order(b.dat
 $('hurt').onclick = () => { me.hp = Math.max(1, me.hp - Math.round(me.max_hp * 0.4)); log('he takes 40%'); };
 $('run').onclick = () => { running = !running; };
 $('reset').onclick = () => { reset(); draw(null); };
-setInterval(() => { if (running) step(); }, 1000 / 60);
+
 WebAssembly.instantiateStreaming(fetch('kicker.wasm'), {}).then(w => { wasm = w; reset(); draw(null); });
 </script>
-</body>
+<script src="kicker-preview.js"></script></body>
 </html>

@@ -1,0 +1,14 @@
+{
+  "review_only": true,
+  "appearance_approved": false,
+  "effects_approved": false,
+  "native_art_integrated": false,
+  "native_rules_changed": false,
+  "live_acceptance": {
+    "wall_standing_targetability_safe_landing": "pending",
+    "kick_and_skyfall_landing": "pending",
+    "second_wind_true_damage_towers_no_kill": "pending",
+    "real_flash_cooldown": "pending"
+  },
+  "reason": "Disposable game is prepared; user must enable native code through the game permission UI before match checks."
+}

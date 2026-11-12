@@ -1,0 +1,13 @@
+{
+  "result": {
+    "walls": 90,
+    "matching": 900,
+    "stats": 13,
+    "actors": 55,
+    "missing": 0,
+    "mount": false,
+    "tick": 28892
+  },
+  "errors": [],
+  "scope": "Review-only assets and WASM modeled host; actual-game acceptance pending"
+}
