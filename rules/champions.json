@@ -5246,7 +5246,7 @@
       "Engage",
       "Vision"
      ],
-     "summary": "Crimson Night (100 s): for 4 s every enemy is nearsighted: her team is hidden from them beyond 20000. Recast once to dash, over walls, to a visible enemy champion within 240000 and slash for 100 + 90% Attack. Her skills never hit towers."
+     "summary": "Crimson Night (100 s): for 4 s every enemy is nearsighted: her team is hidden from them beyond 20000. Recast once to dash, over walls, to a visible enemy champion within 240000 and slash for 100 + 90% Attack; the slash sets off a lesser crimson explosion (50% of Crimson Edge's burst, with the crimson bleed) that fears everyone it hits for 0.75 s. Her skills never hit towers."
     }
    ]
   },

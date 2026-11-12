@@ -23,14 +23,14 @@ fn cast(c:&mut Core,f:&Frame,o:Order)->Vec<Effect>{let mut f=f.clone();f.order=S
     for tick in 1..=40{f.tick=tick;assert_eq!(damage(&c.step(&f)),0);if let Some(s)=c.kunai_flights.first(){assert_eq!(s.end,end);assert_eq!(s.pos.y,400000);}}
     assert!(c.kunai_flights.is_empty()&&c.mark.is_none());
 }
-#[test]fn first_target_wins_towers_and_allies_are_ignored_and_walls_are_crossed(){
+#[test]fn kunai_pierces_minions_to_the_first_champion_towers_and_allies_are_ignored_and_walls_are_crossed(){
     let mut tower=enemy(8,415000,400000);tower.champion=false;tower.tower=true;
     let mut ally=enemy(9,412000,400000);ally.team=0;
     let mut near=enemy(2,440000,400000);near.champion=false;near.farmable=true;
     let mut f=frame(0,vec![tower,ally,near,enemy(3,470000,400000)]);f.terrain=vec![false;900];f.terrain[12*30+13]=true;
     let mut c=Core::default();cast(&mut c,&f,Order::Kunai(Point::new(510000,400000)));let mut hits=vec![];
     for tick in 1..=40{f.tick=tick;for e in c.step(&f){if let Effect::Damage{target,..}=e{hits.push(target);}}}
-    assert_eq!(hits,vec![2]);assert_eq!(c.marked(40),Some(2));
+    assert_eq!(hits,vec![2,3]);assert_eq!(c.marked(40),Some(3));
 }
 #[test]fn native_dash_duration_matches_new_speeds_and_ultimate_boundary(){
     let mut c=Core::default();let mut f=frame(0,vec![enemy(2,640000,400000),enemy(3,640001,400000)]);cast(&mut c,&f,Order::Night);

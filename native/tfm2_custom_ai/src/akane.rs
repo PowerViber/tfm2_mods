@@ -259,8 +259,35 @@ impl Akane {
         let realms = crate::realm::realms(sim);
         let reach = |a: usize, b: usize| crate::realm::can_interact(&realms, a, b) && crate::grimhald_cage::can_interact(&all, a, b);
         let not_tower = |sim: &StableSim, id: usize| sim.get_entity(id).is_some_and(|e| !e.is_tower());
+        // a parried strike cancels the explosion that follows it (Explode .. ExplodeEnd)
+        let mut parried: Vec<usize> = vec![];
+        let mut skipping = false;
+        let mut skipped_crimson: Vec<usize> = vec![];
         for e in effects {
+            if skipping {
+                match e {
+                    Effect::ExplodeEnd => skipping = false,
+                    Effect::Crimson { target, .. } => skipped_crimson.push(target),
+                    _ => {}
+                }
+                continue;
+            }
             match e {
+                Effect::Explode { target } => skipping = parried.contains(&target),
+                Effect::ExplodeEnd => {}
+                Effect::Fear { target, from, ticks } => {
+                    if reach(owner, target) && not_tower(sim, target) {
+                        let to = sim.get_entity(target).map(|e| e.pos()).map_or((from.x + 1, from.y), |p| (p.0 as i64, p.1 as i64));
+                        let mut cc = CcV1::of_kind(CcKindV1::Fear, ticks);
+                        (cc.dx, cc.dy) = (to.0 - from.x, to.1 - from.y);
+                        if (cc.dx, cc.dy) == (0, 0) {
+                            cc.dx = 1;
+                        }
+                        cc.speed = d::NIGHT_FEAR_SPEED.max(0) as u64;
+                        cc.set_name("akn_fear");
+                        sim.apply_cc(target, &cc);
+                    }
+                }
                 Effect::Damage { target, amount, direct } => {
                     if !reach(owner, target) || !not_tower(sim, target) {
                         continue;
@@ -269,6 +296,7 @@ impl Akane {
                         if let Some(c) = all.iter().find(|c| c.id == target) {
                             if crate::batch2::try_parry(sim, c, owner, amount.max(0) as usize) {
                                 crate::mod_log(sim, "akane_log.txt", &format!("parry{tick}"), &format!("slash parried by {target}"));
+                                parried.push(target);
                                 continue;
                             }
                         }
@@ -382,6 +410,10 @@ impl Akane {
                 }
                 Effect::Log(line) => crate::mod_log(sim, "akane_log.txt", &format!("{tick}:{line}"), &line),
             }
+        }
+        // the crimson bleed of a cancelled explosion never ticks
+        if !skipped_crimson.is_empty() {
+            self.core.crimson.retain(|c| !skipped_crimson.contains(&c.0));
         }
     }
 

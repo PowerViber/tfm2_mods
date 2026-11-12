@@ -46,7 +46,8 @@ text = {
                f"the 5th: invulnerable, she teleports behind the target and knocks up enemies within {ed['knockRadius']} for {sec(ed['knockTicks'])}."),
     'ult': (f"Crimson Night ({sec(ni['cooldownTicks'])}): for {sec(ni['ticks'])} every enemy is nearsighted: her team is hidden from them beyond "
             f"{ni['sight']}. Recast once to dash, over walls, to a visible enemy champion within {ni['dashRange']} and slash for {ni['base']} + "
-            f"{ni['adRatio']}% Attack. Her skills never hit towers."),
+            f"{ni['adRatio']}% Attack; the slash sets off a lesser crimson explosion ({ni['burstPct']}% of Crimson Edge's burst, with the crimson bleed) "
+            f"that fears everyone it hits for {sec(ni['fearTicks'])}. Her skills never hit towers."),
 }
 
 champ = copy.deepcopy(json.loads((ROOT / 'mods/tfm2_custom/champion/tfm2_custom_contender.data_champion').read_text()))

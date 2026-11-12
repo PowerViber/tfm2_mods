@@ -267,6 +267,11 @@ pub enum Effect {
     /// Blood Rhythm stacks shown on her
     Rhythm { stacks: i64, ticks: u64 },
     Heal { amount: i64 },
+    /// fears `target` away from `from` (Crimson Night's explosion)
+    Fear { target: usize, from: Point, ticks: u64 },
+    /// the explosion of a strike on `target` follows, up to `ExplodeEnd` (dropped if that strike was parried)
+    Explode { target: usize },
+    ExplodeEnd,
     /// invulnerable (damage and CC) for `ticks` (the Crimson Edge finale)
     Invulnerable { ticks: u64 },
     /// a teleport (the finale: behind the target)
@@ -304,6 +309,9 @@ pub struct DashPlan {
     pub base: i64,
     pub ratio: i64,
     pub fx: &'static str,
+    /// Crimson Night's slash: it sets off a lesser crimson explosion that fears (round 165)
+    #[serde(default)]
+    pub explode: bool,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize)]
@@ -667,9 +675,17 @@ impl Core {
 
     /// The 4th stack bursts: % max HP + Attack on the target, half around it, crimson bleed on everyone hit.
     fn burst(&mut self, f: &Frame, u: &Unit, out: &mut Vec<Effect>) {
-        self.bleeds.retain(|b| b.target != u.id);
-        out.push(Effect::Bleed { target: u.id, stacks: 0, ticks: 0 });
-        let main = u.max_hp * d::EDGE_BURST_PCT_MAX_HP / 100 + d::EDGE_BURST_AD_RATIO * f.attack / 100;
+        self.burst_scaled(f, u, 100, true, out);
+    }
+
+    /// The crimson burst at `pct`% (Crimson Edge's 4th hit at 100% consumes the bleed stacks; Crimson Night's lesser
+    /// explosion at 50% keeps them).
+    fn burst_scaled(&mut self, f: &Frame, u: &Unit, pct: i64, consume: bool, out: &mut Vec<Effect>) {
+        if consume {
+            self.bleeds.retain(|b| b.target != u.id);
+            out.push(Effect::Bleed { target: u.id, stacks: 0, ticks: 0 });
+        }
+        let main = (u.max_hp * d::EDGE_BURST_PCT_MAX_HP / 100 + d::EDGE_BURST_AD_RATIO * f.attack / 100) * pct / 100;
         out.push(Effect::Fx { name: "akn_burst".into(), at: u.pos, ticks: 20, ambient: false });
         out.push(Effect::Damage { target: u.id, amount: main, direct: false });
         self.add_crimson(f, u, out);
@@ -680,7 +696,7 @@ impl Core {
             .cloned()
             .collect();
         for o in around {
-            let amount = (o.max_hp * d::EDGE_BURST_PCT_MAX_HP / 100 + d::EDGE_BURST_AD_RATIO * f.attack / 100) / 2;
+            let amount = (o.max_hp * d::EDGE_BURST_PCT_MAX_HP / 100 + d::EDGE_BURST_AD_RATIO * f.attack / 100) * pct / 100 / 2;
             out.push(Effect::Damage { target: o.id, amount, direct: false });
             self.add_crimson(f, &o, out);
         }
@@ -754,7 +770,7 @@ impl Core {
         }
         let speed = speed.max(1);
         let clear = f.clip(f.pos, land);
-        let mut plan = DashPlan { target: u.id, hop: None, after_hop: None, strike_at: 0, base, ratio, fx };
+        let mut plan = DashPlan { target: u.id, hop: None, after_hop: None, strike_at: 0, base, ratio, fx, explode: false };
         if clear == land {
             let ticks = ((f.pos.dist(land) as i64) / speed).max(2) as u64;
             out.push(Effect::Glide { to: land, ticks });
@@ -802,6 +818,17 @@ impl Core {
             if let Some(u) = f.unit(p.target).filter(|u| f.skill_target(u)).cloned() {
                 out.push(Effect::Fx { name: p.fx.into(), at: u.pos, ticks: 14, ambient: false });
                 out.push(Effect::Damage { target: u.id, amount: pct(p.base, p.ratio, f.attack), direct: true });
+                if p.explode {
+                    // Crimson Night: a lesser crimson explosion that fears; a parried slash cancels it (the bridge
+                    // drops everything between Explode and ExplodeEnd)
+                    out.push(Effect::Explode { target: u.id });
+                    self.burst_scaled(f, &u, d::NIGHT_BURST_PCT, false, out);
+                    let from = f.pos;
+                    for o in f.units.iter().filter(|o| f.skill_target(o) && (o.id == u.id || o.pos.within(u.pos, d::EDGE_BURST_RADIUS + o.radius))) {
+                        out.push(Effect::Fear { target: o.id, from, ticks: t(d::NIGHT_FEAR_TICKS) });
+                    }
+                    out.push(Effect::ExplodeEnd);
+                }
             }
         }
     }
@@ -901,6 +928,9 @@ impl Core {
                 self.night_dash_used = true;
                 out.push(Effect::Pose { name: "ult", ticks: 14 });
                 self.start_dash(f, &u, d::NIGHT_DASH_SPEED, d::NIGHT_BASE, d::NIGHT_AD_RATIO, "akn_night_slash", out);
+                if let Some(p) = self.dash.as_mut() {
+                    p.explode = true;
+                }
                 self.last_skill = "night_dash";
             }
         }

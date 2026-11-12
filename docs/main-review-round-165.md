@@ -70,3 +70,21 @@ Reihan: "the bounce is too much", "make her BA slower but [it] does an area rect
 Reihan approved the corrected Round 165 effects. The tsunami is **water-only** (wet/Dive included), with prototype owner water range **82,500** and unchanged **120-tick** basic cadence; land stays **55,000** and clone range stays +20%. Akane has Rhythm/Ambush/Dismiss indicators. Wright has a carrier-empowerment indicator and corrected **30,000-radius / 60/96/132-tick** bomber warnings. Claude’s newer **akane-1.3** changes are included.
 
 See [approved sources, previews, budgets, reproduction and separate evidence](round-165-art-review/README.md). Final Windows suite: **1,202 passed, 13 ignored**; four inherited test-fixture dead-code warnings. All three existing browser suites and the new 23-check art suite pass; complete native/WASM traces match. All 252 old Thalassa FX frames retain exact pixels/timing, and presentation stays below 32 MiB per owner. The rebuilt 0.10.99 DLL reproduces byte-for-byte; isolated Mod Manager verification passes. No installation or real-career migration was performed. Actual-game acceptance remains pending.
+
+## Crimson Night explosion (`akane-1.4`, added after Codex's art follow-up)
+Reihan: the ult's dash should trigger the 4th-hit crimson explosion, as a lesser burst with fear.
+- **The slash sets off a lesser crimson explosion:**
+  - the target takes **50%** of Crimson Edge's burst (**4% max HP + 20% Attack**);
+  - enemies within **18,000** take half of that;
+  - everyone hit gets the crimson bleed and is **feared for 0.75 s**, running away from her (`akn_fear`, speed 700).
+- **Unchanged:** the target's bleed stacks are kept (only the 4th empowered hit consumes them), and the Kunai recast slash doesn't explode.
+- **Never hits:** towers or allies.
+- **V1 parry:** a parried slash sets off nothing, and its crimson bleed never ticks.
+- **Art:** it reuses Codex's approved `akn_burst`, so no new art is needed. The Lab shows feared units running away.
+- **Decision:** Reihan keeps Codex's `thalassa-1.7` (water-only tsunami, 82,500 water range).
+- **Verification:**
+  - **Tests:** `cargo test --release` gives **1,206 passed**, 13 ignored, 0 warnings. That includes 2 new tests: the core explosion, and the glue fear direction with the parry cancel.
+  - **Lab:** the Akane Lab crate's kunai test is updated (it now pierces the minion and marks the champion behind it). The `akane` wasm is rebuilt.
+  - **Generators and Mod Manager:** the generators are current, and the Mod Manager load test passes.
+  - **DLL:** the Windows DLL is rebuilt and reports 0.10.99. Codex's `round-165-art-review/package.json` describes the earlier `akane-1.3` DLL; I verified that one by source hash before this change.
+  - **Not run here:** the Akane browser test, which needs msedge and the local game-reference cache.

@@ -402,6 +402,35 @@ fn bleed_stacks_cap_at_four_and_tick_each_second() {
 // ------------------------------------------------------------------ Ult
 
 #[test]
+fn the_night_slash_sets_off_a_lesser_crimson_explosion_that_fears() {
+    let mut c = Core::default();
+    let mut tw = tower(40, 505_000, 400_000);
+    tw.radius = 3_000;
+    let mut f = frame(0, vec![champ(FOE, 2, 500_000, 400_000), champ(11, 2, 510_000, 400_000), champ(5, 1, 498_000, 400_000), tw]);
+    order(&mut c, &f, Order::Night);
+    // a bleed stack on the target first: the lesser explosion keeps it
+    c.bleeds.push(Bleed { target: FOE, stacks: 2, until: 600, next: 60, per_stack: 10 });
+    let out = run_order(&mut c, &mut f, Some(Order::NightDash(FOE)), 1, 80);
+    let main = (1000 * d::EDGE_BURST_PCT_MAX_HP / 100 + d::EDGE_BURST_AD_RATIO * 180 / 100) * d::NIGHT_BURST_PCT / 100;
+    assert!(out.contains(&Effect::Damage { target: FOE, amount: main, direct: false }), "half the burst on the target");
+    assert!(out.contains(&Effect::Damage { target: 11, amount: main / 2, direct: false }), "half of that around it");
+    let feared: Vec<usize> = out.iter().filter_map(|e| if let Effect::Fear { target, ticks, .. } = e { (*ticks == d::NIGHT_FEAR_TICKS as u64).then_some(*target) } else { None }).collect();
+    assert!(feared.contains(&FOE) && feared.contains(&11), "{feared:?}");
+    assert!(!feared.contains(&5) && !feared.contains(&40), "never an ally or a tower");
+    assert_eq!(damage_to(&out, 40) + damage_to(&out, 5), 0);
+    assert!(out.iter().any(|e| matches!(e, Effect::Crimson { target: 11, .. })));
+    assert_eq!(c.stacks_on(FOE, 80), 2, "the target's bleed stacks are kept");
+    let i = out.iter().position(|e| matches!(e, Effect::Explode { target: FOE })).expect("explode marker");
+    assert!(out[i..].iter().any(|e| *e == Effect::ExplodeEnd));
+    // the Kunai recast slash never explodes
+    let mut c = Core::default();
+    let mut f = frame(0, vec![champ(FOE, 2, 440_000, 400_000)]);
+    run_order(&mut c, &mut f, Some(Order::Kunai(Point::new(440_000, 400_000))), 0, 40);
+    let out = run_order(&mut c, &mut f, Some(Order::KunaiRecast), 40, 100);
+    assert!(!out.iter().any(|e| matches!(e, Effect::Fear { .. } | Effect::Explode { .. })));
+}
+
+#[test]
 fn crimson_night_lasts_four_seconds_and_dashes_once_to_a_visible_champion_in_reach() {
     let mut c = Core::default();
     let mut f = frame(0, vec![champ(FOE, 2, 500_000, 400_000), champ(11, 2, 700_000, 400_000)]);
@@ -770,6 +799,43 @@ mod glue {
         let mut dmg = 100;
         with_sim(&host, |sim| k.on_attack(sim, 0, 0, 1, &mut dmg));
         assert_eq!(dmg as i64, 100 * (100 + 5 * d::RHYTHM_PCT_PER_STACK) * (100 + d::SOUL_AMBUSH_PCT) / 100 / 100);
+    }
+
+    #[test]
+    fn the_night_explosion_fears_with_a_direction_and_a_parry_cancels_it() {
+        let (x, y) = open_spot(80_000);
+        let host = Host::new(vec![champ(0, (x, y), "tfm2_custom_akane"), champ(1, (x + 20_000, y), "foe"), champ(1, (x + 25_000, y), "tfm2_ultrakill_v1")]);
+        let mut k = Akane::default();
+        host.borrow_mut().tick = 5;
+        let me = Point::new(x as i64, y as i64);
+        with_sim(&host, |sim| k.apply(sim, 0, vec![Effect::Explode { target: 1 }, Effect::Fear { target: 1, from: me, ticks: 45 }, Effect::ExplodeEnd]));
+        {
+            let g = host.borrow();
+            let fear = g.ccs[1].iter().find(|c| c.0.name() == "akn_fear").expect("a named fear");
+            assert_eq!(fear.0.kind, CcKindV1::Fear.code());
+            assert!(fear.0.dx > 0, "away from her");
+        }
+        // V1 parries the slash: the explosion after it is dropped, its crimson bleed never ticks
+        with_sim(&host, |sim| sim.add_buff(2, &crate::timed("v1_guard", 600)));
+        k.core.crimson.push((2, 500, 10, 60));
+        with_sim(&host, |sim| {
+            k.apply(
+                sim,
+                0,
+                vec![
+                    Effect::Damage { target: 2, amount: 200, direct: true },
+                    Effect::Explode { target: 2 },
+                    Effect::Damage { target: 2, amount: 90, direct: false },
+                    Effect::Crimson { target: 2, ticks: 180 },
+                    Effect::Fear { target: 2, from: me, ticks: 45 },
+                    Effect::ExplodeEnd,
+                ],
+            )
+        });
+        let g = host.borrow();
+        assert!(!g.damage.iter().any(|dm| dm.1 == 2), "nothing lands on the parrying V1: {:?}", g.damage);
+        assert!(!g.ccs[2].iter().any(|c| c.0.name() == "akn_fear"));
+        assert!(!k.core.crimson.iter().any(|c| c.0 == 2));
     }
 
     #[test]

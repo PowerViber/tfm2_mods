@@ -3882,3 +3882,10 @@ To check in game: close the game, Update/Check, confirm native 0.10.36 and champ
 ## Round 165 approved effects — 2026-11-12
 
 Approved effects are integrated in PR #77. Check Thalassa’s water-only wave and prototype 82,500 water basic range (55,000 on land), preserving the two-second clock and clone bolts; check Akane Rhythm/Ambush/Dismiss timers and Wright’s carrier indicator. Bomber warnings use the actual 30,000 radius and 60/96/132 ticks. Evidence: docs/round-165-art-review/. Actual-game visual, item/targeting and carrier receipt observations remain pending. Installation and real-career migration were not performed.
+
+## Nov 12: round 165 add-on, `akane-1.4`: Crimson Night's lesser explosion
+- **What changed:** the ult's dash slash now sets off a lesser crimson explosion. It deals 50% of the 4th-hit burst (half that to anyone around it), applies the crimson bleed, and fears everyone it hits for 0.75 s.
+- **Watch for:**
+  - that the fear sends them away from her, and doesn't pull them through walls;
+  - that a V1 parry cancels it;
+  - that it reads as a pick tool, not a team wipe.
