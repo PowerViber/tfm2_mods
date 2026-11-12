@@ -88,3 +88,23 @@ Reihan: the ult's dash should trigger the 4th-hit crimson explosion, as a lesser
   - **Generators and Mod Manager:** the generators are current, and the Mod Manager load test passes.
   - **DLL:** the Windows DLL is rebuilt and reports 0.10.99. Codex's `round-165-art-review/package.json` describes the earlier `akane-1.3` DLL; I verified that one by source hash before this change.
   - **Not run here:** the Akane browser test, which needs msedge and the local game-reference cache.
+
+## Load-time check (2026-11-12)
+Reihan: the game launch, and mostly Proceed, felt slower than in round 164. Nothing in round 165 measures heavier.
+- **Native per-tick cost:** `bench_tick_cost` (ignored tests, run with `cargo test --release bench_tick_cost -- --ignored --nocapture`) runs each core on a crowded 5v5 with 12 minions for 36,000 ticks with her AI on.
+
+  | Champion | Round 164 (1d119b6) | Round 165 |
+  |---|---|---|
+  | Akane | 1,473 ns/tick | **976 ns/tick** |
+  | Thalassa | 713 ns/tick | **335 ns/tick** |
+  | Wright | 1,793 ns/tick | **1,033 ns/tick** |
+
+  All three are about 1 microsecond per tick, so they are nowhere near the cost of a Proceed.
+- **Startup data:**
+  - the mod text grows by 1.4% (+160 KB);
+  - there are 302 more view definitions (19,296 in all);
+  - decoded VFX grows by 0.6% (896 to 902 MiB);
+  - the DLL imports and exports are identical, and `init()` and the server hooks are unchanged.
+- **The tsunami art plays at most 2 segments per bolt** at the 82,500 water range, so it isn't an effect flood.
+- **Gundam review images:** `mods/tfm2_gundam/source` review PNGs are never installed (that folder has no mod_info).
+- **Likely cause:** the first launch after an update runs cold. Windows rescans the new 11 MB DLL and the replaced files are no longer in the disk cache. To confirm, time a second launch, or put `perf.flag` in `mods/tfm2_custom_ai` and send `perf_log.txt` after a Proceed.
