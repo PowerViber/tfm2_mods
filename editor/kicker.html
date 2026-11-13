@@ -17,7 +17,7 @@
 <body>
 <div id="side">
   <h3>Kicker Lab <small id="rev"></small></h3>
-  <p>Runs the game's own core (<code>kicker_core.rs</code>, compiled to wasm) on a 30Ãƒâ€”30 wall grid. The page plays the host: glides, kicks, carries, the ult's return, simple enemies.</p>
+  <p>Shared native core on the installed game map: 960,000 units across, 30 by 30 authoritative wall cells. Stock champion, minion, camp and objective art uses the same scale. Browser host behaviour is simulated.</p>
   <label>Click the map: <select id="tool">
     <option value="aim">aim the next order</option>
     <option value="wall">toggle a wall cell</option>
@@ -83,9 +83,9 @@ function step() {
   }
   glides = glides.filter(g => tick < g.start + g.ticks);
   const frame = {
-    tick, owner: 1, team: 0, alive: me.hp > 0, pos: me.pos, hp: me.hp, max_hp: me.max_hp, attack: me.attack || 150, stunned: false,
-    ult_unlocked: true, flash_ready: $('flash').checked, home: { x: 96000, y: 864000 }, units: units.filter(u=>u.hp>0).map(u=>({id:u.id,team:u.team,pos:u.pos,hp:Math.round(u.hp),max_hp:u.max_hp,radius:u.radius,attack:u.stats?.attack||0,champion:u.champion,tower:u.tower,visible:u.visible!==false,targetable:true,farmable:!!u.farmable,stunned:false,parry:false})), terrain: walls,
-    profile: [...document.querySelectorAll("#athleteStats input")].map(e=>Math.max(0,Math.min(100,+e.value||0))), basic_hits: [], manual: !$('ai').checked, order: $('ai').checked ? null : pending,
+    tick, owner: 1, team: 0, alive: me.hp > 0, pos: {x:Math.round(me.pos.x),y:Math.round(me.pos.y)}, hp: me.hp, max_hp: me.max_hp, attack: me.attack || 150, stunned: false,
+    ult_unlocked: true, flash_ready: $('flash').checked, home: { x: 96000, y: 864000 }, units: units.filter(u=>u.hp>0).map(u=>({id:u.id,team:u.team,pos:{x:Math.round(u.pos.x),y:Math.round(u.pos.y)},hp:Math.round(u.hp),max_hp:u.max_hp,radius:u.radius,attack:Math.round(u.stats?.attack||0),champion:u.champion,tower:u.tower,visible:u.visible!==false,targetable:true,farmable:!!u.farmable,stunned:tick<(u.stunUntil||0),parry:false})), terrain: walls,
+    profile: [...document.querySelectorAll("#athleteStats input")].map(e=>Math.max(0,Math.min(100,+e.value||0))), basic_hits: window.kickerHost?.takeBasicHits() || [], manual: !$('ai').checked, order: $('ai').checked ? null : pending,
   };
   pending = null;
   const text = new TextEncoder().encode(JSON.stringify({ version: 1, rules_revision: R.revision, frame }));
@@ -95,6 +95,7 @@ function step() {
   const out = ex.kicker_step(text.length);
   const res = JSON.parse(new TextDecoder().decode(new Uint8Array(ex.memory.buffer, out, ex.kicker_output_len())));
   if (res.error) { log(res.error); return; }
+  window.kickerHost?.record(frame,res);
   if (res.rejection) log('refused: ' + res.rejection);
   for (const e of res.effects) apply(e);
   tick++;
