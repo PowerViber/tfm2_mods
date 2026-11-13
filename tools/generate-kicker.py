@@ -28,25 +28,25 @@ b, ro, di, ho, da, br, rk, ki, sk, ul, _ = (rules[k] for k in GROUPS)
 sec = lambda n: f'{n / 60:g} s'
 text = {
     'name': rules['name'],
-    'skill': (f"Rooftop Runner (passive): he can stand and run on walls: {ro['speedPct']}% faster, {ro['reducePct']}% less damage taken, and hidden from "
-              f"enemies farther than {ro['hideRange']}; there his basic attack becomes a {ro['basicRange']}-range rock throw. Any jump down is a Drop-in ({sec(di['cooldownTicks'])}): invulnerable while dropping, enemies within "
-              f"{di['knockRadius']} of the landing are knocked up for {sec(di['knockTicks'])}, and his next hit deals {di['bonusPct']}% more. Landing on the ground "
-              f"also shields him for {ro['groundShieldPctMaxHp']}% max HP ({sec(ro['groundShieldTicks'])}, once every {sec(ro['groundShieldCooldownTicks'])}). "
-              f"A stun or knock-up on a wall drops him to the ground. "
+    'skill': (f"Wall Runner (passive): every Wall Bounce landing is a Drop-in ({sec(di['cooldownTicks'])}): enemies within {di['knockRadius']} of the landing are "
+              f"knocked up for {sec(di['knockTicks'])} and his next hit deals {di['bonusPct']}% more. The landing also shields him for {ro['groundShieldPctMaxHp']}% max HP "
+              f"({sec(ro['groundShieldTicks'])}, once every {sec(ro['groundShieldCooldownTicks'])}). After a bounce he's Bounced for {sec(ro['bouncedTicks'])}: "
+              f"{ro['reducePct']}% less damage taken, crowd-control immune for the first {sec(ro['ccImmuneTicks'])}, basic attacks become {ro['basicRange']}-range rock throws, "
+              f"and his next S2 and S3 are their wall versions. He's crowd-control immune during every leap and dash. "
               f"Marked Dash ({da['charges']} charges, {sec(da['rechargeTicks'])} each): his hits mark enemies, minions and creeps for {sec(da['markTicks'])} (never a tower); "
-              f"he dashes next to a marked unit within {da['range']} and gains a shield of {da['shieldPctMaxHp']}% max HP for {sec(da['shieldTicks'])}. "
+              f"he dashes behind a marked unit within {da['range']} and gains a shield of {da['shieldPctMaxHp']}% max HP for {sec(da['shieldTicks'])}. "
               f"Bruised: everyone he crowd-controls is Bruised for {sec(br['ticks'])}: no HP regeneration, {br['healReducePct']}% less healing, and each of his hits adds "
               f"+{br['ampPerStack']}% damage taken (up to {br['maxStacks']} stacks). "
-              f"Wall Hop / Drop Kick: onto a wall within {ho['mountRange']} ({sec(ho['mountCooldownTicks'])}); from wall to wall within {ho['wallRange']} "
-              f"({ho['charges']} charges, {sec(ho['wallRechargeTicks'])} each on a wall, {sec(ho['groundRechargeTicks'])} on the ground); from a wall, a Drop Kick onto an enemy "
-              f"or point within {ho['dropRange']} for {ho['dropBase']} + {ho['dropAdRatio']}% Attack (no charge). With no wall near, a short {ho['groundHop']} hop."),
+              f"Wall Bounce (no cooldown): he leaps to a wall within {ho['wallRange']}, touches it for {sec(ro['touchTicks'])} (hidden, {ro['reducePct']}% less damage), "
+              f"then springs onto an enemy or point within {ho['springRange']} of the wall, landing behind the enemy for {ho['dropBase']} + {ho['dropAdRatio']}% Attack. "
+              f"Invulnerable while leaping. With no wall in reach, a short {ho['groundHop']} hop ({ho['charges']} charges, {sec(ho['rechargeTicks'])} each)."),
     'skill2': (f"Rock Throw ({sec(rk['cooldownTicks'])}): a rock flies {rk['range']} in a line through everything (never towers), dealing {rk['base']} + "
-               f"{rk['adRatio']}% Attack and marking each unit it hits. From a wall: Rock Rain, {rk['rainCount']} rocks in a narrow fan ({rk['rainRange']}), "
+               f"{rk['adRatio']}% Attack and marking each unit it hits. While Bounced: Rock Rain, {rk['rainCount']} rocks in a narrow fan ({rk['rainRange']}), "
                f"{rk['rainPct']}% damage each. "
                f"Homecoming Kick / Skyfall Kick ({ki['charges']} charges, {sec(ki['rechargeTicks'])} each): on the ground he dashes up to {ki['dashRange']} to an enemy "
                f"champion and kicks it {ki['distance']} away from him for {ki['base']} + {ki['adRatio']}% Attack. The flying body hits up to {ki['secondaryMax']} other "
                f"enemy champions ({ki['secondaryPct']}% damage, knocked up {sec(ki['secondaryKnockTicks'])}); a wall stops it and stuns for {sec(ki['wallStunTicks'])}. "
-               f"Flash just before or during the kick re-aims it. From a wall: Skyfall Kick, a {sk['range']} dive that carries the first enemy champion in its line "
+               f"Flash just before or during the kick re-aims it. While Bounced: Skyfall Kick, a {sk['range']} dive that carries the first enemy champion in its line "
                f"to the end, through walls, for {sk['base']} + {sk['adRatio']}% Attack; he lands behind it with a Drop-in."),
     'ult': (f"Second Wind ({sec(ul['cooldownTicks'])}): he sprays a tag where he stands and fights freely for {sec(ul['ticks'])}. If he would die in that time "
             f"he doesn't: he's sent back to the tag with full HP. If the time runs out, he's sent back to the tag with the HP he had when he cast it. "
@@ -90,7 +90,7 @@ data = json.dumps(champ, indent=2) + '\n'
 
 roster = dict(id=ID, name=rules['name'], family='original', role='Fighter', native=True,
               basicAttack=dict(name='Kick', kind='melee', range=b['range']),
-              skills=[dict(slot='skill', name='Rooftop Runner / Wall Hop / Drop Kick / Marked Dash', kinds=['Dash', 'Cc', 'Shield'], intents=['Engage', 'Escape'],
+              skills=[dict(slot='skill', name='Wall Runner / Wall Bounce / Marked Dash', kinds=['Dash', 'Cc', 'Shield'], intents=['Engage', 'Escape'],
                            summary=text['skill']),
                       dict(slot='skill2', name='Rock Throw / Homecoming Kick / Skyfall Kick', kinds=['Projectile', 'Dash', 'Cc'], intents=['Engage', 'Clear', 'Protect'],
                            summary=text['skill2']),

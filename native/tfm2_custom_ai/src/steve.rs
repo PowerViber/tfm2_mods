@@ -1004,7 +1004,7 @@ impl StablePlayerAi for WallAi {
             if let Some(sim) = ctx.sim() { crate::isliid::note_athlete(sim.seed(), pid, aid); }
         }
         // Akane's own AI walks her (disengage, Soul Orbs, Dismiss): a short `akn_go:x:y` buff from her bridge
-        // Kicker's AI walks him the same way (`kk_go:x:y`, along walls too)
+        // Kicker's AI walks him the same way (`kk_go:x:y`)
         if cname.as_deref().is_some_and(|n| n.ends_with("_akane") || n.ends_with("_kicker")) {
             let pid = ctx.player_id();
             let go = ctx.sim().and_then(|sim| {
@@ -1013,38 +1013,6 @@ impl StablePlayerAi for WallAi {
             });
             // round 166: only a walk is rewritten; an attack or cast the engine wanted always passes through
             let steered = crate::akane::steer_input(go, base);
-            // Kicker on a wall never walks off it (Reihan): any walk (his AI's or the engine's) stops at the wall's edge
-            let roof = ctx.sim().and_then(|sim| {
-                let me = sim.get_player(pid).and_then(|p| p.champion())?;
-                let on = (0..me.buff_count()).filter_map(|i| me.buff_at(i)).any(|b| b.name() == crate::kicker::ROOF);
-                let p = me.pos();
-                on.then_some((p.0 as i64, p.1 as i64))
-            });
-            if let Some(pos) = roof {
-                // a recall: the game wants him home; his core jumps down that way (a walk would only reach the edge)
-                if base.is_some_and(|b| b.kind == mod_api_stable::InputKindV1::Return.code()) {
-                    if let Some(sim) = ctx.sim() {
-                        if let Some(me) = sim.get_player(pid).and_then(|p| p.champion()) {
-                            crate::kicker::note_want(&sim, me.id(), crate::kicker::home_of(me.team()));
-                        }
-                    }
-                }
-                let walk = steered.or(base).filter(|w| w.kind == mod_api_stable::InputKindV1::Move.code());
-                if let Some(w) = walk {
-                    if let Some((x, y)) = crate::kicker::roof_walk(pos, (w.x as i64, w.y as i64), crate::walls::wall_at) {
-                        // any walk off the wall: the game wants him elsewhere; his core jumps down toward it when free
-                        if let Some(sim) = ctx.sim() {
-                            if let Some(me) = sim.get_player(pid).and_then(|p| p.champion()).map(|e| e.id()) {
-                                crate::kicker::note_want(&sim, me, (w.x as i64, w.y as i64));
-                            }
-                        }
-                        let edge = InputV1::move_to(x.max(0) as u64, y.max(0) as u64);
-                        if ctx.is_valid_input(&edge) {
-                            return Some(edge);
-                        }
-                    }
-                }
-            }
             if let Some(walk) = steered {
                 if ctx.is_valid_input(&walk) {
                     return Some(walk);

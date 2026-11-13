@@ -6,7 +6,7 @@
  let cam={x:480000,y:480000,s:.002},lastState=null,scene,trace=[],capture=false,fx=[],pose=null,poseAt=0,held=new Set(),walked=false,walkStart=0,lastPos=null;
  let basicReady=0,basicImpact=null,basicEnd=0,invulnerableUntil=0,undyingUntil=0,basicHits=[],facing=false,deadAt=null,stunUntil=0;
  const top=document.createElement('div');
- top.innerHTML='<p style="color:#a6d5d2">Installed map, wall cells and stock actors. Kicker uses the shared core; movement, mitigation, visibility and opponent actions are simulated, with no stock skill AI.</p><label>Scenario <select id="scenario"></select></label><button id="scenarioLoad">Load mid-game situation</button><label><input id="follow" type="checkbox" checked> Follow / 2x</label><label><input id="grid" type="checkbox"> Wall grid</label><label><input id="artEnabled" type="checkbox" checked> Artwork</label><label><input id="hostModel" type="checkbox" checked> Simulated opponents / waves</label><button id="singleStep">Step once</button><p>Focus arena: WASD move, Space basic, Q mount/hop, E rock, C kick/Skyfall, Shift+C Flash kick, F marked dash, R Second Wind.</p><details><summary>13 athlete values</summary><div id="athleteStats"></div></details>';
+ top.innerHTML='<p style="color:#a6d5d2">Installed map, wall cells and stock actors. Kicker uses the shared core; movement, mitigation, visibility and opponent actions are simulated, with no stock skill AI.</p><label>Scenario <select id="scenario"></select></label><button id="scenarioLoad">Load mid-game situation</button><label><input id="follow" type="checkbox" checked> Follow / 2x</label><label><input id="grid" type="checkbox"> Wall grid</label><label><input id="artEnabled" type="checkbox" checked> Artwork</label><label><input id="hostModel" type="checkbox" checked> Simulated opponents / waves</label><button id="singleStep">Step once</button><p>Focus arena: WASD move, Space basic, Q wall bounce, E rock (Rock Rain while Bounced), C kick (Skyfall while Bounced), Shift+C Flash kick, F marked dash, R Second Wind.</p><details><summary>13 athlete values</summary><div id="athleteStats"></div></details>';
  $('side').insertBefore(top,$('side').children[1]);
  const names=['ego','judgement','positioning','control_speed','skill_hit','skill_avoid','aggressive','order','roaming','macro','micro','awareness','strategy'];
  $('athleteStats').innerHTML=names.map(n=>'<label>'+n+' <input min="0" max="100" type="number" value="50" style="width:50px"></label>').join('');
@@ -47,7 +47,7 @@
   const was={...me.pos};walked=false;
   const dx=(held.has('d')?1:0)-(held.has('a')?1:0),dy=(held.has('s')?1:0)-(held.has('w')?1:0),length=Math.hypot(dx,dy);
   if(length&&me.hp>0&&tick>=stunUntil&&!lastState?.moving&&!lastState?.kick&&tick>=basicEnd){
-   const speed=me.stats.move_speed*(lastState?.roof?1+R.roof.speedPct/100:1);
+   const speed=me.stats.move_speed;
    const to={x:me.pos.x+dx/length*speed,y:me.pos.y+dy/length*speed};
    if(lastState?.roof)me.pos={x:Math.round(Math.max(me.radius,Math.min(MAP-me.radius,to.x))),y:Math.round(Math.max(me.radius,Math.min(MAP-me.radius,to.y)))};
    else world.move(me,to,speed);
@@ -64,7 +64,7 @@
    for(const g of glides){const u=units.find(u=>u.id===g.who);if(u)u.stunUntil=Math.max(u.stunUntil||0,g.start+g.ticks);}
    scene.advance(tick,me,units,{hit:()=>{},hitOwner:h=>{
     if(me.hp<=0||tick<invulnerableUntil)return;
-    const raw=Math.floor(h.amount*(lastState?.roof?1-R.roof.reducePct/100:1));
+    const raw=Math.floor(h.amount*(lastState?.roof||tick<(lastState?.bounced_until||0)?1-R.roof.reducePct/100:1));
     const source=units.find(u=>u.id===h.from)||{id:h.from};
     scene.damage(source,me,raw,tick);if(tick<undyingUntil&&me.hp<=0)me.hp=1;
    }});
@@ -124,7 +124,7 @@
  $('map').onkeydown=e=>{
   const k=e.key.toLowerCase();if(!['w','a','s','d',' ','q','e','c','f','r'].includes(k))return;e.preventDefault();
   if(e.repeat)return;held.add(k);running=true;
-  if(k===' ')basic();if(k==='q')order(e.shiftKey?'drop_kick':lastState?.roof?'hop':'mount');if(k==='e')order('rock');if(k==='c')order(e.shiftKey?'flash_kick':lastState?.roof?'skyfall':'kick');if(k==='f')order('dash');if(k==='r')order('ult');
+  if(k===' ')basic();if(k==='q')order('bounce');if(k==='e')order('rock');if(k==='c')order(e.shiftKey?'flash_kick':'kick');if(k==='f')order('dash');if(k==='r')order('ult');
  };
  $('map').onkeyup=e=>held.delete(e.key.toLowerCase());
  const clear=()=>{held.clear();walked=false;clock.reset();};window.addEventListener('blur',clear);$('map').addEventListener('blur',clear);document.addEventListener('visibilitychange',clear);

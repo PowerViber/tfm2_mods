@@ -107,7 +107,7 @@ mod transport_tests {
     fn orders_reach_the_core() {
         let mut s = Session::default();
         let mut i = input(5);
-        i["frame"]["order"] = json!({"kind":"hop","aim":{"x":400000,"y":300000}});
+        i["frame"]["order"] = json!({"kind":"bounce","aim":{"x":400000,"y":300000}});
         run(&mut s, &i.to_string());
         assert_eq!(s.core.hops, kicker_data::HOP_CHARGES - 1);
         let mut i = input(6);

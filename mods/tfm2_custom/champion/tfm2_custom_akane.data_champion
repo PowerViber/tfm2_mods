@@ -10,7 +10,7 @@
   "sprite": "asset/tfm2_custom/champions/tfm2_custom_akane",
   "anim_prefix": "",
   "stat": {
-    "attack": 78,
+    "attack": 72,
     "magic_power": 0,
     "hp": 850,
     "defence": 18,
