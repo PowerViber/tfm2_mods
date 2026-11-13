@@ -1,4 +1,4 @@
-//! Kicker's core: the passives, each skill on the ground and on a wall, Second Wind, and his AI's choices.
+//! Kicker's core: the passives, the Wall Bounce and each skill (Bounced or not), Second Wind, and his AI's choices.
 use crate::kicker_core::*;
 use crate::kicker_data as d;
 
@@ -52,6 +52,10 @@ fn order(c: &mut Core, f: &Frame, o: Order) -> Vec<Effect> {
 }
 /// run ticks, moving him along his glides like the engine would, and kicked bodies along their knocks
 fn run(c: &mut Core, f: &mut Frame, first: Option<Order>, from: u64, to: u64) -> Vec<Effect> {
+    run_log(c, f, first, from, to).into_iter().map(|e| e.1).collect()
+}
+/// the same, with the tick of each effect
+fn run_log(c: &mut Core, f: &mut Frame, first: Option<Order>, from: u64, to: u64) -> Vec<(u64, Effect)> {
     let mut all = vec![];
     let mut glide: Option<(Point, Point, u64, u64)> = None;
     for tick in from..to {
@@ -85,7 +89,7 @@ fn run(c: &mut Core, f: &mut Frame, first: Option<Order>, from: u64, to: u64) ->
                 _ => {}
             }
         }
-        all.extend(out);
+        all.extend(out.into_iter().map(|e| (tick, e)));
     }
     all
 }
@@ -99,164 +103,133 @@ fn knock_to(out: &[Effect], id: usize) -> Option<Point> {
     out.iter().find_map(|e| if let Effect::Knock { target, to, .. } = e { (*target == id).then_some(*to) } else { None })
 }
 
-// ------------------------------------------------------------------ walls
+// ------------------------------------------------------------------ the Wall Bounce
 
-#[test]
-fn he_mounts_a_wall_in_reach_and_the_mount_has_its_own_cooldown() {
-    let mut c = Core::default();
-    let mut f = frame(0, Point::new(cell(10, 10).x - 30_000, cell(10, 10).y), vec![]);
+/// a wall cell (10, 10), him 50,000 west of its centre and an enemy 60,000 east of it
+fn bounce_scene() -> (Core, Frame) {
+    let w = cell(10, 10);
+    let mut f = frame(0, Point::new(w.x - 50_000, w.y), vec![champ(FOE, 2, w.x + 60_000, w.y)]);
     f.terrain = walls(&[(10, 10)]);
-    let out = run(&mut c, &mut f, Some(Order::Mount), 0, 60);
-    assert!(c.roof, "on the wall after the leap");
-    assert!(out.contains(&Effect::Roof { on: true }));
-    assert!(out.iter().any(|e| matches!(e, Effect::PassWalls { .. })), "a leap onto terrain passes walls");
-    assert_eq!(f.pos, cell(10, 10));
-    // off again with a Drop Kick (no charge), and the mount is still cooling down
-    let hops = c.hops;
-    run(&mut c, &mut f, Some(Order::DropKick(Point::new(cell(10, 10).x - 40_000, cell(10, 10).y))), 60, 120);
-    assert!(!c.roof);
-    assert_eq!(c.hops, hops, "the Drop Kick uses no hop charge");
-    let out = order(&mut c, &f.clone(), Order::Mount);
-    assert_eq!(c.rejection, "mount cooling down");
-    assert!(out.iter().all(|e| !matches!(e, Effect::Glide { .. })));
-    f.tick = d::HOP_MOUNT_COOLDOWN_TICKS as u64 + 1;
-    order(&mut c, &f.clone(), Order::Mount);
-    assert!(c.rejection.is_empty(), "{}", c.rejection);
+    (Core::default(), f)
 }
 
 #[test]
-fn no_wall_near_means_a_short_hop_that_uses_a_charge() {
+fn a_wall_bounce_leaps_touches_hidden_then_springs_behind_the_target() {
+    let (mut c, mut f) = bounce_scene();
+    let foe = f.units[0].pos;
+    let log = run_log(&mut c, &mut f, Some(Order::Bounce(foe)), 0, 120);
+    let at = |e: &Effect| log.iter().find(|x| &x.1 == e).map(|x| x.0);
+    let on = at(&Effect::Roof { on: true }).expect("the touch");
+    let off = at(&Effect::Roof { on: false }).expect("the spring");
+    assert_eq!(off - on, d::ROOF_TOUCH_TICKS as u64, "a 0.25 s touch");
+    assert_eq!(at(&Effect::Hide), Some(on), "hidden at the touch");
+    let out: Vec<Effect> = log.into_iter().map(|e| e.1).collect();
+    // invulnerable and CC immune from the cast through the touch, then the spring
+    let cc: Vec<u64> = out.iter().filter_map(|e| if let Effect::CcImmune { ticks } = e { Some(*ticks) } else { None }).collect();
+    assert!(cc[0] >= on && out.iter().filter(|e| matches!(e, Effect::Invulnerable { .. })).count() >= 2, "{cc:?}");
+    // he lands behind it, kicks it with the Drop-in bonus, knocks it up, and is shielded and Bounced
+    assert!(!c.roof && f.pos.x > foe.x && !f.wall_at(f.pos), "{:?}", f.pos);
+    let base = d::HOP_DROP_BASE + d::HOP_DROP_AD_RATIO * 150 / 100;
+    assert_eq!(damage_to(&out, FOE), base * (100 + d::DROP_IN_BONUS_PCT) / 100);
+    assert!(knocked_up(&out).contains(&FOE));
+    assert!(out.contains(&Effect::Shield { amount: 1500 * d::ROOF_GROUND_SHIELD_PCT_MAX_HP / 100, ticks: d::ROOF_GROUND_SHIELD_TICKS as u64 }));
+    assert!(out.contains(&Effect::Bounced { ticks: d::ROOF_BOUNCED_TICKS as u64 }));
+    assert!(out.contains(&Effect::CcImmune { ticks: d::ROOF_CC_IMMUNE_TICKS as u64 }));
+    assert!(c.bounced(119) && c.skyfall_ready(119));
+    assert_eq!(c.hops, d::HOP_CHARGES, "a wall bounce uses no charge");
+}
+
+#[test]
+fn wall_bounces_have_no_cooldown_but_the_drop_in_and_shield_keep_theirs() {
+    let (mut c, mut f) = bounce_scene();
+    let foe = f.units[0].pos;
+    run(&mut c, &mut f, Some(Order::Bounce(foe)), 0, 100);
+    // right after landing: again, off the same wall
+    let again = f.units[0].pos;
+    let out = run(&mut c, &mut f, Some(Order::Bounce(again)), 100, 200);
+    assert!(out.contains(&Effect::Roof { on: true }), "a second bounce at once");
+    assert!(knocked_up(&out).is_empty(), "the Drop-in is still cooling down");
+    assert!(!out.contains(&Effect::Shield { amount: 1500 * d::ROOF_GROUND_SHIELD_PCT_MAX_HP / 100, ticks: d::ROOF_GROUND_SHIELD_TICKS as u64 }));
+    assert_eq!(damage_to(&out, FOE), d::HOP_DROP_BASE + d::HOP_DROP_AD_RATIO * 150 / 100, "the landing kick, no bonus");
+}
+
+#[test]
+fn bounced_turns_s2_into_rock_rain_and_s3_into_one_skyfall_for_three_seconds() {
+    let mut c = Core { bounced_until: d::ROOF_BOUNCED_TICKS as u64, skyfall_until: d::ROOF_BOUNCED_TICKS as u64, ..Core::default() };
+    let f = frame(0, Point::new(400_000, 400_000), vec![champ(FOE, 2, 385_000, 400_000)]);
+    order(&mut c, &f, Order::Rock(Point::new(300_000, 400_000)));
+    assert_eq!(c.rocks.len() as i64, d::ROCK_RAIN_COUNT);
+    order(&mut c, &f, Order::Kick(FOE, Point::new(300_000, 400_000)));
+    assert_eq!(c.last_skill, "skyfall");
+    assert!(!c.skyfall_ready(1), "one Skyfall per bounce");
+    // the next S3 is the ground kick again
+    c.moving = None;
+    c.last_kicked = None;
+    order(&mut c, &f, Order::Kick(FOE, Point::new(300_000, 400_000)));
+    assert_eq!(c.last_skill, "kick", "{}", c.rejection);
+    // after the window: a single rock
+    let mut c = Core { bounced_until: 180, ..Core::default() };
+    let mut g = f.clone();
+    g.tick = 181;
+    order(&mut c, &g, Order::Rock(Point::new(300_000, 400_000)));
+    assert_eq!(c.rocks.len(), 1);
+}
+
+
+#[test]
+fn no_wall_in_reach_means_a_short_hop_that_uses_a_charge() {
     let mut c = Core::default();
     let f = frame(0, Point::new(400_000, 400_000), vec![]);
-    let out = order(&mut c, &f, Order::Mount);
-    assert_eq!(c.rejection, "no wall in reach");
-    assert!(out.is_empty() || out.iter().all(|e| !matches!(e, Effect::Glide { .. })));
-    let out = order(&mut c, &f, Order::Hop(Point::new(500_000, 400_000)));
+    let out = order(&mut c, &f, Order::Bounce(Point::new(500_000, 400_000)));
     assert!(out.contains(&Effect::Glide { to: Point::new(400_000 + d::HOP_GROUND_HOP, 400_000), ticks: d::HOP_MIN_TICKS as u64 }));
     assert_eq!(c.hops, d::HOP_CHARGES - 1);
     assert!(out.iter().any(|e| matches!(e, Effect::Pose { name: "hop_low", .. })), "a short leap is a low hop");
+    assert!(!out.contains(&Effect::Roof { on: true }));
+    let mut c = Core { hops: 0, hop_next: 999, ..Core::default() };
+    order(&mut c, &f, Order::Bounce(Point::new(500_000, 400_000)));
+    assert_eq!(c.rejection, "no wall in reach and no hop charge");
 }
 
-#[test]
-fn wall_to_wall_hops_keep_him_up_and_recharge_faster_on_a_wall() {
-    let mut c = Core { roof: true, ..Core::default() };
-    let mut f = frame(0, cell(10, 10), vec![]);
-    f.terrain = walls(&[(10, 10), (11, 11)]);
-    let out = run(&mut c, &mut f, Some(Order::Hop(cell(11, 11))), 0, 60);
-    assert!(c.roof && !out.contains(&Effect::Roof { on: false }));
-    assert_eq!(f.pos, cell(11, 11));
-    assert!(out.iter().any(|e| matches!(e, Effect::Pose { name: "hop_high", .. })), "a long leap arcs high");
-    assert_eq!(c.hops, d::HOP_CHARGES - 1);
-    // a hop to open ground from a wall is refused (that's a Drop Kick)
-    order(&mut c, &f.clone(), Order::Hop(Point::new(200_000, 200_000)));
-    assert_eq!(c.rejection, "no wall there in reach");
-    assert!(d::HOP_WALL_RECHARGE_TICKS < d::HOP_GROUND_RECHARGE_TICKS);
-}
+
+
+
+
+
+
 
 #[test]
-fn on_a_wall_he_is_hidden_beyond_the_high_ground_range_only() {
-    let mut c = Core { roof: true, ..Core::default() };
-    let mut f = frame(0, cell(10, 10), vec![champ(FOE, 2, cell(10, 10).x + d::ROOF_HIDE_RANGE + 5_000, cell(10, 10).y)]);
-    f.terrain = walls(&[(10, 10)]);
-    assert!(c.step(&f).contains(&Effect::Hide));
-    f.units[0].pos.x = cell(10, 10).x + d::ROOF_HIDE_RANGE - 5_000;
-    f.tick = 1;
-    assert!(!c.step(&f).contains(&Effect::Hide), "an enemy close sees him");
-    // on the ground: never
-    let mut g = Core::default();
-    let f = frame(0, Point::new(400_000, 400_000), vec![]);
-    assert!(!g.step(&f).contains(&Effect::Hide));
-}
-
-#[test]
-fn a_stun_on_a_wall_drops_him_to_open_ground_without_a_drop_in() {
-    let mut c = Core { roof: true, ..Core::default() };
-    let mut f = frame(0, cell(10, 10), vec![champ(FOE, 2, cell(10, 10).x + 10_000, cell(10, 10).y)]);
-    f.terrain = walls(&[(10, 10)]);
-    f.stunned = true;
-    let out = run(&mut c, &mut f, None, 0, 40);
-    assert!(!c.roof);
-    assert!(!f.wall_at(f.pos), "never left in terrain: {:?}", f.pos);
-    assert!(knocked_up(&out).is_empty(), "a fall is not a Drop-in");
-}
-
-#[test]
-fn stun_interrupts_a_long_wall_hop_instead_of_waiting_for_its_destination() {
-    let start=cell(17,19);let end=cell(12,13);
-    let mut c=Core{roof:true,..Core::default()};let mut f=frame(0,start,vec![]);
-    f.terrain=walls(&[(17,19),(12,13)]);
-    order(&mut c,&f,Order::Hop(end));
-    f.tick=10;f.pos=Point::new(start.x-10000,start.y-15000);f.stunned=true;
-    let out=c.step(&f);
-    assert_eq!(c.moving.as_ref().unwrap().kind,MoveKind::Fall);
-    assert!(out.iter().any(|e|matches!(e,Effect::Glide{to,..} if *to!=end)));
-    assert!(knocked_up(&out).is_empty());
-}
-
-#[test]
-fn a_step_off_a_wall_is_pulled_back_onto_it_he_never_walks_off() {
-    let mut c = Core { roof: true, ..Core::default() };
-    let mut f = frame(0, cell(10, 10), vec![]);
-    f.terrain = walls(&[(10, 10)]);
-    // the engine walked him one cell east, off the wall
-    f.pos = Point::new(cell(10, 10).x + CELL, cell(10, 10).y);
-    let out = run(&mut c, &mut f, None, 0, 20);
-    assert!(c.roof && !out.contains(&Effect::Roof { on: false }), "still on the wall");
-    assert!(f.wall_at(f.pos), "back on a wall cell: {:?}", f.pos);
-    assert!(out.iter().any(|e| matches!(e, Effect::PassWalls { .. })));
-    assert!(knocked_up(&out).is_empty(), "no Drop-in");
-}
-
-#[test]
-fn far_from_any_wall_the_wall_stance_ends() {
-    let mut c = Core { roof: true, ..Core::default() };
-    let mut f = frame(0, cell(10, 10), vec![]);
-    f.terrain = walls(&[(10, 10)]);
-    f.pos = Point::new(cell(10, 10).x + 200_000, cell(10, 10).y);
-    let out = c.step(&f);
-    assert!(!c.roof && out.contains(&Effect::Roof { on: false }), "never on a wall while on the ground");
-}
-
-#[test]
-fn a_walk_on_a_wall_stops_at_its_edge() {
-    let terrain = walls(&[(10, 10), (11, 10)]);
-    let g = Frame { terrain: terrain.clone(), ..Frame::default() };
-    let wall_at = |x: i64, y: i64| g.wall_at(Point::new(x, y));
-    let from = (cell(10, 10).x, cell(10, 10).y);
-    // along the wall: untouched
-    assert_eq!(crate::kicker::roof_walk(from, (cell(11, 10).x, cell(11, 10).y), wall_at), None);
-    // off the wall: the last wall point on the way
-    let edge = crate::kicker::roof_walk(from, (cell(10, 10).x, cell(10, 10).y + 100_000), wall_at).expect("clamped");
-    assert!(wall_at(edge.0, edge.1) && edge.1 > from.1, "{edge:?}");
-    // not on a wall: the input layer leaves it to the core
-    assert_eq!(crate::kicker::roof_walk((10_000, 10_000), (900_000, 10_000), wall_at), None);
-}
-
-#[test]
-fn every_dash_and_leap_gives_armor_without_stacking() {
+fn every_dash_and_leap_gives_armor_and_cc_immunity_without_stacking() {
     let shields = |out: &[Effect]| out.iter().filter(|e| matches!(e, Effect::Shield { .. })).count();
+    let immune = |out: &[Effect]| out.iter().any(|e| matches!(e, Effect::CcImmune { .. }));
     let amount = 1500 * d::DASH_SHIELD_PCT_MAX_HP / 100;
-    // a ground hop
+    // a short hop
     let mut c = Core::default();
     let f = frame(0, Point::new(400_000, 400_000), vec![]);
-    let out = order(&mut c, &f, Order::Hop(Point::new(500_000, 400_000)));
-    assert!(out.contains(&Effect::Shield { amount, ticks: d::DASH_SHIELD_TICKS as u64 }));
+    let out = order(&mut c, &f, Order::Bounce(Point::new(500_000, 400_000)));
+    assert!(out.contains(&Effect::Shield { amount, ticks: d::DASH_SHIELD_TICKS as u64 }) && immune(&out));
     // a second leap inside the shield's window adds none
     let mut f2 = f.clone();
     f2.tick = 30;
     c.moving = None;
-    assert_eq!(shields(&order(&mut c, &f2, Order::Hop(Point::new(300_000, 400_000)))), 0);
+    assert_eq!(shields(&order(&mut c, &f2, Order::Bounce(Point::new(300_000, 400_000)))), 0);
     // the Homecoming Kick's dash-in
     let mut c = Core::default();
     let k = frame(0, Point::new(400_000, 400_000), vec![champ(FOE, 2, 412_000, 400_000)]);
-    assert_eq!(shields(&order(&mut c, &k, Order::Kick(FOE, Point::new(300_000, 400_000)))), 1);
-    // the Skyfall dive and the Drop Kick
-    for o in [Order::Skyfall(Point::new(cell(10, 10).x - 100_000, cell(10, 10).y)), Order::DropKick(Point::new(cell(10, 10).x - 40_000, cell(10, 10).y))] {
-        let mut c = Core { roof: true, ..Core::default() };
-        let mut w = frame(0, cell(10, 10), vec![champ(FOE, 2, cell(10, 10).x - 20_000, cell(10, 10).y)]);
-        w.terrain = walls(&[(10, 10)]);
-        assert_eq!(shields(&order(&mut c, &w, o)), 1, "{o:?}");
-    }
+    let out = order(&mut c, &k, Order::Kick(FOE, Point::new(300_000, 400_000)));
+    assert!(shields(&out) == 1 && immune(&out));
+    // the Skyfall dive, and a Wall Bounce
+    let mut c = Core { skyfall_until: 999, ..Core::default() };
+    let w = frame(0, Point::new(400_000, 400_000), vec![champ(FOE, 2, 380_000, 400_000)]);
+    let out = order(&mut c, &w, Order::Skyfall(Point::new(300_000, 400_000)));
+    assert!(shields(&out) == 1 && immune(&out));
+    let (mut c, b) = bounce_scene();
+    let out = order(&mut c, &b, Order::Bounce(b.units[0].pos));
+    assert!(shields(&out) == 1 && immune(&out));
+    // the Marked Dash
+    let mut c = Core::default();
+    c.marks.push((FOE, 999));
+    let out = order(&mut c, &w, Order::Dash(FOE));
+    assert!(shields(&out) == 1 && immune(&out));
 }
 
 #[test]
@@ -293,48 +266,7 @@ fn flash_is_held_unless_the_pick_is_worth_it() {
     assert!(!matches!(c.plan_kick(&g, &g.unit(FOE).unwrap().clone(), None), Some(Order::FlashKick(..))));
 }
 
-#[test]
-fn long_wall_hop_reaches_the_photographed_gap_but_still_requires_a_wall_and_charge() {
-    let start = cell(17, 19);
-    let end = cell(12, 13); // 249,928 units: the roughly five-by-six-cell gap in the review.
-    assert!(start.within(end, d::HOP_WALL_RANGE) && !start.within(end, 60_000));
-    let mut c = Core { roof: true, ..Core::default() };
-    let mut f = frame(0, start, vec![]);
-    f.terrain = walls(&[(17, 19), (12, 13), (2, 2)]);
-    let out = run(&mut c, &mut f, Some(Order::Hop(end)), 0, 140);
-    assert!(c.roof && f.pos == end && c.hops == d::HOP_CHARGES - 1);
-    assert!(!out.contains(&Effect::Roof { on: false }));
-    order(&mut c, &f, Order::Hop(cell(2, 2)));
-    assert_eq!(c.rejection, "no wall there in reach");
-    c.hops = 0;
-    order(&mut c, &f, Order::Hop(start));
-    assert_eq!(c.rejection, "no hop charge");
-}
 
-#[test]
-fn drop_kick_is_a_drop_in_invulnerable_knock_up_bonus_and_a_ground_shield() {
-    let mut c = Core { roof: true, ..Core::default() };
-    let start = cell(10, 10);
-    let land = Point::new(start.x - 40_000, start.y);
-    let mut f = frame(0, start, vec![champ(FOE, 2, land.x, land.y), champ(11, 2, land.x + 8_000, land.y), champ(5, 1, land.x, land.y + 5_000), tower(40, 2, land.x, land.y - 9_000)]);
-    f.terrain = walls(&[(10, 10)]);
-    let out = run(&mut c, &mut f, Some(Order::DropKick(land)), 0, 60);
-    assert!(out.contains(&Effect::Invulnerable { ticks: d::DROP_IN_INVULN_TICKS as u64 }));
-    let k = knocked_up(&out);
-    assert!(k.contains(&FOE) && k.contains(&11), "{k:?}");
-    assert!(!k.contains(&5) && !k.contains(&40), "never allies or towers");
-    assert_eq!(damage_to(&out, 40), 0);
-    // the kick lands with the Drop-in bonus (his first hit after landing)
-    let base = d::HOP_DROP_BASE + d::HOP_DROP_AD_RATIO * 150 / 100;
-    assert_eq!(damage_to(&out, FOE), base * (100 + d::DROP_IN_BONUS_PCT) / 100);
-    assert!(out.contains(&Effect::Shield { amount: 1500 * d::ROOF_GROUND_SHIELD_PCT_MAX_HP / 100, ticks: d::ROOF_GROUND_SHIELD_TICKS as u64 }));
-    assert!(out.iter().any(|e| matches!(e, Effect::Bruise { target: FOE, .. })), "the knock-up bruises");
-    // the Drop-in has its own cooldown: another drop right away knocks nobody up
-    c.roof = true;
-    f.pos = start;
-    let again = run(&mut c, &mut f, Some(Order::DropKick(land)), 60, 120);
-    assert!(knocked_up(&again).is_empty());
-}
 
 // ------------------------------------------------------------------ marks, dash, Bruised
 
@@ -353,10 +285,9 @@ fn rock_throw_passes_through_everything_and_marks_all_but_towers() {
 }
 
 #[test]
-fn rock_rain_from_a_wall_is_three_rocks_with_less_damage_each() {
-    let mut c = Core { roof: true, ..Core::default() };
-    let mut f = frame(0, cell(10, 10), vec![champ(FOE, 2, cell(10, 10).x + 50_000, cell(10, 10).y)]);
-    f.terrain = walls(&[(10, 10)]);
+fn rock_rain_while_bounced_is_three_rocks_with_less_damage_each() {
+    let mut c = Core { bounced_until: 999, ..Core::default() };
+    let mut f = frame(0, Point::new(400_000, 400_000), vec![champ(FOE, 2, 450_000, 400_000)]);
     order(&mut c, &f.clone(), Order::Rock(f.units[0].pos));
     assert_eq!(c.rocks.len() as i64, d::ROCK_RAIN_COUNT);
     let out = run(&mut c, &mut f, None, 1, 60);
@@ -471,11 +402,11 @@ fn the_kicked_body_knocks_up_at_most_two_others() {
 
 #[test]
 fn skyfall_carries_the_first_champion_through_walls_and_lands_him_behind_it() {
-    let mut c = Core { roof: true, ..Core::default() };
+    let mut c = Core { skyfall_until: 999, ..Core::default() };
     let start = cell(10, 10);
     let mut f = frame(0, start, vec![champ(FOE, 2, start.x - 20_000, start.y), champ(11, 2, start.x - 50_000, start.y)]);
     // a wall right where the dive ends: the carry goes through it and lands both on open ground
-    f.terrain = walls(&[(10, 10), (8, 10)]);
+    f.terrain = walls(&[(8, 10)]);
     let out = run(&mut c, &mut f, Some(Order::Skyfall(Point::new(start.x - 100_000, start.y))), 0, 60);
     let carried = out.iter().find_map(|e| if let Effect::Carry { target, to, .. } = e { Some((*target, *to)) } else { None }).expect("a carry");
     assert_eq!(carried.0, FOE, "the first champion in the line");
@@ -483,20 +414,11 @@ fn skyfall_carries_the_first_champion_through_walls_and_lands_him_behind_it() {
     assert!(f.pos.x < carried.1.x, "he ends behind it (farther along the dive): {:?} vs {:?}", f.pos, carried.1);
     assert!(!f.wall_at(f.pos));
     assert!(out.iter().any(|e| matches!(e, Effect::PassWalls { .. })));
-    assert!(!c.roof, "a dive off the wall lands on the ground");
+    assert!(!c.roof && !c.skyfall_ready(59), "one dive per bounce");
     assert!(knocked_up(&out).contains(&FOE), "Drop-in on landing");
     assert_eq!(c.kicks, d::KICK_CHARGES - 1);
 }
 
-#[test]
-fn a_kick_order_on_a_wall_is_the_skyfall_and_a_rock_is_the_rain() {
-    let mut c = Core { roof: true, ..Core::default() };
-    let mut f = frame(0, cell(10, 10), vec![champ(FOE, 2, cell(10, 10).x - 20_000, cell(10, 10).y)]);
-    f.terrain = walls(&[(10, 10)]);
-    let out = order(&mut c, &f, Order::Kick(FOE, Point::new(0, cell(10, 10).y)));
-    assert_eq!(c.last_skill, "skyfall");
-    assert!(out.iter().any(|e| matches!(e, Effect::Carry { .. })));
-}
 
 #[test]
 fn flash_kick_when_the_dash_cannot_reach_a_safe_side_and_flash_re_aims_a_wind_up() {
@@ -664,22 +586,36 @@ fn ai_picks_an_isolated_target_and_kicks_it_toward_his_teammate() {
 }
 
 #[test]
-fn ai_mounts_a_wall_for_a_gank_and_dives_with_a_skyfall() {
-    let mut c = Core::default();
-    let w = cell(10, 10);
-    // the enemy is within Rock Rain range of the wall (a wall worth climbing) but out of his reach on the ground
-    let mut f = frame(0, Point::new(w.x + 30_000, w.y), vec![champ(FOE, 2, w.x - 85_000, w.y)]);
-    f.terrain = walls(&[(10, 10)]);
+fn ai_bounces_off_a_wall_onto_a_target_then_dives_with_a_skyfall() {
+    let (mut c, mut f) = bounce_scene();
     f.manual = false;
-    f.profile[EGO] = 20;
-    f.profile[ROAMING] = 70;
-    run(&mut c, &mut f, None, 0, 60);
-    assert!(c.roof, "up on the wall to wait");
-    // the target walks closer, hurt and alone: rocks then the dive
-    f.units[0].pos = Point::new(w.x - 45_000, w.y);
+    f.ult_unlocked = false;
+    // hurt and alone, out of reach on foot (110,000 away), a wall between
     f.units[0].hp = 350;
-    let out = run(&mut c, &mut f, None, 60, 200);
-    assert!(out.iter().any(|e| matches!(e, Effect::Carry { target: FOE, .. }) || matches!(e, Effect::Damage { target: FOE, .. })), "he engaged from the wall");
+    let out = run(&mut c, &mut f, None, 0, 160);
+    assert!(out.contains(&Effect::Roof { on: true }), "wall first");
+    assert!(damage_to(&out, FOE) > 0 && knocked_up(&out).contains(&FOE));
+    assert!(out.iter().any(|e| matches!(e, Effect::Carry { target: FOE, .. })), "then the Skyfall");
+}
+
+#[test]
+fn ai_never_bounces_into_a_crowd_or_under_a_tower() {
+    let mut o = vec![];
+    // the same target with two of its team beside it
+    let (mut c, mut f) = bounce_scene();
+    f.manual = false;
+    f.ult_unlocked = false;
+    f.units[0].hp = 350;
+    let foe = f.units[0].pos;
+    f.units.push(champ(11, 2, foe.x + 5_000, foe.y + 10_000));
+    f.units.push(champ(12, 2, foe.x + 8_000, foe.y - 10_000));
+    assert!(!matches!(c.decide(&f, &mut o), Some(Order::Bounce(_))));
+    // alone but under its tower, with no kick-out
+    let (mut c, mut f) = bounce_scene();
+    f.manual = false;
+    f.ult_unlocked = false;
+    f.units.push(tower(40, 2, foe.x + 20_000, foe.y));
+    assert!(!matches!(c.decide(&f, &mut o), Some(Order::Bounce(_))));
 }
 
 fn ai(pos: Point, units: Vec<Unit>) -> Frame {
@@ -832,70 +768,11 @@ fn under_the_tag_a_target_in_a_pair_is_fair_game_but_never_a_1v3() {
     assert!(c.pick(&f, d::AI_ENGAGE_RANGE).is_none(), "three against him alone: outnumbered, tag or not");
 }
 
-#[test]
-fn on_a_wall_he_rains_rocks_dives_in_a_fight_and_throws_basics_without_idling() {
-    let w = cell(10, 10);
-    let wall = |units: Vec<Unit>| {
-        let mut f = ai(w, units);
-        f.terrain = walls(&[(10, 10), (3, 10)]);
-        f
-    };
-    // a marked enemy in range: Rock Rain anyway
-    let mut c = Core { roof: true, ..Core::default() };
-    c.marks.push((FOE, 1_000));
-    let f = wall(vec![champ(FOE, 2, w.x - 60_000, w.y), champ(5, 1, w.x - 70_000, w.y + 10_000)]);
-    let mut o = vec![];
-    assert!(matches!(c.decide(&f, &mut o), Some(Order::Rock(_))));
-    // a fight and one charge: the Skyfall (or the tag first)
-    let mut c = Core { roof: true, kicks: 1, rock_ready: 10_000, ..Core::default() };
-    let mut f = wall(vec![champ(FOE, 2, w.x - 40_000, w.y), champ(5, 1, w.x - 70_000, w.y + 20_000)]);
-    f.ult_unlocked = false;
-    assert!(matches!(c.decide(&f, &mut o), Some(Order::Skyfall(_)) | Some(Order::DropKick(_))));
-    // a target in throwing range and nothing better: he stays and throws (the engine's basic)
-    let mut c = Core { roof: true, kicks: 0, rock_ready: 10_000, ..Core::default() };
-    let mut f = wall(vec![champ(FOE, 2, w.x - 35_000, w.y)]);
-    f.profile[EGO] = 80;
-    f.ult_unlocked = false;
-    assert_eq!(c.decide(&f, &mut o), None);
-    // out of reach and a wall near it 220,000 away: the long hop
-    let mut c = Core { roof: true, kicks: 0, rock_ready: 10_000, ..Core::default() };
-    let mut f = wall(vec![champ(FOE, 2, cell(3, 10).x - 40_000, w.y)]);
-    f.profile[EGO] = 80;
-    f.ult_unlocked = false;
-    assert_eq!(c.decide(&f, &mut o), Some(Order::Hop(cell(3, 10))));
-}
+
+
 
 #[test]
-fn an_idle_wall_is_left_after_three_seconds_toward_his_teammates() {
-    let w = cell(10, 10);
-    let mut c = Core { roof: true, roof_since: 0, ..Core::default() };
-    let mut f = ai(w, vec![champ(5, 1, w.x + 200_000, w.y)]);
-    f.terrain = walls(&[(10, 10)]);
-    f.tick = d::AI_IDLE_ROOF_TICKS as u64 + 1;
-    let mut o = vec![];
-    let order = c.decide(&f, &mut o);
-    assert!(matches!(order, Some(Order::DropKick(p)) if p.x > w.x), "toward the teammate: {order:?}");
-}
-
-#[test]
-fn between_fights_he_walks_to_a_wall_and_mounts_it() {
-    let mut c = Core::default();
-    let w = cell(10, 10);
-    // the enemy is within Rock Rain range of the wall (worth climbing), out of his engage range from both spots
-    let mut f = ai(Point::new(w.x + 80_000, w.y), vec![champ(FOE, 2, w.x - 60_000, w.y + 10_000)]);
-    f.terrain = walls(&[(10, 10)]);
-    f.profile[ROAMING] = 60;
-    f.profile[EGO] = 10;
-    let mut o = vec![];
-    assert_eq!(c.decide(&f, &mut o), None);
-    let to = steers(&o);
-    assert!(to.len() == 1 && f.wall_at(to[0]), "walking to the wall: {o:?}");
-    f.pos = Point::new(w.x + 30_000, w.y);
-    assert_eq!(c.decide(&f, &mut o), Some(Order::Mount));
-}
-
-#[test]
-fn a_wall_between_him_and_the_target_is_climbed() {
+fn a_wall_between_him_and_the_target_is_bounced_over() {
     let mut c = Core::default();
     let w = cell(10, 10);
     let mut f = ai(Point::new(w.x + 30_000, w.y), vec![champ(FOE, 2, w.x - 40_000, w.y)]);
@@ -904,123 +781,13 @@ fn a_wall_between_him_and_the_target_is_climbed() {
     f.ult_unlocked = false;
     c.rock_ready = 10_000;
     let mut o = vec![];
-    assert_eq!(c.decide(&f, &mut o), Some(Order::Mount));
+    assert_eq!(c.decide(&f, &mut o), Some(Order::Bounce(Point::new(w.x - 40_000, w.y))));
 }
 
-#[test]
-fn his_wall_basic_marks_and_a_marked_dash_takes_him_down_behind_it_with_a_drop_in() {
-    let w = cell(10, 10);
-    let mut c = Core { roof: true, ..Core::default() };
-    let mut f = frame(0, w, vec![champ(FOE, 2, w.x - 40_000, w.y), champ(11, 2, w.x - 40_000, w.y + 12_000)]);
-    f.terrain = walls(&[(10, 10)]);
-    // a rock basic from the wall lands: marked
-    f.basic_hits = vec![FOE];
-    c.step(&f);
-    assert!(c.marked(FOE, 1));
-    // the Marked Dash from the wall: behind it, then the Drop-in on landing
-    f.basic_hits.clear();
-    let out = run(&mut c, &mut f, Some(Order::Dash(FOE)), 1, 60);
-    assert!(f.pos.x < w.x - 40_000, "ends behind it: {:?}", f.pos);
-    assert!(!c.roof);
-    assert!(knocked_up(&out).contains(&11), "the Drop-in on landing");
-}
 
-#[test]
-fn ai_on_a_wall_dashes_down_onto_a_marked_enemy_out_of_drop_kick_reach() {
-    let w = cell(10, 10);
-    let mut c = Core { roof: true, kicks: 0, rock_ready: 10_000, ..Core::default() };
-    let mut f = ai(w, vec![champ(FOE, 2, w.x - 70_000, w.y), champ(5, 1, w.x - 90_000, w.y + 20_000)]);
-    f.terrain = walls(&[(10, 10)]);
-    f.ult_unlocked = false;
-    c.marks.push((FOE, 1_000));
-    let mut o = vec![];
-    assert_eq!(c.decide(&f, &mut o), Some(Order::Dash(FOE)));
-}
 
-#[test]
-fn ai_on_a_wall_jumps_down_toward_where_the_game_wants_him() {
-    let w = cell(10, 10);
-    let wall = |units: Vec<Unit>, want: Point| {
-        let mut f = ai(w, units);
-        f.terrain = walls(&[(10, 10)]);
-        f.ult_unlocked = false;
-        f.want = Some(want);
-        f
-    };
-    let mut o = vec![];
-    // nothing to fight: down toward it, at once
-    let mut c = Core { roof: true, roof_since: 0, ..Core::default() };
-    let f = wall(vec![], Point::new(w.x + 120_000, w.y));
-    assert!(matches!(c.decide(&f, &mut o), Some(Order::DropKick(p)) if p.x > w.x));
-    // a wave in throwing range doesn't hold him when the game wants him elsewhere
-    let mut c = Core { roof: true, rock_ready: 10_000, ..Core::default() };
-    let f = wall(vec![minion(30, w.x + 20_000, w.y)], Point::new(w.x - 120_000, w.y));
-    assert!(matches!(c.decide(&f, &mut o), Some(Order::DropKick(p)) if p.x < w.x));
-    // without a wish, the wave keeps him up (clearing it from the wall)
-    let mut c = Core { roof: true, rock_ready: 10_000, ..Core::default() };
-    let mut g = wall(vec![minion(30, w.x + 20_000, w.y)], Point::new(0, 0));
-    g.want = None;
-    assert_eq!(c.decide(&g, &mut o), None);
-    // an enemy champion in throwing range: he stays and fights
-    let mut c = Core { roof: true, kicks: 0, rock_ready: 10_000, dashes: 0, ..Core::default() };
-    let mut f = wall(vec![champ(FOE, 2, w.x + 30_000, w.y)], Point::new(w.x - 120_000, w.y));
-    f.profile[EGO] = 80;
-    assert_eq!(c.decide(&f, &mut o), None);
-    // a marked enemy the other way: no dash toward it, the drop goes the game's way
-    let mut c = Core { roof: true, kicks: 0, rock_ready: 10_000, ..Core::default() };
-    c.marks.push((30, 1_000));
-    let f = wall(vec![minion(30, w.x + 60_000, w.y)], Point::new(w.x - 120_000, w.y));
-    assert!(matches!(c.decide(&f, &mut o), Some(Order::DropKick(p)) if p.x < w.x));
-    // a marked minion that way: dash down behind it (farther toward the wish than a drop)
-    let mut c = Core { roof: true, kicks: 0, rock_ready: 10_000, ..Core::default() };
-    c.marks.push((30, 1_000));
-    let f = wall(vec![minion(30, w.x - 65_000, w.y)], Point::new(w.x - 160_000, w.y));
-    assert_eq!(c.decide(&f, &mut o), Some(Order::Dash(30)));
-}
 
-#[test]
-fn a_nexus_is_no_reason_to_stay_on_a_wall() {
-    let w = cell(10, 10);
-    let mut c = Core { roof: true, roof_since: 0, ..Core::default() };
-    // the bridge reads a nexus as a structure (tower): not a target, not something to throw at
-    let mut nexus = tower(40, 2, w.x + 20_000, w.y);
-    nexus.max_hp = 5000;
-    let mut f = ai(w, vec![nexus, champ(5, 1, w.x - 200_000, w.y)]);
-    f.terrain = walls(&[(10, 10)]);
-    f.tick = d::AI_IDLE_ROOF_TICKS as u64 + 1;
-    let mut o = vec![];
-    assert!(matches!(c.decide(&f, &mut o), Some(Order::DropKick(_))));
-}
 
-#[test]
-fn reihans_clip_a_teammate_dived_nearby_pulls_him_off_the_wall_via_a_marked_minion() {
-    let w = cell(10, 10);
-    // a wave in throwing range of his wall, his teammate dived 150,000 away, a marked minion between them
-    let base = |marked: bool| {
-        let mut c = Core { roof: true, kicks: 0, rock_ready: 10_000, ..Core::default() };
-        if marked {
-            c.marks.push((31, 1_000));
-        }
-        let mut f = ai(
-            w,
-            vec![
-                minion(30, w.x + 20_000, w.y),
-                minion(31, w.x - 60_000, w.y),
-                champ(5, 1, w.x - 150_000, w.y),
-                champ(FOE, 2, w.x - 160_000, w.y + 10_000),
-            ],
-        );
-        f.terrain = walls(&[(10, 10)]);
-        f.ult_unlocked = false;
-        (c, f)
-    };
-    let mut o = vec![];
-    let (mut c, f) = base(true);
-    assert_eq!(c.decide(&f, &mut o), Some(Order::Dash(31)), "the marked minion toward the fight");
-    // nothing marked: down toward the fight anyway (never stays to farm)
-    let (mut c, f) = base(false);
-    assert!(matches!(c.decide(&f, &mut o), Some(Order::DropKick(p)) if p.x < w.x), "{:?}", c.decide(&f, &mut o));
-}
 
 #[test]
 fn on_the_ground_he_goes_to_a_teammate_in_a_fight() {
@@ -1037,36 +804,12 @@ fn on_the_ground_he_goes_to_a_teammate_in_a_fight() {
     assert_eq!(steers(&o), vec![Point::new(250_000, 400_000)]);
 }
 
-#[test]
-fn a_wave_never_holds_him_on_a_wall() {
-    let w = cell(10, 10);
-    let mut c = Core { roof: true, roof_since: 0, ..Core::default() };
-    let mut f = ai(w, vec![minion(30, w.x + 20_000, w.y), minion(32, w.x + 25_000, w.y + 5_000)]);
-    f.terrain = walls(&[(10, 10)]);
-    f.tick = d::AI_IDLE_ROOF_TICKS as u64 + 1;
-    let mut o = vec![];
-    assert!(matches!(c.decide(&f, &mut o), Some(Order::DropKick(_))));
-    assert_eq!(c.gank_ready, f.tick + d::AI_GANK_REST_TICKS as u64, "a rest before the next gank climb");
-}
+
 
 #[test]
-fn hurt_on_a_wall_he_comes_down_instead_of_trading() {
+fn retreats_bounce_off_a_wall_toward_safety() {
     let w = cell(10, 10);
-    let mut c = Core { roof: true, ..Core::default() };
-    let mut f = ai(w, vec![champ(FOE, 2, w.x + 30_000, w.y), champ(5, 1, w.x - 150_000, w.y)]);
-    f.terrain = walls(&[(10, 10)]);
-    f.ult_unlocked = false;
-    f.hp = 450; // 30%
-    f.want = Some(Point::new(w.x - 120_000, w.y));
-    let mut o = vec![];
-    let order = c.decide(&f, &mut o);
-    assert!(matches!(order, Some(Order::DropKick(p)) if p.x < w.x), "down, away from it: {order:?}");
-}
-
-#[test]
-fn retreats_climb_a_safe_wall_then_hop_along_walls_or_come_down() {
-    let w = cell(10, 10);
-    // on the ground: hurt among enemies, a wall close on the far side from them: up it
+    // hurt among enemies east of him, a wall close: a bounce toward home (south-west), away from them
     let mut c = Core::default();
     let mut f = ai(Point::new(w.x + 30_000, w.y), vec![champ(FOE, 2, w.x + 70_000, w.y), champ(11, 2, w.x + 75_000, w.y + 10_000)]);
     f.terrain = walls(&[(10, 10)]);
@@ -1074,27 +817,24 @@ fn retreats_climb_a_safe_wall_then_hop_along_walls_or_come_down() {
     f.hp = 500;
     c.hp_log = vec![(0, 900)];
     let mut o = vec![];
-    assert_eq!(c.decide(&f, &mut o), Some(Order::Mount));
-    // a wall on the enemies' side: not that one
+    assert_eq!(c.decide(&f, &mut o), Some(Order::Bounce(f.home)));
+    // no wall in reach: no bounce (the game walks him out)
     let mut c = Core::default();
     let mut g = f.clone();
-    g.pos = Point::new(w.x - 30_000, w.y);
-    assert_ne!(c.decide(&g, &mut o), Some(Order::Mount));
-    // on a wall while escaping: a hop to a wall farther from the danger, toward home
-    let mut c = Core { roof: true, ..Core::default() };
-    let mut h = ai(w, vec![champ(FOE, 2, w.x + 30_000, w.y), champ(11, 2, w.x + 35_000, w.y + 10_000)]);
-    h.terrain = walls(&[(10, 10), (6, 13)]);
-    h.home = Point::new(96_000, 864_000);
-    h.ult_unlocked = false;
-    h.hp = 500;
+    g.terrain = walls(&[]);
     c.hp_log = vec![(0, 900)];
-    assert_eq!(c.decide(&h, &mut o), Some(Order::Hop(cell(6, 13))));
-    // no wall that way: down toward home
-    let mut c = Core { roof: true, ..Core::default() };
-    let mut k = h.clone();
-    k.terrain = walls(&[(10, 10)]);
-    c.hp_log = vec![(0, 900)];
-    assert!(matches!(c.decide(&k, &mut o), Some(Order::DropKick(_))));
+    assert!(!matches!(c.decide(&g, &mut o), Some(Order::Bounce(_))));
+}
+
+#[test]
+fn a_teammate_dived_out_of_reach_is_joined_by_a_bounce_off_a_wall() {
+    // his teammate is dived 130,000 west; nothing marked; a wall 62,000 west of him with the diver in spring range
+    let mut c = Core { rock_ready: 10_000, ..Core::default() };
+    let mut f = ai(Point::new(380_000, 400_000), vec![champ(5, 1, 250_000, 400_000), champ(FOE, 2, 240_000, 410_000)]);
+    f.terrain = walls(&[(9, 12)]);
+    f.ult_unlocked = false;
+    let mut o = vec![];
+    assert_eq!(c.decide(&f, &mut o), Some(Order::Bounce(Point::new(240_000, 410_000))));
 }
 
 #[test]
@@ -1153,37 +893,15 @@ fn he_doesnt_join_a_fight_four_against_two() {
     assert!(!Core::default().engage_tag(&h, &h.unit(FOE).unwrap().clone()));
 }
 
-#[test]
-fn he_only_climbs_a_wall_with_someone_to_hit_from_it() {
-    let w = cell(10, 10);
-    // the only enemy is 140,000 from the wall: no climb
-    let mut c = Core::default();
-    let mut f = ai(Point::new(w.x + 30_000, w.y), vec![champ(FOE, 2, w.x + 140_000, w.y + 60_000)]);
-    f.terrain = walls(&[(10, 10)]);
-    f.profile[ROAMING] = 70;
-    f.profile[EGO] = 10;
-    let mut o = vec![];
-    assert_ne!(c.decide(&f, &mut o), Some(Order::Mount));
-    // an enemy within Rock Rain range of the wall: climb, unless he's resting after leaving one
-    let mut g = f.clone();
-    g.units[0].pos = Point::new(w.x - 60_000, w.y + 10_000);
-    let mut c = Core::default();
-    assert_eq!(c.decide(&g, &mut o), Some(Order::Mount));
-    let mut c = Core { gank_ready: 500, ..Core::default() };
-    assert_ne!(c.decide(&g, &mut o), Some(Order::Mount));
-}
+
 
 #[test]
-fn a_recall_points_home() {
-    assert_eq!(crate::kicker::home_of(0), (96_000, 864_000));
-    assert_eq!(crate::kicker::home_of(1), (864_000, 96_000));
-}
-
-#[test]
-fn on_a_wall_the_basic_is_a_45000_rock_throw() {
-    let b = crate::kicker::roof_buff();
+fn bounced_basics_are_45000_rock_throws_with_less_damage_taken() {
+    let b = crate::kicker::bounced_buff(180);
     assert_eq!(b.range as i64 + d::BASIC_RANGE, d::ROOF_BASIC_RANGE);
     assert_eq!(d::ROOF_BASIC_RANGE, 45_000);
+    assert_eq!(b.damaged_reduce as i64, d::ROOF_REDUCE_PCT);
+    assert_eq!(d::ROOF_REDUCE_PCT, 25);
 }
 
 #[test]
@@ -1282,22 +1000,29 @@ mod glue {
     }
 
     #[test]
-    fn the_roof_passes_walls_hides_him_and_drop_in_is_damage_invulnerable_only() {
+    fn the_touch_passes_walls_hides_him_and_cc_immunity_is_its_own_buff() {
         let (x, y) = open_spot(80_000);
         let host = Host::new(vec![champ(0, (x, y), "tfm2_custom_kicker")]);
         let mut k = Kicker::default();
-        with_sim(&host, |sim| k.apply(sim, 0, vec![Effect::Roof { on: true }, Effect::Hide, Effect::Invulnerable { ticks: 60 }, Effect::PassWalls { ticks: 20 }]));
+        with_sim(&host, |sim| k.apply(sim, 0, vec![Effect::Roof { on: true }, Effect::Hide, Effect::Invulnerable { ticks: 60 }, Effect::PassWalls { ticks: 20 }, Effect::CcImmune { ticks: 40 }]));
         {
             let g = host.borrow();
             let roof = g.buffs[0].iter().find(|b| b.name() == crate::kicker::ROOF).expect("roof");
-            assert!(roof.ignore_wall && roof.damaged_reduce as i64 == d::ROOF_REDUCE_PCT && roof.move_speed_mult as i64 == d::ROOF_SPEED_PCT);
+            assert!(roof.ignore_wall && roof.damaged_reduce as i64 == d::ROOF_REDUCE_PCT);
             assert!(g.invisible.iter().any(|i| i.0 == 0));
             let inv = g.buffs[0].iter().find(|b| b.name() == "kk_invuln").unwrap();
-            assert!(inv.damaged_reduce == 100 && !inv.cc_immune, "no CC immunity anywhere in his kit");
+            assert!(inv.damaged_reduce == 100 && !inv.cc_immune);
             assert!(g.buffs[0].iter().any(|b| b.name() == "kk_pass" && b.ignore_wall));
+            let cc = g.buffs[0].iter().find(|b| b.name() == crate::kicker::UNSTOPPABLE).expect("CC immune");
+            assert!(cc.cc_immune && cc.duration_tick == 40);
         }
-        with_sim(&host, |sim| k.apply(sim, 0, vec![Effect::Roof { on: false }]));
-        assert!(!host.borrow().buffs[0].iter().any(|b| b.name() == crate::kicker::ROOF));
+        // a shorter window never cuts a longer one short; Bounced carries the reduction and the rock range
+        with_sim(&host, |sim| k.apply(sim, 0, vec![Effect::Roof { on: false }, Effect::CcImmune { ticks: 10 }, Effect::Bounced { ticks: 180 }]));
+        let g = host.borrow();
+        assert!(!g.buffs[0].iter().any(|b| b.name() == crate::kicker::ROOF));
+        assert_eq!(g.buffs[0].iter().find(|b| b.name() == crate::kicker::UNSTOPPABLE).unwrap().duration_tick, 40);
+        let b = g.buffs[0].iter().find(|b| b.name() == crate::kicker::BOUNCED).expect("Bounced");
+        assert!(b.damaged_reduce as i64 == d::ROOF_REDUCE_PCT && b.range as i64 == d::ROOF_BASIC_RANGE - d::BASIC_RANGE);
     }
 
     #[test]
@@ -1396,13 +1121,13 @@ mod glue {
     }
 
     #[test]
-    fn a_basic_from_a_wall_throws_a_rock_and_still_feeds_the_core() {
+    fn a_basic_while_bounced_throws_a_rock_and_still_feeds_the_core() {
         let (x, y) = open_spot(80_000);
         let host = Host::new(vec![champ(0, (x, y), "tfm2_custom_kicker"), champ(1, (x + 40_000, y), "foe")]);
         host.borrow_mut().record_view_effects = true;
         let mut k = Kicker::default();
         k.configure("{\"art_fx_v1\":1}");
-        k.core.roof = true;
+        k.core.bounced_until = 100;
         host.borrow_mut().tick = 20;
         let mut dmg = 100;
         with_sim(&host, |sim| k.on_attack(sim, 0, 0, 1, &mut dmg));
@@ -1435,7 +1160,7 @@ mod glue {
     }
 
     #[test]
-    fn the_nexus_reads_as_a_structure_and_a_recorded_wish_reaches_the_frame_on_a_wall() {
+    fn the_nexus_reads_as_a_structure() {
         let (x, y) = open_spot(80_000);
         let host = Host::new(vec![
             champ(0, (x, y), "tfm2_custom_kicker"),
@@ -1445,14 +1170,6 @@ mod glue {
         host.borrow_mut().tick = 30;
         let f = with_sim(&host, |sim| k.frame(sim, 0));
         assert!(f.unit(1).is_some_and(|u| u.tower), "the nexus is a structure");
-        assert_eq!(f.want, None);
-        with_sim(&host, |sim| crate::kicker::note_want(sim, 0, (x as i64 + 150_000, y as i64)));
-        k.core.roof = true;
-        let f = with_sim(&host, |sim| k.frame(sim, 0));
-        assert_eq!(f.want, Some(Point::new(x as i64 + 150_000, y as i64)));
-        host.borrow_mut().tick = 50;
-        let f = with_sim(&host, |sim| k.frame(sim, 0));
-        assert_eq!(f.want, None, "a stale wish lapses");
     }
 
     #[test]

@@ -1,17 +1,19 @@
 //! Kicker, the rooftop street fighter: a deterministic core (snapshot in, effects out). `kicker.rs` builds the frame
 //! from the sim and applies the effects; the Lab (`native/kicker_lab`) runs this same file.
 //!
-//!   P1 Rooftop Runner: he stands and runs on wall cells (a named `ignore_wall` buff): faster, 15% less damage, hidden
-//!      from enemies farther than 40,000. Every jump down is a Drop-in (invulnerable while dropping, a knock-up on
-//!      landing, +15% on his next hit; 6 s). Landing on the ground shields him (10 s). A stun on a wall drops him.
-//!   P2 Marked Dash (2 charges): his hits mark units (never towers); he dashes next to a marked unit within 75,000.
+//!   P1 Wall Runner (`kicker-2.0`: no standing on walls any more): every Wall Bounce landing is a Drop-in (a knock-up,
+//!      +15% on his next hit; 6 s) and shields him. After a bounce he's Bounced for 3 s: 25% less damage, CC immune for
+//!      the first second, 45,000-range rock basics, and his next S2/S3 are the wall versions. CC immune in every leap
+//!      and dash.
+//!   P2 Marked Dash (2 charges): his hits mark units (never towers); he dashes behind a marked unit within 75,000.
 //!   P3 Bruised: everyone he crowd-controls: no HP regen, less healing, +3% damage taken per hit of his (max 5).
-//!   S1 Wall Hop / Drop Kick: onto a wall (its own cooldown), wall to wall (4 charges), off a wall onto an enemy
-//!      (no charge). No wall near: a short hop.
-//!   S2 Rock Throw / Rock Rain: a rock through everything that marks every unit it hits; from a wall, 3 in a fan.
-//!   S3 Homecoming Kick / Skyfall Kick (2 charges): on the ground, dash in and kick an enemy champion away from him
-//!      (the flying body knocks up 2 more; a wall stops it and stuns). From a wall: a long dive that carries the first
-//!      enemy champion in its line to the end, through walls; he lands behind it.
+//!   S1 Wall Bounce (no cooldown): a leap to a wall within reach, a 0.25 s hidden touch, then a spring onto an enemy
+//!      or point (landing behind the enemy and kicking it). Invulnerable throughout. No wall in reach: a short hop
+//!      (2 charges).
+//!   S2 Rock Throw / Rock Rain: a rock through everything that marks every unit it hits; Bounced, 3 in a fan.
+//!   S3 Homecoming Kick / Skyfall Kick (2 charges): dash in and kick an enemy champion away from him (the flying body
+//!      knocks up 2 more; a wall stops it and stuns). Bounced: a long dive that carries the first enemy champion in
+//!      its line to the end, through walls; he lands behind it.
 //!   Ult Second Wind: a tag where he stands; for 8 s a death sends him back to it at full HP; when the time runs out he
 //!      goes back with the HP he had.
 //!
@@ -135,13 +137,9 @@ pub struct Unit {
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(tag = "kind", content = "aim", rename_all = "snake_case")]
 pub enum Order {
-    /// S1 from the ground: onto the nearest wall within reach
-    Mount,
-    /// S1: wall to wall (on a wall), or a short hop (on the ground)
-    Hop(Point),
-    /// S1 from a wall: down toward a point, kicking whoever is at the landing
-    DropKick(Point),
-    /// S2 toward a point (a fan of three from a wall)
+    /// S1: off a wall in reach onto this point (kicking whoever is there), or a short hop with no wall in reach
+    Bounce(Point),
+    /// S2 toward a point (a fan of three while Bounced)
     Rock(Point),
     /// Marked Dash to this marked unit
     Dash(usize),
@@ -149,7 +147,7 @@ pub enum Order {
     Kick(usize, Point),
     /// S3 with Flash: blink to the kick spot first (or during the wind-up: re-aim)
     FlashKick(usize, Point),
-    /// S3 from a wall: dive toward the point
+    /// S3 while Bounced: dive toward the point
     Skyfall(Point),
     Ult,
 }
@@ -181,9 +179,6 @@ pub struct Frame {
     /// enemy projectiles within 30,000 of him that came closer since the last tick (the death cancel)
     #[serde(default)]
     pub shots_near: u8,
-    /// on a wall: where the game wants to walk him, past the wall's edge (he jumps down toward it when free)
-    #[serde(default)]
-    pub want: Option<Point>,
     pub manual: bool,
     pub order: Option<Order>,
 }
@@ -318,10 +313,14 @@ pub enum Effect {
     /// the end of a Bruised window
     BruiseEnd { target: usize },
     Mark { target: usize, ticks: u64 },
-    /// he's on a wall (true) or back on the ground
+    /// the Wall Bounce's touch: on the wall (true, through walls, less damage) or off it
     Roof { on: bool },
-    /// on a wall with no enemy champion close: hidden for a few ticks
+    /// hidden for a few ticks (the touch)
     Hide,
+    /// Bounced: less damage taken and the rock basic range for `ticks`
+    Bounced { ticks: u64 },
+    /// immune to crowd control for `ticks`
+    CcImmune { ticks: u64 },
     Shield { amount: i64, ticks: u64 },
     Invulnerable { ticks: u64 },
     /// he moves himself to `to` over `ticks` (an engine glide)
@@ -347,16 +346,16 @@ pub enum Effect {
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "snake_case")]
 pub enum MoveKind {
-    Mount,
-    WallHop,
+    /// the Wall Bounce: the leap to the wall, the touch, and the spring off it (landing is a Drop-in)
+    BounceIn,
+    Touch,
+    Spring,
     GroundHop,
-    Drop,
     Dash,
     KickDash,
     Skyfall,
+    /// out of terrain he was left in
     Fall,
-    /// back onto the wall after a step off it (he never walks off a wall)
-    Leash,
 }
 
 /// A move in progress: he's busy until `until`, landing at `land`.
@@ -365,7 +364,7 @@ pub struct Move {
     pub kind: MoveKind,
     pub until: u64,
     pub land: Point,
-    /// the Drop Kick's or Skyfall's target
+    /// the bounce's or Skyfall's target
     pub target: Option<usize>,
 }
 
@@ -412,8 +411,14 @@ pub struct SecondWind {
 
 #[derive(Clone, Debug, Serialize)]
 pub struct Core {
+    /// touching a wall (the 0.25 s of a Wall Bounce): the only time he's on one
     pub roof: bool,
-    pub mount_ready: u64,
+    /// Bounced until: less damage, rock basics, Rock Rain
+    pub bounced_until: u64,
+    /// his next S3 is a Skyfall until then (used up by it)
+    pub skyfall_until: u64,
+    /// the bounce in progress: where he springs to
+    pub bounce_aim: Option<Point>,
     pub hops: i64,
     pub hop_next: u64,
     pub dashes: i64,
@@ -439,10 +444,6 @@ pub struct Core {
     pub ult: Option<SecondWind>,
     /// (target, until): a kick just landed on it (the AI may spend the reserve charge to finish it)
     pub last_kicked: Option<(usize, u64)>,
-    /// on a wall since (the AI leaves an idle wall)
-    pub roof_since: u64,
-    /// no new gank mount before (a rest after leaving a wall idle)
-    pub gank_ready: u64,
     /// his HP over the last few ticks (tick, hp), to tell real damage from danger nearby
     pub hp_log: Vec<(u64, i64)>,
     pub rejection: String,
@@ -452,7 +453,9 @@ impl Default for Core {
     fn default() -> Self {
         Core {
             roof: false,
-            mount_ready: 0,
+            bounced_until: 0,
+            skyfall_until: 0,
+            bounce_aim: None,
             hops: d::HOP_CHARGES,
             hop_next: 0,
             dashes: d::DASH_CHARGES,
@@ -473,8 +476,6 @@ impl Default for Core {
             rocks: vec![],
             ult: None,
             last_kicked: None,
-            roof_since: 0,
-            gank_ready: 0,
             hp_log: vec![],
             rejection: String::new(),
             last_skill: "",
@@ -488,10 +489,9 @@ fn travel_ticks(from: Point, to: Point, speed: i64, min: i64) -> u64 {
 
 impl Core {
     pub fn respawn(&mut self, tick: u64) {
-        let keep = (self.mount_ready, self.rock_ready, self.ult_ready, self.drop_ready, self.shield_ready);
+        let keep = (self.rock_ready, self.ult_ready, self.drop_ready, self.shield_ready);
         *self = Core::default();
-        (self.mount_ready, self.rock_ready, self.ult_ready, self.drop_ready, self.shield_ready) =
-            (keep.0.max(tick), keep.1.max(tick), keep.2.max(tick), keep.3, keep.4);
+        (self.rock_ready, self.ult_ready, self.drop_ready, self.shield_ready) = (keep.0.max(tick), keep.1.max(tick), keep.2, keep.3);
     }
     pub fn busy(&self, tick: u64) -> bool {
         self.moving.as_ref().is_some_and(|m| tick < m.until) || self.kick.is_some()
@@ -510,6 +510,14 @@ impl Core {
             100
         }
     }
+    /// The 3 s after a bounce (and the touch itself).
+    pub fn bounced(&self, tick: u64) -> bool {
+        self.roof || tick < self.bounced_until
+    }
+    /// His next S3 is a Skyfall.
+    pub fn skyfall_ready(&self, tick: u64) -> bool {
+        self.roof || tick < self.skyfall_until
+    }
     pub fn take_bonus(&mut self) {
         self.bonus_until = 0;
     }
@@ -526,6 +534,9 @@ impl Core {
             self.flights.clear();
             self.rocks.clear();
             self.roof = false;
+            self.bounce_aim = None;
+            self.bounced_until = 0;
+            self.skyfall_until = 0;
             self.ult = None;
             return out;
         }
@@ -553,7 +564,7 @@ impl Core {
         self.run_second_wind(f, &mut out);
         // a move that ends this tick lands first, then the wall checks see where he really is
         self.run_move(f, &mut out);
-        self.run_roof(f, &mut out);
+        self.run_ground(f, &mut out);
         self.run_kick(f, &mut out);
         self.run_flights(f, &mut out);
         self.run_rocks(f, &mut out);
@@ -565,9 +576,8 @@ impl Core {
     }
 
     fn recharge(&mut self, f: &Frame) {
-        let hop_ticks = t(if self.roof { d::HOP_WALL_RECHARGE_TICKS } else { d::HOP_GROUND_RECHARGE_TICKS });
         for (n, next, max, every) in [
-            (&mut self.hops, &mut self.hop_next, d::HOP_CHARGES, hop_ticks),
+            (&mut self.hops, &mut self.hop_next, d::HOP_CHARGES, t(d::HOP_RECHARGE_TICKS)),
             (&mut self.dashes, &mut self.dash_next, d::DASH_CHARGES, t(d::DASH_RECHARGE_TICKS)),
             (&mut self.kicks, &mut self.kick_next, d::KICK_CHARGES, t(d::KICK_RECHARGE_TICKS)),
         ] {
@@ -625,10 +635,6 @@ impl Core {
     }
 
     fn land(&mut self, f: &Frame, at: Point, drop: bool, out: &mut Vec<Effect>) {
-        if self.roof {
-            self.roof = false;
-            out.push(Effect::Roof { on: false });
-        }
         out.push(Effect::Fx { name: "kk_land".into(), at, ticks: 18, ambient: true });
         if drop && f.tick >= self.drop_ready {
             // Drop-in: a knock-up around the landing and his next hit deals more
@@ -660,42 +666,9 @@ impl Core {
         }
     }
 
-    fn run_roof(&mut self, f: &Frame, out: &mut Vec<Effect>) {
-        let moving = self.busy(f.tick);
-        if self.roof {
-            if f.stunned && !self.moving.as_ref().is_some_and(|m| m.kind == MoveKind::Fall) {
-                // knocked off: down to the nearest open ground, no Drop-in
-                let to = f.nearest_ground(f.pos);
-                let ticks = travel_ticks(f.pos, to, d::HOP_SPEED, 6);
-                out.push(Effect::PassWalls { ticks: ticks + 2 });
-                out.push(Effect::Glide { to, ticks });
-                self.moving = Some(Move { kind: MoveKind::Fall, until: f.tick + ticks, land: to, target: None });
-                self.kick = None;
-                out.push(Effect::Log("knocked off the wall".into()));
-                return;
-            }
-            // He never walks off a wall (Reihan): a step off it is pulled straight back onto the nearest wall point.
-            // Only a skill (Drop Kick, Skyfall, a Marked Dash), hard control, death or the Second Wind return take
-            // him down. Far from any wall (a teleport), he simply isn't on one any more.
-            if !moving && !f.wall_at(f.pos) {
-                match f.nearest_wall_point(f.pos, 64_000) {
-                    Some(q) => {
-                        out.push(Effect::PassWalls { ticks: 8 });
-                        out.push(Effect::Glide { to: q, ticks: 6 });
-                        self.moving = Some(Move { kind: MoveKind::Leash, until: f.tick + 6, land: q, target: None });
-                    }
-                    None => {
-                        self.roof = false;
-                        out.push(Effect::Roof { on: false });
-                        return;
-                    }
-                }
-            }
-            if !f.enemy_champions().any(|u| u.pos.within(f.pos, d::ROOF_HIDE_RANGE)) {
-                out.push(Effect::Hide);
-            }
-        } else if !moving && f.wall_at(f.pos) {
-            // never left inside terrain
+    /// Never left inside terrain once a move is over (the touch is the only time he's on a wall).
+    fn run_ground(&mut self, f: &Frame, out: &mut Vec<Effect>) {
+        if !self.busy(f.tick) && !self.roof && f.wall_at(f.pos) {
             let to = f.nearest_ground(f.pos);
             out.push(Effect::PassWalls { ticks: 8 });
             out.push(Effect::Glide { to, ticks: 6 });
@@ -710,22 +683,23 @@ impl Core {
         }
         self.moving = None;
         match m.kind {
-            MoveKind::Mount | MoveKind::WallHop => {
-                if !self.roof {
-                    self.roof = true;
-                    self.roof_since = f.tick;
-                    out.push(Effect::Roof { on: true });
-                }
+            MoveKind::BounceIn => {
+                // the touch: hidden on the wall for a moment (still invulnerable and CC immune)
+                self.roof = true;
+                out.push(Effect::Roof { on: true });
+                out.push(Effect::Hide);
                 out.push(Effect::Fx { name: "kk_land".into(), at: m.land, ticks: 12, ambient: true });
+                self.moving = Some(Move { kind: MoveKind::Touch, until: f.tick + t(d::ROOF_TOUCH_TICKS), land: m.land, target: m.target });
             }
-            MoveKind::GroundHop | MoveKind::Dash | MoveKind::KickDash | MoveKind::Leash => {}
+            MoveKind::Touch => self.spring(f, m.land, m.target, out),
+            MoveKind::GroundHop | MoveKind::Dash | MoveKind::KickDash => {}
             MoveKind::Fall => {
                 if self.roof {
                     self.roof = false;
                     out.push(Effect::Roof { on: false });
                 }
             }
-            MoveKind::Drop => {
+            MoveKind::Spring => {
                 self.land(f, m.land, true, out);
                 if let Some(u) = m.target.and_then(|id| f.unit(id)).cloned() {
                     if f.skill_target(&u) && u.pos.within(m.land, d::HOP_DROP_KICK_RADIUS + u.radius) {
@@ -734,11 +708,64 @@ impl Core {
                         out.push(Effect::StrikeEnd);
                     }
                 }
+                // Bounced: the wall versions of his skills, less damage, CC immune for a moment
+                self.bounced_until = f.tick + t(d::ROOF_BOUNCED_TICKS);
+                self.skyfall_until = self.bounced_until;
+                out.push(Effect::Bounced { ticks: t(d::ROOF_BOUNCED_TICKS) });
+                out.push(Effect::CcImmune { ticks: t(d::ROOF_CC_IMMUNE_TICKS) });
             }
             MoveKind::Skyfall => {
                 self.land(f, m.land, true, out);
             }
         }
+    }
+
+    /// Off the wall: onto the target (behind it, from the wall's side) if it's still in reach, else onto the aim.
+    fn spring(&mut self, f: &Frame, wall: Point, target: Option<usize>, out: &mut Vec<Effect>) {
+        let aim = self.bounce_aim.take().unwrap_or(wall);
+        let reach = |p: Point| if p.within(wall, d::HOP_SPRING_RANGE) { p } else { wall.toward(p, d::HOP_SPRING_RANGE) };
+        let victim = target.and_then(|id| f.unit(id)).filter(|u| f.skill_target(u)).cloned();
+        let land = match &victim {
+            Some(u) => f.nearest_ground(reach(u.pos.along(unit_dir(wall, u.pos), u.radius + d::DASH_GAP))),
+            None => f.nearest_ground(reach(aim)),
+        };
+        self.roof = false;
+        out.push(Effect::Roof { on: false });
+        let ticks = travel_ticks(wall, land, d::HOP_SPEED, d::HOP_MIN_TICKS);
+        out.push(Effect::Invulnerable { ticks: ticks + 2 });
+        out.push(Effect::CcImmune { ticks: ticks + 2 });
+        out.push(Effect::PassWalls { ticks: ticks + 2 });
+        out.push(Effect::Glide { to: land, ticks });
+        out.push(Effect::Pose { name: "hop_high", ticks });
+        out.push(Effect::Fx { name: "kk_hop".into(), at: wall, ticks: 12, ambient: true });
+        self.moving = Some(Move { kind: MoveKind::Spring, until: f.tick + ticks, land, target: victim.map(|u| u.id) });
+    }
+
+    /// The wall point a bounce toward `aim` leaps to: within reach of him, preferring one that has `aim` within the
+    /// spring (the shortest way round), else the nearest. None: no wall in reach.
+    pub fn bounce_wall(f: &Frame, aim: Point) -> Option<Point> {
+        let inset = 2_000;
+        let points: Vec<Point> = f
+            .walls_near(f.pos, d::HOP_WALL_RANGE + CELL)
+            .into_iter()
+            .map(|c| {
+                let (x0, y0) = (c.x - CELL / 2 + inset, c.y - CELL / 2 + inset);
+                let (x1, y1) = (c.x + CELL / 2 - inset, c.y + CELL / 2 - inset);
+                Point::new(f.pos.x.clamp(x0, x1), f.pos.y.clamp(y0, y1))
+            })
+            .filter(|q| q.within(f.pos, d::HOP_WALL_RANGE))
+            .collect();
+        points
+            .iter()
+            .filter(|q| q.within(aim, d::HOP_SPRING_RANGE))
+            .min_by_key(|q| ((q.dist(f.pos) + q.dist(aim)) as i64, q.x, q.y))
+            .or_else(|| points.iter().min_by_key(|q| (q.d2(f.pos), q.x, q.y)))
+            .copied()
+    }
+    /// Where a bounce toward `aim` would land him (for the AI), or None with no wall in reach.
+    pub fn bounce_landing(f: &Frame, aim: Point) -> Option<Point> {
+        let wall = Self::bounce_wall(f, aim)?;
+        Some(f.nearest_ground(if aim.within(wall, d::HOP_SPRING_RANGE) { aim } else { wall.toward(aim, d::HOP_SPRING_RANGE) }))
     }
 
     // ---------------------------------------------------------- S3
@@ -844,9 +871,10 @@ impl Core {
         out.push(Effect::Fx { name: "kk_return".into(), at: w.anchor, ticks: 24, ambient: false });
         self.moving = None;
         self.kick = None;
-        if self.roof != w.roof {
-            self.roof = w.roof;
-            out.push(Effect::Roof { on: w.roof });
+        self.bounce_aim = None;
+        if self.roof {
+            self.roof = false;
+            out.push(Effect::Roof { on: false });
         }
         out.push(Effect::Log(if died { "Second Wind: back to the tag at full HP".into() } else { "Second Wind: time's up, back to the tag".into() }));
     }
@@ -866,54 +894,34 @@ impl Core {
             return self.reject("busy");
         }
         match o {
-            Order::Mount => {
-                if self.roof {
-                    return self.reject("already on a wall");
-                }
-                if f.tick < self.mount_ready {
-                    return self.reject("mount cooling down");
-                }
-                let Some(cell) = f.walls_near(f.pos, d::HOP_MOUNT_RANGE).into_iter().next() else {
-                    return self.reject("no wall in reach");
-                };
-                self.mount_ready = f.tick + t(d::HOP_MOUNT_COOLDOWN_TICKS);
-                self.leap(f, cell, MoveKind::Mount, None, out);
-                self.last_skill = "mount";
-            }
-            Order::Hop(p) => {
-                if self.hops <= 0 {
-                    return self.reject("no hop charge");
-                }
-                let every = t(if self.roof { d::HOP_WALL_RECHARGE_TICKS } else { d::HOP_GROUND_RECHARGE_TICKS });
-                if self.roof {
-                    let Some(cell) = f.walls_near(p, CELL).into_iter().next().filter(|c| c.within(f.pos, d::HOP_WALL_RANGE)) else {
-                        return self.reject("no wall there in reach");
-                    };
-                    Self::spend(&mut self.hops, &mut self.hop_next, d::HOP_CHARGES, f.tick, every);
-                    self.leap(f, cell, MoveKind::WallHop, None, out);
-                } else {
+            Order::Bounce(p) => {
+                let Some(wall) = Self::bounce_wall(f, p) else {
+                    // no wall in reach: a short hop (a charge)
+                    if self.hops <= 0 {
+                        return self.reject("no wall in reach and no hop charge");
+                    }
                     let to = f.nearest_ground(f.pos.toward(p, d::HOP_GROUND_HOP));
-                    Self::spend(&mut self.hops, &mut self.hop_next, d::HOP_CHARGES, f.tick, every);
+                    Self::spend(&mut self.hops, &mut self.hop_next, d::HOP_CHARGES, f.tick, t(d::HOP_RECHARGE_TICKS));
                     self.leap(f, to, MoveKind::GroundHop, None, out);
-                }
-                self.last_skill = "hop";
-            }
-            Order::DropKick(p) => {
-                if !self.roof {
-                    return self.reject("not on a wall");
-                }
-                let aim = if p.within(f.pos, d::HOP_DROP_RANGE) { p } else { f.pos.toward(p, d::HOP_DROP_RANGE) };
+                    self.last_skill = "hop";
+                    return;
+                };
+                // whoever is at the aim is kicked on the landing (champions first)
                 let target = f
                     .units
                     .iter()
-                    .filter(|u| f.skill_target(u) && u.pos.within(aim, d::HOP_DROP_KICK_RADIUS + u.radius))
-                    .min_by_key(|u| (!u.champion, u.pos.d2(aim), u.id))
+                    .filter(|u| f.skill_target(u) && u.pos.within(p, d::HOP_DROP_KICK_RADIUS + u.radius))
+                    .min_by_key(|u| (!u.champion, u.pos.d2(p), u.id))
                     .map(|u| u.id);
-                let land = f.nearest_ground(aim);
-                // invulnerable while dropping (Drop-in), whether or not the knock-up is ready
-                out.push(Effect::Invulnerable { ticks: t(d::DROP_IN_INVULN_TICKS) });
-                self.leap(f, land, MoveKind::Drop, target, out);
-                self.last_skill = "drop_kick";
+                let ticks = travel_ticks(f.pos, wall, d::HOP_SPEED, d::HOP_MIN_TICKS);
+                // invulnerable and CC immune to the wall and through the touch (the spring renews both)
+                let hold = ticks + t(d::ROOF_TOUCH_TICKS) + 2;
+                out.push(Effect::Invulnerable { ticks: hold });
+                out.push(Effect::CcImmune { ticks: hold });
+                self.leap(f, wall, MoveKind::BounceIn, target, out);
+                out.push(Effect::PassWalls { ticks: hold });
+                self.bounce_aim = Some(p);
+                self.last_skill = "bounce";
             }
             Order::Rock(p) => {
                 if f.tick < self.rock_ready {
@@ -921,7 +929,7 @@ impl Core {
                 }
                 self.rock_ready = f.tick + t(d::ROCK_COOLDOWN_TICKS);
                 let u = unit_dir(f.pos, p);
-                if self.roof {
+                if self.bounced(f.tick) {
                     let n = d::ROCK_RAIN_COUNT.max(1);
                     for i in 0..n {
                         let deg = (i - (n - 1) / 2) as f64 * d::ROCK_RAIN_SPREAD_DEG as f64;
@@ -951,21 +959,15 @@ impl Core {
                 let stop = f.nearest_ground(u.pos.along(unit_dir(f.pos, u.pos), u.radius + d::DASH_GAP));
                 Self::spend(&mut self.dashes, &mut self.dash_next, d::DASH_CHARGES, f.tick, t(d::DASH_RECHARGE_TICKS));
                 let ticks = travel_ticks(f.pos, stop, d::DASH_SPEED, 6);
-                if self.roof {
-                    out.push(Effect::PassWalls { ticks: ticks + 2 });
-                }
                 out.push(Effect::Glide { to: stop, ticks });
+                out.push(Effect::CcImmune { ticks: ticks + 2 });
                 self.dash_shield(f, out);
                 out.push(Effect::Fx { name: "kk_dash".into(), at: f.pos, ticks: 12, ambient: true });
                 self.moving = Some(Move { kind: MoveKind::Dash, until: f.tick + ticks, land: stop, target: Some(id) });
-                if self.roof {
-                    // a dash off a wall is a jump down
-                    self.moving = Some(Move { kind: MoveKind::Drop, until: f.tick + ticks, land: stop, target: None });
-                }
                 self.last_skill = "dash";
             }
             Order::Kick(id, toward) => {
-                if self.roof {
+                if self.skyfall_ready(f.tick) {
                     return self.execute(f, Order::Skyfall(toward), out);
                 }
                 if self.kicks <= 0 {
@@ -983,6 +985,7 @@ impl Core {
                 let ticks = travel_ticks(f.pos, spot, d::DASH_SPEED, 4);
                 if !spot.within(f.pos, 1_000) {
                     out.push(Effect::Glide { to: spot, ticks });
+                    out.push(Effect::CcImmune { ticks: ticks + 2 });
                     self.dash_shield(f, out);
                     self.moving = Some(Move { kind: MoveKind::KickDash, until: f.tick + ticks, land: spot, target: Some(id) });
                 }
@@ -1013,9 +1016,6 @@ impl Core {
                         if self.busy(f.tick) {
                             return self.reject("busy");
                         }
-                        if self.roof {
-                            return self.reject("on a wall");
-                        }
                         if self.kicks <= 0 {
                             return self.reject("no kick charge");
                         }
@@ -1029,8 +1029,8 @@ impl Core {
                 self.last_skill = "flash_kick";
             }
             Order::Skyfall(p) => {
-                if !self.roof {
-                    return self.reject("not on a wall");
+                if !self.skyfall_ready(f.tick) {
+                    return self.reject("not Bounced");
                 }
                 if self.kicks <= 0 {
                     return self.reject("no kick charge");
@@ -1042,8 +1042,10 @@ impl Core {
                 let ticks = t(d::SKYFALL_TICKS);
                 let target_end = f.land_past(end, u, f.pos);
                 let mine = if target.is_some() { f.land_past(target_end.along(u, d::SKYFALL_BEHIND), u, target_end) } else { target_end };
+                self.skyfall_until = 0;
                 out.push(Effect::PassWalls { ticks: ticks + 2 });
                 out.push(Effect::Invulnerable { ticks: t(d::DROP_IN_INVULN_TICKS) });
+                out.push(Effect::CcImmune { ticks: ticks + 2 });
                 out.push(Effect::Glide { to: mine, ticks });
                 self.dash_shield(f, out);
                 out.push(Effect::Fx { name: "kk_skyfall".into(), at: f.pos, ticks: 24, ambient: false });
@@ -1066,7 +1068,7 @@ impl Core {
                     return self.reject("ult cooling down");
                 }
                 self.ult_ready = f.tick + t(d::ULT_COOLDOWN_TICKS);
-                self.ult = Some(SecondWind { anchor: f.pos, hp: f.hp, until: f.tick + t(d::ULT_TICKS), roof: self.roof });
+                self.ult = Some(SecondWind { anchor: f.pos, hp: f.hp, until: f.tick + t(d::ULT_TICKS), roof: false });
                 out.push(Effect::Undying { ticks: t(d::ULT_TICKS) + 2 });
                 out.push(Effect::Fx { name: "kk_tag".into(), at: f.pos, ticks: t(d::ULT_TICKS), ambient: false });
                 self.last_skill = "second_wind";
@@ -1082,13 +1084,14 @@ impl Core {
             .map(|u| u.id)
     }
 
-    /// A leap (an arc: a glide under a jump pose), through walls when it starts or ends on one.
+    /// A leap (an arc: a glide under a jump pose), through walls when it starts or ends on one; CC immune.
     fn leap(&mut self, f: &Frame, to: Point, kind: MoveKind, target: Option<usize>, out: &mut Vec<Effect>) {
         let ticks = travel_ticks(f.pos, to, d::HOP_SPEED, d::HOP_MIN_TICKS);
         out.push(Effect::PassWalls { ticks: ticks + 2 });
         out.push(Effect::Glide { to, ticks });
         out.push(Effect::Pose { name: if f.pos.within(to, 30_000) { "hop_low" } else { "hop_high" }, ticks });
         out.push(Effect::Fx { name: "kk_hop".into(), at: f.pos, ticks: 12, ambient: true });
+        out.push(Effect::CcImmune { ticks: ticks + 2 });
         self.moving = Some(Move { kind, until: f.tick + ticks, land: to, target });
         self.kick = None;
         self.dash_shield(f, out);
@@ -1361,7 +1364,7 @@ impl Core {
 
     /// A Skyfall at `u`: only if it's the first champion in the line and where it lands is safe.
     pub fn plan_skyfall(&self, f: &Frame, u: &Unit) -> Option<Order> {
-        // one charge is enough from a wall for a fight, a low target, or one alone near his teammates
+        // one charge is enough after a bounce for a fight, a low target, or one alone near his teammates
         let worth = u.hp * 100 <= u.max_hp.max(1) * 40
             || Self::fight_on(f)
             || (Self::isolated(f, u) && f.allies().any(|a| a.pos.within(u.pos, d::AI_ENGAGE_RANGE)));
@@ -1402,6 +1405,19 @@ impl Core {
         }
     }
 
+    /// A Wall Bounce onto `u` worth taking: a wall in reach with `u` within the spring, not into its tower without
+    /// a kick-out, and either the Drop-in is ready (the knock-up and bonus) or `u` is out of plain reach.
+    pub fn bounce_onto(&self, f: &Frame, u: &Unit) -> Option<Order> {
+        let wall = Self::bounce_wall(f, u.pos)?;
+        if !u.pos.within(wall, d::HOP_SPRING_RANGE) || u.parry {
+            return None;
+        }
+        if f.enemy_tower_at(u.pos).is_some() && !self.kickout_ready(f, u) && !(self.tagged() && f.p(EGO) >= 60) {
+            return None;
+        }
+        (f.tick >= self.drop_ready || !u.pos.within(f.pos, 30_000)).then_some(Order::Bounce(u.pos))
+    }
+
     pub fn decide(&mut self, f: &Frame, out: &mut Vec<Effect>) -> Option<Order> {
         if f.stunned || self.busy(f.tick) {
             return None;
@@ -1413,10 +1429,9 @@ impl Core {
         let tagged = self.tagged();
         let hurt = self.hurt(f);
         let here = Self::danger_at(f, f.pos, None);
-        // 1. escape only after real damage (or a tower on him; on a wall, low with an enemy near), never under the tag
-        //    (a death only sends him back). A retreat goes down, never up onto a wall.
-        let low_on_wall = self.roof && Self::hp_pct(f) < 40 && f.enemy_champions().any(|u| u.pos.within(f.pos, 60_000));
-        if !tagged && ((hurt && here >= 2 && Self::hp_pct(f) < 45) || (hurt && f.enemy_tower_at(f.pos).is_some()) || low_on_wall) {
+        // 1. escape only after real damage (or a tower on him), never under the tag (a death only sends him back):
+        //    a Marked Dash away, else a Wall Bounce toward safety
+        if !tagged && ((hurt && here >= 2 && Self::hp_pct(f) < 45) || (hurt && f.enemy_tower_at(f.pos).is_some())) {
             if self.dashes > 0 {
                 if let Some(u) = f
                     .units
@@ -1435,42 +1450,20 @@ impl Core {
                 .min_by_key(|a| (a.pos.d2(f.pos), a.id))
                 .map(|a| a.pos)
                 .unwrap_or(f.home);
-            if self.roof {
-                // along the walls: a hop to a wall farther from the danger, toward safety; else down toward safety
-                if self.hops > 0 {
-                    if let Some(c) = f
-                        .walls_near(f.pos, d::HOP_WALL_RANGE)
-                        .into_iter()
-                        .filter(|c| Self::danger_at(f, *c, None) < here && c.d2(safe) < f.pos.d2(safe) && !c.within(f.pos, 40_000))
-                        .min_by_key(|c| (Self::danger_at(f, *c, None), c.d2(safe), c.x, c.y))
-                    {
-                        return Some(Order::Hop(c));
-                    }
-                }
-                return Some(Order::DropKick(f.nearest_ground(f.pos.toward(safe, d::HOP_DROP_RANGE))));
-            }
-            // up a wall close by that is no closer to the danger (15% less damage, hidden beyond 40,000)
-            if f.tick >= self.mount_ready {
-                if let Some(c) = f.walls_near(f.pos, d::HOP_MOUNT_RANGE).into_iter().next() {
-                    if Self::danger_at(f, c, None) <= here && f.enemy_champions().all(|u| u.pos.d2(c) >= u.pos.d2(f.pos)) {
-                        return Some(Order::Mount);
-                    }
+            if let Some(land) = Self::bounce_landing(f, safe) {
+                if Self::danger_at(f, land, None) < here && land.d2(safe) + (30_000i128 * 30_000) < f.pos.d2(safe) && f.enemy_tower_at(land).is_none() {
+                    return Some(Order::Bounce(safe));
                 }
             }
         }
         // 2. peel: an enemy on a hurt teammate is kicked away from them
         if let Some((ally, diver)) = Self::peel_target(f) {
-            if !self.roof {
-                if let Some(o) = self.plan_kick(f, &diver, Some(ally.pos)) {
-                    return self.engage(f, &diver, o);
-                }
-                if self.dashes > 0 && self.marked(diver.id, f.tick) && !diver.pos.within(f.pos, 25_000) {
-                    return Some(Order::Dash(diver.id));
-                }
+            if let Some(o) = self.plan_kick(f, &diver, Some(ally.pos)) {
+                return self.engage(f, &diver, o);
             }
-        }
-        if self.roof {
-            return self.decide_roof(f, out);
+            if self.dashes > 0 && self.marked(diver.id, f.tick) && !diver.pos.within(f.pos, 25_000) {
+                return Some(Order::Dash(diver.id));
+            }
         }
         // 3. after a kick or a carry: go hit what he kicked (a Marked Dash onto it, or walk to it)
         if let Some(u) = self.last_kicked.and_then(|k| f.unit(k.0)).filter(|u| f.enemy(u)).cloned() {
@@ -1489,12 +1482,18 @@ impl Core {
             }
         }
         let target = self.pick(f, d::AI_ENGAGE_RANGE);
-        // 4. a teammate in a fight farther off: go to it (a Marked Dash on anything marked that way, or walk)
+        // 4. a teammate in a fight farther off: go to it (a Marked Dash on anything marked that way, a Wall Bounce onto
+        //    the enemy on it, or walk)
         let help = Self::help_target(f);
         if let Some(at) = help {
             if target.as_ref().is_none_or(|u| !u.pos.within(at, 60_000)) && !at.within(f.pos, 45_000) {
                 if let Some(o) = self.dash_toward(f, at) {
                     return Some(o);
+                }
+                if let Some(e) = f.enemy_champions().filter(|e| e.pos.within(at, d::AI_FIGHT_RANGE)).min_by_key(|e| (e.pos.d2(at), e.id)).cloned() {
+                    if let Some(o) = self.bounce_onto(f, &e) {
+                        return self.engage(f, &e, o);
+                    }
                 }
                 if f.enemy_tower_at(at).is_none() || f.enemy_tower_at(f.pos).is_some() {
                     out.push(Effect::Steer { to: at });
@@ -1502,8 +1501,28 @@ impl Core {
                 return None;
             }
         }
-        if let Some(u) = target {
-            if let Some(o) = self.plan_kick(f, &u, None) {
+        // 5. the best target: wall first, then skills (Reihan's favourite engage)
+        let reach = d::AI_ENGAGE_RANGE.max(d::HOP_WALL_RANGE + d::HOP_SPRING_RANGE);
+        let far = || {
+            self.pick(f, reach).filter(|u| Self::in_fight(f, u) || u.hp * 100 <= u.max_hp.max(1) * 40 || Self::isolated(f, u) || tagged)
+        };
+        if let Some(u) = target.or_else(far) {
+            let bounced = self.bounced(f.tick);
+            // Bounced: the wall versions first
+            if self.skyfall_ready(f.tick) {
+                if let Some(o) = self.plan_skyfall(f, &u) {
+                    return self.engage(f, &u, o);
+                }
+            }
+            if bounced && f.tick >= self.rock_ready && u.pos.within(f.pos, d::ROCK_RAIN_RANGE) {
+                return Some(Order::Rock(u.pos));
+            }
+            if !self.skyfall_ready(f.tick) {
+                if let Some(o) = self.plan_kick(f, &u, None) {
+                    return self.engage(f, &u, o);
+                }
+            }
+            if let Some(o) = self.bounce_onto(f, &u) {
                 return self.engage(f, &u, o);
             }
             if f.tick >= self.rock_ready && u.pos.within(f.pos, d::ROCK_RANGE) && !self.marked(u.id, f.tick) {
@@ -1513,42 +1532,13 @@ impl Core {
             if self.dashes > 0 && self.marked(u.id, f.tick) && !u.pos.within(f.pos, 30_000) && u.pos.within(f.pos, d::DASH_RANGE) && (!tower || self.kicks >= 1) {
                 return self.engage(f, &u, Order::Dash(u.id));
             }
-            // a wall between him and the target: up on it, to come down on the other side
-            if f.tick >= self.mount_ready && self.kicks >= 1 && Self::wall_between(f, f.pos, u.pos) && !f.walls_near(f.pos, d::HOP_MOUNT_RANGE).is_empty() {
-                return Some(Order::Mount);
-            }
-            // walk in only with a purpose (a fight, a low target, the tag), never into a tower without a kick-out
-            if (Self::fight_on(f) || u.hp * 100 <= u.max_hp.max(1) * 40 || tagged) && (!tower || self.kickout_ready(f, &u)) {
+            // walk in only with a purpose (a fight, a low target, the tag, Bounced), never into a tower without a kick-out
+            if (Self::fight_on(f) || u.hp * 100 <= u.max_hp.max(1) * 40 || tagged || bounced) && (!tower || self.kickout_ready(f, &u)) {
                 out.push(Effect::Steer { to: u.pos });
             }
             return None;
         }
-        // 3. set up a rooftop gank between fights: up on a wall near, or walk to one
-        let enemies_around = f.enemy_champions().any(|u| u.pos.within(f.pos, d::AI_GANK_RANGE));
-        let wave_here = f.units.iter().any(|u| u.farmable && u.pos.within(f.pos, 60_000));
-        // only when the wall can pay off: an enemy champion within Rock Rain range of it; a rest after leaving one
-        let useful = |w: Point| f.enemy_champions().any(|u| u.pos.within(w, d::ROCK_RAIN_RANGE));
-        if enemies_around
-            && help.is_none()
-            && !Self::fight_on(f)
-            && f.tick >= self.mount_ready
-            && f.tick >= self.gank_ready
-            && f.p(ROAMING) >= 40
-            && Self::hp_pct(f) >= 50
-            && (!wave_here || f.p(ROAMING) >= 70)
-        {
-            if f.walls_near(f.pos, d::HOP_MOUNT_RANGE).into_iter().next().is_some_and(useful) {
-                return Some(Order::Mount);
-            }
-            let reach = if f.p(ROAMING) >= 70 || f.p(EGO) >= 70 { d::AI_MOUNT_WALK_RANGE * 3 / 2 } else { d::AI_MOUNT_WALK_RANGE };
-            if let Some(w) = f.nearest_wall_point(f.pos, reach) {
-                if f.enemy_tower_at(w).is_none() && useful(w) {
-                    out.push(Effect::Steer { to: w });
-                    return None;
-                }
-            }
-        }
-        // 4. farming: Rock Throw through the wave (S1 and S2 only; S3 and the ult never on minions)
+        // 6. farming: Rock Throw through the wave (S2 only; S3 and the ult never on minions)
         let calm = !f.enemy_champions().any(|u| u.pos.within(f.pos, d::AI_CALM_RANGE));
         if calm && f.tick >= self.rock_ready {
             let farm: Vec<&Unit> = f.units.iter().filter(|u| u.farmable && f.skill_target(u) && u.pos.within(f.pos, d::ROCK_RANGE)).collect();
@@ -1601,125 +1591,6 @@ impl Core {
             .filter(|(_, land)| land.dist(at) + 20_000.0 <= now && tower_ok(*land))
             .min_by_key(|(u, land)| (land.d2(at), u.id))
             .map(|(u, _)| Order::Dash(u.id))
-    }
-
-    /// From a wall, a Marked Dash down behind a marked enemy (his rock basics mark): on `target` in a fight or as a
-    /// pick (low or alone), or, toward where the game wants him (`want`), on a marked enemy that way when it lands
-    /// him closer to it than a plain drop would.
-    fn dash_down(&self, f: &Frame, target: Option<&Unit>, fight: bool) -> Option<Order> {
-        if self.dashes <= 0 {
-            return None;
-        }
-        let ok = |u: &Unit| f.skill_target(u) && self.marked(u.id, f.tick) && u.pos.within(f.pos, d::DASH_RANGE) && f.enemy_tower_at(u.pos).is_none();
-        if let Some(u) = target {
-            let pick = u.hp * 100 <= u.max_hp.max(1) * 50 || Self::isolated(f, u);
-            return (ok(u) && !u.pos.within(f.pos, d::HOP_DROP_RANGE) && (fight || pick || self.tagged())).then_some(Order::Dash(u.id));
-        }
-        let w = f.want?;
-        let way = unit_dir(f.pos, w);
-        let drop = f.nearest_ground(f.pos.toward(w, d::HOP_DROP_RANGE.min(f.pos.dist(w) as i64)));
-        f.units
-            .iter()
-            .filter(|u| ok(u))
-            .filter(|u| {
-                let to = unit_dir(f.pos, u.pos);
-                to.0 * way.0 + to.1 * way.1 >= std::f64::consts::FRAC_1_SQRT_2
-            })
-            .map(|u| (u, u.pos.along(unit_dir(f.pos, u.pos), u.radius + d::DASH_GAP)))
-            .filter(|(_, end)| end.d2(w) < drop.d2(w))
-            .min_by_key(|(u, end)| (end.d2(w), u.id))
-            .map(|(u, _)| Order::Dash(u.id))
-    }
-
-    /// On a wall: rain rocks, dive, drop in, throw basics at champions from up there, or go where the fight is. A
-    /// perch, not a home: minions never hold him up, and after a few seconds with no champion to hit he comes down.
-    fn decide_roof(&mut self, f: &Frame, _out: &mut Vec<Effect>) -> Option<Order> {
-        let fight = Self::fight_on(f);
-        let healthy = Self::hp_pct(f) >= 40 || self.tagged();
-        // from a wall he looks as far as he can hop (300,000)
-        let best = self.pick(f, d::AI_GANK_RANGE.max(d::HOP_WALL_RANGE));
-        let in_throw = |u: &Unit| u.pos.within(f.pos, d::ROOF_BASIC_RANGE + u.radius);
-        let champion_business = f.enemy_champions().any(|u| u.pos.within(f.pos, d::ROCK_RAIN_RANGE));
-        if champion_business {
-            self.roof_since = f.tick;
-        }
-        if f.tick >= self.rock_ready {
-            let aim = best
-                .clone()
-                .filter(|u| u.pos.within(f.pos, d::ROCK_RAIN_RANGE))
-                .or_else(|| f.enemy_champions().filter(|u| u.pos.within(f.pos, d::ROCK_RAIN_RANGE)).min_by_key(|u| (u.pos.d2(f.pos), u.id)).cloned());
-            if let Some(u) = aim {
-                return Some(Order::Rock(u.pos));
-            }
-        }
-        if let Some(u) = best.clone() {
-            if let Some(o) = self.plan_skyfall(f, &u) {
-                return self.engage(f, &u, o);
-            }
-            let tower = f.enemy_tower_at(u.pos).is_some();
-            if u.pos.within(f.pos, d::HOP_DROP_RANGE) && (!tower || self.kickout_ready(f, &u)) && (fight || u.hp * 100 <= u.max_hp.max(1) * 50 || self.tagged()) {
-                return self.engage(f, &u, Order::DropKick(u.pos));
-            }
-            // his rock basics marked it: dash down behind it (a jump down with the Drop-in) in a fight or on a pick
-            if let Some(o) = self.dash_down(f, Some(&u), fight) {
-                return self.engage(f, &u, o);
-            }
-            // in throwing range and healthy, with no wish of the game's elsewhere: stay up and throw
-            if in_throw(&u) && (healthy || f.want.is_none()) {
-                return None;
-            }
-        }
-        // a teammate in a fight: go to it (a dash on anything marked that way, a hop to a wall by it, or down)
-        if let Some(at) = Self::help_target(f) {
-            if !at.within(f.pos, d::ROOF_BASIC_RANGE) {
-                if let Some(o) = self.dash_toward(f, at) {
-                    return Some(o);
-                }
-                if self.hops > 0 {
-                    let here = f.pos.d2(at);
-                    if let Some(c) = f
-                        .walls_near(at, d::ROOF_BASIC_RANGE)
-                        .into_iter()
-                        .find(|c| c.within(f.pos, d::HOP_WALL_RANGE) && c.d2(at) + (20_000i128 * 20_000) < here && f.enemy_tower_at(*c).is_none())
-                    {
-                        return Some(Order::Hop(c));
-                    }
-                }
-                return Some(Order::DropKick(f.nearest_ground(f.pos.toward(at, d::HOP_DROP_RANGE.min(f.pos.dist(at) as i64)))));
-            }
-        }
-        if let Some(u) = best {
-            // out of reach: the wall nearest to it (a long hop)
-            if !in_throw(&u) && self.hops > 0 {
-                let here = f.pos.d2(u.pos);
-                if let Some(c) = f
-                    .walls_near(u.pos, d::ROOF_BASIC_RANGE + 10_000)
-                    .into_iter()
-                    .find(|c| c.within(f.pos, d::HOP_WALL_RANGE) && c.d2(u.pos) + (20_000i128 * 20_000) < here && f.enemy_tower_at(*c).is_none())
-                {
-                    return Some(Order::Hop(c));
-                }
-            }
-        }
-        // an enemy champion in throwing range and he's healthy: stay and throw
-        if healthy && f.enemy_champions().any(|u| in_throw(u)) {
-            return None;
-        }
-        // the game wants him elsewhere: jump down that way (a marked enemy that way: dash down behind it)
-        if let Some(w) = f.want {
-            if let Some(o) = self.dash_down(f, None, false) {
-                return Some(o);
-            }
-            let to = if w.within(f.pos, d::HOP_DROP_RANGE) { w } else { f.pos.toward(w, d::HOP_DROP_RANGE) };
-            return Some(Order::DropKick(f.nearest_ground(to)));
-        }
-        // minions never hold him: with no champion to hit for a few seconds he comes down (toward his teammates)
-        if f.tick >= self.roof_since + t(d::AI_IDLE_ROOF_TICKS) {
-            self.gank_ready = f.tick + t(d::AI_GANK_REST_TICKS);
-            let to = f.allies().min_by_key(|a| (a.pos.d2(f.pos), a.id)).map(|a| a.pos).unwrap_or(f.home);
-            return Some(Order::DropKick(f.nearest_ground(f.pos.toward(to, d::HOP_DROP_RANGE))));
-        }
-        None
     }
 
 }

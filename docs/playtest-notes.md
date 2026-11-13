@@ -3972,3 +3972,16 @@ Approved effects are integrated in PR #77. Check Thalassa’s water-only wave and 
   - fights and tags are checked for numbers;
   - retreats climb a safe wall and hop along walls, then come down when safe.
 - **Watch for:** fewer kicks overall (he holds them when nobody can follow up); is that too passive?
+
+## Nov 13: round 173 (native 0.10.107, tfm2_custom 0.2.110), `kicker-2.0` and `akane-1.6`: Wall Bounce, a tougher Kicker, a lighter Akane
+- **What Reihan asked:** "the wall is too complicated for the AI" (chose the Wall Bounce); buff Kicker's damage reduction and armor, add CC immunity, remove the cooldown on jumping from the ground to a wall; nerf Akane's overall damage.
+- **Now:**
+  - **Kicker never stands on walls.** S1 leaps to a wall in reach, touches it for 0.25 s (hidden), and springs onto the enemy (behind it, with the kick and the Drop-in). It has no cooldown with a wall in reach.
+  - **Bounced (3 s):** 25% less damage, CC immune for 1 s, 45,000 rock basics, Rock Rain and one Skyfall.
+  - **CC immune** in every leap and dash. Shields: 7% on dashes, 12% on landings. Defence 30 + 5.
+  - **Akane:** about 15% less damage on everything (base Attack 72).
+- **Watch for:**
+  - does he bounce into fights and follow up with Skyfall or Rock Rain;
+  - escape bounces toward his team;
+  - is he too tanky now, with no cooldown on the bounce;
+  - is Akane still a threat.

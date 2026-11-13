@@ -29,8 +29,7 @@
   </select></label>
   <label><input type="checkbox" id="ai"> His AI decides (otherwise your orders)</label>
   <label><input type="checkbox" id="flash" checked> Flash ready</label>
-  <div class="row"><button data-o="mount">S1 Mount</button><button data-o="hop">S1 Hop</button></div>
-  <div class="row"><button data-o="drop_kick">S1 Drop Kick</button><button data-o="rock">S2 Rock</button></div>
+  <div class="row"><button data-o="bounce">S1 Wall Bounce</button><button data-o="rock">S2 Rock</button></div>
   <div class="row"><button data-o="dash">Marked Dash</button><button data-o="kick">S3 Kick</button></div>
   <div class="row"><button data-o="flash_kick">S3 Flash Kick</button><button data-o="skyfall">S3 Skyfall</button></div>
   <div class="row"><button data-o="ult">Ult Second Wind</button><button id="hurt">Hit him 40%</button></div>
@@ -66,10 +65,10 @@ const near = (p, list) => list.slice().sort((a, b) => Math.hypot(a.pos.x - p.x, 
 function order(kind) {
   const target = near(aim, units.filter(u => u.team === 1 && !u.tower));
   const o = { kind };
-  if (['hop', 'drop_kick', 'rock', 'skyfall'].includes(kind)) o.aim = aim;
+  if (['bounce', 'rock', 'skyfall'].includes(kind)) o.aim = aim;
   if (kind === 'dash') o.aim = target ? target.id : 0;
   if (kind === 'kick' || kind === 'flash_kick') o.aim = [target ? target.id : 0, aim];
-  if (kind === 'mount' || kind === 'ult') delete o.aim;
+  if (kind === 'ult') delete o.aim;
   pending = o;
   if (!running) step();
 }
@@ -114,7 +113,7 @@ function apply(e) {
     case 'damage': { const u = units.find(u => u.id === d.target); if (u) { u.hp = Math.max(0, u.hp - d.amount); log(`hit ${d.target} for ${d.amount}`); if (u.hp === 0) units = units.filter(x => x !== u); } break; }
     case 'flash': me.pos = d.to; $('flash').checked = false; log('Flash'); break;
     case 'return': me.pos = d.to; me.hp = d.hp; glides = glides.filter(g => g.who !== 'me'); log(`Second Wind: back to the tag, ${d.hp} HP`); break;
-    case 'roof': log(d.on ? 'on the wall' : 'on the ground'); break;
+    case 'roof': log(d.on ? 'touching the wall' : 'springing off'); break;
     case 'knock_up': case 'stun': log(`${e.kind} ${d.target}`); break;
     case 'log': log(d); break;
   }

@@ -779,8 +779,8 @@ fn a_lane_two_v_two_at_full_hp_starts_a_fight_instead_of_running() {
 
 #[test]
 fn ego_decides_whether_she_starts_the_fight() {
-    // a target 50% short of lethal for an average athlete's margin, two enemies, nobody of hers on it
-    let target = || Unit { hp: 700, max_hp: 900, ..cc_enemy(FOE, 470_000) };
+    // a target short of lethal for an average athlete's margin (650 HP after the akane-1.6 damage nerf), two enemies, nobody of hers on it
+    let target = || Unit { hp: 650, max_hp: 900, ..cc_enemy(FOE, 470_000) };
     let second = cc_enemy(11, 480_000);
     let run = |ego: i64| {
         let mut c = Core::default();

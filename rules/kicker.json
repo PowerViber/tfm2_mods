@@ -7,12 +7,12 @@
     "Melee",
     "CC"
   ],
-  "revision": "kicker-1.6",
+  "revision": "kicker-2.0",
   "stat": {
     "attack": 78,
     "magic_power": 0,
     "hp": 1000,
-    "defence": 24,
+    "defence": 30,
     "magic_resistance": 22,
     "move_speed": 1060,
     "hp_regen": 3
@@ -21,7 +21,7 @@
     "attack": 8,
     "magic_power": 0,
     "hp": 92,
-    "defence": 4,
+    "defence": 5,
     "magic_resistance": 4,
     "move_speed": 10
   },
@@ -41,12 +41,13 @@
     "startTiming": 9
   },
   "roof": {
-    "speedPct": 25,
-    "hideRange": 40000,
-    "reducePct": 15,
-    "groundShieldPctMaxHp": 8,
+    "reducePct": 25,
+    "touchTicks": 15,
+    "bouncedTicks": 180,
+    "ccImmuneTicks": 60,
+    "groundShieldPctMaxHp": 12,
     "groundShieldTicks": 180,
-    "groundShieldCooldownTicks": 600,
+    "groundShieldCooldownTicks": 480,
     "basicRange": 45000
   },
   "dropIn": {
@@ -58,14 +59,11 @@
     "cooldownTicks": 360
   },
   "hop": {
-    "mountRange": 40000,
-    "mountCooldownTicks": 420,
-    "charges": 4,
-    "groundRechargeTicks": 360,
-    "wallRechargeTicks": 180,
-    "wallRange": 300000,
+    "wallRange": 80000,
+    "springRange": 100000,
+    "charges": 2,
+    "rechargeTicks": 420,
     "groundHop": 20000,
-    "dropRange": 50000,
     "dropBase": 60,
     "dropAdRatio": 80,
     "dropKickRadius": 9000,
@@ -77,8 +75,8 @@
     "rechargeTicks": 480,
     "range": 75000,
     "markTicks": 240,
-    "shieldPctMaxHp": 4,
-    "shieldTicks": 120,
+    "shieldPctMaxHp": 7,
+    "shieldTicks": 150,
     "speed": 3500,
     "gap": 4000
   },
@@ -138,13 +136,9 @@
     "peelRange": 25000,
     "hurtPct": 8,
     "hurtTicks": 30,
-    "gankRange": 150000,
-    "idleRoofTicks": 180,
     "farmMinHits": 2,
-    "mountWalkRange": 120000,
     "fightRange": 60000,
-    "helpRange": 200000,
-    "gankRestTicks": 900
+    "helpRange": 200000
   },
   "fxTokens": 12
 }

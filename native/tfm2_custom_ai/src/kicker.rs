@@ -2,9 +2,10 @@
 //! The engine walks him and swings his kick (the data basic attack); native code casts everything else (the data
 //! slots are never-cast shells, like Akane's).
 //!
-//! * Walls: `kk_roof` (a named `ignore_wall` buff, 15% less damage, +25% speed) is renewed every tick he stands on a
-//!   wall; every leap carries a short `kk_pass` (`ignore_wall`) so the glide may start or end on terrain. The core
-//!   preserves the stance across terrain cells; hard control or an accepted Drop-in brings him down.
+//! * Walls (`kicker-2.0`, the Wall Bounce): he never stands on one. `kk_roof` (`ignore_wall`, less damage) is only the
+//!   0.25 s touch of a bounce; every leap carries a short `kk_pass` (`ignore_wall`) so the glide may start or end on
+//!   terrain. After a bounce `kk_bounced` gives less damage taken and the rock basic range; `kk_unstoppable`
+//!   (`cc_immune`) covers every leap and dash and the first second after a bounce.
 //! * Kick and Skyfall: `crate::motion::glide` (a Knock); the Skyfall's carried target holds `kk_carry` (`ignore_wall`)
 //!   for the dive. A V1 parry of the strike cancels everything that strike set off (Strike .. StrikeEnd).
 //! * Bruised: `kk_bruised:<stacks>` (less healing, more damage taken per stack, its own HP regen cancelled).
@@ -21,16 +22,13 @@ pub(crate) const OWN_CC: &str = "kk_";
 pub(crate) const GO_PREFIX: &str = "kk_go:";
 pub(crate) const ROOF: &str = "kk_roof";
 const PASS: &str = "kk_pass";
+pub(crate) const BOUNCED: &str = "kk_bounced";
+pub(crate) const UNSTOPPABLE: &str = "kk_unstoppable";
 const CARRY: &str = "kk_carry";
 const INVULN: &str = "kk_invuln";
 const WIND: &str = "kk_second_wind";
 const BRUISED: &str = "kk_bruised:";
 const HOME: [(i64, i64); 2] = [(96_000, 864_000), (864_000, 96_000)];
-
-/// His team's base point (where a recall takes him).
-pub(crate) fn home_of(team: usize) -> (i64, i64) {
-    HOME.get(team).copied().unwrap_or(HOME[0])
-}
 const HARD: [CcKindV1; 5] = [CcKindV1::Stun, CcKindV1::Airborne, CcKindV1::Taunt, CcKindV1::Fear, CcKindV1::Charm];
 
 fn named(kind: CcKindV1, ticks: u64, name: &str) -> CcV1 {
@@ -60,59 +58,25 @@ fn remove_prefix(sim: &mut StableSim, id: usize, prefix: &str) {
     }
 }
 
-/// Where the game wanted to walk him off a wall: (match, his id) -> (x, y, tick). The input layer records it when it
-/// stops that walk at the wall's edge (its sim view is read-only, so this can't be a buff); his bridge reads it
-/// for a few ticks.
-static WANTS: std::sync::Mutex<Vec<(u64, usize, i64, i64, usize)>> = std::sync::Mutex::new(Vec::new());
-const WANT_TICKS: usize = 6;
-
-pub(crate) fn note_want(sim: &StableSim, id: usize, to: (i64, i64)) {
-    let (key, tick) = (crate::match_key(sim), sim.tick());
-    if let Ok(mut w) = WANTS.lock() {
-        w.retain(|e| !(e.0 == key && e.1 == id) && tick < e.4 + 600);
-        if w.len() > 64 {
-            w.remove(0);
-        }
-        w.push((key, id, to.0, to.1, tick));
-    }
-}
-pub(crate) fn want_of(sim: &StableSim, id: usize) -> Option<Point> {
-    let (key, tick) = (crate::match_key(sim), sim.tick());
-    WANTS.lock().ok()?.iter().find(|e| e.0 == key && e.1 == id && tick <= e.4 + WANT_TICKS).map(|e| Point::new(e.2, e.3))
-}
-
 /// The move a steering buff asks for (read by the shared input AI).
 pub fn steer_of(name: &str) -> Option<(i64, i64)> {
     let mut it = name.strip_prefix(GO_PREFIX)?.split(':').filter_map(|s| s.parse::<i64>().ok());
     Some((it.next()?, it.next()?))
 }
 
-/// On a wall, a walk toward `to` that would leave the walls: the last wall point on the way (he stops at the edge).
-/// None when the walk stays on walls, or he isn't standing on one (the core's leash handles that).
-pub fn roof_walk(pos: (i64, i64), to: (i64, i64), wall_at: impl Fn(i64, i64) -> bool) -> Option<(i64, i64)> {
-    if !wall_at(pos.0, pos.1) || wall_at(to.0, to.1) {
-        return None;
-    }
-    let len = ((to.0 - pos.0) as f64).hypot((to.1 - pos.1) as f64) as i64;
-    let steps = (len / 2_000).max(1);
-    let mut last = pos;
-    for i in 1..=steps {
-        let q = (pos.0 + (to.0 - pos.0) * i / steps, pos.1 + (to.1 - pos.1) * i / steps);
-        if !wall_at(q.0, q.1) {
-            break;
-        }
-        last = q;
-    }
-    Some(last)
-}
-
-/// The roof buff: through walls while he stands on them, faster, and less damage taken.
+/// The touch of a Wall Bounce: through walls and less damage taken (hidden by the core's `Hide`).
 pub(crate) fn roof_buff() -> BuffV1 {
     let mut b = crate::timed(ROOF, 3);
     b.ignore_wall = true;
-    b.move_speed_mult = d::ROOF_SPEED_PCT as i32;
     b.damaged_reduce = d::ROOF_REDUCE_PCT.max(0) as usize;
-    // on a wall his basic attack is a rock throw: the same additive basic-range field Kratos's blades use
+    b
+}
+
+/// Bounced: less damage taken, and his basic attack is a rock throw (the same additive basic-range field Kratos's
+/// blades use).
+pub(crate) fn bounced_buff(ticks: u64) -> BuffV1 {
+    let mut b = crate::timed(BOUNCED, ticks as usize);
+    b.damaged_reduce = d::ROOF_REDUCE_PCT.max(0) as usize;
     b.range = (d::ROOF_BASIC_RANGE - d::BASIC_RANGE).max(0) as usize;
     b
 }
@@ -222,7 +186,6 @@ impl Kicker {
             profile: values,
             basic_hits: std::mem::take(&mut self.basic_hits),
             shots_near: self.shots_near(sim, team, pos),
-            want: if self.core.roof { want_of(sim, owner) } else { None },
             manual: false,
             order: None,
         }
@@ -363,6 +326,21 @@ impl Kicker {
                         sim.entity_remove_buff(owner, ROOF);
                     }
                 }
+                Effect::Bounced { ticks } => {
+                    replace_buff(sim, owner, &bounced_buff(ticks));
+                }
+                Effect::CcImmune { ticks } => {
+                    // never shortened by a later, shorter window
+                    let left = sim
+                        .get_entity(owner)
+                        .and_then(|e| (0..e.buff_count()).filter_map(|i| e.buff_at(i)).find(|b| b.name() == UNSTOPPABLE).map(|b| b.duration_tick as u64))
+                        .unwrap_or(0);
+                    if ticks > left {
+                        let mut b = crate::timed(UNSTOPPABLE, ticks as usize);
+                        b.cc_immune = true;
+                        replace_buff(sim, owner, &b);
+                    }
+                }
                 Effect::Hide => {
                     sim.entity_set_invisible(owner, 3);
                 }
@@ -370,7 +348,7 @@ impl Kicker {
                     sim.entity_add_shield(owner, amount.max(0) as usize, ticks as usize);
                 }
                 Effect::Invulnerable { ticks } => {
-                    // damage only: nothing of his is CC immune
+                    // damage only (CC immunity is its own effect)
                     let mut b = crate::timed(INVULN, ticks as usize);
                     b.damaged_reduce = 100;
                     b.base_attack_damaged_reduce = 100;
@@ -442,7 +420,7 @@ impl StablePassive for Kicker {
     }
     fn on_spawn(&mut self, sim: &mut StableSim, _: usize, id: usize) {
         self.core.respawn(sim.tick() as u64);
-        for b in [ROOF, PASS, INVULN, WIND] {
+        for b in [ROOF, PASS, INVULN, WIND, BOUNCED, UNSTOPPABLE] {
             sim.entity_remove_buff(id, b);
         }
         remove_prefix(sim, id, GO_PREFIX);
@@ -468,8 +446,8 @@ impl StablePassive for Kicker {
             if !self.basic_hits.contains(&target) {
                 self.basic_hits.push(target);
             }
-            // from a wall the basic is a thrown rock: the flight and the hit (existing art, no Animation CC)
-            if self.core.roof {
+            // Bounced, the basic is a thrown rock: the flight and the hit (existing art, no Animation CC)
+            if self.core.bounced(sim.tick() as u64) {
                 let at = |e: Option<mod_api_stable::StableEntity>| e.map(|e| e.pos()).map(|p| Point::new(p.0 as i64, p.1 as i64));
                 if let (Some(me), Some(to)) = (at(sim.get_entity(id)), at(sim.get_entity(target))) {
                     let tick = sim.tick() as u64;
@@ -494,7 +472,7 @@ impl StablePassive for Kicker {
         let effects = self.core.step(&f);
         self.apply(sim, id, effects);
         self.present(sim, id, &f);
-        // on a wall: the roof buff is renewed a few ticks at a time, so leaving it ends it at once
+        // the touch: the roof buff is renewed a few ticks at a time, so springing off ends it at once
         if self.core.roof {
             replace_buff(sim, id, &roof_buff());
         }

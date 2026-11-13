@@ -14,7 +14,7 @@ fn cast(c:&mut Core,f:&Frame,o:Order)->Vec<Effect>{let mut f=f.clone();f.order=S
     let mut c=Core::default();let mut f=frame(0,vec![enemy(2,500000,400000)]);
     assert_eq!(damage(&cast(&mut c,&f,Order::Kunai(Point::new(500000,400000)))),0);assert!(c.mark.is_none());
     f.attack=999;for tick in 1..31{f.tick=tick;assert_eq!(damage(&c.step(&f)),0);}
-    f.tick=31;let out=c.step(&f);assert_eq!(damage(&out),138);assert_eq!(c.mark,Some((2,31+180)));assert!(c.kunai_flights.is_empty());
+    f.tick=31;let out=c.step(&f);assert_eq!(damage(&out),d::KUNAI_BASE+d::KUNAI_AD_RATIO*180/100);assert_eq!(c.mark,Some((2,31+180)));assert!(c.kunai_flights.is_empty());
     f.tick=32;assert_eq!(damage(&c.step(&f)),0);
 }
 #[test]fn fixed_trajectory_can_be_dodged_and_expires_at_max_range(){
