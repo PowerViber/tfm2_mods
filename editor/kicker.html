@@ -7,7 +7,7 @@
   body { font: 13px system-ui, sans-serif; margin: 0; background: #16181d; color: #ddd; display: flex; }
   #side { width: 290px; padding: 10px; box-sizing: border-box; }
   #side button { margin: 2px 0; width: 100%; }
-  canvas { background: #20242c; cursor: crosshair; }
+  canvas { background: #20242c; cursor: crosshair; align-self: flex-start; height: auto; aspect-ratio: 1; max-width: calc(100vw - 290px); }
   #log { height: 220px; overflow: auto; font: 11px monospace; background: #111; padding: 4px; white-space: pre-wrap; }
   .row { display: flex; gap: 4px; } .row > * { flex: 1; }
   label { display: block; margin: 4px 0; }
@@ -83,7 +83,7 @@ function step() {
   }
   glides = glides.filter(g => tick < g.start + g.ticks);
   const frame = {
-    tick, owner: 1, team: 0, alive: me.hp > 0, pos: {x:Math.round(me.pos.x),y:Math.round(me.pos.y)}, hp: me.hp, max_hp: me.max_hp, attack: me.attack || 150, stunned: false,
+    tick, owner: 1, team: 0, alive: me.hp > 0, pos: {x:Math.round(me.pos.x),y:Math.round(me.pos.y)}, hp: me.hp, max_hp: me.max_hp, attack: me.attack || 150, stunned: !!window.kickerHost?.stunned(),
     ult_unlocked: true, flash_ready: $('flash').checked, home: { x: 96000, y: 864000 }, units: units.filter(u=>u.hp>0).map(u=>({id:u.id,team:u.team,pos:{x:Math.round(u.pos.x),y:Math.round(u.pos.y)},hp:Math.round(u.hp),max_hp:u.max_hp,radius:u.radius,attack:Math.round(u.stats?.attack||0),champion:u.champion,tower:u.tower,visible:u.visible!==false,targetable:true,farmable:!!u.farmable,stunned:tick<(u.stunUntil||0),parry:false})), terrain: walls,
     profile: [...document.querySelectorAll("#athleteStats input")].map(e=>Math.max(0,Math.min(100,+e.value||0))), basic_hits: window.kickerHost?.takeBasicHits() || [], manual: !$('ai').checked, order: $('ai').checked ? null : pending,
   };
@@ -105,10 +105,10 @@ function step() {
 function apply(e) {
   const d = e.data;
   switch (e.kind) {
-    case 'glide': glides.push({ who: 'me', from: { ...me.pos }, to: d.to, start: tick, ticks: Math.max(1, d.ticks) }); break;
+    case 'glide': glides = glides.filter(g => g.who !== 'me'); glides.push({ who: 'me', from: { ...me.pos }, to: d.to, start: tick, ticks: Math.max(1, d.ticks) }); break;
     case 'knock': case 'carry': {
       const u = units.find(u => u.id === d.target);
-      if (u) glides.push({ who: u.id, from: { ...u.pos }, to: d.to, start: tick, ticks: Math.max(1, d.ticks) });
+      if (u) { glides = glides.filter(g => g.who !== u.id); glides.push({ who: u.id, from: { ...u.pos }, to: d.to, start: tick, ticks: Math.max(1, d.ticks) }); }
       log(`${e.kind} ${d.target} -> (${d.to.x}, ${d.to.y})`); break;
     }
     case 'damage': { const u = units.find(u => u.id === d.target); if (u) { u.hp = Math.max(0, u.hp - d.amount); log(`hit ${d.target} for ${d.amount}`); if (u.hp === 0) units = units.filter(x => x !== u); } break; }

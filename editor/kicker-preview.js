@@ -4,7 +4,7 @@
  while(!wasm?.instance)await new Promise(r=>setTimeout(r,50));
  const oldReset=reset,coreStep=step,oldApply=apply;
  let cam={x:480000,y:480000,s:.002},lastState=null,scene,trace=[],capture=false,fx=[],pose=null,poseAt=0,held=new Set(),walked=false,walkStart=0,lastPos=null;
- let basicReady=0,basicImpact=null,basicEnd=0,invulnerableUntil=0,undyingUntil=0,basicHits=[],facing=false,deadAt=null;
+ let basicReady=0,basicImpact=null,basicEnd=0,invulnerableUntil=0,undyingUntil=0,basicHits=[],facing=false,deadAt=null,stunUntil=0;
  const top=document.createElement('div');
  top.innerHTML='<p style="color:#a6d5d2">Installed map, wall cells and stock actors. Kicker uses the shared core; movement, mitigation, visibility and opponent actions are simulated, with no stock skill AI.</p><label>Scenario <select id="scenario"></select></label><button id="scenarioLoad">Load mid-game situation</button><label><input id="follow" type="checkbox" checked> Follow / 2x</label><label><input id="grid" type="checkbox"> Wall grid</label><label><input id="artEnabled" type="checkbox" checked> Artwork</label><label><input id="hostModel" type="checkbox" checked> Simulated opponents / waves</label><button id="singleStep">Step once</button><p>Focus arena: WASD move, Space basic, Q mount/hop, E rock, C kick/Skyfall, Shift+C Flash kick, F marked dash, R Second Wind.</p><details><summary>13 athlete values</summary><div id="athleteStats"></div></details>';
  $('side').insertBefore(top,$('side').children[1]);
@@ -18,9 +18,10 @@
   me.max_hp=me.hp=Math.floor(stats.hp*(1+(mp[2]||0)/100));me.attack=Math.floor(stats.attack*(1+(mp[0]||0)/100));
   Object.assign(me,{id:1,team:0,kind:'champion',champion:true,radius:world.data.settings.champion_radius,stats:{...stats,defence:Math.floor(stats.defence*(1+(mp[3]||0)/100))},shields:[]});
   units=s.units;tick=s.clock;lastState=null;trace=[];fx=[];pose=null;basicReady=0;basicImpact=null;basicEnd=0;basicHits=[];invulnerableUntil=0;undyingUntil=0;held.clear();deadAt=null;lastPos={...me.pos};
+  stunUntil=0;
   world.loadSprites(units.map(u=>u.sprite)).catch(console.error);aim={x:me.pos.x+50000,y:me.pos.y};scene.refreshVisibility(me,units);
  };
- window.kickerHost={takeBasicHits:()=>basicHits.splice(0),record:(frame,res)=>{if(capture&&trace.length<3000)trace.push(structuredClone({input:{version:1,rules_revision:R.revision,frame},output:res}));}};
+ window.kickerHost={stunned:()=>tick<stunUntil,takeBasicHits:()=>basicHits.splice(0),record:(frame,res)=>{if(capture&&trace.length<3000)trace.push(structuredClone({input:{version:1,rules_revision:R.revision,frame},output:res}));}};
  apply=function(e){
   const d=e.data;
   if(e.kind==='fx')fx.push({name:d.name.replace(/^kk_/,''),at:{...d.at},start:tick,end:tick+d.ticks});
@@ -45,7 +46,7 @@
  step=function(){
   const was={...me.pos};walked=false;
   const dx=(held.has('d')?1:0)-(held.has('a')?1:0),dy=(held.has('s')?1:0)-(held.has('w')?1:0),length=Math.hypot(dx,dy);
-  if(length&&me.hp>0&&!lastState?.moving&&!lastState?.kick&&tick>=basicEnd){
+  if(length&&me.hp>0&&tick>=stunUntil&&!lastState?.moving&&!lastState?.kick&&tick>=basicEnd){
    const speed=me.stats.move_speed*(lastState?.roof?1+R.roof.speedPct/100:1);
    const to={x:me.pos.x+dx/length*speed,y:me.pos.y+dy/length*speed};
    if(lastState?.roof)me.pos={x:Math.round(Math.max(me.radius,Math.min(MAP-me.radius,to.x))),y:Math.round(Math.max(me.radius,Math.min(MAP-me.radius,to.y)))};
@@ -83,11 +84,12 @@
   for(const u of units){
    if(u.hp<=0||u.visible===false)continue;
    world.drawUnit(c,u,tick,P,W);
-   if(st.marks?.some(m=>m[0]===u.id))drawFx('mark',{x:u.pos.x,y:u.pos.y-30000});
+   if(st.marks?.some(m=>m[0]===u.id))drawFx('mark_attached',u.pos);
    const bruise=st.bruised?.find(b=>b[0]===u.id);
-   if(bruise)drawFx('bruised'+bruise[2],{x:u.pos.x+18000,y:u.pos.y-25000});
+   if(bruise)drawFx('bruised'+bruise[2]+'_attached',u.pos);
   }
   const q=P(me.pos),moving=st.moving;
+  if(st.roof){c.save();c.strokeStyle='#9de44899';c.setLineDash([6,5]);c.beginPath();c.arc(q.x,q.y,W(R.hop.wallRange),0,Math.PI*2);c.stroke();c.restore();}
   let tag=me.hp<=0?'dead':st.roof&&!moving?'perch':moving?.kind==='skyfall'?'dive':moving?(pose?.startsWith('hop_')?pose:'hop_high'):tick<basicEnd?'attack':st.kick?'kick':pose==='throw'&&tick<poseAt+12?'throw':walked?'run':'idle';
   const age=me.hp<=0?tick-deadAt:moving?tick-poseAt:tag==='idle'||tag==='perch'?tick:tag==='run'?tick-walkStart:tick-poseAt;
   if(art)painter.draw(c,tag,q.x,q.y,W(1000),facing,age);
@@ -122,12 +124,15 @@
  $('map').onkeydown=e=>{
   const k=e.key.toLowerCase();if(!['w','a','s','d',' ','q','e','c','f','r'].includes(k))return;e.preventDefault();
   if(e.repeat)return;held.add(k);running=true;
-  if(k===' ')basic();if(k==='q')order(lastState?.roof?'hop':'mount');if(k==='e')order('rock');if(k==='c')order(e.shiftKey?'flash_kick':lastState?.roof?'skyfall':'kick');if(k==='f')order('dash');if(k==='r')order('ult');
+  if(k===' ')basic();if(k==='q')order(e.shiftKey?'drop_kick':lastState?.roof?'hop':'mount');if(k==='e')order('rock');if(k==='c')order(e.shiftKey?'flash_kick':lastState?.roof?'skyfall':'kick');if(k==='f')order('dash');if(k==='r')order('ult');
  };
  $('map').onkeyup=e=>held.delete(e.key.toLowerCase());
  const clear=()=>{held.clear();walked=false;clock.reset();};window.addEventListener('blur',clear);$('map').addEventListener('blur',clear);document.addEventListener('visibilitychange',clear);
  $('scenarioLoad').onclick=()=>{reset();draw(null);};$('singleStep').onclick=()=>{running=false;step();};
  reset();await world.loadSprites(units.map(u=>u.sprite));
  function loop(t){clock.advance(t,running&&!document.hidden,step);draw(null);requestAnimationFrame(loop);}requestAnimationFrame(loop);
- window.kickerLab={step,reset,order,basic,pause:()=>{running=false;clock.reset();},world,painter,setAim:p=>aim={...p},capture:on=>{capture=on;trace=[];},get state(){return lastState;},get me(){return me;},get units(){return units;},get tick(){return tick;},get walls(){return walls;},get trace(){return trace;},get scene(){return scene;}};
+ const stun=()=>{stunUntil=tick+60;if(!running)step();};
+ const stunButton=document.createElement('button');stunButton.textContent='Incoming stun (1 second)';stunButton.onclick=stun;top.appendChild(stunButton);
+ const wallHint=document.createElement('p');wallHint.textContent='Wall-to-wall range: '+R.hop.wallRange.toLocaleString()+' units. Shift+Q: deliberate Drop-in. Walking and terrain-cell changes preserve the wall state.';top.appendChild(wallHint);
+ window.kickerLab={step,reset,order,basic,stun,pause:()=>{running=false;clock.reset();},world,painter,setAim:p=>aim={...p},capture:on=>{capture=on;trace=[];},get state(){return lastState;},get me(){return me;},get units(){return units;},get tick(){return tick;},get walls(){return walls;},get trace(){return trace;},get scene(){return scene;}};
 })().catch(console.error);

@@ -1,7 +1,7 @@
 {
   "version": 1,
   "revision": "kicker-art-1",
-  "gameplay_revision": "kicker-1.0",
+  "gameplay_revision": "kicker-1.1",
   "canvas": [
     64,
     56
@@ -393,5 +393,47 @@
     "n",
     "ne"
   ],
-  "pose_native_policy": "Visible engine-owned idle/run/basic/casts. Keep art_v1 disabled: its Animation CC would change control. Native special/perch pose overrides pending a safe supported presentation mechanism."
+  "pose_native_policy": "Visible engine-owned idle/run/basic/casts. Keep art_v1 disabled: its Animation CC would change control. Native special/perch pose overrides pending a safe supported presentation mechanism.",
+  "native": {
+    "maxRenewTicks": 10,
+    "maxRenewPerTick": 1
+  },
+  "buff_offsets": {
+    "mark": [
+      0,
+      -30
+    ],
+    "roof": [
+      0,
+      20
+    ],
+    "second_wind": [
+      0,
+      0
+    ],
+    "bruised0": [
+      18,
+      -25
+    ],
+    "bruised1": [
+      18,
+      -25
+    ],
+    "bruised2": [
+      18,
+      -25
+    ],
+    "bruised3": [
+      18,
+      -25
+    ],
+    "bruised4": [
+      18,
+      -25
+    ],
+    "bruised5": [
+      18,
+      -25
+    ]
+  }
 }

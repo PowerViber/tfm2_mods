@@ -4,7 +4,7 @@
 //!
 //! * Walls: `kk_roof` (a named `ignore_wall` buff, 15% less damage, +25% speed) is renewed every tick he stands on a
 //!   wall; every leap carries a short `kk_pass` (`ignore_wall`) so the glide may start or end on terrain. The core
-//!   drops him to open ground whenever the engine moved him off a wall or a CC knocked him off.
+//!   preserves the stance across terrain cells; hard control or an accepted Drop-in brings him down.
 //! * Kick and Skyfall: `crate::motion::glide` (a Knock); the Skyfall's carried target holds `kk_carry` (`ignore_wall`)
 //!   for the dive. A V1 parry of the strike cancels everything that strike set off (Strike .. StrikeEnd).
 //! * Bruised: `kk_bruised:<stacks>` (less healing, more damage taken per stack, its own HP regen cancelled).
@@ -80,6 +80,8 @@ pub struct Kicker {
     fx_tokens: usize,
     fx_tick: u64,
     art_v1: bool,
+    art_fx_v1: bool,
+    presentation: crate::kicker_presentation::Presenter,
 }
 
 impl Kicker {
@@ -186,6 +188,16 @@ impl Kicker {
             true
         } else {
             false
+        }
+    }
+
+    pub(crate) fn present(&mut self, sim: &mut StableSim, owner: usize, frame: &Frame) {
+        if self.art_fx_v1 {
+            if let Some((cue, ticks)) = self.presentation.next(&self.core, frame) {
+                if self.fx_ok(frame.tick, true) {
+                    crate::fx_point(sim, &cue.name, owner, cue.at.x, cue.at.y, ticks);
+                }
+            }
         }
     }
 
@@ -324,6 +336,10 @@ impl Kicker {
                     sim.add_buff(owner, &crate::timed(&format!("{GO_PREFIX}{}:{}", to.x, to.y), 6));
                 }
                 Effect::Fx { name, at, ticks, ambient } => {
+                    // These effects now follow accepted state through short leases;
+                    // do not also leave a stationary launch copy or an eight-second
+                    // anchor behind after return/death.
+                    if self.art_fx_v1 && matches!(name.as_str(), "kk_rock" | "kk_tag" | "kk_skyfall") { continue; }
                     if self.fx_ok(tick as u64, ambient) {
                         crate::fx_point(sim, &name, owner, at.x, at.y, ticks);
                     }
@@ -343,6 +359,7 @@ impl Kicker {
 impl StablePassive for Kicker {
     fn configure(&mut self, params: &str) {
         self.art_v1 = serde_json::from_str::<serde_json::Value>(params).ok().and_then(|v| v.get("art_v1").and_then(|n| n.as_i64())).is_some_and(|n| n == 1);
+        self.art_fx_v1 = serde_json::from_str::<serde_json::Value>(params).ok().and_then(|v| v.get("art_fx_v1").and_then(|n| n.as_i64())).is_some_and(|n| n == 1);
     }
     fn clone_box(&self) -> Box<dyn StablePassive> {
         Box::new(self.clone())
@@ -355,6 +372,7 @@ impl StablePassive for Kicker {
         remove_prefix(sim, id, GO_PREFIX);
         self.basic_hits.clear();
         self.in_skill = false;
+        self.presentation = Default::default();
     }
     /// His hits never cross a cage or a Main Event ring; accepted basic attacks mark and bruise (in the core) and carry
     /// the Drop-in bonus.
@@ -385,6 +403,7 @@ impl StablePassive for Kicker {
         }
         let effects = self.core.step(&f);
         self.apply(sim, id, effects);
+        self.present(sim, id, &f);
         // on a wall: the roof buff is renewed a few ticks at a time, so leaving it ends it at once
         if self.core.roof {
             replace_buff(sim, id, &roof_buff());

@@ -5,8 +5,9 @@ window.KickerPainter=class{
   const editor=location.pathname.startsWith('/editor/');
   const base=editor?'../docs/kicker-art-review/':'kicker-review-assets/';
   const body=editor?'../mods/tfm2_custom/champions/tfm2_custom_kicker%23sheet.png':'kicker-body.png';
+  const effects=KICKER_ART.effects_approved?(editor?'../mods/tfm2_custom/vfx/kicker%23sheet.png':'kicker-effects.png'):base+'effects.png';
   const load=src=>new Promise((ok,no)=>{const im=new Image();im.onload=()=>ok(im);im.onerror=()=>no(Error('Kicker art unavailable: '+src));im.src=src+'?revision='+KICKER_ART.revision;});
-  this.ready=Promise.all([load(body),load(base+'effects.png')]).then(([b,f])=>{this.image=b;this.effects=f;this.loaded=true;return this;});
+  this.ready=Promise.all([load(body),load(effects)]).then(([b,f])=>{this.image=b;this.effects=f;this.loaded=true;return this;});
  }
  sample(pose,elapsed=0,left=false,forced=null,effect=false){
   const tags=effect?KICKER_ART.effect_anims:KICKER_ART.body_anims;

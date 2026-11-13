@@ -59,6 +59,8 @@ mod wright_data;
 mod kratos;
 mod akane;
 mod kicker;
+mod kicker_art_data;
+mod kicker_presentation;
 #[allow(dead_code)] mod kicker_core;
 #[cfg(test)] mod kicker_tests;
 mod kicker_data;

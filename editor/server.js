@@ -187,6 +187,8 @@ STATIC['/round-165-art-review.html']='round-165-art-review.html';
 for(const f of ['kicker.html','kicker-data.js','kicker.wasm','kicker-art.js','kicker-renderer.js','kicker-review.html','kicker-review.js','kicker-preview.js'])STATIC['/'+f]=f;
 STATIC['/kicker-body.png']='../mods/tfm2_custom/champions/tfm2_custom_kicker#sheet.png';
 STATIC['/kicker-body.fanim']='../mods/tfm2_custom/champions/tfm2_custom_kicker#anim.fanim';
+STATIC['/kicker-effects.png']='../mods/tfm2_custom/vfx/kicker#sheet.png';
+STATIC['/kicker-effects.fanim']='../mods/tfm2_custom/vfx/kicker#anim.fanim';
 for(const f of fs.readdirSync(path.join(HERE,'../docs/kicker-art-review')))if(/^[A-Za-z0-9_.-]+\.(png|gif|json|fanim|md)$/.test(f))STATIC['/kicker-review-assets/'+f]='../docs/kicker-art-review/'+f;
 
 for(const f of ['round-165-art.js','round-165-renderer.js','round-165-review.js'])STATIC['/'+f]=f;

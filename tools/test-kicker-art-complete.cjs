@@ -19,7 +19,7 @@ const fs=require('fs'),assert=require('assert'),cp=require('child_process');
   check('14 full-body poses / both facings',review.poses===14&&review.allFacings);
   check('8 jogging drawings, 48 ticks',review.runFrames===8&&review.runTicks===48);
   check('all body rectangles in atlas',review.frameBounds);
-  check('body approved; effects still gated',review.bodyIntegrated&&!review.effectsIntegrated);
+  check('body and effects approved and integrated',review.bodyIntegrated&&review.effectsIntegrated);
   await page.selectOption('#pose','run');await page.locator('#arena').screenshot({path:'docs/kicker-art-review/animated-map.png'});
   await page.selectOption('#fxSequence','ult');await page.locator('#fxArena').screenshot({path:'docs/kicker-art-review/effects-loop.png'});
   await page.goto('http://localhost:7306/kicker.html?build=kicker-art-3');await page.waitForFunction(()=>window.kickerLab?.painter.loaded);
@@ -66,6 +66,30 @@ const fs=require('fs'),assert=require('assert'),cp=require('child_process');
   });
   check('mount at a real nearby wall',mount.roof);
   check('roof throws three actual core rocks',mount.fan===3&&!mount.error);
+  const wallChange=await page.evaluate(()=>{
+   const L=kickerLab,cell=(x,y)=>({x:(x+.5)*32000,y:(y+.5)*32000});
+   function setup(){
+    L.reset();L.units.splice(0);document.getElementById('hostModel').checked=false;
+    const start=cell(16,18);L.me.pos={x:start.x+32000,y:start.y};L.order('mount');
+    for(let i=0;i<45;i++)L.step();return start;
+   }
+   const start=setup(),end=cell(11,13);const realWalls=L.world.wallAt(start)&&L.world.wallAt(end);
+   L.setAim(end);L.order('hop');for(let i=0;i<110;i++)L.step();
+   const arrived=L.state.roof&&Math.hypot(L.me.pos.x-end.x,L.me.pos.y-end.y)<1;
+   L.me.pos={x:end.x+32000,y:end.y};L.step();const noAutoDrop=L.state.roof;
+   L.setAim(L.world.legal({x:L.me.pos.x+30000,y:L.me.pos.y},L.me.radius));L.order('drop_kick');for(let i=0;i<90;i++)L.step();
+   const drop=!L.state.roof&&!L.world.wallAt(L.me.pos);
+   setup();L.setAim(end);L.order('hop');for(let i=0;i<30;i++)L.step();L.stun();
+   const interrupted=L.state.moving?.kind==='fall';for(let i=0;i<130;i++)L.step();
+   const stunDrop=!L.state.roof&&!L.world.wallAt(L.me.pos);
+   const rect=document.getElementById('map').getBoundingClientRect();
+   return{realWalls,distance:Math.hypot(start.x-end.x,start.y-end.y),range:KICKER_RULES.hop.wallRange,arrived,noAutoDrop,drop,interrupted,stunDrop,aspect:rect.width/rect.height};
+  });
+  check('photographed actual-map wall gap is reachable',wallChange.realWalls&&wallChange.arrived&&wallChange.range===300000&&wallChange.distance>60000);
+  check('ground classification does not drop wall stance',wallChange.noAutoDrop);
+  check('deliberate Drop-in still lands on ground',wallChange.drop);
+  check('stun interrupts a long hop and does not resume the old glide',wallChange.interrupted&&wallChange.stunDrop);
+  check('map canvas is square at one world scale',Math.abs(wallChange.aspect-1)<.001);
   await page.evaluate(()=>{const L=kickerLab;L.reset();L.units.splice(0);document.getElementById('hostModel').checked=false;L.me.pos=L.world.legal({x:480000,y:480000},L.me.radius);document.getElementById('artEnabled').checked=true;});
   const before=await page.evaluate(()=>({...kickerLab.me.pos}));await page.locator('#map').focus();await page.keyboard.down('d');await page.waitForTimeout(180);await page.keyboard.up('d');await page.evaluate(()=>kickerLab.pause());
   const after=await page.evaluate(()=>({...kickerLab.me.pos}));
@@ -74,7 +98,7 @@ const fs=require('fs'),assert=require('assert'),cp=require('child_process');
   check('focus loss clears held input',end.x===lost.x&&end.y===lost.y);
   await page.locator('#map').screenshot({path:'docs/kicker-art-review/lab-complete.png'});
   check('no browser exceptions',errors.length===0);
-  const report={checks:checks.length,passed:checks,review,scenarios,native_wasm_frames:native.length,art_on_off_equal:parity.equal,mount,errors,live_game:'pending by user request',native_special_poses:'disabled; no Animation CC enabled',effects:'review-only; approval pending'};
+  const report={checks:checks.length,passed:checks,review,scenarios,native_wasm_frames:native.length,art_on_off_equal:parity.equal,mount,wallChange,errors,live_game:'pending by user request',native_special_poses:'disabled; no Animation CC enabled',effects:'approved and integrated'};
   fs.writeFileSync('docs/kicker-art-review/browser-complete.json',JSON.stringify(report,null,2));console.log(JSON.stringify(report,null,2));
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exit(1);});

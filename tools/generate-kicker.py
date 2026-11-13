@@ -69,16 +69,22 @@ for slot in ['skill', 'skill2', 'ult']:
 champ['passive'] = {'passive_ref': 'tfm2_custom_ai:kicker', 'params': {}}
 champ['passive_ult'] = {'passive_ref': 'tfm2_custom_ai:ult_learned', 'params': {}}
 VFX = 'asset/tfm2_custom/vfx/kicker'
-EFFECTS = ['hop', 'land', 'drop_in', 'rock', 'rock_hit', 'kick', 'kick_trail', 'wall_slam', 'skyfall', 'tag', 'return', 'dash']
-GROUND = ('land', 'drop_in', 'tag')
-champ['view_effects'] = [dict(type='Animation', name='kk_' + e, anim=VFX, tag=e, z=-2 if e in GROUND else 6, is_follow=False) for e in EFFECTS]
-champ['view_buffs'] = ([dict(type='Animated', name='kk_mark', anim=VFX, tag='mark', z=5),
-                        dict(type='Animated', name='kk_roof', anim=VFX, tag='roof', z=-1),
-                        dict(type='Animated', name='kk_second_wind', anim=VFX, tag='second_wind', z=4)]
-                       + [dict(type='Animated', name=f'kk_bruised:{i}', anim=VFX, tag=f'bruised{i}', z=4) for i in range(0, br['maxStacks'] + 1)])
-if not (ROOT / 'mods/tfm2_custom/vfx/kicker#sheet.png').exists():
+art = json.loads((ROOT / 'rules/kicker-art.json').read_text())
+EFFECTS = [e for e in art['effects'] if e not in ('mark', 'roof', 'second_wind', 'bruised', 'shield')]
+champ['view_effects'] = [dict(type='Animation', name='kk_' + e, anim=VFX, tag=e, z=art['effects'][e][4], is_follow=False) for e in EFFECTS]
+for e in ('rock', 'kick_trail', 'skyfall', 'dash'):
+    champ['view_effects'] += [dict(type='Animation', name=f'kk_{e}_{h}', anim=VFX, tag=f'{e}_{h}', z=art['effects'][e][4], is_follow=False) for h in art['headings']]
+champ['view_buffs'] = ([dict(type='Animated', name='kk_mark', anim=VFX, tag='mark_attached', z=5),
+                        dict(type='Animated', name='kk_roof', anim=VFX, tag='roof_attached', z=-1),
+                        dict(type='Animated', name='kk_second_wind', anim=VFX, tag='second_wind_attached', z=4)]
+                       + [dict(type='Animated', name=f'kk_bruised:{i}', anim=VFX, tag=f'bruised{i}_attached', z=4) for i in range(0, br['maxStacks'] + 1)])
+approval = ROOT / 'docs/kicker-art-review/approvals.json'
+fx_approved = approval.exists() and json.loads(approval.read_text()).get('effects', {}).get('approved', False)
+if not fx_approved or not (ROOT / 'mods/tfm2_custom/vfx/kicker#sheet.png').exists():
     # no VFX sheet yet: the effects stay native-only (nothing drawn) rather than point at a missing sheet
     champ['view_effects'], champ['view_buffs'] = [], []
+else:
+    champ['passive']['params']['art_fx_v1'] = 1
 
 data = json.dumps(champ, indent=2) + '\n'
 

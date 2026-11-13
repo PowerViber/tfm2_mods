@@ -7,7 +7,7 @@
     "Melee",
     "CC"
   ],
-  "revision": "kicker-1.0",
+  "revision": "kicker-1.1",
   "stat": {
     "attack": 78,
     "magic_power": 0,
@@ -62,7 +62,7 @@
     "charges": 4,
     "groundRechargeTicks": 360,
     "wallRechargeTicks": 180,
-    "wallRange": 60000,
+    "wallRange": 300000,
     "groundHop": 20000,
     "dropRange": 50000,
     "dropBase": 60,

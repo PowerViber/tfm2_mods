@@ -1,8 +1,8 @@
 <!doctype html>
 <html lang="en"><meta charset="utf-8"><title>Kicker artwork review</title>
 <style>body{margin:0;background:#142630;color:#e4edf1;font:15px system-ui}main{max-width:1150px;margin:30px auto}section{background:#203a47;padding:22px;border-radius:12px;margin:18px 0}img{image-rendering:pixelated;max-width:100%}canvas{image-rendering:pixelated;width:100%;height:auto}a{color:#9ddfd7}p{line-height:1.5}select,button,input{padding:8px}label{display:inline-block;margin:4px}.muted{color:#b8ced4}.gifs{display:grid;grid-template-columns:1fr 1fr;gap:10px}</style>
-<main><h1>Kicker — approved body and proposed skill effects</h1>
-<p>The larger cobalt/lime appearance is approved. Complete whole-body animation drawings use one palette and a fixed 64×56 canvas, with feet at (32,48). Gameplay remains <b>kicker-1.0</b>.</p>
+<main><h1>Kicker — approved body and skill effects</h1>
+<p>The larger cobalt/lime body and skill effects are approved and integrated. Complete whole-body animation drawings use one palette and a fixed 64×56 canvas, with feet at (32,48). Rules <b>kicker-1.1</b> extend wall-to-wall hops to 300,000 and preserve wall state across terrain cells; hard control and Drop-in skills still bring him down.</p>
 <section><h2>Previous and approved appearance</h2><img id="beforeAfter"><img id="stock"></section>
 <section><h2>Every pose, both facings</h2><p>Actual-size and 3× drawings. No separately animated torso or legs. Idle and jogging share the approved lighting.</p><img id="poses"></section>
 <section><h2>Animation inspection on the real map</h2>
@@ -12,8 +12,8 @@
 <p>Jogging uses eight drawings over 0.8 seconds at the base travel cadence. The stock Knight and Monk use the same world scale. These inspection poses do not apply any crowd control.</p>
 <p class="muted">Native uses the real visible idle/run/basic/cast body. Special hop/perch overrides remain disabled because the handoff’s Animation CC mechanism can affect control. The Lab can inspect these drawings without claiming that native pose override is proven.</p>
 </section>
-<section id="effects"><h2>Skill effects — approval pending</h2>
-<p>Takeoff/landing dust, Drop-in shock ring, directional rocks, kick impact and trail, wall slam, Skyfall, graffiti return tag and status markers. This sheet and the loop below remain review assets outside the game pack.</p>
+<section id="effects"><h2>Approved skill effects</h2>
+<p>Takeoff/landing dust, Drop-in shock ring, directional rocks, kick impact and trail, wall slam, Skyfall, graffiti return tag and status markers. These now use the approved game-pack pixels. Native moving effects renew as single-frame leases within the existing budget; status markers use shared attachment offsets.</p>
 <img id="effectsSheet">
 <label>Sequence <select id="fxSequence"><option value="landing">Hop / Drop-in</option><option value="rock">Rock / impact</option><option value="kick">Kick / wall slam</option><option value="skyfall">Skyfall</option><option value="ult">Second Wind / return</option><option value="status">Marks / Bruised / roof</option></select></label>
 <canvas id="fxArena" width="1120" height="340"></canvas>

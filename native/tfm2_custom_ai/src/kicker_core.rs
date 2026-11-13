@@ -628,7 +628,7 @@ impl Core {
     fn run_roof(&mut self, f: &Frame, out: &mut Vec<Effect>) {
         let moving = self.busy(f.tick);
         if self.roof {
-            if f.stunned && !moving {
+            if f.stunned && !self.moving.as_ref().is_some_and(|m| m.kind == MoveKind::Fall) {
                 // knocked off: down to the nearest open ground, no Drop-in
                 let to = f.nearest_ground(f.pos);
                 let ticks = travel_ticks(f.pos, to, d::HOP_SPEED, 6);
@@ -639,12 +639,10 @@ impl Core {
                 out.push(Effect::Log("knocked off the wall".into()));
                 return;
             }
-            if !moving && !f.wall_at(f.pos) {
-                // the engine walked him off the wall: he's simply on the ground again
-                self.roof = false;
-                out.push(Effect::Roof { on: false });
-                return;
-            }
+            // Roof is an accepted stance, not inferred from one coarse terrain cell.
+            // Walking across an art ledge or a host path correction must not drop him.
+            // Only hard control, a deliberate Drop-in technique, death or the
+            // recorded Second Wind return can change this state.
             if !f.enemy_champions().any(|u| u.pos.within(f.pos, d::ROOF_HIDE_RANGE)) {
                 out.push(Effect::Hide);
             }

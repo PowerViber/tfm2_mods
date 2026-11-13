@@ -1,7 +1,7 @@
 {
   "version": 1,
   "revision": "kicker-art-1",
-  "gameplay_revision": "kicker-1.0",
+  "gameplay_revision": "kicker-1.1",
   "canvas": [
     64,
     56
@@ -394,8 +394,50 @@
     "ne"
   ],
   "pose_native_policy": "Visible engine-owned idle/run/basic/casts. Keep art_v1 disabled: its Animation CC would change control. Native special/perch pose overrides pending a safe supported presentation mechanism.",
+  "native": {
+    "maxRenewTicks": 10,
+    "maxRenewPerTick": 1
+  },
+  "buff_offsets": {
+    "mark": [
+      0,
+      -30
+    ],
+    "roof": [
+      0,
+      20
+    ],
+    "second_wind": [
+      0,
+      0
+    ],
+    "bruised0": [
+      18,
+      -25
+    ],
+    "bruised1": [
+      18,
+      -25
+    ],
+    "bruised2": [
+      18,
+      -25
+    ],
+    "bruised3": [
+      18,
+      -25
+    ],
+    "bruised4": [
+      18,
+      -25
+    ],
+    "bruised5": [
+      18,
+      -25
+    ]
+  },
   "body_approved": true,
-  "effects_approved": false,
+  "effects_approved": true,
   "sources_sha256": {
     "body-source-v2.png": "0327bc031efce08969be045df71facbee6e587cd06bf1ab5217765703454caf8",
     "body-motion-source.png": "9f5f561cebecd990d0b8a2aa97d5a5e55bf69049f408606bcc51bea0adc06d5f",
@@ -3358,11 +3400,128 @@
           }
         }
       ]
+    },
+    "mark_attached": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 172,
+            "y": 272,
+            "w": 12,
+            "h": 72
+          }
+        }
+      ]
+    },
+    "roof_attached": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 186,
+            "y": 272,
+            "w": 32,
+            "h": 52
+          }
+        }
+      ]
+    },
+    "second_wind_attached": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 398,
+            "y": 132,
+            "w": 36,
+            "h": 50
+          }
+        }
+      ]
+    },
+    "bruised0_attached": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 220,
+            "y": 272,
+            "w": 56,
+            "h": 70
+          }
+        }
+      ]
+    },
+    "bruised1_attached": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 278,
+            "y": 272,
+            "w": 56,
+            "h": 70
+          }
+        }
+      ]
+    },
+    "bruised2_attached": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 336,
+            "y": 272,
+            "w": 56,
+            "h": 70
+          }
+        }
+      ]
+    },
+    "bruised3_attached": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 394,
+            "y": 272,
+            "w": 56,
+            "h": 70
+          }
+        }
+      ]
+    },
+    "bruised4_attached": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 452,
+            "y": 272,
+            "w": 56,
+            "h": 70
+          }
+        }
+      ]
+    },
+    "bruised5_attached": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 0,
+            "y": 346,
+            "w": 56,
+            "h": 70
+          }
+        }
+      ]
     }
   },
   "decoded_bytes": 3145728,
   "atlas_sha256": {
     "body": "25cb45d1b0cec5d25fc74421dba64523399dc60beae2afb9cb3516175283f78a",
-    "effects": "61198674162c60c6f794b8168f314c5a7e7bbd2e97c38bd3ef19abbe7b19fbd7"
+    "effects": "b0f1bd8f7054be69555ce1b0a7b0cf21d082978fcc18cfeb38b78da799134a25"
   }
 }

@@ -114,6 +114,12 @@ def effects():
         icon=anims['bruised'][0][0];im=Image.new('RGBA',(20,20));im.alpha_composite(icon,(4,0));d=ImageDraw.Draw(im)
         for pip in range(n):d.rectangle((pip*4,15,pip*4+2,17),fill='#ff7055')
         anims['bruised'+str(n)]=[(im,1)]
+    # Same approved material pixels, padded around the world origin for buffs.
+    # Native and Lab use these exact attachment tags; no separate cursor offsets.
+    for tag,(dx,dy) in ART['buff_offsets'].items():
+        src=anims[tag][0][0];w=src.width+abs(dx)*2;h=src.height+abs(dy)*2
+        canvas=Image.new('RGBA',(w,h));canvas.alpha_composite(src,((w-src.width)//2+dx,(h-src.height)//2+dy))
+        anims[tag+'_attached']=[(canvas,1)]
     return pack('effects',anims,512)
 def reviews(poses,atlas,metadata):
     rows=list(poses);board=Image.new('RGB',(1120,len(rows)*190));d=ImageDraw.Draw(board)
@@ -152,6 +158,7 @@ def main():
     savejson(frozen_path,sources)
     poses,(bs,bm)=bodies();fs,fm=effects();reviews(poses,fs,fm)
     fxok=APP['effects'].get('approved',False)
+    if fxok:assert sha(OUT/APP['effects']['source'])==APP['effects']['source_sha256']
     for stem,ok,target in [('body',True,'champions/tfm2_custom_kicker'),('effects',fxok,'vfx/kicker')]:
         if ok:
             for suffix,ext in [('sheet','.png'),('anim','.fanim')]:shutil.copyfile(OUT/(stem+ext),ROOT/'mods/tfm2_custom'/(target+'#'+suffix+ext))
@@ -161,6 +168,11 @@ def main():
     assert manifest['decoded_bytes']<=32*1024*1024
     savejson(OUT/'presentation.json',manifest)
     (ROOT/'editor/kicker-art.js').write_text('window.KICKER_ART='+json.dumps(manifest,separators=(',',':'))+';\n')
+    native=['//! Generated from rules/kicker-art.json by build-kicker-art.py.',
+        'pub const HEADINGS: [&str; 8] = ['+', '.join(json.dumps(h) for h in ART['headings'])+'];',
+        'pub const MAX_RENEW_TICKS: u64 = '+str(ART['native']['maxRenewTicks'])+';']
+    native_path=ROOT/'native/tfm2_custom_ai/src/kicker_art_data.rs';native_text='\n'.join(native)+'\n'
+    if not native_path.exists() or native_path.read_text()!=native_text:native_path.write_text(native_text)
     print(json.dumps({'body_approved':True,'effects_approved':fxok,'poses':len(poses),'body_tags':len(bm),'effects':len(fm),'decoded_bytes':manifest['decoded_bytes']}))
 if __name__=='__main__':main()
 

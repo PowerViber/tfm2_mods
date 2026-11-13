@@ -181,14 +181,50 @@ fn a_stun_on_a_wall_drops_him_to_open_ground_without_a_drop_in() {
 }
 
 #[test]
-fn the_engine_walking_him_off_a_wall_just_puts_him_on_the_ground() {
+fn stun_interrupts_a_long_wall_hop_instead_of_waiting_for_its_destination() {
+    let start=cell(17,19);let end=cell(12,13);
+    let mut c=Core{roof:true,..Core::default()};let mut f=frame(0,start,vec![]);
+    f.terrain=walls(&[(17,19),(12,13)]);
+    order(&mut c,&f,Order::Hop(end));
+    f.tick=10;f.pos=Point::new(start.x-10000,start.y-15000);f.stunned=true;
+    let out=c.step(&f);
+    assert_eq!(c.moving.as_ref().unwrap().kind,MoveKind::Fall);
+    assert!(out.iter().any(|e|matches!(e,Effect::Glide{to,..} if *to!=end)));
+    assert!(knocked_up(&out).is_empty());
+}
+
+#[test]
+fn terrain_cells_and_host_walking_do_not_automatically_end_the_wall_stance() {
     let mut c = Core { roof: true, ..Core::default() };
     let mut f = frame(0, cell(10, 10), vec![]);
     f.terrain = walls(&[(10, 10)]);
     f.pos = Point::new(cell(10, 10).x + CELL, cell(10, 10).y);
     let out = c.step(&f);
-    assert!(!c.roof && out.contains(&Effect::Roof { on: false }));
+    assert!(c.roof && !out.contains(&Effect::Roof { on: false }));
     assert!(knocked_up(&out).is_empty());
+    for tick in 1..120 {
+        f.tick = tick;
+        assert!(!c.step(&f).contains(&Effect::Roof { on: false }));
+    }
+    assert!(c.roof, "coarse ground cells are not a deliberate dismount");
+}
+
+#[test]
+fn long_wall_hop_reaches_the_photographed_gap_but_still_requires_a_wall_and_charge() {
+    let start = cell(17, 19);
+    let end = cell(12, 13); // 249,928 units: the roughly five-by-six-cell gap in the review.
+    assert!(start.within(end, d::HOP_WALL_RANGE) && !start.within(end, 60_000));
+    let mut c = Core { roof: true, ..Core::default() };
+    let mut f = frame(0, start, vec![]);
+    f.terrain = walls(&[(17, 19), (12, 13), (2, 2)]);
+    let out = run(&mut c, &mut f, Some(Order::Hop(end)), 0, 140);
+    assert!(c.roof && f.pos == end && c.hops == d::HOP_CHARGES - 1);
+    assert!(!out.contains(&Effect::Roof { on: false }));
+    order(&mut c, &f, Order::Hop(cell(2, 2)));
+    assert_eq!(c.rejection, "no wall there in reach");
+    c.hops = 0;
+    order(&mut c, &f, Order::Hop(start));
+    assert_eq!(c.rejection, "no hop charge");
 }
 
 #[test]
@@ -731,6 +767,56 @@ mod glue {
         with_sim(&host, |sim| k.on_update(sim, 0, 0, 0));
         assert!(k.core.marked(1, 11));
         assert!(host.borrow().buffs[1].iter().any(|b| b.name() == "kk_mark"));
+    }
+
+    #[test]
+    fn approved_effects_preserve_all_mechanical_commands_without_animation_cc() {
+        let (x,y)=open_spot(80000);
+        let run=|enabled:bool|{
+            let host=Host::new(vec![champ(0,(x,y),"tfm2_custom_kicker"),champ(1,(x+10000,y),"foe")]);
+            let mut k=Kicker::default();if enabled{k.configure("{\"art_fx_v1\":1}");}
+            host.borrow_mut().tick=50;
+            with_sim(&host,|sim|k.apply(sim,0,vec![Effect::Pose{name:"throw",ticks:12},Effect::Damage{target:1,amount:200,direct:false},Effect::Shield{amount:100,ticks:180},Effect::KnockUp{target:1,ticks:30},Effect::Fx{name:"kk_drop_in".into(),at:Point::new(x as i64,y as i64),ticks:24,ambient:false}]));
+            let g=host.borrow();assert!(g.ccs[0].is_empty());
+            (g.damage.clone(),g.moves.clone(),g.heals.clone(),g.shields.clone(),g.ccs.iter().map(|cs|cs.iter().map(|(c,t)|(c.kind,*t)).collect::<Vec<_>>()).collect::<Vec<_>>())
+        };
+        assert_eq!(run(false),run(true));
+    }
+
+    #[test]
+    fn travelling_effects_and_anchor_use_short_bounded_leases_and_stop_after_cleanup() {
+        use crate::kicker_core::{Rock,SecondWind};
+        let (x,y)=open_spot(80000);let host=Host::new(vec![champ(0,(x,y),"tfm2_custom_kicker")]);
+        host.borrow_mut().record_view_effects=true;
+        let mut k=Kicker::default();k.configure("{\"art_fx_v1\":1}");
+        let p=Point::new(x as i64,y as i64);
+        for i in 0..3{k.core.rocks.push(Rock{from:p,end:Point::new(p.x+60000,p.y),pos:Point::new(p.x+i*2000,p.y),attack:150,pct:100,hit:vec![]});}
+        k.core.ult=Some(SecondWind{anchor:p,hp:2000,until:500,roof:false});
+        for tick in 50..90{
+            host.borrow_mut().tick=tick;
+            let f=with_sim(&host,|sim|k.frame(sim,0));with_sim(&host,|sim|k.present(sim,0,&f));
+        }
+        let count=host.borrow().view_effects.len();assert_eq!(count,40,"one lease per tick");
+        assert!(host.borrow().view_effects.iter().all(|e|e.3<=crate::kicker_art_data::MAX_RENEW_TICKS));
+        assert!(host.borrow().view_effects.iter().any(|e|e.0=="kk_rock_e"));
+        assert!(host.borrow().view_effects.iter().any(|e|e.0=="kk_tag"));
+        k.core.rocks.clear();k.core.ult=None;
+        host.borrow_mut().tick=90;let f=with_sim(&host,|sim|k.frame(sim,0));with_sim(&host,|sim|k.present(sim,0,&f));
+        assert_eq!(host.borrow().view_effects.len(),count);
+        host.borrow_mut().units[0].hp=0;
+        let f=with_sim(&host,|sim|k.frame(sim,0));with_sim(&host,|sim|k.present(sim,0,&f));
+        assert_eq!(host.borrow().view_effects.len(),count);
+    }
+
+    #[test]
+    fn every_packaged_effect_binding_and_renewed_single_frame_resolves() {
+        let data:serde_json::Value=serde_json::from_str(include_str!("../../../mods/tfm2_custom/champion/tfm2_custom_kicker.data_champion")).unwrap();
+        let art:serde_json::Value=serde_json::from_str(include_str!("../../../mods/tfm2_custom/vfx/kicker#anim.fanim")).unwrap();
+        for binding in data["view_effects"].as_array().unwrap().iter().chain(data["view_buffs"].as_array().unwrap()){
+            let tag=binding["tag"].as_str().unwrap();assert!(art["anims"][tag].is_object(),"{tag}");
+        }
+        for tag in ["tag","rock_e","skyfall_se","kick_trail_w"]{assert_eq!(art["anims"][tag]["frames"].as_array().unwrap().len(),1,"{tag}");}
+        assert_eq!(data["passive"]["params"],serde_json::json!({"art_fx_v1":1}));
     }
 
     #[test]

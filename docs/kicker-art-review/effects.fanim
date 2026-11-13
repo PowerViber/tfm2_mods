@@ -1146,6 +1146,123 @@
           }
         }
       ]
+    },
+    "mark_attached": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 172,
+            "y": 272,
+            "w": 12,
+            "h": 72
+          }
+        }
+      ]
+    },
+    "roof_attached": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 186,
+            "y": 272,
+            "w": 32,
+            "h": 52
+          }
+        }
+      ]
+    },
+    "second_wind_attached": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 398,
+            "y": 132,
+            "w": 36,
+            "h": 50
+          }
+        }
+      ]
+    },
+    "bruised0_attached": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 220,
+            "y": 272,
+            "w": 56,
+            "h": 70
+          }
+        }
+      ]
+    },
+    "bruised1_attached": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 278,
+            "y": 272,
+            "w": 56,
+            "h": 70
+          }
+        }
+      ]
+    },
+    "bruised2_attached": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 336,
+            "y": 272,
+            "w": 56,
+            "h": 70
+          }
+        }
+      ]
+    },
+    "bruised3_attached": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 394,
+            "y": 272,
+            "w": 56,
+            "h": 70
+          }
+        }
+      ]
+    },
+    "bruised4_attached": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 452,
+            "y": 272,
+            "w": 56,
+            "h": 70
+          }
+        }
+      ]
+    },
+    "bruised5_attached": {
+      "frames": [
+        {
+          "duration": 0.016666666666666666,
+          "data": {
+            "x": 0,
+            "y": 346,
+            "w": 56,
+            "h": 70
+          }
+        }
+      ]
     }
   }
 }
