@@ -441,6 +441,8 @@ pub struct Core {
     pub last_kicked: Option<(usize, u64)>,
     /// on a wall since (the AI leaves an idle wall)
     pub roof_since: u64,
+    /// no new gank mount before (a rest after leaving a wall idle)
+    pub gank_ready: u64,
     /// his HP over the last few ticks (tick, hp), to tell real damage from danger nearby
     pub hp_log: Vec<(u64, i64)>,
     pub rejection: String,
@@ -472,6 +474,7 @@ impl Default for Core {
             ult: None,
             last_kicked: None,
             roof_since: 0,
+            gank_ready: 0,
             hp_log: vec![],
             rejection: String::new(),
             last_skill: "",
@@ -1383,8 +1386,10 @@ impl Core {
         let tagged = self.tagged();
         let hurt = self.hurt(f);
         let here = Self::danger_at(f, f.pos, None);
-        // 1. escape only after real damage (or a tower on him), and never under the tag (a death only sends him back)
-        if !tagged && ((hurt && here >= 2 && Self::hp_pct(f) < 45) || (hurt && f.enemy_tower_at(f.pos).is_some())) {
+        // 1. escape only after real damage (or a tower on him; on a wall, low with an enemy near), never under the tag
+        //    (a death only sends him back). A retreat goes down, never up onto a wall.
+        let low_on_wall = self.roof && Self::hp_pct(f) < 40 && f.enemy_champions().any(|u| u.pos.within(f.pos, 60_000));
+        if !tagged && ((hurt && here >= 2 && Self::hp_pct(f) < 45) || (hurt && f.enemy_tower_at(f.pos).is_some()) || low_on_wall) {
             if self.dashes > 0 {
                 if let Some(u) = f
                     .units
@@ -1396,13 +1401,15 @@ impl Core {
                     return Some(Order::Dash(u.id));
                 }
             }
-            if !self.roof && f.tick >= self.mount_ready && !f.walls_near(f.pos, d::HOP_MOUNT_RANGE).is_empty() {
-                return Some(Order::Mount);
-            }
-            if self.roof && self.hops > 0 {
-                if let Some(c) = f.walls_near(f.pos, d::HOP_WALL_RANGE).into_iter().filter(|c| Self::danger_at(f, *c, None) < here).last() {
-                    return Some(Order::Hop(c));
-                }
+            if self.roof {
+                // down toward his teammates if they're away from the danger, otherwise toward home
+                let safe = f
+                    .allies()
+                    .filter(|a| Self::danger_at(f, a.pos, None) < here)
+                    .min_by_key(|a| (a.pos.d2(f.pos), a.id))
+                    .map(|a| a.pos)
+                    .unwrap_or(f.home);
+                return Some(Order::DropKick(f.nearest_ground(f.pos.toward(safe, d::HOP_DROP_RANGE))));
             }
         }
         // 2. peel: an enemy on a hurt teammate is kicked away from them
@@ -1420,6 +1427,19 @@ impl Core {
             return self.decide_roof(f, out);
         }
         let target = self.pick(f, d::AI_ENGAGE_RANGE);
+        // 3. a teammate in a fight farther off: go to it (a Marked Dash on anything marked that way, or walk)
+        let help = Self::help_target(f);
+        if let Some(at) = help {
+            if target.as_ref().is_none_or(|u| !u.pos.within(at, 60_000)) && !at.within(f.pos, 45_000) {
+                if let Some(o) = self.dash_toward(f, at) {
+                    return Some(o);
+                }
+                if f.enemy_tower_at(at).is_none() || f.enemy_tower_at(f.pos).is_some() {
+                    out.push(Effect::Steer { to: at });
+                }
+                return None;
+            }
+        }
         if let Some(u) = target {
             if let Some(o) = self.plan_kick(f, &u, None) {
                 return self.engage(f, &u, o);
@@ -1444,13 +1464,23 @@ impl Core {
         // 3. set up a rooftop gank between fights: up on a wall near, or walk to one
         let enemies_around = f.enemy_champions().any(|u| u.pos.within(f.pos, d::AI_GANK_RANGE));
         let wave_here = f.units.iter().any(|u| u.farmable && u.pos.within(f.pos, 60_000));
-        if enemies_around && !Self::fight_on(f) && f.tick >= self.mount_ready && f.p(ROAMING) >= 40 && Self::hp_pct(f) >= 50 && (!wave_here || f.p(ROAMING) >= 70) {
-            if !f.walls_near(f.pos, d::HOP_MOUNT_RANGE).is_empty() {
+        // only when the wall can pay off: an enemy champion within Rock Rain range of it; a rest after leaving one
+        let useful = |w: Point| f.enemy_champions().any(|u| u.pos.within(w, d::ROCK_RAIN_RANGE));
+        if enemies_around
+            && help.is_none()
+            && !Self::fight_on(f)
+            && f.tick >= self.mount_ready
+            && f.tick >= self.gank_ready
+            && f.p(ROAMING) >= 40
+            && Self::hp_pct(f) >= 50
+            && (!wave_here || f.p(ROAMING) >= 70)
+        {
+            if f.walls_near(f.pos, d::HOP_MOUNT_RANGE).into_iter().next().is_some_and(useful) {
                 return Some(Order::Mount);
             }
             let reach = if f.p(ROAMING) >= 70 || f.p(EGO) >= 70 { d::AI_MOUNT_WALK_RANGE * 3 / 2 } else { d::AI_MOUNT_WALK_RANGE };
             if let Some(w) = f.nearest_wall_point(f.pos, reach) {
-                if f.enemy_tower_at(w).is_none() {
+                if f.enemy_tower_at(w).is_none() && useful(w) {
                     out.push(Effect::Steer { to: w });
                     return None;
                 }
@@ -1483,6 +1513,33 @@ impl Core {
         (1..steps).any(|i| f.wall_at(Point::new(a.x + (b.x - a.x) * i / steps, a.y + (b.y - a.y) * i / steps)))
     }
 
+    /// A fight to join: a teammate within the help range of him with an enemy champion on it (the most hurt such
+    /// teammate, then the nearest). Where it is.
+    pub fn help_target(f: &Frame) -> Option<Point> {
+        f.allies()
+            .filter(|a| a.pos.within(f.pos, d::AI_HELP_RANGE) && f.enemy_champions().any(|e| e.pos.within(a.pos, d::AI_FIGHT_RANGE)))
+            .min_by_key(|a| (a.hp * 100 / a.max_hp.max(1), a.pos.d2(f.pos), a.id))
+            .map(|a| a.pos)
+    }
+
+    /// A Marked Dash that brings him toward `at`: on any marked unit in reach (minions, creeps, enemy champions; never
+    /// structures), the one whose landing behind it is nearest `at`, at least 20,000 nearer than he is now, and not
+    /// under an enemy tower unless `at` is.
+    pub fn dash_toward(&self, f: &Frame, at: Point) -> Option<Order> {
+        if self.dashes <= 0 {
+            return None;
+        }
+        let now = f.pos.dist(at);
+        let tower_ok = |p: Point| f.enemy_tower_at(p).is_none() || f.enemy_tower_at(at).is_some();
+        f.units
+            .iter()
+            .filter(|u| f.skill_target(u) && self.marked(u.id, f.tick) && u.pos.within(f.pos, d::DASH_RANGE))
+            .map(|u| (u, f.nearest_ground(u.pos.along(unit_dir(f.pos, u.pos), u.radius + d::DASH_GAP))))
+            .filter(|(_, land)| land.dist(at) + 20_000.0 <= now && tower_ok(*land))
+            .min_by_key(|(u, land)| (land.d2(at), u.id))
+            .map(|(u, _)| Order::Dash(u.id))
+    }
+
     /// From a wall, a Marked Dash down behind a marked enemy (his rock basics mark): on `target` in a fight or as a
     /// pick (low or alone), or, toward where the game wants him (`want`), on a marked enemy that way when it lands
     /// him closer to it than a plain drop would.
@@ -1511,12 +1568,16 @@ impl Core {
             .map(|(u, _)| Order::Dash(u.id))
     }
 
-    /// On a wall: rain rocks, dive, drop in, throw basics from up there, or move to where the fight is. Never idle.
+    /// On a wall: rain rocks, dive, drop in, throw basics at champions from up there, or go where the fight is. A
+    /// perch, not a home: minions never hold him up, and after a few seconds with no champion to hit he comes down.
     fn decide_roof(&mut self, f: &Frame, _out: &mut Vec<Effect>) -> Option<Order> {
         let fight = Self::fight_on(f);
+        let healthy = Self::hp_pct(f) >= 40 || self.tagged();
         // from a wall he looks as far as he can hop (300,000)
         let best = self.pick(f, d::AI_GANK_RANGE.max(d::HOP_WALL_RANGE));
-        if best.is_some() || fight {
+        let in_throw = |u: &Unit| u.pos.within(f.pos, d::ROOF_BASIC_RANGE + u.radius);
+        let champion_business = f.enemy_champions().any(|u| u.pos.within(f.pos, d::ROCK_RAIN_RANGE));
+        if champion_business {
             self.roof_since = f.tick;
         }
         if f.tick >= self.rock_ready {
@@ -1540,12 +1601,33 @@ impl Core {
             if let Some(o) = self.dash_down(f, Some(&u), fight) {
                 return self.engage(f, &u, o);
             }
-            // in throwing range: stay up and throw (the engine's basic attack reaches 45,000 on a wall)
-            if u.pos.within(f.pos, d::ROOF_BASIC_RANGE + u.radius) {
+            // in throwing range and healthy, with no wish of the game's elsewhere: stay up and throw
+            if in_throw(&u) && (healthy || f.want.is_none()) {
                 return None;
             }
-            // out of reach: the wall nearest to it (a long hop), or down into the fight
-            if self.hops > 0 {
+        }
+        // a teammate in a fight: go to it (a dash on anything marked that way, a hop to a wall by it, or down)
+        if let Some(at) = Self::help_target(f) {
+            if !at.within(f.pos, d::ROOF_BASIC_RANGE) {
+                if let Some(o) = self.dash_toward(f, at) {
+                    return Some(o);
+                }
+                if self.hops > 0 {
+                    let here = f.pos.d2(at);
+                    if let Some(c) = f
+                        .walls_near(at, d::ROOF_BASIC_RANGE)
+                        .into_iter()
+                        .find(|c| c.within(f.pos, d::HOP_WALL_RANGE) && c.d2(at) + (20_000i128 * 20_000) < here && f.enemy_tower_at(*c).is_none())
+                    {
+                        return Some(Order::Hop(c));
+                    }
+                }
+                return Some(Order::DropKick(f.nearest_ground(f.pos.toward(at, d::HOP_DROP_RANGE.min(f.pos.dist(at) as i64)))));
+            }
+        }
+        if let Some(u) = best {
+            // out of reach: the wall nearest to it (a long hop)
+            if !in_throw(&u) && self.hops > 0 {
                 let here = f.pos.d2(u.pos);
                 if let Some(c) = f
                     .walls_near(u.pos, d::ROOF_BASIC_RANGE + 10_000)
@@ -1555,13 +1637,9 @@ impl Core {
                     return Some(Order::Hop(c));
                 }
             }
-            if fight && !tower {
-                return Some(Order::DropKick(f.pos.toward(u.pos, d::HOP_DROP_RANGE)));
-            }
         }
-        // an enemy champion in throwing range: stay and throw
-        if f.enemy_champions().any(|u| u.pos.within(f.pos, d::ROOF_BASIC_RANGE + u.radius)) {
-            self.roof_since = f.tick;
+        // an enemy champion in throwing range and he's healthy: stay and throw
+        if healthy && f.enemy_champions().any(|u| in_throw(u)) {
             return None;
         }
         // the game wants him elsewhere: jump down that way (a marked enemy that way: dash down behind it)
@@ -1572,13 +1650,9 @@ impl Core {
             let to = if w.within(f.pos, d::HOP_DROP_RANGE) { w } else { f.pos.toward(w, d::HOP_DROP_RANGE) };
             return Some(Order::DropKick(f.nearest_ground(to)));
         }
-        // a wave in throwing range: stay and clear it from up here
-        if f.units.iter().any(|u| f.skill_target(u) && u.pos.within(f.pos, d::ROOF_BASIC_RANGE + u.radius)) {
-            self.roof_since = f.tick;
-            return None;
-        }
-        // an idle wall: back down toward his teammates (or his lane), not home
+        // minions never hold him: with no champion to hit for a few seconds he comes down (toward his teammates)
         if f.tick >= self.roof_since + t(d::AI_IDLE_ROOF_TICKS) {
+            self.gank_ready = f.tick + t(d::AI_GANK_REST_TICKS);
             let to = f.allies().min_by_key(|a| (a.pos.d2(f.pos), a.id)).map(|a| a.pos).unwrap_or(f.home);
             return Some(Order::DropKick(f.nearest_ground(f.pos.toward(to, d::HOP_DROP_RANGE))));
         }

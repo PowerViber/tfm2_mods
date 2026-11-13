@@ -26,6 +26,11 @@ const INVULN: &str = "kk_invuln";
 const WIND: &str = "kk_second_wind";
 const BRUISED: &str = "kk_bruised:";
 const HOME: [(i64, i64); 2] = [(96_000, 864_000), (864_000, 96_000)];
+
+/// His team's base point (where a recall takes him).
+pub(crate) fn home_of(team: usize) -> (i64, i64) {
+    HOME.get(team).copied().unwrap_or(HOME[0])
+}
 const HARD: [CcKindV1; 5] = [CcKindV1::Stun, CcKindV1::Airborne, CcKindV1::Taunt, CcKindV1::Fear, CcKindV1::Charm];
 
 fn named(kind: CcKindV1, ticks: u64, name: &str) -> CcV1 {

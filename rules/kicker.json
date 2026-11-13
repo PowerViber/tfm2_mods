@@ -7,7 +7,7 @@
     "Melee",
     "CC"
   ],
-  "revision": "kicker-1.4",
+  "revision": "kicker-1.5",
   "stat": {
     "attack": 78,
     "magic_power": 0,
@@ -142,7 +142,9 @@
     "idleRoofTicks": 180,
     "farmMinHits": 2,
     "mountWalkRange": 120000,
-    "fightRange": 60000
+    "fightRange": 60000,
+    "helpRange": 200000,
+    "gankRestTicks": 900
   },
   "fxTokens": 12
 }
