@@ -1,0 +1,535 @@
+{
+  "id": "tfm2_custom_kicker",
+  "category": "Melee",
+  "tags": [
+    "AD",
+    "Melee",
+    "CC"
+  ],
+  "sprite": "asset/tfm2_custom/champions/tfm2_custom_kicker",
+  "anim_prefix": "",
+  "stat": {
+    "attack": 78,
+    "magic_power": 0,
+    "hp": 1000,
+    "defence": 24,
+    "magic_resistance": 22,
+    "move_speed": 1060,
+    "hp_regen": 3,
+    "stack": 0,
+    "crit_chance": 0
+  },
+  "growth": {
+    "attack": 8,
+    "magic_power": 0,
+    "hp": 92,
+    "defence": 4,
+    "magic_resistance": 4,
+    "move_speed": 10,
+    "hp_regen": 0,
+    "stack": 0,
+    "crit_chance": 0
+  },
+  "attack": {
+    "action_name": "attack",
+    "cancelable": true,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 18,
+    "cooltime": 54,
+    "start_timing": 9,
+    "range": 22000,
+    "casting_type": "Targeting",
+    "casting_target": "Enemy",
+    "attack_type": "BaseAttack",
+    "effect": {
+      "type": "Attack",
+      "damage": 0,
+      "attack_ratio": 100
+    }
+  },
+  "skill": {
+    "action_name": "skill1",
+    "cancelable": false,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 6,
+    "cooltime": 5184000,
+    "start_timing": 3,
+    "range": 1,
+    "casting_type": "Targeting",
+    "casting_target": "EnemyChampionInCC",
+    "attack_type": "Skill",
+    "effect": {
+      "type": "Combine",
+      "effects": []
+    },
+    "description": "#asset/base/text/champion?description.tfm2_custom_kicker.skill"
+  },
+  "skill2": {
+    "action_name": "skill2",
+    "cancelable": false,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 6,
+    "cooltime": 5184000,
+    "start_timing": 3,
+    "range": 1,
+    "casting_type": "Targeting",
+    "casting_target": "EnemyChampionInCC",
+    "attack_type": "Skill",
+    "effect": {
+      "type": "Combine",
+      "effects": []
+    },
+    "description": "#asset/base/text/champion?description.tfm2_custom_kicker.skill2"
+  },
+  "ult": {
+    "action_name": "ult",
+    "cancelable": false,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 6,
+    "cooltime": 5184000,
+    "start_timing": 3,
+    "range": 1,
+    "casting_type": "Targeting",
+    "casting_target": "EnemyChampionInCC",
+    "attack_type": "Skill",
+    "effect": {
+      "type": "Combine",
+      "effects": []
+    },
+    "description": "#asset/base/text/champion?description.tfm2_custom_kicker.ult"
+  },
+  "passive": {
+    "passive_ref": "tfm2_custom_ai:kicker",
+    "params": {
+      "art_fx_v1": 1
+    }
+  },
+  "passive_ult": {
+    "passive_ref": "tfm2_custom_ai:ult_learned",
+    "params": {}
+  },
+  "view_buffs": [
+    {
+      "type": "Animated",
+      "name": "kk_mark",
+      "anim": "asset/tfm2_custom/vfx/kicker",
+      "tag": "mark_attached",
+      "z": 5
+    },
+    {
+      "type": "Animated",
+      "name": "kk_roof",
+      "anim": "asset/tfm2_custom/vfx/kicker",
+      "tag": "roof_attached",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "kk_second_wind",
+      "anim": "asset/tfm2_custom/vfx/kicker",
+      "tag": "second_wind_attached",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "kk_bruised:0",
+      "anim": "asset/tfm2_custom/vfx/kicker",
+      "tag": "bruised0_attached",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "kk_bruised:1",
+      "anim": "asset/tfm2_custom/vfx/kicker",
+      "tag": "bruised1_attached",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "kk_bruised:2",
+      "anim": "asset/tfm2_custom/vfx/kicker",
+      "tag": "bruised2_attached",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "kk_bruised:3",
+      "anim": "asset/tfm2_custom/vfx/kicker",
+      "tag": "bruised3_attached",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "kk_bruised:4",
+      "anim": "asset/tfm2_custom/vfx/kicker",
+      "tag": "bruised4_attached",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "kk_bruised:5",
+      "anim": "asset/tfm2_custom/vfx/kicker",
+      "tag": "bruised5_attached",
+      "z": 4
+    }
+  ],
+  "view_effects": [
+    {
+      "type": "Animation",
+      "name": "kk_hop",
+      "anim": "asset/tfm2_custom/vfx/kicker",
+      "tag": "hop",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "kk_land",
+      "anim": "asset/tfm2_custom/vfx/kicker",
+      "tag": "land",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "kk_drop_in",
+      "anim": "asset/tfm2_custom/vfx/kicker",
+      "tag": "drop_in",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "kk_rock",
+      "anim": "asset/tfm2_custom/vfx/kicker",
+      "tag": "rock",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "kk_rock_hit",
+      "anim": "asset/tfm2_custom/vfx/kicker",
+      "tag": "rock_hit",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "kk_kick",
+      "anim": "asset/tfm2_custom/vfx/kicker",
+      "tag": "kick",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "kk_kick_trail",
+      "anim": "asset/tfm2_custom/vfx/kicker",
+      "tag": "kick_trail",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "kk_wall_slam",
+      "anim": "asset/tfm2_custom/vfx/kicker",
+      "tag": "wall_slam",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "kk_skyfall",
+      "anim": "asset/tfm2_custom/vfx/kicker",
+      "tag": "skyfall",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "kk_tag",
+      "anim": "asset/tfm2_custom/vfx/kicker",
+      "tag": "tag",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "kk_return",
+      "anim": "asset/tfm2_custom/vfx/kicker",
+      "tag": "return",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "kk_dash",
+      "anim": "asset/tfm2_custom/vfx/kicker",
+      "tag": "dash",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "kk_rock_e",
+      "anim": "asset/tfm2_custom/vfx/kicker",
+      "tag": "rock_e",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "kk_rock_se",
+      "anim": "asset/tfm2_custom/vfx/kicker",
+      "tag": "rock_se",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "kk_rock_s",
+      "anim": "asset/tfm2_custom/vfx/kicker",
+      "tag": "rock_s",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "kk_rock_sw",
+      "anim": "asset/tfm2_custom/vfx/kicker",
+      "tag": "rock_sw",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "kk_rock_w",
+      "anim": "asset/tfm2_custom/vfx/kicker",
+      "tag": "rock_w",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "kk_rock_nw",
+      "anim": "asset/tfm2_custom/vfx/kicker",
+      "tag": "rock_nw",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "kk_rock_n",
+      "anim": "asset/tfm2_custom/vfx/kicker",
+      "tag": "rock_n",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "kk_rock_ne",
+      "anim": "asset/tfm2_custom/vfx/kicker",
+      "tag": "rock_ne",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "kk_kick_trail_e",
+      "anim": "asset/tfm2_custom/vfx/kicker",
+      "tag": "kick_trail_e",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "kk_kick_trail_se",
+      "anim": "asset/tfm2_custom/vfx/kicker",
+      "tag": "kick_trail_se",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "kk_kick_trail_s",
+      "anim": "asset/tfm2_custom/vfx/kicker",
+      "tag": "kick_trail_s",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "kk_kick_trail_sw",
+      "anim": "asset/tfm2_custom/vfx/kicker",
+      "tag": "kick_trail_sw",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "kk_kick_trail_w",
+      "anim": "asset/tfm2_custom/vfx/kicker",
+      "tag": "kick_trail_w",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "kk_kick_trail_nw",
+      "anim": "asset/tfm2_custom/vfx/kicker",
+      "tag": "kick_trail_nw",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "kk_kick_trail_n",
+      "anim": "asset/tfm2_custom/vfx/kicker",
+      "tag": "kick_trail_n",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "kk_kick_trail_ne",
+      "anim": "asset/tfm2_custom/vfx/kicker",
+      "tag": "kick_trail_ne",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "kk_skyfall_e",
+      "anim": "asset/tfm2_custom/vfx/kicker",
+      "tag": "skyfall_e",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "kk_skyfall_se",
+      "anim": "asset/tfm2_custom/vfx/kicker",
+      "tag": "skyfall_se",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "kk_skyfall_s",
+      "anim": "asset/tfm2_custom/vfx/kicker",
+      "tag": "skyfall_s",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "kk_skyfall_sw",
+      "anim": "asset/tfm2_custom/vfx/kicker",
+      "tag": "skyfall_sw",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "kk_skyfall_w",
+      "anim": "asset/tfm2_custom/vfx/kicker",
+      "tag": "skyfall_w",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "kk_skyfall_nw",
+      "anim": "asset/tfm2_custom/vfx/kicker",
+      "tag": "skyfall_nw",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "kk_skyfall_n",
+      "anim": "asset/tfm2_custom/vfx/kicker",
+      "tag": "skyfall_n",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "kk_skyfall_ne",
+      "anim": "asset/tfm2_custom/vfx/kicker",
+      "tag": "skyfall_ne",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "kk_dash_e",
+      "anim": "asset/tfm2_custom/vfx/kicker",
+      "tag": "dash_e",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "kk_dash_se",
+      "anim": "asset/tfm2_custom/vfx/kicker",
+      "tag": "dash_se",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "kk_dash_s",
+      "anim": "asset/tfm2_custom/vfx/kicker",
+      "tag": "dash_s",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "kk_dash_sw",
+      "anim": "asset/tfm2_custom/vfx/kicker",
+      "tag": "dash_sw",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "kk_dash_w",
+      "anim": "asset/tfm2_custom/vfx/kicker",
+      "tag": "dash_w",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "kk_dash_nw",
+      "anim": "asset/tfm2_custom/vfx/kicker",
+      "tag": "dash_nw",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "kk_dash_n",
+      "anim": "asset/tfm2_custom/vfx/kicker",
+      "tag": "dash_n",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "kk_dash_ne",
+      "anim": "asset/tfm2_custom/vfx/kicker",
+      "tag": "dash_ne",
+      "z": 6,
+      "is_follow": false
+    }
+  ],
+  "view_projectiles": []
+}

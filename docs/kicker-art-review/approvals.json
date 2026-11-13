@@ -1,0 +1,17 @@
+{
+  "body": {
+    "approved": true,
+    "answer": "Approve the revised appearance",
+    "date": "2026-11-13",
+    "revision": "kicker-art-concept-2",
+    "source": "body-source-v2.png",
+    "source_sha256": "0327bc031efce08969be045df71facbee6e587cd06bf1ab5217765703454caf8"
+  },
+  "effects": {
+    "approved": true,
+    "answer": "Approve these effects",
+    "date": "2026-11-13",
+    "source": "effects-source.png",
+    "source_sha256": "6d9da43f94ff7452ced6748f8232dddd6a6f6fd883fe7b5a87b77b321d272763"
+  }
+}

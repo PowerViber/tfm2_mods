@@ -1,0 +1,116 @@
+{
+  "checks": 20,
+  "passed": [
+    "HTTP kicker-review.html",
+    "HTTP editor/kicker-review.html",
+    "HTTP kicker.html",
+    "HTTP editor/kicker.html",
+    "HTTP kicker-body.png",
+    "HTTP kicker-body.fanim",
+    "HTTP kicker-review-assets/body-comparison.png",
+    "HTTP kicker-review-assets/effects.png",
+    "14 full-body poses / both facings",
+    "8 jogging drawings, 48 ticks",
+    "all body rectangles in atlas",
+    "body approved; effects still gated",
+    "eight actual-map situations execute",
+    "art on/off leaves complete inputs, outputs and model state identical",
+    "native/WASM complete output parity",
+    "mount at a real nearby wall",
+    "roof throws three actual core rocks",
+    "actual WASD input moves on legal map",
+    "focus loss clears held input",
+    "no browser exceptions"
+  ],
+  "review": {
+    "poses": 14,
+    "runFrames": 8,
+    "runTicks": 48,
+    "allFacings": true,
+    "frameBounds": true,
+    "native": true,
+    "effectsIntegrated": false,
+    "bodyIntegrated": true
+  },
+  "scenarios": [
+    {
+      "name": "laning",
+      "tick": 28921,
+      "frames": 121,
+      "error": false,
+      "actors": 55,
+      "missing": 0
+    },
+    {
+      "name": "gank",
+      "tick": 28921,
+      "frames": 121,
+      "error": false,
+      "actors": 55,
+      "missing": 0
+    },
+    {
+      "name": "countergank",
+      "tick": 28921,
+      "frames": 121,
+      "error": false,
+      "actors": 55,
+      "missing": 0
+    },
+    {
+      "name": "camp",
+      "tick": 28921,
+      "frames": 121,
+      "error": false,
+      "actors": 55,
+      "missing": 0
+    },
+    {
+      "name": "morgard",
+      "tick": 28921,
+      "frames": 121,
+      "error": false,
+      "actors": 55,
+      "missing": 0
+    },
+    {
+      "name": "serpen",
+      "tick": 28921,
+      "frames": 121,
+      "error": false,
+      "actors": 55,
+      "missing": 0
+    },
+    {
+      "name": "defend",
+      "tick": 28921,
+      "frames": 121,
+      "error": false,
+      "actors": 55,
+      "missing": 0
+    },
+    {
+      "name": "dive",
+      "tick": 28921,
+      "frames": 121,
+      "error": false,
+      "actors": 55,
+      "missing": 0
+    }
+  ],
+  "native_wasm_frames": 213,
+  "art_on_off_equal": true,
+  "mount": {
+    "roof": true,
+    "fan": 3,
+    "p": {
+      "x": 560000,
+      "y": 112000
+    },
+    "error": false
+  },
+  "errors": [],
+  "live_game": "pending by user request",
+  "native_special_poses": "disabled; no Animation CC enabled",
+  "effects": "review-only; approval pending"
+}

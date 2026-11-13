@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Kicker Lab</title>
+<style>
+  body { font: 13px system-ui, sans-serif; margin: 0; background: #16181d; color: #ddd; display: flex; }
+  #side { width: 290px; padding: 10px; box-sizing: border-box; }
+  #side button { margin: 2px 0; width: 100%; }
+  canvas { background: #20242c; cursor: crosshair; align-self: flex-start; height: auto; aspect-ratio: 1; max-width: calc(100vw - 290px); }
+  #log { height: 220px; overflow: auto; font: 11px monospace; background: #111; padding: 4px; white-space: pre-wrap; }
+  .row { display: flex; gap: 4px; } .row > * { flex: 1; }
+  label { display: block; margin: 4px 0; }
+  h3 { margin: 6px 0; }
+</style>
+</head>
+<body>
+<div id="side">
+  <h3>Kicker Lab <small id="rev"></small></h3>
+  <p>Shared native core on the installed game map: 960,000 units across, 30 by 30 authoritative wall cells. Stock champion, minion, camp and objective art uses the same scale. Browser host behaviour is simulated.</p>
+  <label>Click the map: <select id="tool">
+    <option value="aim">aim the next order</option>
+    <option value="wall">toggle a wall cell</option>
+    <option value="me">move Kicker</option>
+    <option value="enemy">place an enemy champion</option>
+    <option value="ally">place an ally champion</option>
+    <option value="minion">place an enemy minion</option>
+    <option value="tower">place an enemy tower</option>
+  </select></label>
+  <label><input type="checkbox" id="ai"> His AI decides (otherwise your orders)</label>
+  <label><input type="checkbox" id="flash" checked> Flash ready</label>
+  <div class="row"><button data-o="mount">S1 Mount</button><button data-o="hop">S1 Hop</button></div>
+  <div class="row"><button data-o="drop_kick">S1 Drop Kick</button><button data-o="rock">S2 Rock</button></div>
+  <div class="row"><button data-o="dash">Marked Dash</button><button data-o="kick">S3 Kick</button></div>
+  <div class="row"><button data-o="flash_kick">S3 Flash Kick</button><button data-o="skyfall">S3 Skyfall</button></div>
+  <div class="row"><button data-o="ult">Ult Second Wind</button><button id="hurt">Hit him 40%</button></div>
+  <div class="row"><button id="run">Run / pause</button><button id="reset">Reset</button></div>
+  <div id="state"></div>
+  <div id="log"></div>
+</div>
+<canvas id="map" width="720" height="720"></canvas>
+<script src="game-world.js"></script><script src="lab-scenarios.js"></script><script src="kratos-clock.js"></script><script src="kicker-art.js"></script><script src="kicker-renderer.js"></script><script src="kicker-data.js"></script>
+<script>
+const R = window.KICKER_RULES, CELL = 32000, N = 30, MAP = 960000, S = 720 / MAP;
+const $ = id => document.getElementById(id);
+let wasm, mem, tick, me, units, walls, aim, running = false, glides, nextId, pending = null;
+const log = s => { const l = $('log'); l.textContent = `${tick}: ${s}\n` + l.textContent.slice(0, 6000); };
+
+function reset() {
+  wasm.instance.exports.kicker_reset();
+  tick = 1; glides = []; nextId = 20;
+  walls = Array(N * N).fill(false);
+  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++)
+    if (x === 0 || y === 0 || x === N - 1 || y === N - 1 || (x % 6 === 3 && y % 5 === 2)) walls[y * N + x] = true;
+  me = { pos: { x: 400000, y: 450000 }, hp: 1500, max_hp: 1500 };
+  units = [
+    { id: 10, team: 1, pos: { x: 470000, y: 450000 }, hp: 900, max_hp: 1000, radius: 3000, champion: true, tower: false, visible: true, targetable: true },
+    { id: 5, team: 0, pos: { x: 330000, y: 450000 }, hp: 1000, max_hp: 1000, radius: 3000, champion: true, tower: false, visible: true, targetable: true },
+  ];
+  aim = { x: 470000, y: 450000 };
+  $('rev').textContent = R.revision;
+}
+const wallAt = p => p.x < 0 || p.y < 0 || p.x >= MAP || p.y >= MAP || walls[Math.floor(p.y / CELL) * N + Math.floor(p.x / CELL)];
+const near = (p, list) => list.slice().sort((a, b) => Math.hypot(a.pos.x - p.x, a.pos.y - p.y) - Math.hypot(b.pos.x - p.x, b.pos.y - p.y))[0];
+
+function order(kind) {
+  const target = near(aim, units.filter(u => u.team === 1 && !u.tower));
+  const o = { kind };
+  if (['hop', 'drop_kick', 'rock', 'skyfall'].includes(kind)) o.aim = aim;
+  if (kind === 'dash') o.aim = target ? target.id : 0;
+  if (kind === 'kick' || kind === 'flash_kick') o.aim = [target ? target.id : 0, aim];
+  if (kind === 'mount' || kind === 'ult') delete o.aim;
+  pending = o;
+  if (!running) step();
+}
+
+function step() {
+  // the host: his glides and the units' pushes advance first
+  for (const g of glides) {
+    const k = Math.min(1, (tick - g.start) / g.ticks);
+    const p = { x: Math.round(g.from.x + (g.to.x - g.from.x) * k), y: Math.round(g.from.y + (g.to.y - g.from.y) * k) };
+    if (g.who === 'me') me.pos = p; else { const u = units.find(u => u.id === g.who); if (u) u.pos = p; }
+  }
+  glides = glides.filter(g => tick < g.start + g.ticks);
+  const frame = {
+    tick, owner: 1, team: 0, alive: me.hp > 0, pos: {x:Math.round(me.pos.x),y:Math.round(me.pos.y)}, hp: me.hp, max_hp: me.max_hp, attack: me.attack || 150, stunned: !!window.kickerHost?.stunned(),
+    ult_unlocked: true, flash_ready: $('flash').checked, home: { x: 96000, y: 864000 }, units: units.filter(u=>u.hp>0).map(u=>({id:u.id,team:u.team,pos:{x:Math.round(u.pos.x),y:Math.round(u.pos.y)},hp:Math.round(u.hp),max_hp:u.max_hp,radius:u.radius,attack:Math.round(u.stats?.attack||0),champion:u.champion,tower:u.tower,visible:u.visible!==false,targetable:true,farmable:!!u.farmable,stunned:tick<(u.stunUntil||0),parry:false})), terrain: walls,
+    profile: [...document.querySelectorAll("#athleteStats input")].map(e=>Math.max(0,Math.min(100,+e.value||0))), basic_hits: window.kickerHost?.takeBasicHits() || [], manual: !$('ai').checked, order: $('ai').checked ? null : pending,
+  };
+  pending = null;
+  const text = new TextEncoder().encode(JSON.stringify({ version: 1, rules_revision: R.revision, frame }));
+  const ex = wasm.instance.exports;
+  const ptr = ex.kicker_input(text.length);
+  new Uint8Array(ex.memory.buffer, ptr, text.length).set(text);
+  const out = ex.kicker_step(text.length);
+  const res = JSON.parse(new TextDecoder().decode(new Uint8Array(ex.memory.buffer, out, ex.kicker_output_len())));
+  if (res.error) { log(res.error); return; }
+  window.kickerHost?.record(frame,res);
+  if (res.rejection) log('refused: ' + res.rejection);
+  for (const e of res.effects) apply(e);
+  tick++;
+  draw(res.state);
+}
+
+function apply(e) {
+  const d = e.data;
+  switch (e.kind) {
+    case 'glide': glides = glides.filter(g => g.who !== 'me'); glides.push({ who: 'me', from: { ...me.pos }, to: d.to, start: tick, ticks: Math.max(1, d.ticks) }); break;
+    case 'knock': case 'carry': {
+      const u = units.find(u => u.id === d.target);
+      if (u) { glides = glides.filter(g => g.who !== u.id); glides.push({ who: u.id, from: { ...u.pos }, to: d.to, start: tick, ticks: Math.max(1, d.ticks) }); }
+      log(`${e.kind} ${d.target} -> (${d.to.x}, ${d.to.y})`); break;
+    }
+    case 'damage': { const u = units.find(u => u.id === d.target); if (u) { u.hp = Math.max(0, u.hp - d.amount); log(`hit ${d.target} for ${d.amount}`); if (u.hp === 0) units = units.filter(x => x !== u); } break; }
+    case 'flash': me.pos = d.to; $('flash').checked = false; log('Flash'); break;
+    case 'return': me.pos = d.to; me.hp = d.hp; glides = glides.filter(g => g.who !== 'me'); log(`Second Wind: back to the tag, ${d.hp} HP`); break;
+    case 'roof': log(d.on ? 'on the wall' : 'on the ground'); break;
+    case 'knock_up': case 'stun': log(`${e.kind} ${d.target}`); break;
+    case 'log': log(d); break;
+  }
+}
+
+function draw(state) {
+  const c = $('map').getContext('2d');
+  c.clearRect(0, 0, 720, 720);
+  for (let i = 0; i < N * N; i++) if (walls[i]) { c.fillStyle = '#4a5160'; c.fillRect((i % N) * CELL * S, Math.floor(i / N) * CELL * S, CELL * S, CELL * S); }
+  const dot = (p, r, col) => { c.fillStyle = col; c.beginPath(); c.arc(p.x * S, p.y * S, r, 0, 7); c.fill(); };
+  for (const u of units) {
+    dot(u.pos, u.tower ? 9 : u.champion ? 7 : 4, u.tower ? '#a33' : u.team === 0 ? '#3a8ee6' : '#e65a3a');
+    if (state && state.marks.some(m => m[0] === u.id)) { c.strokeStyle = '#ffd34d'; c.strokeRect(u.pos.x * S - 9, u.pos.y * S - 9, 18, 18); }
+    if (state && state.bruised.some(b => b[0] === u.id)) { c.fillStyle = '#c070ff'; c.fillText('B' + state.bruised.find(b => b[0] === u.id)[2], u.pos.x * S + 8, u.pos.y * S - 8); }
+  }
+  for (const r of (state ? state.rocks : [])) dot(r.pos, 3, '#ccc');
+  if (state && state.ult) { c.strokeStyle = '#7fffd4'; c.beginPath(); c.arc(state.ult.anchor.x * S, state.ult.anchor.y * S, 10, 0, 7); c.stroke(); }
+  dot(me.pos, 8, state && state.roof ? '#ffe066' : '#f2f2f2');
+  c.strokeStyle = '#888'; c.beginPath(); c.moveTo(aim.x * S - 6, aim.y * S); c.lineTo(aim.x * S + 6, aim.y * S); c.moveTo(aim.x * S, aim.y * S - 6); c.lineTo(aim.x * S, aim.y * S + 6); c.stroke();
+  if (state) $('state').innerHTML = `HP ${me.hp}/${me.max_hp} Ã‚Â· ${state.roof ? 'on a wall' : 'ground'} Ã‚Â· hops ${state.hops} Ã‚Â· dashes ${state.dashes} Ã‚Â· kicks ${state.kicks} Ã‚Â· last: ${state.last_skill}`;
+}
+
+$('map').onclick = ev => {
+  const p = { x: Math.round(ev.offsetX / S), y: Math.round(ev.offsetY / S) };
+  const t = $('tool').value;
+  if (t === 'aim') aim = p;
+  else if (t === 'wall') { const i = Math.floor(p.y / CELL) * N + Math.floor(p.x / CELL); walls[i] = !walls[i]; }
+  else if (t === 'me') me.pos = p;
+  else units.push({ id: nextId++, team: t === 'ally' ? 0 : 1, pos: p, hp: t === 'tower' ? 3000 : t === 'minion' ? 300 : 1000, max_hp: t === 'tower' ? 3000 : t === 'minion' ? 300 : 1000,
+    radius: 3000, champion: t === 'enemy' || t === 'ally', tower: t === 'tower', visible: true, targetable: true, farmable: t === 'minion' });
+  draw(null);
+};
+document.querySelectorAll('[data-o]').forEach(b => b.onclick = () => order(b.dataset.o));
+$('hurt').onclick = () => { me.hp = Math.max(1, me.hp - Math.round(me.max_hp * 0.4)); log('he takes 40%'); };
+$('run').onclick = () => { running = !running; };
+$('reset').onclick = () => { reset(); draw(null); };
+
+WebAssembly.instantiateStreaming(fetch('kicker.wasm'), {}).then(w => { wasm = w; reset(); draw(null); });
+</script>
+<script src="kicker-preview.js"></script></body>
+</html>

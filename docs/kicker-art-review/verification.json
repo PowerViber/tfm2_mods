@@ -1,0 +1,35 @@
+{
+  "body_and_effects_approved": true,
+  "decoded_bytes": 3145728,
+  "atlases": {
+    "body": {
+      "dimensions": [
+        1024,
+        512
+      ],
+      "tags": 42,
+      "sha256": "25cb45d1b0cec5d25fc74421dba64523399dc60beae2afb9cb3516175283f78a"
+    },
+    "effects": {
+      "dimensions": [
+        512,
+        512
+      ],
+      "tags": 64,
+      "sha256": "b0f1bd8f7054be69555ce1b0a7b0cf21d082978fcc18cfeb38b78da799134a25"
+    }
+  },
+  "frame_entries": 294,
+  "reproducible_packing": true,
+  "foot_anchor": [
+    32,
+    48
+  ],
+  "wall_range": 300000,
+  "rules_revision": "kicker-1.1",
+  "unchanged_damage_stats_cooldowns": true,
+  "native_special_pose_cc_enabled": false,
+  "native_effects": "short single-frame leases within the existing budget; no more than one per update",
+  "live_game": "pending by user request",
+  "packaged_dll_sha256": "e4216a3a2d98d26b5c55ba3fef323627fc8cafefd822c5491755b3433c8f1ea8"
+}

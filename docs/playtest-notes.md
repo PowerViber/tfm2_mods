@@ -3906,3 +3906,25 @@ Approved effects are integrated in PR #77. Check Thalassa’s water-only wave and 
 - **Result:** the native passives now do 37-68% less work per tick in a 10-modded-champion match. Raze does 84% less, Rally 33%. No gameplay changes.
 - **Details:** `docs/optimization-round-167.md`.
 - **Watch for:** Proceed and launch times compared with round 165, and any AI behaviour that looks different (none is expected).
+
+## Nov 12: round 168 (native 0.10.102, tfm2_custom 0.2.105): Kicker joins
+- **New champion:** Kicker, an original rooftop street fighter (working name; art from Codex). **Walls:** he stands and runs on walls. **Skills:** Drop-in, Marked Dash and Bruised; Rock Throw and Rock Rain; the Homecoming Kick, or Skyfall from a wall (a carry through walls); and Second Wind.
+- **Placeholder:** Contender's body until his own sheet exists.
+- **Watch first:**
+  - he stays on a wall standing still and can be targeted there;
+  - kicks land targets where planned and walls stop them;
+  - Second Wind never gives a kill.
+- **Details:** `docs/kicker-guide.md` and `docs/main-review-round-168.md`.
+
+## Nov 13: round 168 follow-up, `kicker-1.2`
+- **Changes:**
+  - Kicker never walks off a wall (walks stop at the edge, and steps off are pulled back);
+  - every Marked Dash ends behind its target;
+  - every dash and leap gives a 4% shield (not stacked);
+  - his Flash kick is only for real picks.
+- **The wall hop stays 300,000** (Codex's art round).
+- **Watch for:**
+  - he is never "on a wall" while standing on the ground;
+  - he never jitters at a wall's edge;
+  - dashes land behind;
+  - Flash isn't wasted.

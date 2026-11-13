@@ -244,12 +244,41 @@ pub fn run(sim: &mut StableSim<'_>, all: &[Champ], tick: usize) {
         st.shots = shots_now;
     }
     for (id, from, to) in moves {
-        // also on the champion itself (a second guard on the cooldown, shown nowhere)
-        sim.add_buff(id, &timed("flash_cd", FLASH_CD));
-        show(sim, all, id, from);
-        sim.entity_set_pos(id, to.0 as u64, to.1 as u64);
-        show(sim, all, id, to);
+        blink(sim, all, id, from, to);
     }
+}
+
+fn blink(sim: &mut StableSim<'_>, all: &[Champ], id: usize, from: (i64, i64), to: (i64, i64)) {
+    // also on the champion itself (a second guard on the cooldown, shown nowhere)
+    sim.add_buff(id, &timed("flash_cd", FLASH_CD));
+    show(sim, all, id, from);
+    sim.entity_set_pos(id, to.0.max(0) as u64, to.1.max(0) as u64);
+    show(sim, all, id, to);
+}
+
+/// A kit's own Flash (Kicker's Flash + kick): the same blink and the same 120 s cooldown as the match hook's, refused
+/// when it's cooling down or the champion can't Flash (stunned, sealed, caged...). `to` is clamped to one blink.
+pub(crate) fn kit_blink(sim: &mut StableSim<'_>, id: usize, to: (i64, i64)) -> bool {
+    let all = crate::champions_shared(sim);
+    let Some(m) = all.iter().find(|c| c.id == id) else { return false };
+    if m.has("flash_cd") || blocked(m) { return false; }
+    let tick = sim.tick();
+    let key = match_key(sim);
+    {
+        let Ok(mut guard) = STATE.lock() else { return false };
+        let maps = guard.get_or_insert_with(HashMap::new);
+        let st = maps.entry(key).or_insert_with(|| MatchState { last_tick: tick, ..MatchState::default() });
+        if st.ready.get(&id).is_some_and(|&r| tick < r) { return false; }
+        st.ready.insert(id, tick + FLASH_CD);
+    }
+    let from = (m.x, m.y);
+    let d = dist(from.0, from.1, to.0, to.1);
+    let to = if d > FLASH_R as f64 {
+        let k = FLASH_R as f64 / d;
+        (from.0 + ((to.0 - from.0) as f64 * k) as i64, from.1 + ((to.1 - from.1) as f64 * k) as i64)
+    } else { to };
+    blink(sim, &all, id, from, to);
+    true
 }
 
 #[cfg(test)]

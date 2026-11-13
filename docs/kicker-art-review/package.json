@@ -1,0 +1,16 @@
+{
+  "native": "0.10.102",
+  "champion_pack": "0.2.105",
+  "rules": "kicker-1.1",
+  "baseCommit": "2b7da261b1078269b484aa7ac59561fa64c1f023",
+  "sourceDateEpoch": "1794510241",
+  "nativeSourcesSha256": "2fc0b4618006b31608e2dcd8cf2f0908a44a48e60488bdf18b5ab541a9d1d920",
+  "toolchain": "rustc 1.98.1 (48a229cea 2026-09-01)",
+  "builtDllSha256": "e4216a3a2d98d26b5c55ba3fef323627fc8cafefd822c5491755b3433c8f1ea8",
+  "reproducedDllSha256": "e4216a3a2d98d26b5c55ba3fef323627fc8cafefd822c5491755b3433c8f1ea8",
+  "packagedDllSha256": "e4216a3a2d98d26b5c55ba3fef323627fc8cafefd822c5491755b3433c8f1ea8",
+  "wasmSha256": "ca03179e6389224c924e82de58bcba6cb97d10a968d00df433e62620e0c0c2f0",
+  "installed": false,
+  "careerMigrationApplied": false,
+  "liveAcceptance": "Pending by user request"
+}

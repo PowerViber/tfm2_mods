@@ -1,0 +1,44 @@
+{
+  "native": {
+    "command": "cargo +stable-x86_64-pc-windows-gnu test --release --manifest-path native/tfm2_custom_ai/Cargo.toml",
+    "passed": 1251,
+    "failed": 0,
+    "ignored": 18,
+    "warnings": 4,
+    "warning_location": "Existing native_bridge/detour_tests.rs unused helpers on the GNU toolchain; native files unchanged"
+  },
+  "lab": {
+    "passed": 3,
+    "failed": 0
+  },
+  "browser": {
+    "checks": 20,
+    "passed": 20,
+    "native_wasm_frames_equal": 213,
+    "scenarios": 8,
+    "art_on_off_combat_equal": true
+  },
+  "packing": {
+    "reproducible": true,
+    "decoded_bytes": 3145728,
+    "body_atlas": [
+      1024,
+      512
+    ],
+    "effect_atlas": [
+      512,
+      512
+    ]
+  },
+  "manager_comparison": {
+    "files": 888,
+    "different": 0,
+    "isolated": true
+  },
+  "native_dll_changed": false,
+  "live_game": "pending by user request",
+  "manager_load_tests": {
+    "passed": 15,
+    "failed": 0
+  }
+}
