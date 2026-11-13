@@ -1,8 +1,6 @@
 {
-  "review_only": true,
-  "appearance_approved": false,
+  "appearance_approved": true,
   "effects_approved": false,
-  "native_art_integrated": false,
   "native_rules_changed": false,
   "live_acceptance": {
     "wall_standing_targetability_safe_landing": "pending",
@@ -10,7 +8,11 @@
     "second_wind_true_damage_towers_no_kill": "pending",
     "real_flash_cooldown": "pending"
   },
-  "reason": "User deferred live checks and requested a larger, more colourful, recognisable appearance. Revision 2 is review-only and awaits approval.",
-  "review_revision": "kicker-art-concept-2",
-  "rejected_revision": "kicker-art-concept-1"
+  "reason": "Approved revised appearance completed and integrated; effects require separate approval. Live checks deferred by user.",
+  "review_revision": "kicker-art-1",
+  "rejected_revision": "kicker-art-concept-1",
+  "native_body_integrated": true,
+  "native_effects_integrated": false,
+  "approved_appearance": "kicker-art-concept-2",
+  "native_special_poses": "Disabled to avoid adding Animation CC; native keeps its real visible base."
 }

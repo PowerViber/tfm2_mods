@@ -4,7 +4,7 @@
 
 **Until this art exists:** he uses Contender's body sheet. Once his own sheet is in place:
 - the generator picks up `mods/tfm2_custom/champions/tfm2_custom_kicker#sheet.png` and `mods/tfm2_custom/vfx/kicker#sheet.png` automatically;
-- set `art_v1: 1` in his passive params to turn on his own poses.
+- The approved body sheet is now integrated. Leave `art_v1` disabled: that legacy switch uses Animation CC and would change control. Idle, movement, basic attacks and engine casts use the real visible body; special hop/perch drawings are inspectable in the Lab while a safe native pose override remains pending.
 
 ## Body (`tfm2_custom_kicker#anim.fanim`)
 - **Standard:** idle, move, attack (a snap kick), skill1, skill2, ult, dead.

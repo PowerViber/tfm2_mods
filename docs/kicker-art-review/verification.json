@@ -1,0 +1,43 @@
+{
+  "approved_body": true,
+  "effects_integrated": false,
+  "decoded_bytes": 3145728,
+  "atlases": {
+    "body": {
+      "dimensions": [
+        1024,
+        512
+      ],
+      "tags": 42,
+      "sha256": "25cb45d1b0cec5d25fc74421dba64523399dc60beae2afb9cb3516175283f78a"
+    },
+    "effects": {
+      "dimensions": [
+        512,
+        512
+      ],
+      "tags": 55,
+      "sha256": "61198674162c60c6f794b8168f314c5a7e7bbd2e97c38bd3ef19abbe7b19fbd7"
+    }
+  },
+  "frame_entries": 285,
+  "reproducible_packing": true,
+  "foot_anchor": [
+    32,
+    48
+  ],
+  "whole_body_drawings": true,
+  "unchanged_native_and_rules": [
+    "rules/kicker.json",
+    "native/tfm2_custom_ai/src/kicker.rs",
+    "native/tfm2_custom_ai/src/kicker_core.rs",
+    "native/tfm2_custom_ai/src/kicker_data.rs",
+    "native/kicker_lab/src/lib.rs",
+    "editor/kicker-data.js",
+    "editor/kicker.wasm",
+    "mods/tfm2_custom_ai/tfm2_custom_ai.dll"
+  ],
+  "packaged_dll_sha256": "240dc001fba2e90607aa9e07203a039599814576b672a86c60650566797eb937",
+  "live_game": "pending at user request",
+  "special_native_pose_override": "disabled to avoid adding Animation CC"
+}

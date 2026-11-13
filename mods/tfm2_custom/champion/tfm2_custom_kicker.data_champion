@@ -6,7 +6,7 @@
     "Melee",
     "CC"
   ],
-  "sprite": "asset/tfm2_custom/champions/tfm2_custom_contender",
+  "sprite": "asset/tfm2_custom/champions/tfm2_custom_kicker",
   "anim_prefix": "",
   "stat": {
     "attack": 78,
