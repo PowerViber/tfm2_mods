@@ -29,7 +29,7 @@ sec = lambda n: f'{n / 60:g} s'
 text = {
     'name': rules['name'],
     'skill': (f"Rooftop Runner (passive): he can stand and run on walls: {ro['speedPct']}% faster, {ro['reducePct']}% less damage taken, and hidden from "
-              f"enemies farther than {ro['hideRange']}. Any jump down is a Drop-in ({sec(di['cooldownTicks'])}): invulnerable while dropping, enemies within "
+              f"enemies farther than {ro['hideRange']}; there his basic attack becomes a {ro['basicRange']}-range rock throw. Any jump down is a Drop-in ({sec(di['cooldownTicks'])}): invulnerable while dropping, enemies within "
               f"{di['knockRadius']} of the landing are knocked up for {sec(di['knockTicks'])}, and his next hit deals {di['bonusPct']}% more. Landing on the ground "
               f"also shields him for {ro['groundShieldPctMaxHp']}% max HP ({sec(ro['groundShieldTicks'])}, once every {sec(ro['groundShieldCooldownTicks'])}). "
               f"A stun or knock-up on a wall drops him to the ground. "

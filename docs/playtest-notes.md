@@ -3928,3 +3928,17 @@ Approved effects are integrated in PR #77. Check Thalassa’s water-only wave and 
   - he never jitters at a wall's edge;
   - dashes land behind;
   - Flash isn't wasted.
+
+## Nov 13: round 169 (native 0.10.103, tfm2_custom 0.2.106), `kicker-1.3`: Kicker plays the fight
+- **What Reihan saw:** a lock-on under towers, rarely on walls, idle on walls, and never Second Wind.
+- **Now:**
+  - targets are scored every tick, and tower targets need a ready kick-out;
+  - no aimless walking;
+  - he climbs walls between fights and fights from them;
+  - his basic is a 45,000 rock throw on a wall;
+  - Second Wind is a death cancel (then all in) and a tag before engages, by Ego.
+- **Watch for:**
+  - how often he tags at different Ego values;
+  - whether he jitters at wall edges when throwing basics;
+  - whether the 45,000 throw is too strong in lane.
+- **Details:** `docs/main-review-round-169.md`.

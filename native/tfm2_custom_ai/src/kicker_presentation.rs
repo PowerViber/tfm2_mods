@@ -7,7 +7,7 @@ pub struct Cue {
     pub name: String,
     pub at: Point,
 }
-fn heading(a: Point, b: Point) -> &'static str {
+pub(crate) fn heading(a: Point, b: Point) -> &'static str {
     let angle = ((b.y - a.y) as f64).atan2((b.x - a.x) as f64);
     let n = (angle / std::f64::consts::FRAC_PI_4).round() as i32;
     HEADINGS[n.rem_euclid(8) as usize]

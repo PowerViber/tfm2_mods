@@ -675,22 +675,233 @@ fn ai_mounts_a_wall_for_a_gank_and_dives_with_a_skyfall() {
     assert!(out.iter().any(|e| matches!(e, Effect::Carry { target: FOE, .. }) || matches!(e, Effect::Damage { target: FOE, .. })), "he engaged from the wall");
 }
 
-#[test]
-fn ai_casts_second_wind_before_a_tower_dive_with_the_tag_safe() {
-    let mut c = Core::default();
-    let mut f = frame(0, Point::new(400_000, 400_000), vec![champ(FOE, 2, 470_000, 400_000), tower(40, 2, 490_000, 400_000)]);
+fn ai(pos: Point, units: Vec<Unit>) -> Frame {
+    let mut f = frame(0, pos, units);
     f.manual = false;
-    f.units[0].hp = 200;
+    f
+}
+fn steers(out: &[Effect]) -> Vec<Point> {
+    out.iter().filter_map(|e| if let Effect::Steer { to } = e { Some(*to) } else { None }).collect()
+}
+
+#[test]
+fn no_lock_on_under_a_tower_without_a_kick_out_and_no_aimless_steering() {
+    let mut c = Core::default();
+    // a healthy enemy under its tower, 70,000 away: no kick-out ready, so not a target, and no walk toward it
+    let f = ai(Point::new(400_000, 400_000), vec![champ(FOE, 2, 470_000, 400_000), tower(40, 2, 490_000, 400_000)]);
+    let mut o = vec![];
+    assert_eq!(c.decide(&f, &mut o), None);
+    assert!(steers(&o).is_empty(), "{o:?}");
+    // a healthy enemy in the open with no fight on: the game walks him, not a lock-on
+    let mut c = Core::default();
+    let mut f = ai(Point::new(400_000, 400_000), vec![champ(FOE, 2, 470_000, 400_000)]);
     f.profile[EGO] = 90;
-    f.profile[AGGRESSIVE] = 90;
+    c.rock_ready = 10_000;
+    c.kicks = 0;
+    let mut o = vec![];
+    c.decide(&f, &mut o);
+    assert!(steers(&o).is_empty(), "{o:?}");
+}
+
+#[test]
+fn he_picks_the_near_isolated_enemy_over_a_far_low_one() {
+    let c = Core::default();
+    let mut f = ai(Point::new(400_000, 400_000), vec![champ(FOE, 2, 420_000, 400_000), champ(11, 2, 485_000, 400_000), champ(12, 2, 490_000, 410_000)]);
+    f.units[1].hp = 300; // far, low, but next to a teammate of its
+    f.profile[EGO] = 80;
+    assert_eq!(c.pick(&f, d::AI_ENGAGE_RANGE).map(|u| u.id), Some(FOE));
+}
+
+#[test]
+fn a_tower_kick_out_is_a_target_only_when_it_is_ready() {
+    let mut c = Core::default();
+    let mut f = ai(Point::new(400_000, 400_000), vec![champ(FOE, 2, 412_000, 400_000), tower(40, 2, 470_000, 400_000)]);
+    f.profile[EGO] = 80;
+    assert!(c.kickout_ready(&f, f.unit(FOE).unwrap()), "a charge, a safe way out, in reach");
+    assert_eq!(c.pick(&f, d::AI_ENGAGE_RANGE).map(|u| u.id), Some(FOE));
+    c.kicks = 0;
+    assert!(c.pick(&f, d::AI_ENGAGE_RANGE).is_none(), "no charge: no tower target");
+    c.kicks = 2;
+    f.hp = 500;
+    assert!(c.pick(&f, d::AI_ENGAGE_RANGE).is_none(), "too hurt for a dive");
+}
+
+#[test]
+fn he_joins_a_teamfight_whatever_his_ego() {
+    let mut c = Core::default();
+    let mut f = ai(Point::new(400_000, 400_000), vec![champ(FOE, 2, 440_000, 400_000), champ(5, 1, 450_000, 400_000)]);
+    f.profile[EGO] = 10;
+    f.ult_unlocked = false;
     let mut o = vec![];
     let order = c.decide(&f, &mut o);
-    assert_eq!(order, Some(Order::Ult));
-    // an enemy next to him: the tag would not be safe
-    let mut c = Core::default();
-    f.units.push(champ(21, 2, 420_000, 400_000));
+    assert!(matches!(order, Some(Order::Rock(_)) | Some(Order::Kick(..))) || !steers(&o).is_empty(), "{order:?} {o:?}");
+    assert!(Core::fight_on(&f));
+}
+
+#[test]
+fn second_wind_death_cancel_scales_with_ego_and_is_never_cast_alone_and_safe() {
+    let c = Core::default();
+    let mut f = ai(Point::new(400_000, 400_000), vec![champ(FOE, 2, 430_000, 400_000)]);
+    f.hp = 300; // 20%
+    f.profile[EGO] = 50;
+    assert!(c.death_cancel(&f), "20% with an enemy close");
+    f.flash_ready = true;
+    assert!(c.death_cancel(&f), "Flash ready or not");
+    let mut alone = ai(Point::new(400_000, 400_000), vec![]);
+    alone.hp = 300;
+    assert!(!c.death_cancel(&alone), "alone and safe: keep it");
+    alone.shots_near = 1;
+    assert!(c.death_cancel(&alone), "a projectile closing in");
+    // Ego: 20 casts it earlier than 80
+    let mut low = f.clone();
+    low.hp = 360; // 24%
+    low.profile[EGO] = 20;
+    let mut high = low.clone();
+    high.profile[EGO] = 80;
+    assert!(c.death_cancel(&low) && !c.death_cancel(&high));
+}
+
+#[test]
+fn after_a_death_cancel_he_goes_all_in_instead_of_running() {
+    let mut c = Core { kicks: 1, ..Core::default() };
+    let mut f = ai(Point::new(400_000, 400_000), vec![champ(FOE, 2, 412_000, 400_000), champ(11, 2, 420_000, 410_000), minion(30, 330_000, 400_000), champ(5, 1, 330_000, 420_000)]);
+    f.hp = 250;
+    f.profile[SKILL_HIT] = 100;
+    c.marks.push((30, 10_000));
+    c.hp_log = vec![(0, 700)];
+    let mut o = vec![];
+    assert_eq!(c.decide(&f, &mut o), Some(Order::Ult), "the death cancel first");
+    c.execute(&f, Order::Ult, &mut o);
+    f.tick = 1;
     let order = c.decide(&f, &mut o);
-    assert_ne!(order, Some(Order::Ult));
+    assert!(matches!(order, Some(Order::Kick(..)) | Some(Order::Rock(_)) | Some(Order::Dash(FOE)) | Some(Order::Dash(11))), "fights, no escape: {order:?}");
+    assert_ne!(order, Some(Order::Dash(30)));
+}
+
+#[test]
+fn ego_decides_the_fearless_engage() {
+    let mut f = ai(Point::new(400_000, 400_000), vec![champ(FOE, 2, 412_000, 400_000), champ(11, 2, 430_000, 420_000), champ(5, 1, 330_000, 400_000)]);
+    f.profile[SKILL_HIT] = 100;
+    let u = f.unit(FOE).unwrap().clone();
+    f.profile[EGO] = 80;
+    assert!(Core::default().engage_tag(&f, &u), "Ego 80 tags into a 1v2");
+    f.profile[EGO] = 20;
+    assert!(!Core::default().engage_tag(&f, &u), "Ego 20 waits");
+    // never with him standing under an enemy tower (the tag would bring him back there)
+    let mut g = f.clone();
+    g.profile[EGO] = 80;
+    g.units.push(tower(40, 2, 420_000, 400_000));
+    assert!(!Core::default().engage_tag(&g, &u));
+    // and the tag goes down the tick before the kick
+    let mut c = Core::default();
+    let mut h = f.clone();
+    h.profile[EGO] = 80;
+    let mut o = vec![];
+    assert_eq!(c.decide(&h, &mut o), Some(Order::Ult));
+    c.execute(&h, Order::Ult, &mut o);
+    h.tick = 1;
+    assert!(matches!(c.decide(&h, &mut o), Some(Order::Kick(FOE, _))));
+}
+
+#[test]
+fn second_wind_at_the_start_of_a_teamfight() {
+    let c = Core::default();
+    let f = ai(Point::new(400_000, 400_000), vec![champ(FOE, 2, 440_000, 400_000), champ(11, 2, 450_000, 420_000), champ(5, 1, 445_000, 405_000)]);
+    assert!(c.teamfight_tag(&f));
+    let mut g = f.clone();
+    g.profile[EGO] = 20;
+    assert!(!c.teamfight_tag(&g), "Ego under 35 needs three enemies");
+}
+
+#[test]
+fn under_the_tag_a_target_in_a_group_is_fair_game() {
+    let mut c = Core::default();
+    let mut f = ai(Point::new(400_000, 400_000), vec![champ(FOE, 2, 430_000, 400_000), champ(11, 2, 440_000, 410_000), champ(12, 2, 445_000, 390_000)]);
+    f.profile[EGO] = 30;
+    assert!(c.pick(&f, d::AI_ENGAGE_RANGE).is_none(), "three together: not alone");
+    c.ult = Some(SecondWind { anchor: f.pos, hp: 1500, until: 400, roof: false });
+    assert!(c.pick(&f, d::AI_ENGAGE_RANGE).is_some());
+}
+
+#[test]
+fn on_a_wall_he_rains_rocks_dives_in_a_fight_and_throws_basics_without_idling() {
+    let w = cell(10, 10);
+    let wall = |units: Vec<Unit>| {
+        let mut f = ai(w, units);
+        f.terrain = walls(&[(10, 10), (3, 10)]);
+        f
+    };
+    // a marked enemy in range: Rock Rain anyway
+    let mut c = Core { roof: true, ..Core::default() };
+    c.marks.push((FOE, 1_000));
+    let f = wall(vec![champ(FOE, 2, w.x - 60_000, w.y), champ(5, 1, w.x - 70_000, w.y + 10_000)]);
+    let mut o = vec![];
+    assert!(matches!(c.decide(&f, &mut o), Some(Order::Rock(_))));
+    // a fight and one charge: the Skyfall (or the tag first)
+    let mut c = Core { roof: true, kicks: 1, rock_ready: 10_000, ..Core::default() };
+    let mut f = wall(vec![champ(FOE, 2, w.x - 40_000, w.y), champ(5, 1, w.x - 70_000, w.y + 20_000)]);
+    f.ult_unlocked = false;
+    assert!(matches!(c.decide(&f, &mut o), Some(Order::Skyfall(_)) | Some(Order::DropKick(_))));
+    // a target in throwing range and nothing better: he stays and throws (the engine's basic)
+    let mut c = Core { roof: true, kicks: 0, rock_ready: 10_000, ..Core::default() };
+    let mut f = wall(vec![champ(FOE, 2, w.x - 35_000, w.y)]);
+    f.profile[EGO] = 80;
+    f.ult_unlocked = false;
+    assert_eq!(c.decide(&f, &mut o), None);
+    // out of reach and a wall near it 220,000 away: the long hop
+    let mut c = Core { roof: true, kicks: 0, rock_ready: 10_000, ..Core::default() };
+    let mut f = wall(vec![champ(FOE, 2, cell(3, 10).x - 40_000, w.y)]);
+    f.profile[EGO] = 80;
+    f.ult_unlocked = false;
+    assert_eq!(c.decide(&f, &mut o), Some(Order::Hop(cell(3, 10))));
+}
+
+#[test]
+fn an_idle_wall_is_left_after_three_seconds_toward_his_teammates() {
+    let w = cell(10, 10);
+    let mut c = Core { roof: true, roof_since: 0, ..Core::default() };
+    let mut f = ai(w, vec![champ(5, 1, w.x + 200_000, w.y)]);
+    f.terrain = walls(&[(10, 10)]);
+    f.tick = d::AI_IDLE_ROOF_TICKS as u64 + 1;
+    let mut o = vec![];
+    let order = c.decide(&f, &mut o);
+    assert!(matches!(order, Some(Order::DropKick(p)) if p.x > w.x), "toward the teammate: {order:?}");
+}
+
+#[test]
+fn between_fights_he_walks_to_a_wall_and_mounts_it() {
+    let mut c = Core::default();
+    let w = cell(10, 10);
+    let mut f = ai(Point::new(w.x + 100_000, w.y), vec![champ(FOE, 2, w.x + 60_000, w.y + 120_000)]);
+    f.terrain = walls(&[(10, 10)]);
+    f.profile[ROAMING] = 60;
+    f.profile[EGO] = 10;
+    let mut o = vec![];
+    assert_eq!(c.decide(&f, &mut o), None);
+    let to = steers(&o);
+    assert!(to.len() == 1 && f.wall_at(to[0]), "walking to the wall: {o:?}");
+    f.pos = Point::new(w.x + 30_000, w.y);
+    assert_eq!(c.decide(&f, &mut o), Some(Order::Mount));
+}
+
+#[test]
+fn a_wall_between_him_and_the_target_is_climbed() {
+    let mut c = Core::default();
+    let w = cell(10, 10);
+    let mut f = ai(Point::new(w.x + 30_000, w.y), vec![champ(FOE, 2, w.x - 40_000, w.y)]);
+    f.terrain = walls(&[(10, 10)]);
+    f.profile[EGO] = 80;
+    f.ult_unlocked = false;
+    c.rock_ready = 10_000;
+    let mut o = vec![];
+    assert_eq!(c.decide(&f, &mut o), Some(Order::Mount));
+}
+
+#[test]
+fn on_a_wall_the_basic_is_a_45000_rock_throw() {
+    let b = crate::kicker::roof_buff();
+    assert_eq!(b.range as i64 + d::BASIC_RANGE, d::ROOF_BASIC_RANGE);
+    assert_eq!(d::ROOF_BASIC_RANGE, 45_000);
 }
 
 #[test]
@@ -900,6 +1111,45 @@ mod glue {
         }
         for tag in ["tag","rock_e","skyfall_se","kick_trail_w"]{assert_eq!(art["anims"][tag]["frames"].as_array().unwrap().len(),1,"{tag}");}
         assert_eq!(data["passive"]["params"],serde_json::json!({"art_fx_v1":1}));
+    }
+
+    #[test]
+    fn a_basic_from_a_wall_throws_a_rock_and_still_feeds_the_core() {
+        let (x, y) = open_spot(80_000);
+        let host = Host::new(vec![champ(0, (x, y), "tfm2_custom_kicker"), champ(1, (x + 40_000, y), "foe")]);
+        host.borrow_mut().record_view_effects = true;
+        let mut k = Kicker::default();
+        k.configure("{\"art_fx_v1\":1}");
+        k.core.roof = true;
+        host.borrow_mut().tick = 20;
+        let mut dmg = 100;
+        with_sim(&host, |sim| k.on_attack(sim, 0, 0, 1, &mut dmg));
+        let g = host.borrow();
+        assert!(g.view_effects.iter().any(|e| e.0 == "kk_rock_hit"));
+        assert!(g.view_effects.iter().any(|e| e.0 == "kk_rock_e"));
+        drop(g);
+        // on the ground: the kick, no rock
+        let host = Host::new(vec![champ(0, (x, y), "tfm2_custom_kicker"), champ(1, (x + 10_000, y), "foe")]);
+        host.borrow_mut().record_view_effects = true;
+        let mut k = Kicker::default();
+        with_sim(&host, |sim| k.on_attack(sim, 0, 0, 1, &mut dmg));
+        assert!(host.borrow().view_effects.is_empty());
+    }
+
+    #[test]
+    fn an_enemy_projectile_closing_in_is_counted_for_the_death_cancel() {
+        let (x, y) = open_spot(80_000);
+        let host = Host::new(vec![champ(0, (x, y), "tfm2_custom_kicker"), champ(1, (x + 60_000, y), "foe")]);
+        let mut k = Kicker::default();
+        // tick 1: an enemy shot 28,000 east, one of his team's, and an enemy shot moving away
+        host.borrow_mut().shots = vec![(1, 1, x + 28_000, y), (5, 0, x + 20_000, y), (2, 1, x + 10_000, y)];
+        host.borrow_mut().tick = 1;
+        let f = with_sim(&host, |sim| k.frame(sim, 0));
+        assert_eq!(f.shots_near, 0, "nothing to compare with yet");
+        host.borrow_mut().shots = vec![(1, 1, x + 25_000, y), (5, 0, x + 17_000, y), (2, 1, x + 14_000, y)];
+        host.borrow_mut().tick = 2;
+        let f = with_sim(&host, |sim| k.frame(sim, 0));
+        assert_eq!(f.shots_near, 1, "only the enemy shot closing in");
     }
 
     #[test]
