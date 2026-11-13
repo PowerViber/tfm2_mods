@@ -898,6 +898,91 @@ fn a_wall_between_him_and_the_target_is_climbed() {
 }
 
 #[test]
+fn his_wall_basic_marks_and_a_marked_dash_takes_him_down_behind_it_with_a_drop_in() {
+    let w = cell(10, 10);
+    let mut c = Core { roof: true, ..Core::default() };
+    let mut f = frame(0, w, vec![champ(FOE, 2, w.x - 40_000, w.y), champ(11, 2, w.x - 40_000, w.y + 12_000)]);
+    f.terrain = walls(&[(10, 10)]);
+    // a rock basic from the wall lands: marked
+    f.basic_hits = vec![FOE];
+    c.step(&f);
+    assert!(c.marked(FOE, 1));
+    // the Marked Dash from the wall: behind it, then the Drop-in on landing
+    f.basic_hits.clear();
+    let out = run(&mut c, &mut f, Some(Order::Dash(FOE)), 1, 60);
+    assert!(f.pos.x < w.x - 40_000, "ends behind it: {:?}", f.pos);
+    assert!(!c.roof);
+    assert!(knocked_up(&out).contains(&11), "the Drop-in on landing");
+}
+
+#[test]
+fn ai_on_a_wall_dashes_down_onto_a_marked_enemy_out_of_drop_kick_reach() {
+    let w = cell(10, 10);
+    let mut c = Core { roof: true, kicks: 0, rock_ready: 10_000, ..Core::default() };
+    let mut f = ai(w, vec![champ(FOE, 2, w.x - 70_000, w.y), champ(5, 1, w.x - 90_000, w.y + 20_000)]);
+    f.terrain = walls(&[(10, 10)]);
+    f.ult_unlocked = false;
+    c.marks.push((FOE, 1_000));
+    let mut o = vec![];
+    assert_eq!(c.decide(&f, &mut o), Some(Order::Dash(FOE)));
+}
+
+#[test]
+fn ai_on_a_wall_jumps_down_toward_where_the_game_wants_him() {
+    let w = cell(10, 10);
+    let wall = |units: Vec<Unit>, want: Point| {
+        let mut f = ai(w, units);
+        f.terrain = walls(&[(10, 10)]);
+        f.ult_unlocked = false;
+        f.want = Some(want);
+        f
+    };
+    let mut o = vec![];
+    // nothing to fight: down toward it, at once
+    let mut c = Core { roof: true, roof_since: 0, ..Core::default() };
+    let f = wall(vec![], Point::new(w.x + 120_000, w.y));
+    assert!(matches!(c.decide(&f, &mut o), Some(Order::DropKick(p)) if p.x > w.x));
+    // a wave in throwing range doesn't hold him when the game wants him elsewhere
+    let mut c = Core { roof: true, rock_ready: 10_000, ..Core::default() };
+    let f = wall(vec![minion(30, w.x + 20_000, w.y)], Point::new(w.x - 120_000, w.y));
+    assert!(matches!(c.decide(&f, &mut o), Some(Order::DropKick(p)) if p.x < w.x));
+    // without a wish, the wave keeps him up (clearing it from the wall)
+    let mut c = Core { roof: true, rock_ready: 10_000, ..Core::default() };
+    let mut g = wall(vec![minion(30, w.x + 20_000, w.y)], Point::new(0, 0));
+    g.want = None;
+    assert_eq!(c.decide(&g, &mut o), None);
+    // an enemy champion in throwing range: he stays and fights
+    let mut c = Core { roof: true, kicks: 0, rock_ready: 10_000, dashes: 0, ..Core::default() };
+    let mut f = wall(vec![champ(FOE, 2, w.x + 30_000, w.y)], Point::new(w.x - 120_000, w.y));
+    f.profile[EGO] = 80;
+    assert_eq!(c.decide(&f, &mut o), None);
+    // a marked enemy the other way: no dash toward it, the drop goes the game's way
+    let mut c = Core { roof: true, kicks: 0, rock_ready: 10_000, ..Core::default() };
+    c.marks.push((30, 1_000));
+    let f = wall(vec![minion(30, w.x + 60_000, w.y)], Point::new(w.x - 120_000, w.y));
+    assert!(matches!(c.decide(&f, &mut o), Some(Order::DropKick(p)) if p.x < w.x));
+    // a marked minion that way: dash down behind it (farther toward the wish than a drop)
+    let mut c = Core { roof: true, kicks: 0, rock_ready: 10_000, ..Core::default() };
+    c.marks.push((30, 1_000));
+    let f = wall(vec![minion(30, w.x - 65_000, w.y)], Point::new(w.x - 160_000, w.y));
+    assert_eq!(c.decide(&f, &mut o), Some(Order::Dash(30)));
+}
+
+#[test]
+fn a_nexus_is_no_reason_to_stay_on_a_wall() {
+    let w = cell(10, 10);
+    let mut c = Core { roof: true, roof_since: 0, ..Core::default() };
+    // the bridge reads a nexus as a structure (tower): not a target, not something to throw at
+    let mut nexus = tower(40, 2, w.x + 20_000, w.y);
+    nexus.max_hp = 5000;
+    let mut f = ai(w, vec![nexus, champ(5, 1, w.x - 200_000, w.y)]);
+    f.terrain = walls(&[(10, 10)]);
+    f.tick = d::AI_IDLE_ROOF_TICKS as u64 + 1;
+    let mut o = vec![];
+    assert!(matches!(c.decide(&f, &mut o), Some(Order::DropKick(_))));
+}
+
+#[test]
 fn on_a_wall_the_basic_is_a_45000_rock_throw() {
     let b = crate::kicker::roof_buff();
     assert_eq!(b.range as i64 + d::BASIC_RANGE, d::ROOF_BASIC_RANGE);
@@ -1150,6 +1235,27 @@ mod glue {
         host.borrow_mut().tick = 2;
         let f = with_sim(&host, |sim| k.frame(sim, 0));
         assert_eq!(f.shots_near, 1, "only the enemy shot closing in");
+    }
+
+    #[test]
+    fn the_nexus_reads_as_a_structure_and_a_recorded_wish_reaches_the_frame_on_a_wall() {
+        let (x, y) = open_spot(80_000);
+        let host = Host::new(vec![
+            champ(0, (x, y), "tfm2_custom_kicker"),
+            HostUnit { kind: K::Nexus, team: 1, pos: (x + 20_000, y), hp: 5000, name: "nexus", targetable: true },
+        ]);
+        let mut k = Kicker::default();
+        host.borrow_mut().tick = 30;
+        let f = with_sim(&host, |sim| k.frame(sim, 0));
+        assert!(f.unit(1).is_some_and(|u| u.tower), "the nexus is a structure");
+        assert_eq!(f.want, None);
+        with_sim(&host, |sim| crate::kicker::note_want(sim, 0, (x as i64 + 150_000, y as i64)));
+        k.core.roof = true;
+        let f = with_sim(&host, |sim| k.frame(sim, 0));
+        assert_eq!(f.want, Some(Point::new(x as i64 + 150_000, y as i64)));
+        host.borrow_mut().tick = 50;
+        let f = with_sim(&host, |sim| k.frame(sim, 0));
+        assert_eq!(f.want, None, "a stale wish lapses");
     }
 
     #[test]

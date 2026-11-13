@@ -28,7 +28,7 @@
 **Walls:**
 - **Between fights:** with enemies around, he walks to a wall within 120,000 and climbs it (Roaming 40+; 70+ or high Ego looks farther).
 - **Climbing to reach a target:** when a wall stands between him and a target, he climbs it.
-- **On a wall:** his basic is a 45,000 rock throw. He rains rocks on any enemy in range, Skyfalls (one charge is enough in a fight, on a low target, or on one alone near his teammates), Drop Kicks into fights, and throws basics at anything in range. A target out of reach gets a 300,000 hop to the wall nearest it. After 3 s with nothing to do, he drops toward his teammates.
+- **On a wall:** his basic is a 45,000 rock throw. He rains rocks on any enemy in range, Skyfalls (one charge is enough in a fight, on a low target, or on one alone near his teammates), Drop Kicks into fights, and throws basics at anything in range. A target out of reach gets a 300,000 hop to the wall nearest it. After 3 s with nothing to do, he drops toward his teammates. When the game wants to walk him somewhere off the wall, he jumps down that way (a Drop Kick), unless an enemy champion is in throwing range. His rock basics mark, so from a wall he can Marked-Dash down behind a marked enemy out of Drop Kick reach. Towers and the nexus are never his targets.
 
 **Second Wind:**
 - **Death cancel:** at low HP with an enemy close, real damage, or an enemy projectile closing in, Flash ready or not. The HP line is `30 - Ego/5` % (lower for a high Ego). Then he goes **all in**: no escape, the held kick charge is free, and picks inside groups are fair game.
