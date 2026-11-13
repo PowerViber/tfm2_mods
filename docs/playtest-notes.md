@@ -3942,3 +3942,11 @@ Approved effects are integrated in PR #77. Check Thalassa’s water-only wave and 
   - whether he jitters at wall edges when throwing basics;
   - whether the 45,000 throw is too strong in lane.
 - **Details:** `docs/main-review-round-169.md`.
+
+## Nov 13: round 170 (native 0.10.104, tfm2_custom 0.2.107), `kicker-1.4`: Kicker gets down from walls
+- **The clip:** he stood on terrain by the nexus for about 8 s.
+- **Fixes:**
+  - the nexus is now a structure (never a target, never a reason to stay up);
+  - a walk the game wanted off the wall makes him jump down that way (a Drop Kick);
+  - from a wall he Marked-Dashes down onto enemies his rock basics marked.
+- **Watch for:** no more standing on walls when the game wants him elsewhere, and no flip-flopping between climbing and dropping.

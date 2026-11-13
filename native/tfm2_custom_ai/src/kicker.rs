@@ -55,6 +55,27 @@ fn remove_prefix(sim: &mut StableSim, id: usize, prefix: &str) {
     }
 }
 
+/// Where the game wanted to walk him off a wall: (match, his id) -> (x, y, tick). The input layer records it when it
+/// stops that walk at the wall's edge (its sim view is read-only, so this can't be a buff); his bridge reads it
+/// for a few ticks.
+static WANTS: std::sync::Mutex<Vec<(u64, usize, i64, i64, usize)>> = std::sync::Mutex::new(Vec::new());
+const WANT_TICKS: usize = 6;
+
+pub(crate) fn note_want(sim: &StableSim, id: usize, to: (i64, i64)) {
+    let (key, tick) = (crate::match_key(sim), sim.tick());
+    if let Ok(mut w) = WANTS.lock() {
+        w.retain(|e| !(e.0 == key && e.1 == id) && tick < e.4 + 600);
+        if w.len() > 64 {
+            w.remove(0);
+        }
+        w.push((key, id, to.0, to.1, tick));
+    }
+}
+pub(crate) fn want_of(sim: &StableSim, id: usize) -> Option<Point> {
+    let (key, tick) = (crate::match_key(sim), sim.tick());
+    WANTS.lock().ok()?.iter().find(|e| e.0 == key && e.1 == id && tick <= e.4 + WANT_TICKS).map(|e| Point::new(e.2, e.3))
+}
+
 /// The move a steering buff asks for (read by the shared input AI).
 pub fn steer_of(name: &str) -> Option<(i64, i64)> {
     let mut it = name.strip_prefix(GO_PREFIX)?.split(':').filter_map(|s| s.parse::<i64>().ok());
@@ -162,7 +183,8 @@ impl Kicker {
                 radius: e.radius().max(1000) as i64,
                 attack: e.stat().attack as i64,
                 champion,
-                tower: e.is_tower(),
+                // structures: towers and the nexus are never his targets
+                tower: e.is_tower() || kind == Some(mod_api_stable::EntityKindV1::Nexus),
                 visible,
                 targetable,
                 farmable: farming.calm()
@@ -195,6 +217,7 @@ impl Kicker {
             profile: values,
             basic_hits: std::mem::take(&mut self.basic_hits),
             shots_near: self.shots_near(sim, team, pos),
+            want: if self.core.roof { want_of(sim, owner) } else { None },
             manual: false,
             order: None,
         }

@@ -1024,6 +1024,15 @@ impl StablePlayerAi for WallAi {
                 let walk = steered.or(base).filter(|w| w.kind == mod_api_stable::InputKindV1::Move.code());
                 if let Some(w) = walk {
                     if let Some((x, y)) = crate::kicker::roof_walk(pos, (w.x as i64, w.y as i64), crate::walls::wall_at) {
+                        // far past the edge: the game wants him elsewhere; his core jumps down toward it when free
+                        let past = ((w.x as i64 - x) as f64).hypot((w.y as i64 - y) as f64);
+                        if past > 30_000.0 {
+                            if let Some(sim) = ctx.sim() {
+                                if let Some(me) = sim.get_player(pid).and_then(|p| p.champion()).map(|e| e.id()) {
+                                    crate::kicker::note_want(&sim, me, (w.x as i64, w.y as i64));
+                                }
+                            }
+                        }
                         let edge = InputV1::move_to(x.max(0) as u64, y.max(0) as u64);
                         if ctx.is_valid_input(&edge) {
                             return Some(edge);

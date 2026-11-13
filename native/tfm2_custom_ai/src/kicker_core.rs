@@ -181,6 +181,9 @@ pub struct Frame {
     /// enemy projectiles within 30,000 of him that came closer since the last tick (the death cancel)
     #[serde(default)]
     pub shots_near: u8,
+    /// on a wall: where the game wants to walk him, past the wall's edge (he jumps down toward it when free)
+    #[serde(default)]
+    pub want: Option<Point>,
     pub manual: bool,
     pub order: Option<Order>,
 }
@@ -1480,6 +1483,34 @@ impl Core {
         (1..steps).any(|i| f.wall_at(Point::new(a.x + (b.x - a.x) * i / steps, a.y + (b.y - a.y) * i / steps)))
     }
 
+    /// From a wall, a Marked Dash down behind a marked enemy (his rock basics mark): on `target` in a fight or as a
+    /// pick (low or alone), or, toward where the game wants him (`want`), on a marked enemy that way when it lands
+    /// him closer to it than a plain drop would.
+    fn dash_down(&self, f: &Frame, target: Option<&Unit>, fight: bool) -> Option<Order> {
+        if self.dashes <= 0 {
+            return None;
+        }
+        let ok = |u: &Unit| f.skill_target(u) && self.marked(u.id, f.tick) && u.pos.within(f.pos, d::DASH_RANGE) && f.enemy_tower_at(u.pos).is_none();
+        if let Some(u) = target {
+            let pick = u.hp * 100 <= u.max_hp.max(1) * 50 || Self::isolated(f, u);
+            return (ok(u) && !u.pos.within(f.pos, d::HOP_DROP_RANGE) && (fight || pick || self.tagged())).then_some(Order::Dash(u.id));
+        }
+        let w = f.want?;
+        let way = unit_dir(f.pos, w);
+        let drop = f.nearest_ground(f.pos.toward(w, d::HOP_DROP_RANGE.min(f.pos.dist(w) as i64)));
+        f.units
+            .iter()
+            .filter(|u| ok(u))
+            .filter(|u| {
+                let to = unit_dir(f.pos, u.pos);
+                to.0 * way.0 + to.1 * way.1 >= std::f64::consts::FRAC_1_SQRT_2
+            })
+            .map(|u| (u, u.pos.along(unit_dir(f.pos, u.pos), u.radius + d::DASH_GAP)))
+            .filter(|(_, end)| end.d2(w) < drop.d2(w))
+            .min_by_key(|(u, end)| (end.d2(w), u.id))
+            .map(|(u, _)| Order::Dash(u.id))
+    }
+
     /// On a wall: rain rocks, dive, drop in, throw basics from up there, or move to where the fight is. Never idle.
     fn decide_roof(&mut self, f: &Frame, _out: &mut Vec<Effect>) -> Option<Order> {
         let fight = Self::fight_on(f);
@@ -1505,6 +1536,10 @@ impl Core {
             if u.pos.within(f.pos, d::HOP_DROP_RANGE) && (!tower || self.kickout_ready(f, &u)) && (fight || u.hp * 100 <= u.max_hp.max(1) * 50 || self.tagged()) {
                 return self.engage(f, &u, Order::DropKick(u.pos));
             }
+            // his rock basics marked it: dash down behind it (a jump down with the Drop-in) in a fight or on a pick
+            if let Some(o) = self.dash_down(f, Some(&u), fight) {
+                return self.engage(f, &u, o);
+            }
             // in throwing range: stay up and throw (the engine's basic attack reaches 45,000 on a wall)
             if u.pos.within(f.pos, d::ROOF_BASIC_RANGE + u.radius) {
                 return None;
@@ -1524,7 +1559,20 @@ impl Core {
                 return Some(Order::DropKick(f.pos.toward(u.pos, d::HOP_DROP_RANGE)));
             }
         }
-        // anything in throwing range (a wave too): stay and throw
+        // an enemy champion in throwing range: stay and throw
+        if f.enemy_champions().any(|u| u.pos.within(f.pos, d::ROOF_BASIC_RANGE + u.radius)) {
+            self.roof_since = f.tick;
+            return None;
+        }
+        // the game wants him elsewhere: jump down that way (a marked enemy that way: dash down behind it)
+        if let Some(w) = f.want {
+            if let Some(o) = self.dash_down(f, None, false) {
+                return Some(o);
+            }
+            let to = if w.within(f.pos, d::HOP_DROP_RANGE) { w } else { f.pos.toward(w, d::HOP_DROP_RANGE) };
+            return Some(Order::DropKick(f.nearest_ground(to)));
+        }
+        // a wave in throwing range: stay and clear it from up here
         if f.units.iter().any(|u| f.skill_target(u) && u.pos.within(f.pos, d::ROOF_BASIC_RANGE + u.radius)) {
             self.roof_since = f.tick;
             return None;
