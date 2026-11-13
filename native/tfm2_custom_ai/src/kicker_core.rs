@@ -178,6 +178,9 @@ pub struct Frame {
     /// units his accepted basic attacks hit since the last frame
     #[serde(default)]
     pub basic_hits: Vec<usize>,
+    /// enemy projectiles within 30,000 of him that came closer since the last tick (the death cancel)
+    #[serde(default)]
+    pub shots_near: u8,
     pub manual: bool,
     pub order: Option<Order>,
 }
@@ -1103,18 +1106,48 @@ impl Core {
     pub fn isolated(f: &Frame, u: &Unit) -> bool {
         !f.enemy_champions().any(|o| o.id != u.id && o.pos.within(u.pos, 50_000))
     }
-    /// Would he start a fight with `u`? Ego leads; his HP, the target's HP, help on both sides and its tower weigh.
+    /// Second Wind is running: a death only sends him back to the tag, so he fights without fear.
+    pub fn tagged(&self) -> bool {
+        self.ult.is_some()
+    }
+    /// Is `u` fighting his team (a teammate within the fight range of it)?
+    pub fn in_fight(f: &Frame, u: &Unit) -> bool {
+        f.allies().any(|a| a.pos.within(u.pos, d::AI_FIGHT_RANGE))
+    }
+    /// A fight is on around him: a teammate within the fight range of an enemy champion, close to him.
+    pub fn fight_on(f: &Frame) -> bool {
+        f.enemy_champions().any(|e| e.pos.within(f.pos, d::AI_ENGAGE_RANGE) && Self::in_fight(f, e))
+    }
+    /// A tower kick-out is ready on `u`: a kick charge, a safe direction out of the tower, the kick spot within the
+    /// short dash (or a Marked Dash), and his HP at 50% or more (or the tag down).
+    pub fn kickout_ready(&self, f: &Frame, u: &Unit) -> bool {
+        if self.kicks < 1 || u.parry || (Self::hp_pct(f) < 50 && !self.tagged()) {
+            return false;
+        }
+        // cheap reach first: a kick spot is within the target's radius + reach of it, so only a target within the
+        // short dash (or marked, within a Marked Dash) can be kicked out; the direction scan only runs then
+        let dash = self.dashes > 0 && self.marked(u.id, f.tick);
+        let reach = if dash { d::DASH_RANGE } else { d::KICK_DASH_RANGE + d::KICK_REACH } + u.radius + d::KICK_REACH;
+        if !u.pos.within(f.pos, reach) {
+            return false;
+        }
+        self.kick_options(f, u, None).iter().any(|&(_, dir, _)| {
+            let spot = f.nearest_ground(Self::kick_spot(u, dir));
+            spot.within(f.pos, d::KICK_DASH_RANGE + d::KICK_REACH) || (self.dashes > 0 && self.marked(u.id, f.tick) && spot.within(f.pos, d::DASH_RANGE))
+        })
+    }
+    /// Would he start a fight with `u`? Ego leads; his HP, the target's HP and help on both sides weigh. Joining a
+    /// fight his team is already in, or fighting under the tag, needs no Ego.
     pub fn would_start(&self, f: &Frame, u: &Unit) -> bool {
-        let ego = f.p(EGO);
+        if self.tagged() || Self::in_fight(f, u) {
+            return true;
+        }
         let target_pct = u.hp * 100 / u.max_hp.max(1);
         let allies = f.allies().filter(|a| a.pos.within(u.pos, d::AI_ENGAGE_RANGE)).count() as i64;
         let enemies = f.enemy_champions().filter(|o| o.id != u.id && o.pos.within(u.pos, 60_000)).count() as i64;
-        let mut score = ego - 50 + (100 - target_pct) / 2 + (Self::hp_pct(f) - 50) / 2 + allies * 15 - enemies * 20;
+        let mut score = f.p(EGO) - 50 + (100 - target_pct) / 2 + (Self::hp_pct(f) - 50) / 2 + allies * 15 - enemies * 20;
         if Self::isolated(f, u) {
             score += 15;
-        }
-        if f.enemy_tower_at(u.pos).is_some() && !(self.kicks >= 1 && f.p(AGGRESSIVE) >= 40) {
-            score -= 40;
         }
         // Skyfall made this 1v1: he takes the fight he created
         if self.last_kicked.is_some_and(|k| k.0 == u.id) && Self::isolated(f, u) {
@@ -1122,11 +1155,82 @@ impl Core {
         }
         score >= 0
     }
-    pub fn hunt(&self, f: &Frame, range: i64) -> Option<Unit> {
+    /// How good a target `u` is (higher is better), or None. Under its tower only with a tower kick-out ready (or
+    /// tagged with a high Ego). Nearer, lower, alone, fighting his team: better. Re-read every tick, so he switches
+    /// to a better target instead of chasing one.
+    pub fn score(&self, f: &Frame, u: &Unit, range: i64) -> Option<i64> {
+        if !u.pos.within(f.pos, range) || !self.would_start(f, u) {
+            return None;
+        }
+        let tagged = self.tagged();
+        if f.enemy_tower_at(u.pos).is_some() && !self.kickout_ready(f, u) && !(tagged && f.p(EGO) >= 60) {
+            return None;
+        }
+        let pct = u.hp * 100 / u.max_hp.max(1);
+        let near = 60 - (u.pos.dist(f.pos) as i64 * 60 / range.max(1));
+        let enemies = f.enemy_champions().filter(|o| o.id != u.id && o.pos.within(u.pos, 60_000)).count() as i64;
+        let allies = f.allies().filter(|a| a.pos.within(u.pos, d::AI_ENGAGE_RANGE)).count() as i64;
+        let mut s = (100 - pct) + near + allies * 10;
+        if !tagged {
+            s -= enemies * 15;
+        }
+        if Self::isolated(f, u) {
+            s += 20;
+        }
+        if Self::in_fight(f, u) {
+            s += 20;
+        }
+        if self.last_kicked.is_some_and(|k| k.0 == u.id) {
+            s += 30;
+        }
+        Some(s)
+    }
+    pub fn pick(&self, f: &Frame, range: i64) -> Option<Unit> {
         f.enemy_champions()
-            .filter(|u| u.pos.within(f.pos, range) && self.would_start(f, u))
-            .min_by_key(|u| (u.hp * 100 / u.max_hp.max(1), u.pos.d2(f.pos), u.id))
-            .cloned()
+            .filter_map(|u| self.score(f, u, range).map(|s| (s, u)))
+            .max_by(|a, b| a.0.cmp(&b.0).then(b.1.id.cmp(&a.1.id)))
+            .map(|(_, u)| u.clone())
+    }
+    /// The old name: the best target within `range`.
+    pub fn hunt(&self, f: &Frame, range: i64) -> Option<Unit> {
+        self.pick(f, range)
+    }
+
+    /// Second Wind now? The death cancel (Ego sets how low he lets it get), or a teamfight. Engages ask
+    /// `engage_tag` just before they go.
+    pub fn ult_ready(&self, f: &Frame) -> bool {
+        f.ult_unlocked && f.tick >= self.ult_ready && self.ult.is_none()
+    }
+    pub fn death_line(f: &Frame) -> i64 {
+        30 - f.p(EGO) / 5
+    }
+    pub fn death_cancel(&self, f: &Frame) -> bool {
+        self.ult_ready(f)
+            && Self::hp_pct(f) <= Self::death_line(f)
+            && (f.enemy_champions().any(|u| u.pos.within(f.pos, 45_000)) || self.hurt(f) || f.shots_near > 0)
+    }
+    pub fn teamfight_tag(&self, f: &Frame) -> bool {
+        let need = if f.p(EGO) < 35 { 3 } else { 2 };
+        self.ult_ready(f)
+            && f.enemy_tower_at(f.pos).is_none()
+            && Self::fight_on(f)
+            && f.enemy_champions().filter(|u| u.pos.within(f.pos, d::AI_ENGAGE_RANGE)).count() >= need
+    }
+    /// Tag first, then engage (the tag sits where he stands, before the dive). Ego sets how freely.
+    pub fn engage_tag(&self, f: &Frame, u: &Unit) -> bool {
+        if !self.ult_ready(f) || f.enemy_tower_at(f.pos).is_some() {
+            return false;
+        }
+        let ego = f.p(EGO);
+        let pct = u.hp * 100 / u.max_hp.max(1);
+        let tower = f.enemy_tower_at(u.pos).is_some();
+        if ego >= 60 {
+            true
+        } else if ego >= 35 {
+            !tower && (pct <= 50 || Self::isolated(f, u) || Self::fight_on(f))
+        } else {
+            !tower && Self::fight_on(f) && f.enemy_champions().filter(|o| o.pos.within(f.pos, d::AI_ENGAGE_RANGE)).count() >= 3
+        }
     }
 
     /// Aim error from the athlete's skill-hit value: up to about 12 degrees, deterministic per tick.
@@ -1176,15 +1280,16 @@ impl Core {
     }
 
     /// May he spend a kick charge on `u`? One is held for picks: the second only finishes a target he just kicked,
-    /// or peels.
-    fn kick_charge_ok(&self, u: &Unit, peel: bool) -> bool {
-        self.kicks >= 2 || (self.kicks >= 1 && (peel || self.last_kicked.is_some_and(|k| k.0 == u.id)))
+    /// peels, picks a target already fighting his team, or goes under the tag.
+    fn kick_charge_ok(&self, f: &Frame, u: &Unit, peel: bool) -> bool {
+        self.kicks >= 2
+            || (self.kicks >= 1 && (peel || self.tagged() || Self::in_fight(f, u) || self.last_kicked.is_some_and(|k| k.0 == u.id)))
     }
 
     /// A kick order for `u` if a safe direction exists: plain (the dash reaches the spot) or with Flash.
     pub fn plan_kick(&self, f: &Frame, u: &Unit, peel: Option<Point>) -> Option<Order> {
         // never at a body still flying from his last kick: it would be gone before the strike
-        if !self.kick_charge_ok(u, peel.is_some()) || u.parry || self.flights.iter().any(|fl| fl.target == u.id) {
+        if !self.kick_charge_ok(f, u, peel.is_some()) || u.parry || self.flights.iter().any(|fl| fl.target == u.id) {
             return None;
         }
         let err = Self::aim_error(f);
@@ -1199,7 +1304,7 @@ impl Core {
         if f.flash_ready {
             for &(_, dir, land) in &options {
                 let spot = f.nearest_ground(Self::kick_spot(u, dir));
-                if spot.within(f.pos, d::KICK_FLASH_RANGE) && Self::flash_worth_it(f, u, peel.is_some(), spot, land) {
+                if spot.within(f.pos, d::KICK_FLASH_RANGE) && self.flash_worth_it(f, u, peel.is_some(), spot, land) {
                     return Some(Order::FlashKick(u.id, u.pos.along(dir, d::KICK_DISTANCE)));
                 }
             }
@@ -1210,12 +1315,12 @@ impl Core {
     /// Flash is not spent carelessly (Reihan): only for a real pick (a low target, a peel, or a teammate where it
     /// lands), while he's healthy enough to keep fighting, never next to a tower or into a crowd, and only by an
     /// athlete with the judgement for it. Otherwise he holds the kick.
-    pub fn flash_worth_it(f: &Frame, u: &Unit, peel: bool, spot: Point, land: Point) -> bool {
+    pub fn flash_worth_it(&self, f: &Frame, u: &Unit, peel: bool, spot: Point, land: Point) -> bool {
         let low = u.hp * 100 <= u.max_hp.max(1) * 40;
         let follow_up = f.allies().any(|a| a.pos.within(land, 40_000));
         let crowd = f.enemy_champions().filter(|o| o.id != u.id && o.pos.within(spot, 50_000)).count();
         (low || peel || follow_up)
-            && Self::hp_pct(f) >= 40
+            && (Self::hp_pct(f) >= 40 || self.tagged())
             && f.enemy_tower_at(spot).is_none()
             && crowd <= 1
             && f.p(JUDGEMENT) >= 35
@@ -1223,7 +1328,11 @@ impl Core {
 
     /// A Skyfall at `u`: only if it's the first champion in the line and where it lands is safe.
     pub fn plan_skyfall(&self, f: &Frame, u: &Unit) -> Option<Order> {
-        if !self.kick_charge_ok(u, false) || u.parry || !u.pos.within(f.pos, d::SKYFALL_RANGE) {
+        // one charge is enough from a wall for a fight, a low target, or one alone near his teammates
+        let worth = u.hp * 100 <= u.max_hp.max(1) * 40
+            || Self::fight_on(f)
+            || (Self::isolated(f, u) && f.allies().any(|a| a.pos.within(u.pos, d::AI_ENGAGE_RANGE)));
+        if !(self.kick_charge_ok(f, u, false) || (self.kicks >= 1 && worth)) || u.parry || !u.pos.within(f.pos, d::SKYFALL_RANGE) {
             return None;
         }
         let dir = unit_dir(f.pos, u.pos);
@@ -1251,14 +1360,28 @@ impl Core {
             .min_by_key(|(a, _)| (a.hp * 100 / a.max_hp.max(1), a.id))
     }
 
+    /// Tag first when the Ego says so, then the engage goes next tick.
+    fn engage(&self, f: &Frame, u: &Unit, o: Order) -> Option<Order> {
+        if u.champion && self.engage_tag(f, u) {
+            Some(Order::Ult)
+        } else {
+            Some(o)
+        }
+    }
+
     pub fn decide(&mut self, f: &Frame, out: &mut Vec<Effect>) -> Option<Order> {
         if f.stunned || self.busy(f.tick) {
             return None;
         }
+        // 0. Second Wind as a death cancel, or at the start of a teamfight
+        if self.death_cancel(f) || self.teamfight_tag(f) {
+            return Some(Order::Ult);
+        }
+        let tagged = self.tagged();
         let hurt = self.hurt(f);
         let here = Self::danger_at(f, f.pos, None);
-        // 1. escape only after real damage (or a tower on him): a marked minion or creep away from danger, or a wall
-        if (hurt && here >= 2 && Self::hp_pct(f) < 45) || (hurt && f.enemy_tower_at(f.pos).is_some()) {
+        // 1. escape only after real damage (or a tower on him), and never under the tag (a death only sends him back)
+        if !tagged && ((hurt && here >= 2 && Self::hp_pct(f) < 45) || (hurt && f.enemy_tower_at(f.pos).is_some())) {
             if self.dashes > 0 {
                 if let Some(u) = f
                     .units
@@ -1279,77 +1402,58 @@ impl Core {
                 }
             }
         }
-        let target = self.hunt(f, if self.roof { d::AI_GANK_RANGE } else { d::AI_ENGAGE_RANGE });
-        // 2. Second Wind before a dive or a teamfight, with the tag somewhere safe
-        if f.ult_unlocked && f.tick >= self.ult_ready && self.ult.is_none() {
-            if let Some(u) = &target {
-                let fight = f.enemy_champions().filter(|o| o.pos.within(u.pos, d::AI_ENGAGE_RANGE)).count() >= 2;
-                let dive = f.enemy_tower_at(u.pos).is_some();
-                let safe = !f.enemy_champions().any(|o| o.pos.within(f.pos, d::ULT_ANCHOR_SAFE_RANGE));
-                if (fight || dive) && safe && u.pos.within(f.pos, d::AI_ENGAGE_RANGE) {
-                    return Some(Order::Ult);
-                }
-            }
-        }
-        // 3. peel: an enemy on a hurt teammate is kicked away from them
+        // 2. peel: an enemy on a hurt teammate is kicked away from them
         if let Some((ally, diver)) = Self::peel_target(f) {
             if !self.roof {
                 if let Some(o) = self.plan_kick(f, &diver, Some(ally.pos)) {
-                    return Some(o);
+                    return self.engage(f, &diver, o);
                 }
                 if self.dashes > 0 && self.marked(diver.id, f.tick) && !diver.pos.within(f.pos, 25_000) {
                     return Some(Order::Dash(diver.id));
                 }
             }
         }
+        if self.roof {
+            return self.decide_roof(f, out);
+        }
+        let target = self.pick(f, d::AI_ENGAGE_RANGE);
         if let Some(u) = target {
-            if self.roof {
-                // the rooftop gank: mark it, carry it home, or drop on it
-                if f.tick >= self.rock_ready && !self.marked(u.id, f.tick) && u.pos.within(f.pos, d::ROCK_RAIN_RANGE) {
-                    return Some(Order::Rock(u.pos));
-                }
-                if let Some(o) = self.plan_skyfall(f, &u) {
-                    return Some(o);
-                }
-                if u.pos.within(f.pos, d::HOP_DROP_RANGE) && f.enemy_tower_at(u.pos).is_none() {
-                    return Some(Order::DropKick(u.pos));
-                }
-                if self.hops > 0 {
-                    if let Some(c) = f.walls_near(u.pos, d::HOP_WALL_RANGE).into_iter().find(|c| c.within(f.pos, d::HOP_WALL_RANGE) && c.d2(u.pos) < f.pos.d2(u.pos)) {
-                        return Some(Order::Hop(c));
-                    }
-                }
-                return None;
-            }
             if let Some(o) = self.plan_kick(f, &u, None) {
-                return Some(o);
+                return self.engage(f, &u, o);
             }
             if f.tick >= self.rock_ready && u.pos.within(f.pos, d::ROCK_RANGE) && !self.marked(u.id, f.tick) {
                 return Some(Order::Rock(u.pos));
             }
-            if self.dashes > 0 && self.marked(u.id, f.tick) && !u.pos.within(f.pos, 30_000) && u.pos.within(f.pos, d::DASH_RANGE) {
-                let tower = f.enemy_tower_at(u.pos).is_some();
-                if !tower || self.kicks >= 1 {
-                    return Some(Order::Dash(u.id));
+            let tower = f.enemy_tower_at(u.pos).is_some();
+            if self.dashes > 0 && self.marked(u.id, f.tick) && !u.pos.within(f.pos, 30_000) && u.pos.within(f.pos, d::DASH_RANGE) && (!tower || self.kicks >= 1) {
+                return self.engage(f, &u, Order::Dash(u.id));
+            }
+            // a wall between him and the target: up on it, to come down on the other side
+            if f.tick >= self.mount_ready && self.kicks >= 1 && Self::wall_between(f, f.pos, u.pos) && !f.walls_near(f.pos, d::HOP_MOUNT_RANGE).is_empty() {
+                return Some(Order::Mount);
+            }
+            // walk in only with a purpose (a fight, a low target, the tag), never into a tower without a kick-out
+            if (Self::fight_on(f) || u.hp * 100 <= u.max_hp.max(1) * 40 || tagged) && (!tower || self.kickout_ready(f, &u)) {
+                out.push(Effect::Steer { to: u.pos });
+            }
+            return None;
+        }
+        // 3. set up a rooftop gank between fights: up on a wall near, or walk to one
+        let enemies_around = f.enemy_champions().any(|u| u.pos.within(f.pos, d::AI_GANK_RANGE));
+        let wave_here = f.units.iter().any(|u| u.farmable && u.pos.within(f.pos, 60_000));
+        if enemies_around && !Self::fight_on(f) && f.tick >= self.mount_ready && f.p(ROAMING) >= 40 && Self::hp_pct(f) >= 50 && (!wave_here || f.p(ROAMING) >= 70) {
+            if !f.walls_near(f.pos, d::HOP_MOUNT_RANGE).is_empty() {
+                return Some(Order::Mount);
+            }
+            let reach = if f.p(ROAMING) >= 70 || f.p(EGO) >= 70 { d::AI_MOUNT_WALK_RANGE * 3 / 2 } else { d::AI_MOUNT_WALK_RANGE };
+            if let Some(w) = f.nearest_wall_point(f.pos, reach) {
+                if f.enemy_tower_at(w).is_none() {
+                    out.push(Effect::Steer { to: w });
+                    return None;
                 }
             }
-            out.push(Effect::Steer { to: u.pos });
-            return None;
         }
-        if self.roof {
-            // an idle wall: back down to the lane after a while
-            if f.tick >= self.roof_since + t(d::AI_IDLE_ROOF_TICKS) && !f.enemy_champions().any(|u| u.pos.within(f.pos, d::AI_GANK_RANGE)) {
-                let ground = f.nearest_ground(f.pos.toward(f.home, 20_000));
-                return Some(Order::DropKick(ground));
-            }
-            return None;
-        }
-        // 4. set up a rooftop gank: enemies around, none to start on yet, a wall close by
-        let enemies_around = f.enemy_champions().any(|u| u.pos.within(f.pos, d::AI_GANK_RANGE));
-        if enemies_around && f.tick >= self.mount_ready && f.p(ROAMING) >= 40 && !f.walls_near(f.pos, d::HOP_MOUNT_RANGE).is_empty() && Self::hp_pct(f) >= 50 {
-            return Some(Order::Mount);
-        }
-        // 5. farming: Rock Throw through the wave (S1 and S2 only; S3 and the ult never on minions)
+        // 4. farming: Rock Throw through the wave (S1 and S2 only; S3 and the ult never on minions)
         let calm = !f.enemy_champions().any(|u| u.pos.within(f.pos, d::AI_CALM_RANGE));
         if calm && f.tick >= self.rock_ready {
             let farm: Vec<&Unit> = f.units.iter().filter(|u| u.farmable && f.skill_target(u) && u.pos.within(f.pos, d::ROCK_RANGE)).collect();
@@ -1369,4 +1473,68 @@ impl Core {
         }
         None
     }
+
+    /// Terrain on the straight line between two points.
+    pub fn wall_between(f: &Frame, a: Point, b: Point) -> bool {
+        let steps = (a.dist(b) as i64 / 4_000).max(1);
+        (1..steps).any(|i| f.wall_at(Point::new(a.x + (b.x - a.x) * i / steps, a.y + (b.y - a.y) * i / steps)))
+    }
+
+    /// On a wall: rain rocks, dive, drop in, throw basics from up there, or move to where the fight is. Never idle.
+    fn decide_roof(&mut self, f: &Frame, _out: &mut Vec<Effect>) -> Option<Order> {
+        let fight = Self::fight_on(f);
+        // from a wall he looks as far as he can hop (300,000)
+        let best = self.pick(f, d::AI_GANK_RANGE.max(d::HOP_WALL_RANGE));
+        if best.is_some() || fight {
+            self.roof_since = f.tick;
+        }
+        if f.tick >= self.rock_ready {
+            let aim = best
+                .clone()
+                .filter(|u| u.pos.within(f.pos, d::ROCK_RAIN_RANGE))
+                .or_else(|| f.enemy_champions().filter(|u| u.pos.within(f.pos, d::ROCK_RAIN_RANGE)).min_by_key(|u| (u.pos.d2(f.pos), u.id)).cloned());
+            if let Some(u) = aim {
+                return Some(Order::Rock(u.pos));
+            }
+        }
+        if let Some(u) = best.clone() {
+            if let Some(o) = self.plan_skyfall(f, &u) {
+                return self.engage(f, &u, o);
+            }
+            let tower = f.enemy_tower_at(u.pos).is_some();
+            if u.pos.within(f.pos, d::HOP_DROP_RANGE) && (!tower || self.kickout_ready(f, &u)) && (fight || u.hp * 100 <= u.max_hp.max(1) * 50 || self.tagged()) {
+                return self.engage(f, &u, Order::DropKick(u.pos));
+            }
+            // in throwing range: stay up and throw (the engine's basic attack reaches 45,000 on a wall)
+            if u.pos.within(f.pos, d::ROOF_BASIC_RANGE + u.radius) {
+                return None;
+            }
+            // out of reach: the wall nearest to it (a long hop), or down into the fight
+            if self.hops > 0 {
+                let here = f.pos.d2(u.pos);
+                if let Some(c) = f
+                    .walls_near(u.pos, d::ROOF_BASIC_RANGE + 10_000)
+                    .into_iter()
+                    .find(|c| c.within(f.pos, d::HOP_WALL_RANGE) && c.d2(u.pos) + (20_000i128 * 20_000) < here && f.enemy_tower_at(*c).is_none())
+                {
+                    return Some(Order::Hop(c));
+                }
+            }
+            if fight && !tower {
+                return Some(Order::DropKick(f.pos.toward(u.pos, d::HOP_DROP_RANGE)));
+            }
+        }
+        // anything in throwing range (a wave too): stay and throw
+        if f.units.iter().any(|u| f.skill_target(u) && u.pos.within(f.pos, d::ROOF_BASIC_RANGE + u.radius)) {
+            self.roof_since = f.tick;
+            return None;
+        }
+        // an idle wall: back down toward his teammates (or his lane), not home
+        if f.tick >= self.roof_since + t(d::AI_IDLE_ROOF_TICKS) {
+            let to = f.allies().min_by_key(|a| (a.pos.d2(f.pos), a.id)).map(|a| a.pos).unwrap_or(f.home);
+            return Some(Order::DropKick(f.nearest_ground(f.pos.toward(to, d::HOP_DROP_RANGE))));
+        }
+        None
+    }
+
 }

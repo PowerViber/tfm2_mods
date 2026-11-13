@@ -86,6 +86,8 @@ pub(crate) fn roof_buff() -> BuffV1 {
     b.ignore_wall = true;
     b.move_speed_mult = d::ROOF_SPEED_PCT as i32;
     b.damaged_reduce = d::ROOF_REDUCE_PCT.max(0) as usize;
+    // on a wall his basic attack is a rock throw: the same additive basic-range field Kratos's blades use
+    b.range = (d::ROOF_BASIC_RANGE - d::BASIC_RANGE).max(0) as usize;
     b
 }
 
@@ -101,6 +103,8 @@ pub struct Kicker {
     art_v1: bool,
     art_fx_v1: bool,
     presentation: crate::kicker_presentation::Presenter,
+    /// enemy projectiles last tick: (caster, x, y), to tell one closing in on him
+    shots: Vec<(usize, i64, i64)>,
 }
 
 impl Kicker {
@@ -190,9 +194,34 @@ impl Kicker {
             terrain: self.grid(tick),
             profile: values,
             basic_hits: std::mem::take(&mut self.basic_hits),
+            shots_near: self.shots_near(sim, team, pos),
             manual: false,
             order: None,
         }
+    }
+
+    /// Enemy projectiles within 30,000 of him that came closer since the last tick (positions only in the API, so
+    /// "closing in" is read tick to tick against the same caster's nearest shot).
+    fn shots_near(&mut self, sim: &StableSim, team: usize, me: Point) -> u8 {
+        let now: Vec<(usize, i64, i64)> = (0..sim.projectile_count())
+            .filter_map(|i| sim.projectile_at(i))
+            .filter(|p| !p.is_end && p.team != team)
+            .map(|p| (p.caster_id, p.x as i64, p.y as i64))
+            .collect();
+        let d2 = |x: i64, y: i64| (x - me.x) as i128 * (x - me.x) as i128 + (y - me.y) as i128 * (y - me.y) as i128;
+        let n = now
+            .iter()
+            .filter(|s| d2(s.1, s.2) <= 30_000i128 * 30_000)
+            .filter(|s| {
+                self.shots
+                    .iter()
+                    .filter(|o| o.0 == s.0)
+                    .min_by_key(|o| (o.1 - s.1) as i128 * (o.1 - s.1) as i128 + (o.2 - s.2) as i128 * (o.2 - s.2) as i128)
+                    .is_some_and(|o| d2(s.1, s.2) < d2(o.1, o.2))
+            })
+            .count();
+        self.shots = now;
+        n.min(255) as u8
     }
 
     fn fx_ok(&mut self, tick: u64, ambient: bool) -> bool {
@@ -410,6 +439,20 @@ impl StablePassive for Kicker {
             }
             if !self.basic_hits.contains(&target) {
                 self.basic_hits.push(target);
+            }
+            // from a wall the basic is a thrown rock: the flight and the hit (existing art, no Animation CC)
+            if self.core.roof {
+                let at = |e: Option<mod_api_stable::StableEntity>| e.map(|e| e.pos()).map(|p| Point::new(p.0 as i64, p.1 as i64));
+                if let (Some(me), Some(to)) = (at(sim.get_entity(id)), at(sim.get_entity(target))) {
+                    let tick = sim.tick() as u64;
+                    if self.art_fx_v1 && self.fx_ok(tick, true) {
+                        let mid = Point::new((me.x + to.x) / 2, (me.y + to.y) / 2);
+                        crate::fx_point(sim, &format!("kk_rock_{}", crate::kicker_presentation::heading(me, to)), id, mid.x, mid.y, 6);
+                    }
+                    if self.fx_ok(tick, true) {
+                        crate::fx_point(sim, "kk_rock_hit", id, to.x, to.y, 12);
+                    }
+                }
             }
         }
     }

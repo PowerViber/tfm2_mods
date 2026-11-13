@@ -16,18 +16,34 @@
 | S3 | **Homecoming Kick / Skyfall Kick** | **Charges:** 2, 20 s each. **On the ground:** he dashes up to 15,000 to stand behind an enemy champion and kicks it 75,000 away from him for 70 + 110% Attack. The flying body hits up to 2 other enemy champions (50% damage, 0.4 s knock-up). A wall stops it and stuns for 0.5 s; never through a wall or off the map. **Flash:** just before the kick, or during its short wind-up, it re-aims the kick from the new spot. **From a wall: Skyfall Kick.** An 80,000 dive that carries the first enemy champion in its line to the end, through walls, for 90 + 100% Attack. He lands 8,000 past it (behind it) with a Drop-in, both on open ground. |
 | Ult | **Second Wind** | **Cast** (90 s): he tags where he stands and fights freely for 8 s. **A death in that time:** he doesn't die; he's back at the tag with full HP, and nobody gets a kill. **The time runs out:** he's back at the tag with the HP he had at cast (no free heal). |
 
-## His AI (his own)
-**Who drives it:** the athlete's 13 values. Ego decides whether he starts a fight, aim sets kick-direction accuracy, and reaction sets dive answers. There is no fixed personality (Reihan). Because Skyfall isolates a target, he takes the 1v1 he creates, even at a lower Ego.
+## His AI (his own, `kicker-1.3`)
+**Who drives it:** the athlete's 13 values. Ego decides whether he *starts* a fight, aim sets kick-direction accuracy, and reaction sets dive answers. There is no fixed personality (Reihan).
+
+**Targets:**
+- **Choosing:** a score re-read every tick. Nearer, lower, alone, or already fighting his team scores better; enemies around it score worse. So he switches targets instead of chasing one.
+- **Under its tower:** a target there counts only when a **tower kick-out is ready**: a kick charge, a safe way out, the kick spot within reach, and his HP at 50% or more.
+- **Movement:** he never "locks on". He only walks with a purpose (a fight, a low target, Second Wind, or a wall to climb); otherwise the game moves him.
+- **Joining fights:** a fight his team is already in needs no Ego (Ego only decides who starts).
+
+**Walls:**
+- **Between fights:** with enemies around, he walks to a wall within 120,000 and climbs it (Roaming 40+; 70+ or high Ego looks farther).
+- **Climbing to reach a target:** when a wall stands between him and a target, he climbs it.
+- **On a wall:** his basic is a 45,000 rock throw. He rains rocks on any enemy in range, Skyfalls (one charge is enough in a fight, on a low target, or on one alone near his teammates), Drop Kicks into fights, and throws basics at anything in range. A target out of reach gets a 300,000 hop to the wall nearest it. After 3 s with nothing to do, he drops toward his teammates.
+
+**Second Wind:**
+- **Death cancel:** at low HP with an enemy close, real damage, or an enemy projectile closing in, Flash ready or not. The HP line is `30 - Ego/5` % (lower for a high Ego). Then he goes **all in**: no escape, the held kick charge is free, and picks inside groups are fair game.
+- **Fearless engage:** right before a kick, Skyfall, Drop Kick or Marked Dash onto a champion, he tags first (never from under an enemy tower). How freely depends on Ego:
+  - **Ego 60+:** any engage, even a 1v2 or a tower dive;
+  - **Ego 35-59:** real picks or fights only;
+  - **Ego under 35:** teamfights of 3+ only.
+- **Teamfight:** when 2+ enemies are fighting his team (3+ at Ego under 35).
 
 **Combos:**
-- **Rooftop gank:** onto a wall near a lane, then Rock Rain marks the target, then a Skyfall carries it toward his side, then a Drop-in.
 - **Tower kick-out:** Rock Throw marks, then Marked Dash in, then the kick out of tower range toward his team.
-- **Flash kick:** when the safe side of the target is beyond his short dash, Flash there and kick.
+- **Flash kick:** only for a real pick (a low target, a peel, or a teammate at the landing), never next to a tower or into a crowd, Judgement 35+.
 - **Gank into an ally:** the kick goes toward the nearest teammate.
-- **Flash is not spent carelessly:** only for a real pick (the target at 40% HP or less, a peel, or a teammate where it lands), while he's at 40% HP or more, never next to a tower or into a crowd (at most one other enemy near the Flash spot), and only with Judgement 35+. Otherwise he holds the kick.
 - **Peel:** the diver on a hurt teammate is kicked away from them (this may spend the held charge).
-- **Second Wind:** before a tower dive or a 2+ enemy fight, with no enemy within 50,000 of the tag.
-- **Escape:** only after real damage (8% max HP in 0.5 s) or a tower on him: a Marked Dash to a marked minion away from danger, or onto a wall.
+- **Escape:** only after real damage, never under the tag.
 - **Farming:** S2 through the wave only. S3 and the ult never touch minions.
 
 **Kick direction score:**

@@ -34,6 +34,8 @@ pub(crate) struct Host {
     /// Presentation receipts: name, owner, exact SDK target, lifetime.
     pub view_effects: Vec<(String,usize,mod_api_stable::InputTargetV1,u64)>,
     pub record_view_effects: bool,
+    /// projectiles in flight: (caster, team, x, y)
+    pub shots: Vec<(usize, usize, u64, u64)>,
     pub reject_spawns: bool,
     /// (unit, amount, ticks) for every `entity_add_shield`
     pub shields: Vec<(usize, usize, usize)>,
@@ -232,6 +234,21 @@ unsafe extern "C" fn effect(
     true
 }
 
+unsafe extern "C" fn shot_count(p: *const c_void) -> usize { h(p).borrow().shots.len() }
+unsafe extern "C" fn shot_at(_: *const c_void, i: usize) -> mod_api_stable::ProjectileHandleV1 { mod_api_stable::ProjectileHandleV1::from_id(i) }
+unsafe extern "C" fn shot_valid(p: *const c_void, s: mod_api_stable::ProjectileHandleV1) -> bool {
+    s.id().is_some_and(|i| i < h(p).borrow().shots.len())
+}
+unsafe extern "C" fn shot_info(p: *const c_void, s: mod_api_stable::ProjectileHandleV1, out: *mut mod_api_stable::ProjectileInfoV1) -> bool {
+    let Some((caster, team, x, y)) = s.id().and_then(|i| h(p).borrow().shots.get(i).copied()) else { return false };
+    (*out).caster_id = caster;
+    (*out).team = team;
+    (*out).x = x;
+    (*out).y = y;
+    (*out).is_end = false;
+    true
+}
+
 pub(crate) fn with_sim<T>(host: &RefCell<Host>, f: impl FnOnce(&mut StableSim) -> T) -> T {
     unsafe {
         let mut t: SimVtableV1 = std::mem::zeroed();
@@ -274,6 +291,10 @@ pub(crate) fn with_sim<T>(host: &RefCell<Host>, f: impl FnOnce(&mut StableSim) -
         t.entity_clear_cc = Some(clear_cc);
         t.entity_set_invisible = Some(set_invisible);
         t.play_view_effect = Some(effect);
+        t.projectile_count = Some(shot_count);
+        t.projectile_at = Some(shot_at);
+        t.projectile_is_valid = Some(shot_valid);
+        t.projectile_info = Some(shot_info);
         let mut raw =
             SimCtxV1 { size: size_of::<SimCtxV1>(), sim: &t, frame: std::ptr::null(), state: host as *const _ as *mut c_void };
         let mut sim = StableSim::from_raw(&mut raw).unwrap();
