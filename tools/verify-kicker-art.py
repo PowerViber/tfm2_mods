@@ -42,7 +42,7 @@ def main():
   bounds[stem]={'dimensions':sheet.size,'tags':len(a),'sha256':sha(OUT/(stem+'.png'))}
  assert total==m['decoded_bytes'] and total<=32*1024*1024
  previous=json.loads(old('rules/kicker.json'));current=json.loads((ROOT/'rules/kicker.json').read_text())
- previous['revision']='kicker-1.1';previous['hop']['wallRange']=300000
+ previous['revision']=current['revision'];previous['hop']['wallRange']=300000
  assert previous==current,'Unexpected balance changes'
  path='mods/tfm2_custom/champion/tfm2_custom_kicker.data_champion'
  before=json.loads(old(path));after=json.loads((ROOT/path).read_text())
@@ -55,7 +55,7 @@ def main():
  presenter=(ROOT/'native/tfm2_custom_ai/src/kicker_presentation.rs').read_text().split('#[cfg(test)]')[0]
  for banned in ['apply_cc(', 'deal_damage(', 'entity_set_pos(', 'set_input(', 'random(']:assert banned not in presenter,banned
  report={'body_and_effects_approved':True,'decoded_bytes':total,'atlases':bounds,'frame_entries':entries,'reproducible_packing':True,
-  'foot_anchor':[32,48],'wall_range':300000,'rules_revision':'kicker-1.1','unchanged_damage_stats_cooldowns':True,
+  'foot_anchor':[32,48],'wall_range':300000,'rules_revision':current['revision'],'unchanged_damage_stats_cooldowns':True,
   'native_special_pose_cc_enabled':False,'native_effects':'short single-frame leases within the existing budget; no more than one per update',
   'live_game':'pending by user request','packaged_dll_sha256':sha(ROOT/'mods/tfm2_custom_ai/tfm2_custom_ai.dll')}
  (OUT/'verification.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report,indent=2))

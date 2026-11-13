@@ -194,19 +194,101 @@ fn stun_interrupts_a_long_wall_hop_instead_of_waiting_for_its_destination() {
 }
 
 #[test]
-fn terrain_cells_and_host_walking_do_not_automatically_end_the_wall_stance() {
+fn a_step_off_a_wall_is_pulled_back_onto_it_he_never_walks_off() {
     let mut c = Core { roof: true, ..Core::default() };
     let mut f = frame(0, cell(10, 10), vec![]);
     f.terrain = walls(&[(10, 10)]);
+    // the engine walked him one cell east, off the wall
     f.pos = Point::new(cell(10, 10).x + CELL, cell(10, 10).y);
+    let out = run(&mut c, &mut f, None, 0, 20);
+    assert!(c.roof && !out.contains(&Effect::Roof { on: false }), "still on the wall");
+    assert!(f.wall_at(f.pos), "back on a wall cell: {:?}", f.pos);
+    assert!(out.iter().any(|e| matches!(e, Effect::PassWalls { .. })));
+    assert!(knocked_up(&out).is_empty(), "no Drop-in");
+}
+
+#[test]
+fn far_from_any_wall_the_wall_stance_ends() {
+    let mut c = Core { roof: true, ..Core::default() };
+    let mut f = frame(0, cell(10, 10), vec![]);
+    f.terrain = walls(&[(10, 10)]);
+    f.pos = Point::new(cell(10, 10).x + 200_000, cell(10, 10).y);
     let out = c.step(&f);
-    assert!(c.roof && !out.contains(&Effect::Roof { on: false }));
-    assert!(knocked_up(&out).is_empty());
-    for tick in 1..120 {
-        f.tick = tick;
-        assert!(!c.step(&f).contains(&Effect::Roof { on: false }));
+    assert!(!c.roof && out.contains(&Effect::Roof { on: false }), "never on a wall while on the ground");
+}
+
+#[test]
+fn a_walk_on_a_wall_stops_at_its_edge() {
+    let terrain = walls(&[(10, 10), (11, 10)]);
+    let g = Frame { terrain: terrain.clone(), ..Frame::default() };
+    let wall_at = |x: i64, y: i64| g.wall_at(Point::new(x, y));
+    let from = (cell(10, 10).x, cell(10, 10).y);
+    // along the wall: untouched
+    assert_eq!(crate::kicker::roof_walk(from, (cell(11, 10).x, cell(11, 10).y), wall_at), None);
+    // off the wall: the last wall point on the way
+    let edge = crate::kicker::roof_walk(from, (cell(10, 10).x, cell(10, 10).y + 100_000), wall_at).expect("clamped");
+    assert!(wall_at(edge.0, edge.1) && edge.1 > from.1, "{edge:?}");
+    // not on a wall: the input layer leaves it to the core
+    assert_eq!(crate::kicker::roof_walk((10_000, 10_000), (900_000, 10_000), wall_at), None);
+}
+
+#[test]
+fn every_dash_and_leap_gives_armor_without_stacking() {
+    let shields = |out: &[Effect]| out.iter().filter(|e| matches!(e, Effect::Shield { .. })).count();
+    let amount = 1500 * d::DASH_SHIELD_PCT_MAX_HP / 100;
+    // a ground hop
+    let mut c = Core::default();
+    let f = frame(0, Point::new(400_000, 400_000), vec![]);
+    let out = order(&mut c, &f, Order::Hop(Point::new(500_000, 400_000)));
+    assert!(out.contains(&Effect::Shield { amount, ticks: d::DASH_SHIELD_TICKS as u64 }));
+    // a second leap inside the shield's window adds none
+    let mut f2 = f.clone();
+    f2.tick = 30;
+    c.moving = None;
+    assert_eq!(shields(&order(&mut c, &f2, Order::Hop(Point::new(300_000, 400_000)))), 0);
+    // the Homecoming Kick's dash-in
+    let mut c = Core::default();
+    let k = frame(0, Point::new(400_000, 400_000), vec![champ(FOE, 2, 412_000, 400_000)]);
+    assert_eq!(shields(&order(&mut c, &k, Order::Kick(FOE, Point::new(300_000, 400_000)))), 1);
+    // the Skyfall dive and the Drop Kick
+    for o in [Order::Skyfall(Point::new(cell(10, 10).x - 100_000, cell(10, 10).y)), Order::DropKick(Point::new(cell(10, 10).x - 40_000, cell(10, 10).y))] {
+        let mut c = Core { roof: true, ..Core::default() };
+        let mut w = frame(0, cell(10, 10), vec![champ(FOE, 2, cell(10, 10).x - 20_000, cell(10, 10).y)]);
+        w.terrain = walls(&[(10, 10)]);
+        assert_eq!(shields(&order(&mut c, &w, o)), 1, "{o:?}");
     }
-    assert!(c.roof, "coarse ground cells are not a deliberate dismount");
+}
+
+#[test]
+fn flash_is_held_unless_the_pick_is_worth_it() {
+    let c = Core::default();
+    // his team is east; the target west of him: only a Flash reaches its west side
+    let base = |hp: i64| {
+        let mut g = frame(0, Point::new(400_000, 400_000), vec![champ(FOE, 2, 384_000, 400_000)]);
+        g.units[0].hp = hp;
+        g.home = Point::new(900_000, 400_000);
+        g.profile[SKILL_HIT] = 100;
+        g.units.push(tower(40, 2, 280_000, 400_000));
+        g.flash_ready = true;
+        g
+    };
+    // healthy and no teammate at the landing: hold Flash
+    let g = base(1000);
+    assert!(!matches!(c.plan_kick(&g, &g.unit(FOE).unwrap().clone(), None), Some(Order::FlashKick(..))));
+    // low: worth it
+    let g = base(300);
+    assert!(matches!(c.plan_kick(&g, &g.unit(FOE).unwrap().clone(), None), Some(Order::FlashKick(..))));
+    // but not when he's low himself, into a crowd, or by a low-judgement athlete
+    let mut g = base(300);
+    g.hp = 400;
+    assert!(!matches!(c.plan_kick(&g, &g.unit(FOE).unwrap().clone(), None), Some(Order::FlashKick(..))));
+    let mut g = base(300);
+    g.units.push(champ(21, 2, 370_000, 410_000));
+    g.units.push(champ(22, 2, 365_000, 390_000));
+    assert!(!matches!(c.plan_kick(&g, &g.unit(FOE).unwrap().clone(), None), Some(Order::FlashKick(..))));
+    let mut g = base(300);
+    g.profile[JUDGEMENT] = 20;
+    assert!(!matches!(c.plan_kick(&g, &g.unit(FOE).unwrap().clone(), None), Some(Order::FlashKick(..))));
 }
 
 #[test]
@@ -291,7 +373,7 @@ fn marked_dash_needs_a_mark_spends_a_charge_and_shields_him() {
     assert_eq!(c.dashes, d::DASH_CHARGES - 1);
     assert!(out.contains(&Effect::Shield { amount: 1500 * d::DASH_SHIELD_PCT_MAX_HP / 100, ticks: d::DASH_SHIELD_TICKS as u64 }));
     let stop = out.iter().find_map(|e| if let Effect::Glide { to, .. } = e { Some(*to) } else { None }).unwrap();
-    assert!(stop.x < 460_000 && stop.within(Point::new(460_000, 400_000), 3_000 + d::DASH_GAP + 10), "stops next to it: {stop:?}");
+    assert!(stop.x > 460_000 && stop.within(Point::new(460_000, 400_000), 3_000 + d::DASH_GAP + 10), "ends behind it: {stop:?}");
     let far = frame(0, Point::new(400_000, 400_000), vec![minion(31, 400_000 + d::DASH_RANGE + 5_000, 400_000)]);
     c.moving = None;
     c.marks.push((31, 200));
@@ -431,7 +513,8 @@ fn flash_kick_when_the_dash_cannot_reach_a_safe_side_and_flash_re_aims_a_wind_up
     let mut g = frame(0, Point::new(400_000, 400_000), vec![champ(FOE, 2, 384_000, 400_000), champ(5, 1, 470_000, 400_000)]);
     g.home = Point::new(900_000, 400_000);
     g.profile[SKILL_HIT] = 100;
-    g.units.push(tower(40, 2, 320_000, 400_000));
+    // the tower makes every westward landing unsafe, but its range ends short of his Flash spot
+    g.units.push(tower(40, 2, 280_000, 400_000));
     g.flash_ready = true;
     let plan = c.plan_kick(&g, &g.unit(FOE).unwrap().clone(), None);
     assert!(matches!(plan, Some(Order::FlashKick(FOE, to)) if to.x > 384_000), "{plan:?}");

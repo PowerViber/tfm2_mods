@@ -3915,3 +3915,16 @@ Approved effects are integrated in PR #77. Check Thalassa’s water-only wave and 
   - kicks land targets where planned and walls stop them;
   - Second Wind never gives a kill.
 - **Details:** `docs/kicker-guide.md` and `docs/main-review-round-168.md`.
+
+## Nov 13: round 168 follow-up, `kicker-1.2`
+- **Changes:**
+  - Kicker never walks off a wall (walks stop at the edge, and steps off are pulled back);
+  - every Marked Dash ends behind its target;
+  - every dash and leap gives a 4% shield (not stacked);
+  - his Flash kick is only for real picks.
+- **The wall hop stays 300,000** (Codex's art round).
+- **Watch for:**
+  - he is never "on a wall" while standing on the ground;
+  - he never jitters at a wall's edge;
+  - dashes land behind;
+  - Flash isn't wasted.

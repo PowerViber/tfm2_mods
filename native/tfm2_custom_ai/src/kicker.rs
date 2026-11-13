@@ -61,6 +61,25 @@ pub fn steer_of(name: &str) -> Option<(i64, i64)> {
     Some((it.next()?, it.next()?))
 }
 
+/// On a wall, a walk toward `to` that would leave the walls: the last wall point on the way (he stops at the edge).
+/// None when the walk stays on walls, or he isn't standing on one (the core's leash handles that).
+pub fn roof_walk(pos: (i64, i64), to: (i64, i64), wall_at: impl Fn(i64, i64) -> bool) -> Option<(i64, i64)> {
+    if !wall_at(pos.0, pos.1) || wall_at(to.0, to.1) {
+        return None;
+    }
+    let len = ((to.0 - pos.0) as f64).hypot((to.1 - pos.1) as f64) as i64;
+    let steps = (len / 2_000).max(1);
+    let mut last = pos;
+    for i in 1..=steps {
+        let q = (pos.0 + (to.0 - pos.0) * i / steps, pos.1 + (to.1 - pos.1) * i / steps);
+        if !wall_at(q.0, q.1) {
+            break;
+        }
+        last = q;
+    }
+    Some(last)
+}
+
 /// The roof buff: through walls while he stands on them, faster, and less damage taken.
 pub(crate) fn roof_buff() -> BuffV1 {
     let mut b = crate::timed(ROOF, 3);

@@ -28,7 +28,7 @@ assert meta==json.loads((ROOT/'mods/tfm2_custom_ai/mod.mod_info').read_text())
 assert meta['version']=='0.10.102'
 package=ROOT/'mods/tfm2_custom_ai/tfm2_custom_ai.dll';shutil.copyfile(built,package)
 report=dict(native=meta['version'],champion_pack=json.loads((ROOT/'mods/tfm2_custom/mod.mod_info').read_text())['version'],
-    rules='kicker-1.1',baseCommit=BASE,sourceDateEpoch=epoch,nativeSourcesSha256=before,
+    rules=json.loads((ROOT/'rules/kicker.json').read_text())['revision'],baseCommit=BASE,sourceDateEpoch=epoch,nativeSourcesSha256=before,
     toolchain=run(['rustc','+stable-x86_64-pc-windows-gnu','--version']),
     builtDllSha256=sha(built),reproducedDllSha256=sha(reproduced),packagedDllSha256=sha(package),
     wasmSha256=sha(ROOT/'editor/kicker.wasm'),installed=False,careerMigrationApplied=False,

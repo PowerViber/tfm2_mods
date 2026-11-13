@@ -228,6 +228,19 @@ impl Frame {
         }
         p
     }
+    /// The nearest point inside a wall cell (a 2,000 inset from its edges) within `range` of `p`.
+    pub fn nearest_wall_point(&self, p: Point, range: i64) -> Option<Point> {
+        let inset = 2_000;
+        self.walls_near(p, range + CELL)
+            .into_iter()
+            .map(|c| {
+                let (x0, y0) = (c.x - CELL / 2 + inset, c.y - CELL / 2 + inset);
+                let (x1, y1) = (c.x + CELL / 2 - inset, c.y + CELL / 2 - inset);
+                Point::new(p.x.clamp(x0, x1), p.y.clamp(y0, y1))
+            })
+            .filter(|q| q.within(p, range))
+            .min_by_key(|q| (q.d2(p), q.x, q.y))
+    }
     /// Wall cell centres within `range` of `p`, nearest first.
     pub fn walls_near(&self, p: Point, range: i64) -> Vec<Point> {
         let mut out: Vec<Point> = (0..CELLS * CELLS)
@@ -336,6 +349,8 @@ pub enum MoveKind {
     KickDash,
     Skyfall,
     Fall,
+    /// back onto the wall after a step off it (he never walks off a wall)
+    Leash,
 }
 
 /// A move in progress: he's busy until `until`, landing at `land`.
@@ -409,6 +424,8 @@ pub struct Core {
     /// his next hit deals more until then (the Drop-in bonus)
     pub bonus_until: u64,
     pub shield_ready: u64,
+    /// the shield every dash and leap gives runs until (a new one only once it has run out: no stacking)
+    pub dash_shield_until: u64,
     pub moving: Option<Move>,
     pub kick: Option<KickPlan>,
     pub flights: Vec<Flight>,
@@ -441,6 +458,7 @@ impl Default for Core {
             drop_ready: 0,
             bonus_until: 0,
             shield_ready: 0,
+            dash_shield_until: 0,
             moving: None,
             kick: None,
             flights: vec![],
@@ -625,6 +643,14 @@ impl Core {
         }
     }
 
+    /// Every dash and leap of his gives armor (a shield), never stacked: only once the last one has run out.
+    fn dash_shield(&mut self, f: &Frame, out: &mut Vec<Effect>) {
+        if f.tick >= self.dash_shield_until {
+            self.dash_shield_until = f.tick + t(d::DASH_SHIELD_TICKS);
+            out.push(Effect::Shield { amount: f.max_hp * d::DASH_SHIELD_PCT_MAX_HP / 100, ticks: t(d::DASH_SHIELD_TICKS) });
+        }
+    }
+
     fn run_roof(&mut self, f: &Frame, out: &mut Vec<Effect>) {
         let moving = self.busy(f.tick);
         if self.roof {
@@ -639,10 +665,23 @@ impl Core {
                 out.push(Effect::Log("knocked off the wall".into()));
                 return;
             }
-            // Roof is an accepted stance, not inferred from one coarse terrain cell.
-            // Walking across an art ledge or a host path correction must not drop him.
-            // Only hard control, a deliberate Drop-in technique, death or the
-            // recorded Second Wind return can change this state.
+            // He never walks off a wall (Reihan): a step off it is pulled straight back onto the nearest wall point.
+            // Only a skill (Drop Kick, Skyfall, a Marked Dash), hard control, death or the Second Wind return take
+            // him down. Far from any wall (a teleport), he simply isn't on one any more.
+            if !moving && !f.wall_at(f.pos) {
+                match f.nearest_wall_point(f.pos, 64_000) {
+                    Some(q) => {
+                        out.push(Effect::PassWalls { ticks: 8 });
+                        out.push(Effect::Glide { to: q, ticks: 6 });
+                        self.moving = Some(Move { kind: MoveKind::Leash, until: f.tick + 6, land: q, target: None });
+                    }
+                    None => {
+                        self.roof = false;
+                        out.push(Effect::Roof { on: false });
+                        return;
+                    }
+                }
+            }
             if !f.enemy_champions().any(|u| u.pos.within(f.pos, d::ROOF_HIDE_RANGE)) {
                 out.push(Effect::Hide);
             }
@@ -670,7 +709,7 @@ impl Core {
                 }
                 out.push(Effect::Fx { name: "kk_land".into(), at: m.land, ticks: 12, ambient: true });
             }
-            MoveKind::GroundHop | MoveKind::Dash | MoveKind::KickDash => {}
+            MoveKind::GroundHop | MoveKind::Dash | MoveKind::KickDash | MoveKind::Leash => {}
             MoveKind::Fall => {
                 if self.roof {
                     self.roof = false;
@@ -899,14 +938,15 @@ impl Core {
                 if !u.pos.within(f.pos, d::DASH_RANGE) {
                     return self.reject("out of dash range");
                 }
-                let stop = f.nearest_ground(u.pos.toward(f.pos, u.radius + d::DASH_GAP));
+                // he always ends behind it (the far side from where he started)
+                let stop = f.nearest_ground(u.pos.along(unit_dir(f.pos, u.pos), u.radius + d::DASH_GAP));
                 Self::spend(&mut self.dashes, &mut self.dash_next, d::DASH_CHARGES, f.tick, t(d::DASH_RECHARGE_TICKS));
                 let ticks = travel_ticks(f.pos, stop, d::DASH_SPEED, 6);
                 if self.roof {
                     out.push(Effect::PassWalls { ticks: ticks + 2 });
                 }
                 out.push(Effect::Glide { to: stop, ticks });
-                out.push(Effect::Shield { amount: f.max_hp * d::DASH_SHIELD_PCT_MAX_HP / 100, ticks: t(d::DASH_SHIELD_TICKS) });
+                self.dash_shield(f, out);
                 out.push(Effect::Fx { name: "kk_dash".into(), at: f.pos, ticks: 12, ambient: true });
                 self.moving = Some(Move { kind: MoveKind::Dash, until: f.tick + ticks, land: stop, target: Some(id) });
                 if self.roof {
@@ -934,6 +974,7 @@ impl Core {
                 let ticks = travel_ticks(f.pos, spot, d::DASH_SPEED, 4);
                 if !spot.within(f.pos, 1_000) {
                     out.push(Effect::Glide { to: spot, ticks });
+                    self.dash_shield(f, out);
                     self.moving = Some(Move { kind: MoveKind::KickDash, until: f.tick + ticks, land: spot, target: Some(id) });
                 }
                 let strike_at = f.tick + if spot.within(f.pos, 1_000) { 0 } else { ticks } + t(d::KICK_WINDUP_TICKS);
@@ -995,6 +1036,7 @@ impl Core {
                 out.push(Effect::PassWalls { ticks: ticks + 2 });
                 out.push(Effect::Invulnerable { ticks: t(d::DROP_IN_INVULN_TICKS) });
                 out.push(Effect::Glide { to: mine, ticks });
+                self.dash_shield(f, out);
                 out.push(Effect::Fx { name: "kk_skyfall".into(), at: f.pos, ticks: 24, ambient: false });
                 if let Some(v) = target.and_then(|id| f.unit(id)).cloned() {
                     out.push(Effect::Strike { target: v.id });
@@ -1040,6 +1082,7 @@ impl Core {
         out.push(Effect::Fx { name: "kk_hop".into(), at: f.pos, ticks: 12, ambient: true });
         self.moving = Some(Move { kind, until: f.tick + ticks, land: to, target });
         self.kick = None;
+        self.dash_shield(f, out);
     }
 
     // ---------------------------------------------------------- AI
@@ -1154,14 +1197,28 @@ impl Core {
             }
         }
         if f.flash_ready {
-            for &(_, dir, _) in &options {
+            for &(_, dir, land) in &options {
                 let spot = f.nearest_ground(Self::kick_spot(u, dir));
-                if spot.within(f.pos, d::KICK_FLASH_RANGE) {
+                if spot.within(f.pos, d::KICK_FLASH_RANGE) && Self::flash_worth_it(f, u, peel.is_some(), spot, land) {
                     return Some(Order::FlashKick(u.id, u.pos.along(dir, d::KICK_DISTANCE)));
                 }
             }
         }
         None
+    }
+
+    /// Flash is not spent carelessly (Reihan): only for a real pick (a low target, a peel, or a teammate where it
+    /// lands), while he's healthy enough to keep fighting, never next to a tower or into a crowd, and only by an
+    /// athlete with the judgement for it. Otherwise he holds the kick.
+    pub fn flash_worth_it(f: &Frame, u: &Unit, peel: bool, spot: Point, land: Point) -> bool {
+        let low = u.hp * 100 <= u.max_hp.max(1) * 40;
+        let follow_up = f.allies().any(|a| a.pos.within(land, 40_000));
+        let crowd = f.enemy_champions().filter(|o| o.id != u.id && o.pos.within(spot, 50_000)).count();
+        (low || peel || follow_up)
+            && Self::hp_pct(f) >= 40
+            && f.enemy_tower_at(spot).is_none()
+            && crowd <= 1
+            && f.p(JUDGEMENT) >= 35
     }
 
     /// A Skyfall at `u`: only if it's the first champion in the line and where it lands is safe.

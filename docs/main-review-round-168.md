@@ -55,3 +55,32 @@
    - walls stop the kick, and the carry passes through them.
 3. **Second Wind:** `undying` holds against towers and true damage, no kill is credited, and the return looks right.
 4. **Flash kick:** the Flash + kick combo spends Flash's real cooldown.
+
+## Follow-up after Codex's art (`kicker-1.2`)
+Codex integrated the approved body and effects and moved the wall-to-wall hop to **300,000** (`kicker-1.1`). Reihan keeps that range.
+
+**Fixes (Reihan):**
+- **He never walks off a wall.**
+  - **The bug:** `kicker-1.1` removed the walk-off check, so he kept the wall stance (`ignore_wall`, hidden, 15% reduction) standing on the ground.
+  - **Input:** while he holds `kk_roof`, the input layer (`steve::WallAi`) stops any walk at the wall's edge (`kicker::roof_walk`). Attacks and casts still pass through.
+  - **Core leash:** any step off a wall is glided straight back onto the nearest wall point within 64,000. Farther than that, the stance ends.
+- **Every Marked Dash ends behind its target.** That includes the escape dash to a minion.
+- **Every dash gives armor:** Marked Dash, the kick's dash-in, Skyfall, Drop Kick, mount and hops all give a 4% max HP shield for 2 s, not stacked.
+- **Flash is not spent carelessly.** The AI's Flash kick needs all of these:
+  - a real pick (the target at 40% HP or less, a peel, or a teammate at the landing);
+  - his own HP at 40% or more;
+  - no tower next to the Flash spot;
+  - at most one other enemy near the spot;
+  - Judgement 35+.
+
+  Otherwise he holds the kick.
+
+**Codex's art tools:**
+- `verify-kicker-art.py` and `package-kicker.py` now read the gameplay revision from the rules (no balance numbers changed).
+- `verify-kicker-art.py` re-packs the art, and its reproducibility check only matches on Codex's Windows set-up (Pillow/zlib), so I didn't run it here.
+
+**Verification:**
+- **Native tests:** **1,265 passed**, 0 warnings, including 48 Kicker tests. The new ones cover the wall leash, the edge stop, dash armor without stacking, Flash discipline, and the dash ending behind.
+- **Other checks:** the `kicker_lab` tests pass and its wasm is rebuilt; the generators are current; the Mod Manager tests (15) pass.
+- **DLL:** the Windows DLL reports 0.10.102.
+- **Not run here:** the Lab page needs the local game reference.
