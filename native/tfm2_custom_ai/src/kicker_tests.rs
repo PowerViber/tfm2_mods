@@ -661,7 +661,8 @@ fn ai_picks_an_isolated_target_and_kicks_it_toward_his_teammate() {
 fn ai_mounts_a_wall_for_a_gank_and_dives_with_a_skyfall() {
     let mut c = Core::default();
     let w = cell(10, 10);
-    let mut f = frame(0, Point::new(w.x + 30_000, w.y), vec![champ(FOE, 2, w.x - 110_000, w.y)]);
+    // the enemy is within Rock Rain range of the wall (a wall worth climbing) but out of his reach on the ground
+    let mut f = frame(0, Point::new(w.x + 30_000, w.y), vec![champ(FOE, 2, w.x - 85_000, w.y)]);
     f.terrain = walls(&[(10, 10)]);
     f.manual = false;
     f.profile[EGO] = 20;
@@ -872,7 +873,8 @@ fn an_idle_wall_is_left_after_three_seconds_toward_his_teammates() {
 fn between_fights_he_walks_to_a_wall_and_mounts_it() {
     let mut c = Core::default();
     let w = cell(10, 10);
-    let mut f = ai(Point::new(w.x + 100_000, w.y), vec![champ(FOE, 2, w.x + 60_000, w.y + 120_000)]);
+    // the enemy is within Rock Rain range of the wall (worth climbing), out of his engage range from both spots
+    let mut f = ai(Point::new(w.x + 80_000, w.y), vec![champ(FOE, 2, w.x - 60_000, w.y + 10_000)]);
     f.terrain = walls(&[(10, 10)]);
     f.profile[ROAMING] = 60;
     f.profile[EGO] = 10;
@@ -980,6 +982,126 @@ fn a_nexus_is_no_reason_to_stay_on_a_wall() {
     f.tick = d::AI_IDLE_ROOF_TICKS as u64 + 1;
     let mut o = vec![];
     assert!(matches!(c.decide(&f, &mut o), Some(Order::DropKick(_))));
+}
+
+#[test]
+fn reihans_clip_a_teammate_dived_nearby_pulls_him_off_the_wall_via_a_marked_minion() {
+    let w = cell(10, 10);
+    // a wave in throwing range of his wall, his teammate dived 150,000 away, a marked minion between them
+    let base = |marked: bool| {
+        let mut c = Core { roof: true, kicks: 0, rock_ready: 10_000, ..Core::default() };
+        if marked {
+            c.marks.push((31, 1_000));
+        }
+        let mut f = ai(
+            w,
+            vec![
+                minion(30, w.x + 20_000, w.y),
+                minion(31, w.x - 60_000, w.y),
+                champ(5, 1, w.x - 150_000, w.y),
+                champ(FOE, 2, w.x - 160_000, w.y + 10_000),
+            ],
+        );
+        f.terrain = walls(&[(10, 10)]);
+        f.ult_unlocked = false;
+        (c, f)
+    };
+    let mut o = vec![];
+    let (mut c, f) = base(true);
+    assert_eq!(c.decide(&f, &mut o), Some(Order::Dash(31)), "the marked minion toward the fight");
+    // nothing marked: down toward the fight anyway (never stays to farm)
+    let (mut c, f) = base(false);
+    assert!(matches!(c.decide(&f, &mut o), Some(Order::DropKick(p)) if p.x < w.x), "{:?}", c.decide(&f, &mut o));
+}
+
+#[test]
+fn on_the_ground_he_goes_to_a_teammate_in_a_fight() {
+    let mut o = vec![];
+    let units = || vec![minion(31, 340_000, 400_000), champ(5, 1, 250_000, 400_000), champ(FOE, 2, 240_000, 410_000)];
+    let mut c = Core { rock_ready: 10_000, ..Core::default() };
+    c.marks.push((31, 1_000));
+    let f = ai(Point::new(400_000, 400_000), units());
+    assert_eq!(c.decide(&f, &mut o), Some(Order::Dash(31)));
+    // nothing marked: he walks there
+    let mut c = Core { rock_ready: 10_000, ..Core::default() };
+    let mut o = vec![];
+    assert_eq!(c.decide(&f, &mut o), None);
+    assert_eq!(steers(&o), vec![Point::new(250_000, 400_000)]);
+}
+
+#[test]
+fn a_wave_never_holds_him_on_a_wall() {
+    let w = cell(10, 10);
+    let mut c = Core { roof: true, roof_since: 0, ..Core::default() };
+    let mut f = ai(w, vec![minion(30, w.x + 20_000, w.y), minion(32, w.x + 25_000, w.y + 5_000)]);
+    f.terrain = walls(&[(10, 10)]);
+    f.tick = d::AI_IDLE_ROOF_TICKS as u64 + 1;
+    let mut o = vec![];
+    assert!(matches!(c.decide(&f, &mut o), Some(Order::DropKick(_))));
+    assert_eq!(c.gank_ready, f.tick + d::AI_GANK_REST_TICKS as u64, "a rest before the next gank climb");
+}
+
+#[test]
+fn hurt_on_a_wall_he_comes_down_instead_of_trading() {
+    let w = cell(10, 10);
+    let mut c = Core { roof: true, ..Core::default() };
+    let mut f = ai(w, vec![champ(FOE, 2, w.x + 30_000, w.y), champ(5, 1, w.x - 150_000, w.y)]);
+    f.terrain = walls(&[(10, 10)]);
+    f.ult_unlocked = false;
+    f.hp = 450; // 30%
+    f.want = Some(Point::new(w.x - 120_000, w.y));
+    let mut o = vec![];
+    let order = c.decide(&f, &mut o);
+    assert!(matches!(order, Some(Order::DropKick(p)) if p.x < w.x), "down, away from it: {order:?}");
+}
+
+#[test]
+fn retreats_go_down_never_up() {
+    // on the ground: hurt among enemies with a wall close: never a mount
+    let w = cell(10, 10);
+    let mut c = Core::default();
+    let mut f = ai(Point::new(w.x + 30_000, w.y), vec![champ(FOE, 2, w.x + 50_000, w.y), champ(11, 2, w.x + 55_000, w.y + 10_000)]);
+    f.terrain = walls(&[(10, 10)]);
+    f.ult_unlocked = false;
+    f.hp = 500;
+    c.hp_log = vec![(0, 900)];
+    let mut o = vec![];
+    assert_ne!(c.decide(&f, &mut o), Some(Order::Mount));
+    // on a wall: down toward home or his teammates, never a hop to another wall
+    let mut c = Core { roof: true, ..Core::default() };
+    let mut g = ai(w, vec![champ(FOE, 2, w.x + 30_000, w.y), champ(11, 2, w.x + 35_000, w.y + 10_000)]);
+    g.terrain = walls(&[(10, 10), (5, 10)]);
+    g.ult_unlocked = false;
+    g.hp = 500;
+    c.hp_log = vec![(0, 900)];
+    let order = c.decide(&g, &mut o);
+    assert!(matches!(order, Some(Order::DropKick(_))), "{order:?}");
+}
+
+#[test]
+fn he_only_climbs_a_wall_with_someone_to_hit_from_it() {
+    let w = cell(10, 10);
+    // the only enemy is 140,000 from the wall: no climb
+    let mut c = Core::default();
+    let mut f = ai(Point::new(w.x + 30_000, w.y), vec![champ(FOE, 2, w.x + 140_000, w.y + 60_000)]);
+    f.terrain = walls(&[(10, 10)]);
+    f.profile[ROAMING] = 70;
+    f.profile[EGO] = 10;
+    let mut o = vec![];
+    assert_ne!(c.decide(&f, &mut o), Some(Order::Mount));
+    // an enemy within Rock Rain range of the wall: climb, unless he's resting after leaving one
+    let mut g = f.clone();
+    g.units[0].pos = Point::new(w.x - 60_000, w.y + 10_000);
+    let mut c = Core::default();
+    assert_eq!(c.decide(&g, &mut o), Some(Order::Mount));
+    let mut c = Core { gank_ready: 500, ..Core::default() };
+    assert_ne!(c.decide(&g, &mut o), Some(Order::Mount));
+}
+
+#[test]
+fn a_recall_points_home() {
+    assert_eq!(crate::kicker::home_of(0), (96_000, 864_000));
+    assert_eq!(crate::kicker::home_of(1), (864_000, 96_000));
 }
 
 #[test]

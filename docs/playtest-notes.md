@@ -3950,3 +3950,16 @@ Approved effects are integrated in PR #77. Check Thalassa’s water-only wave and 
   - a walk the game wanted off the wall makes him jump down that way (a Drop Kick);
   - from a wall he Marked-Dashes down onto enemies his rock basics marked.
 - **Watch for:** no more standing on walls when the game wants him elsewhere, and no flip-flopping between climbing and dropping.
+
+## Nov 13: round 171 (native 0.10.105, tfm2_custom 0.2.108), `kicker-1.5`: Kicker goes to help
+- **The clip:** he farmed from a wall while Faker was dived nearby; he also stayed stuck on walls when retreating or idle.
+- **Now:**
+  - a teammate in a fight within 200,000 pulls him in (a Marked Dash on anything marked that way, a hop, a drop, or a walk);
+  - minions never hold him on a wall;
+  - any walk or recall the game wants off the wall makes him jump down;
+  - retreats go down, not up;
+  - he only climbs walls with someone to hit from them, with a 15 s rest after leaving one.
+- **Watch for:**
+  - does he arrive in time;
+  - does he dash on minions sensibly;
+  - is there any wall/ground flip-flopping.

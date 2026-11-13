@@ -1021,16 +1021,21 @@ impl StablePlayerAi for WallAi {
                 on.then_some((p.0 as i64, p.1 as i64))
             });
             if let Some(pos) = roof {
+                // a recall: the game wants him home; his core jumps down that way (a walk would only reach the edge)
+                if base.is_some_and(|b| b.kind == mod_api_stable::InputKindV1::Return.code()) {
+                    if let Some(sim) = ctx.sim() {
+                        if let Some(me) = sim.get_player(pid).and_then(|p| p.champion()) {
+                            crate::kicker::note_want(&sim, me.id(), crate::kicker::home_of(me.team()));
+                        }
+                    }
+                }
                 let walk = steered.or(base).filter(|w| w.kind == mod_api_stable::InputKindV1::Move.code());
                 if let Some(w) = walk {
                     if let Some((x, y)) = crate::kicker::roof_walk(pos, (w.x as i64, w.y as i64), crate::walls::wall_at) {
-                        // far past the edge: the game wants him elsewhere; his core jumps down toward it when free
-                        let past = ((w.x as i64 - x) as f64).hypot((w.y as i64 - y) as f64);
-                        if past > 30_000.0 {
-                            if let Some(sim) = ctx.sim() {
-                                if let Some(me) = sim.get_player(pid).and_then(|p| p.champion()).map(|e| e.id()) {
-                                    crate::kicker::note_want(&sim, me, (w.x as i64, w.y as i64));
-                                }
+                        // any walk off the wall: the game wants him elsewhere; his core jumps down toward it when free
+                        if let Some(sim) = ctx.sim() {
+                            if let Some(me) = sim.get_player(pid).and_then(|p| p.champion()).map(|e| e.id()) {
+                                crate::kicker::note_want(&sim, me, (w.x as i64, w.y as i64));
                             }
                         }
                         let edge = InputV1::move_to(x.max(0) as u64, y.max(0) as u64);
