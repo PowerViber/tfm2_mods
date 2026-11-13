@@ -1,0 +1,28 @@
+{
+  "previous": {
+    "visible_idle_pixels": [
+      16,
+      39
+    ],
+    "canvas": [
+      56,
+      48
+    ],
+    "foot_offset_below_centre": 20
+  },
+  "revised": {
+    "visible_idle_pixels": [
+      22,
+      44
+    ],
+    "canvas": [
+      64,
+      56
+    ],
+    "foot_offset_below_centre": 20
+  },
+  "native_rules_art_bindings_and_dll_unchanged": true,
+  "review_only": true,
+  "appearance_approved": false,
+  "real_profile_unchanged": true
+}

@@ -16,3 +16,11 @@ Use tools/start-kicker-review.ps1 to open the isolated preview server on port 73
 
 A disposable copy of the installed 0.7.2 game is prepared for the four requested host checks. Its process alone uses the existing filesystem-isolation harness; real career data and the installed mod configuration are not modified. The native code permission is deliberately left for the user to approve in the game UI. No match has been observed yet.
 
+
+## Revision 2 — user correction, 2026-11-13
+
+The first rust-red concept was rejected: too generic, too small and insufficiently recognisable at game size. The new proposal has a cobalt/lime jacket, coral headband, broad ivory foot wraps and a stronger athletic silhouette. Standing height is 44 pixels (versus 39 previously); the padded 64x56 canvas preserves the foot at +20 pixels from frame centre. This remains an unapproved proposal, not a replacement in the native package. Prior source and comparisons are retained as v1 files.
+
+Source: body-source-v2.png, generated through the built-in imagegen edit workflow; prompt in revision-v2-request.json and prompts.json. Source SHA-256: 0327bc031efce08969be045df71facbee6e587cd06bf1ab5217765703454caf8. Reproduction uses the latest source when v2 exists. See before-after-v2.png and the actual-map preview for scale and colour comparisons.
+
+Reihan explicitly deferred the four live checks to focus on artwork. They remain pending. The disposable game had already exited when cleanup was attempted; the detached REA session was closed. No live-match result or artwork approval is claimed.

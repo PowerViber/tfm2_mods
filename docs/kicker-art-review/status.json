@@ -10,5 +10,7 @@
     "second_wind_true_damage_towers_no_kill": "pending",
     "real_flash_cooldown": "pending"
   },
-  "reason": "Disposable game is prepared; user must enable native code through the game permission UI before match checks."
+  "reason": "User deferred live checks and requested a larger, more colourful, recognisable appearance. Revision 2 is review-only and awaits approval.",
+  "review_revision": "kicker-art-concept-2",
+  "rejected_revision": "kicker-art-concept-1"
 }
