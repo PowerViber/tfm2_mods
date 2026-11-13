@@ -269,6 +269,8 @@ fn flash_is_held_unless_the_pick_is_worth_it() {
         g.home = Point::new(900_000, 400_000);
         g.profile[SKILL_HIT] = 100;
         g.units.push(tower(40, 2, 280_000, 400_000));
+        // a wall east of him: the kick east stops on it and stuns (and his Marked Dash can follow)
+        g.terrain = walls(&[(13, 12)]);
         g.flash_ready = true;
         g
     };
@@ -570,7 +572,11 @@ fn one_kick_charge_is_held_for_picks() {
     let u = f.unit(FOE).unwrap().clone();
     assert!(c.plan_kick(&f, &u, None).is_none(), "the last charge waits for a pick");
     c.last_kicked = Some((FOE, 100));
-    assert!(c.plan_kick(&f, &u, None).is_some(), "it finishes the target he just kicked");
+    assert!(c.plan_kick(&f, &u, None).is_none(), "the target he just kicked is hit, not kicked away again");
+    c.last_kicked = None;
+    let mut g = f.clone();
+    g.units[1].pos = Point::new(420_000, 400_000);
+    assert!(c.plan_kick(&g, &g.unit(FOE).unwrap().clone(), None).is_some(), "a target fighting his teammate may take the held charge");
     c.kicks = 2;
     c.last_kicked = None;
     assert!(c.plan_kick(&f, &u, None).is_some());
@@ -815,13 +821,15 @@ fn second_wind_at_the_start_of_a_teamfight() {
 }
 
 #[test]
-fn under_the_tag_a_target_in_a_group_is_fair_game() {
+fn under_the_tag_a_target_in_a_pair_is_fair_game_but_never_a_1v3() {
     let mut c = Core::default();
-    let mut f = ai(Point::new(400_000, 400_000), vec![champ(FOE, 2, 430_000, 400_000), champ(11, 2, 440_000, 410_000), champ(12, 2, 445_000, 390_000)]);
+    let mut f = ai(Point::new(400_000, 400_000), vec![champ(FOE, 2, 430_000, 400_000), champ(11, 2, 440_000, 410_000)]);
     f.profile[EGO] = 30;
-    assert!(c.pick(&f, d::AI_ENGAGE_RANGE).is_none(), "three together: not alone");
+    assert!(c.pick(&f, d::AI_ENGAGE_RANGE).is_none(), "two together: not alone");
     c.ult = Some(SecondWind { anchor: f.pos, hp: 1500, until: 400, roof: false });
     assert!(c.pick(&f, d::AI_ENGAGE_RANGE).is_some());
+    f.units.push(champ(12, 2, 445_000, 390_000));
+    assert!(c.pick(&f, d::AI_ENGAGE_RANGE).is_none(), "three against him alone: outnumbered, tag or not");
 }
 
 #[test]
@@ -1056,26 +1064,93 @@ fn hurt_on_a_wall_he_comes_down_instead_of_trading() {
 }
 
 #[test]
-fn retreats_go_down_never_up() {
-    // on the ground: hurt among enemies with a wall close: never a mount
+fn retreats_climb_a_safe_wall_then_hop_along_walls_or_come_down() {
     let w = cell(10, 10);
+    // on the ground: hurt among enemies, a wall close on the far side from them: up it
     let mut c = Core::default();
-    let mut f = ai(Point::new(w.x + 30_000, w.y), vec![champ(FOE, 2, w.x + 50_000, w.y), champ(11, 2, w.x + 55_000, w.y + 10_000)]);
+    let mut f = ai(Point::new(w.x + 30_000, w.y), vec![champ(FOE, 2, w.x + 70_000, w.y), champ(11, 2, w.x + 75_000, w.y + 10_000)]);
     f.terrain = walls(&[(10, 10)]);
     f.ult_unlocked = false;
     f.hp = 500;
     c.hp_log = vec![(0, 900)];
     let mut o = vec![];
-    assert_ne!(c.decide(&f, &mut o), Some(Order::Mount));
-    // on a wall: down toward home or his teammates, never a hop to another wall
+    assert_eq!(c.decide(&f, &mut o), Some(Order::Mount));
+    // a wall on the enemies' side: not that one
+    let mut c = Core::default();
+    let mut g = f.clone();
+    g.pos = Point::new(w.x - 30_000, w.y);
+    assert_ne!(c.decide(&g, &mut o), Some(Order::Mount));
+    // on a wall while escaping: a hop to a wall farther from the danger, toward home
     let mut c = Core { roof: true, ..Core::default() };
-    let mut g = ai(w, vec![champ(FOE, 2, w.x + 30_000, w.y), champ(11, 2, w.x + 35_000, w.y + 10_000)]);
-    g.terrain = walls(&[(10, 10), (5, 10)]);
-    g.ult_unlocked = false;
-    g.hp = 500;
+    let mut h = ai(w, vec![champ(FOE, 2, w.x + 30_000, w.y), champ(11, 2, w.x + 35_000, w.y + 10_000)]);
+    h.terrain = walls(&[(10, 10), (6, 13)]);
+    h.home = Point::new(96_000, 864_000);
+    h.ult_unlocked = false;
+    h.hp = 500;
     c.hp_log = vec![(0, 900)];
-    let order = c.decide(&g, &mut o);
-    assert!(matches!(order, Some(Order::DropKick(_))), "{order:?}");
+    assert_eq!(c.decide(&h, &mut o), Some(Order::Hop(cell(6, 13))));
+    // no wall that way: down toward home
+    let mut c = Core { roof: true, ..Core::default() };
+    let mut k = h.clone();
+    k.terrain = walls(&[(10, 10)]);
+    c.hp_log = vec![(0, 900)];
+    assert!(matches!(c.decide(&k, &mut o), Some(Order::DropKick(_))));
+}
+
+#[test]
+fn a_kick_leads_to_hits_not_a_pushback() {
+    let c = Core::default();
+    // no teammate anywhere, open ground: no direction worth a kick (it would only push the enemy away)
+    let mut f = frame(0, Point::new(400_000, 400_000), vec![champ(FOE, 2, 410_000, 400_000)]);
+    f.profile[SKILL_HIT] = 100;
+    assert!(c.kick_options(&f, f.unit(FOE).unwrap(), None).is_empty());
+    // a teammate where it would land: toward them
+    let mut g = f.clone();
+    g.units.push(champ(5, 1, 340_000, 400_000));
+    let opts = c.kick_options(&g, g.unit(FOE).unwrap(), None);
+    assert!(!opts.is_empty() && opts[0].1 .0 < -0.9);
+    // into a wall only when he can follow it
+    let mut h = f.clone();
+    h.terrain = walls(&[(11, 12)]); // x 352,000..384,000: the kick west stops on it, 26,000 from him
+    assert!(!c.kick_options(&h, h.unit(FOE).unwrap(), None).is_empty());
+    let none = Core { dashes: 0, ..Core::default() };
+    let mut far = f.clone();
+    far.terrain = walls(&[(15, 12)]); // east, 75,000 out: too far to follow without a dash
+    assert!(none.kick_options(&far, far.unit(FOE).unwrap(), None).is_empty());
+}
+
+#[test]
+fn after_a_kick_he_goes_after_the_kicked_target() {
+    let mut c = Core::default();
+    let mut f = ai(Point::new(400_000, 400_000), vec![champ(FOE, 2, 470_000, 400_000), champ(5, 1, 480_000, 410_000)]);
+    f.ult_unlocked = false;
+    c.last_kicked = Some((FOE, 200));
+    c.marks.push((FOE, 200));
+    let mut o = vec![];
+    assert_eq!(c.decide(&f, &mut o), Some(Order::Dash(FOE)));
+    // no dash charge: he walks to it
+    let mut c = Core { dashes: 0, ..Core::default() };
+    c.last_kicked = Some((FOE, 200));
+    let mut o = vec![];
+    assert_eq!(c.decide(&f, &mut o), None);
+    assert_eq!(steers(&o), vec![Point::new(470_000, 400_000)]);
+}
+
+#[test]
+fn he_doesnt_join_a_fight_four_against_two() {
+    let f = ai(
+        Point::new(400_000, 400_000),
+        vec![champ(5, 1, 250_000, 400_000), champ(FOE, 2, 240_000, 410_000), champ(11, 2, 245_000, 390_000), champ(12, 2, 235_000, 400_000), champ(13, 2, 250_000, 420_000)],
+    );
+    assert_eq!(Core::help_target(&f), None);
+    assert!(Core::default().pick(&f, d::AI_HELP_RANGE).is_none());
+    // a 2v2: he goes
+    let g = ai(Point::new(400_000, 400_000), vec![champ(5, 1, 250_000, 400_000), champ(6, 1, 255_000, 405_000), champ(FOE, 2, 240_000, 410_000), champ(11, 2, 245_000, 390_000)]);
+    assert!(Core::help_target(&g).is_some());
+    // Ego 80 doesn't tag into a 1v3
+    let mut h = ai(Point::new(400_000, 400_000), vec![champ(FOE, 2, 412_000, 400_000), champ(11, 2, 420_000, 410_000), champ(12, 2, 425_000, 390_000)]);
+    h.profile[EGO] = 80;
+    assert!(!Core::default().engage_tag(&h, &h.unit(FOE).unwrap().clone()));
 }
 
 #[test]

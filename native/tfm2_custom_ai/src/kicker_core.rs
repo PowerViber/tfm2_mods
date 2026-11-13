@@ -1120,6 +1120,13 @@ impl Core {
     pub fn in_fight(f: &Frame, u: &Unit) -> bool {
         f.allies().any(|a| a.pos.within(u.pos, d::AI_FIGHT_RANGE))
     }
+    /// Too many of them there: enemy champions within 60,000 of `at` against his team there, him included. Two more
+    /// than his side, or three with fewer than two of his.
+    pub fn outnumbered(f: &Frame, at: Point) -> bool {
+        let enemies = f.enemy_champions().filter(|u| u.pos.within(at, 60_000)).count();
+        let ours = 1 + f.allies().filter(|a| a.pos.within(at, 60_000)).count();
+        enemies >= ours + 2 || (enemies >= 3 && ours < 2)
+    }
     /// A fight is on around him: a teammate within the fight range of an enemy champion, close to him.
     pub fn fight_on(f: &Frame) -> bool {
         f.enemy_champions().any(|e| e.pos.within(f.pos, d::AI_ENGAGE_RANGE) && Self::in_fight(f, e))
@@ -1145,7 +1152,7 @@ impl Core {
     /// Would he start a fight with `u`? Ego leads; his HP, the target's HP and help on both sides weigh. Joining a
     /// fight his team is already in, or fighting under the tag, needs no Ego.
     pub fn would_start(&self, f: &Frame, u: &Unit) -> bool {
-        if self.tagged() || Self::in_fight(f, u) {
+        if (self.tagged() || Self::in_fight(f, u)) && !Self::outnumbered(f, u.pos) {
             return true;
         }
         let target_pct = u.hp * 100 / u.max_hp.max(1);
@@ -1165,7 +1172,7 @@ impl Core {
     /// tagged with a high Ego). Nearer, lower, alone, fighting his team: better. Re-read every tick, so he switches
     /// to a better target instead of chasing one.
     pub fn score(&self, f: &Frame, u: &Unit, range: i64) -> Option<i64> {
-        if !u.pos.within(f.pos, range) || !self.would_start(f, u) {
+        if !u.pos.within(f.pos, range) || Self::outnumbered(f, u.pos) || !self.would_start(f, u) {
             return None;
         }
         let tagged = self.tagged();
@@ -1230,7 +1237,9 @@ impl Core {
         let ego = f.p(EGO);
         let pct = u.hp * 100 / u.max_hp.max(1);
         let tower = f.enemy_tower_at(u.pos).is_some();
-        if ego >= 60 {
+        if Self::outnumbered(f, u.pos) {
+            false
+        } else if ego >= 60 {
             true
         } else if ego >= 35 {
             !tower && (pct <= 50 || Self::isolated(f, u) || Self::fight_on(f))
@@ -1249,29 +1258,43 @@ impl Core {
     /// Kick directions for `u`, best first: (score, direction, where it lands). Directions that land it in his danger,
     /// under an enemy tower or among its team are left out. `peel`: an ally it was on (kick it away from them).
     pub fn kick_options(&self, f: &Frame, u: &Unit, peel: Option<Point>) -> Vec<(i64, (f64, f64), Point)> {
-        let mut cands: Vec<(i64, (f64, f64))> = vec![];
+        // (score, direction, kind): 0 toward a teammate, 1 peel, 2 out of a tower, 3 toward home, 4 into a wall
+        let mut cands: Vec<(i64, (f64, f64), u8)> = vec![];
         // peeling: never toward a teammate (the one it was on is the nearest)
         if let Some(a) = f.allies().filter(|_| peel.is_none()).filter(|a| a.pos.within(u.pos, d::AI_ALLY_RANGE + d::KICK_DISTANCE)).min_by_key(|a| (a.pos.d2(u.pos), a.id)) {
-            cands.push((100, unit_dir(u.pos, a.pos)));
+            cands.push((100, unit_dir(u.pos, a.pos), 0));
         }
         if let Some(p) = peel {
-            cands.push((90, unit_dir(p, u.pos)));
+            cands.push((90, unit_dir(p, u.pos), 1));
         }
         if let Some(tw) = f.units.iter().find(|w| w.tower && w.team != f.team && w.hp > 0 && w.pos.within(u.pos, d::AI_TOWER_RANGE)) {
-            cands.push((80, unit_dir(tw.pos, u.pos)));
+            cands.push((80, unit_dir(tw.pos, u.pos), 2));
         }
-        cands.push((60, unit_dir(u.pos, f.home)));
+        cands.push((60, unit_dir(u.pos, f.home), 3));
         for k in 0..16 {
             let dir = rotate((1.0, 0.0), k as f64 * 22.5);
             if f.flight(u.pos, dir, d::KICK_DISTANCE).1 {
-                cands.push((50, dir));
+                cands.push((50, dir, 4));
             }
         }
+        // a kick must lead to hits (Reihan: not a pushback): toward a teammate or home only with a teammate where it
+        // lands; into a wall only when he can follow it (a dash charge, or it lands close)
+        // a teammate along the flight or within 40,000 of where it lands
+        let teammate_at = |from: Point, land: Point| f.allies().any(|a| a.pos.seg(from, land).0 <= 40_000.0);
+        let can_follow = |land: Point| self.dashes > 0 || land.within(f.pos, 45_000);
         let others: Vec<&Unit> = f.enemy_champions().filter(|o| o.id != u.id).collect();
         let mut out = vec![];
-        for (score, dir) in cands {
+        for (score, dir, kind) in cands {
             let (land, _) = f.flight(u.pos, dir, d::KICK_DISTANCE);
             if f.enemy_tower_at(land).is_some() {
+                continue;
+            }
+            let followed = match kind {
+                0 | 3 => teammate_at(u.pos, land),
+                4 => can_follow(land),
+                _ => true,
+            };
+            if !followed {
                 continue;
             }
             let near_team = others.iter().filter(|o| o.pos.within(land, 40_000)).count();
@@ -1296,6 +1319,10 @@ impl Core {
     pub fn plan_kick(&self, f: &Frame, u: &Unit, peel: Option<Point>) -> Option<Order> {
         // never at a body still flying from his last kick: it would be gone before the strike
         if !self.kick_charge_ok(f, u, peel.is_some()) || u.parry || self.flights.iter().any(|fl| fl.target == u.id) {
+            return None;
+        }
+        // the target he just kicked is hit, not kicked away again (unless he's peeling)
+        if peel.is_none() && self.last_kicked.is_some_and(|k| k.0 == u.id) {
             return None;
         }
         let err = Self::aim_error(f);
@@ -1401,15 +1428,34 @@ impl Core {
                     return Some(Order::Dash(u.id));
                 }
             }
+            // where safety is: his teammates away from the danger, otherwise home
+            let safe = f
+                .allies()
+                .filter(|a| Self::danger_at(f, a.pos, None) < here)
+                .min_by_key(|a| (a.pos.d2(f.pos), a.id))
+                .map(|a| a.pos)
+                .unwrap_or(f.home);
             if self.roof {
-                // down toward his teammates if they're away from the danger, otherwise toward home
-                let safe = f
-                    .allies()
-                    .filter(|a| Self::danger_at(f, a.pos, None) < here)
-                    .min_by_key(|a| (a.pos.d2(f.pos), a.id))
-                    .map(|a| a.pos)
-                    .unwrap_or(f.home);
+                // along the walls: a hop to a wall farther from the danger, toward safety; else down toward safety
+                if self.hops > 0 {
+                    if let Some(c) = f
+                        .walls_near(f.pos, d::HOP_WALL_RANGE)
+                        .into_iter()
+                        .filter(|c| Self::danger_at(f, *c, None) < here && c.d2(safe) < f.pos.d2(safe) && !c.within(f.pos, 40_000))
+                        .min_by_key(|c| (Self::danger_at(f, *c, None), c.d2(safe), c.x, c.y))
+                    {
+                        return Some(Order::Hop(c));
+                    }
+                }
                 return Some(Order::DropKick(f.nearest_ground(f.pos.toward(safe, d::HOP_DROP_RANGE))));
+            }
+            // up a wall close by that is no closer to the danger (15% less damage, hidden beyond 40,000)
+            if f.tick >= self.mount_ready {
+                if let Some(c) = f.walls_near(f.pos, d::HOP_MOUNT_RANGE).into_iter().next() {
+                    if Self::danger_at(f, c, None) <= here && f.enemy_champions().all(|u| u.pos.d2(c) >= u.pos.d2(f.pos)) {
+                        return Some(Order::Mount);
+                    }
+                }
             }
         }
         // 2. peel: an enemy on a hurt teammate is kicked away from them
@@ -1426,8 +1472,24 @@ impl Core {
         if self.roof {
             return self.decide_roof(f, out);
         }
+        // 3. after a kick or a carry: go hit what he kicked (a Marked Dash onto it, or walk to it)
+        if let Some(u) = self.last_kicked.and_then(|k| f.unit(k.0)).filter(|u| f.enemy(u)).cloned() {
+            if let Some(fl) = self.flights.iter().find(|fl| fl.target == u.id) {
+                out.push(Effect::Steer { to: fl.to });
+                return None;
+            }
+            if !u.pos.within(f.pos, 25_000) && !Self::outnumbered(f, u.pos) {
+                if self.dashes > 0 && self.marked(u.id, f.tick) && u.pos.within(f.pos, d::DASH_RANGE) {
+                    return Some(Order::Dash(u.id));
+                }
+                if f.enemy_tower_at(u.pos).is_none() {
+                    out.push(Effect::Steer { to: u.pos });
+                    return None;
+                }
+            }
+        }
         let target = self.pick(f, d::AI_ENGAGE_RANGE);
-        // 3. a teammate in a fight farther off: go to it (a Marked Dash on anything marked that way, or walk)
+        // 4. a teammate in a fight farther off: go to it (a Marked Dash on anything marked that way, or walk)
         let help = Self::help_target(f);
         if let Some(at) = help {
             if target.as_ref().is_none_or(|u| !u.pos.within(at, 60_000)) && !at.within(f.pos, 45_000) {
@@ -1518,6 +1580,7 @@ impl Core {
     pub fn help_target(f: &Frame) -> Option<Point> {
         f.allies()
             .filter(|a| a.pos.within(f.pos, d::AI_HELP_RANGE) && f.enemy_champions().any(|e| e.pos.within(a.pos, d::AI_FIGHT_RANGE)))
+            .filter(|a| !Self::outnumbered(f, a.pos))
             .min_by_key(|a| (a.hp * 100 / a.max_hp.max(1), a.pos.d2(f.pos), a.id))
             .map(|a| a.pos)
     }
