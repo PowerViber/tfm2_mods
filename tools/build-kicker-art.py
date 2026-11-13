@@ -175,4 +175,3 @@ def main():
     if not native_path.exists() or native_path.read_text()!=native_text:native_path.write_text(native_text)
     print(json.dumps({'body_approved':True,'effects_approved':fxok,'poses':len(poses),'body_tags':len(bm),'effects':len(fm),'decoded_bytes':manifest['decoded_bytes']}))
 if __name__=='__main__':main()
-

@@ -1,7 +1,7 @@
 {
   "native": {
     "command": "cargo +stable-x86_64-pc-windows-gnu test --release --manifest-path native/tfm2_custom_ai/Cargo.toml",
-    "passed": 1251,
+    "passed": 1259,
     "failed": 0,
     "ignored": 18,
     "warnings": 4,
@@ -12,8 +12,8 @@
     "failed": 0
   },
   "browser": {
-    "checks": 20,
-    "passed": 20,
+    "checks": 25,
+    "passed": 25,
     "native_wasm_frames_equal": 213,
     "scenarios": 8,
     "art_on_off_combat_equal": true
@@ -31,14 +31,42 @@
     ]
   },
   "manager_comparison": {
-    "files": 888,
+    "files": 890,
     "different": 0,
     "isolated": true
   },
-  "native_dll_changed": false,
+  "native_dll_changed": true,
   "live_game": "pending by user request",
   "manager_load_tests": {
     "passed": 15,
     "failed": 0
+  },
+  "native_targeted": {
+    "passed": 44,
+    "failed": 0,
+    "scope": "Final presentation optimization and all Kicker wall/control/effect tests"
+  },
+  "wall_change": {
+    "revision": "kicker-1.1",
+    "wall_range": 300000,
+    "actual_map_gap": 226274.16997969523,
+    "persistent_roof": true,
+    "stun_interrupts_long_hop": true
+  },
+  "package": {
+    "native": "0.10.102",
+    "champion_pack": "0.2.105",
+    "rules": "kicker-1.1",
+    "baseCommit": "2b7da261b1078269b484aa7ac59561fa64c1f023",
+    "sourceDateEpoch": "1794510241",
+    "nativeSourcesSha256": "2fc0b4618006b31608e2dcd8cf2f0908a44a48e60488bdf18b5ab541a9d1d920",
+    "toolchain": "rustc 1.98.1 (48a229cea 2026-09-01)",
+    "builtDllSha256": "e4216a3a2d98d26b5c55ba3fef323627fc8cafefd822c5491755b3433c8f1ea8",
+    "reproducedDllSha256": "e4216a3a2d98d26b5c55ba3fef323627fc8cafefd822c5491755b3433c8f1ea8",
+    "packagedDllSha256": "e4216a3a2d98d26b5c55ba3fef323627fc8cafefd822c5491755b3433c8f1ea8",
+    "wasmSha256": "ca03179e6389224c924e82de58bcba6cb97d10a968d00df433e62620e0c0c2f0",
+    "installed": false,
+    "careerMigrationApplied": false,
+    "liveAcceptance": "Pending by user request"
   }
 }

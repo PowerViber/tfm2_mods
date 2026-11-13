@@ -60,4 +60,3 @@ def main():
   'live_game':'pending by user request','packaged_dll_sha256':sha(ROOT/'mods/tfm2_custom_ai/tfm2_custom_ai.dll')}
  (OUT/'verification.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report,indent=2))
 if __name__=='__main__':main()
-

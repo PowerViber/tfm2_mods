@@ -47,7 +47,6 @@ impl Presenter {
         Some((cue, ttl))
     }
 }
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -85,4 +84,3 @@ mod tests {
         assert!(Presenter::default().next(&c,&f).unwrap().1<=MAX_RENEW_TICKS);
     }
 }
-

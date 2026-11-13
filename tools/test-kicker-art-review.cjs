@@ -6,4 +6,3 @@ const fs=require('fs'),assert=require('assert');(async()=>{const b=await chromiu
  const result=await p.evaluate(()=>{const L=kickerLab;L.pause();L.step();const initial={walls:L.walls.filter(Boolean).length,matching:L.world.geometry.registration.matching,stats:document.querySelectorAll('#athleteStats input').length,actors:L.units.length,missing:L.units.filter(u=>!u.sprite).length};L.order('mount');for(let i=0;i<90;i++)L.step();return{...initial,mount:L.state.roof,tick:L.tick};});console.log(result,errors);assert(errors.length===0,errors.join(';'));assert(result.stats===13&&result.matching===900&&result.missing===0);await p.locator('#map').screenshot({path:'docs/kicker-art-review/lab-candidate.png'});
  fs.writeFileSync('docs/kicker-art-review/browser-review.json',JSON.stringify({result,errors,scope:'Review-only assets and WASM modeled host; actual-game acceptance pending'},null,2));
  }finally{await b.close();}})().catch(e=>{console.error(e);process.exit(1);});
-

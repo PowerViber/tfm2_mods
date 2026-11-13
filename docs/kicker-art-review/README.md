@@ -8,13 +8,15 @@ Reihan approved revision 2 on 2026-11-13: **“Approve the revised appearance.�
 
 Complete connected drawings cover idle, eight-frame jogging, basic snap kick, leap, throw, spray-tag, hit, defeat, rooftop perch, short/long hop, special kick and dive. Both facings and compatibility aliases are packed. One palette derived from the approved idle prevents idle/movement lighting changes. Jogging is 48 ticks per cycle; basic contact begins at the canonical ninth tick. Foot and world anchors stay fixed.
 
-The real approved body sheet and fanim are integrated under `mods/tfm2_custom/champions/tfm2_custom_kicker#*`. The only champion-definition change is its sprite path. Rules, native controller/core, WASM, athlete profiles and packaged DLL remain byte-identical to the PR baseline.
+The real approved body sheet and fanim are integrated under `mods/tfm2_custom/champions/tfm2_custom_kicker#*`. The approved effects are integrated under `mods/tfm2_custom/vfx/kicker#*`. The later wall-hop correction advances shared rules to `kicker-1.1`; damage, stats, cooldowns and athlete profiles retain the PR baseline values.
 
 **Native pose limitation:** leave `art_v1` disabled. Its legacy Animation CC route would add control merely to display a pose, especially during Rock Throw. Native retains the visible engine-owned idle/movement/basic body. Hop, perch and native technique drawings can be inspected in the Lab; a safe native pose override is not claimed. No body hiding or renewed idle/basic CC was added.
 
-## Effects — separate approval pending
+## Approved effects and native presentation
 
-Original takeoff/landing dust, 15,000-radius Drop-in ring, directional rocks, impacts, kick trails, wall slams, Skyfall streaks, Second Wind tag/return and status marks are previewed in `effects-comparison.png` and the animated review. They remain outside the game package. Body approval does not approve these effects.
+Reihan separately approved the effects on 2026-11-13: **“Approve these effects.”** Original takeoff/landing dust, 15,000-radius Drop-in ring, directional rocks, impacts, kick trails, wall slams, Skyfall streaks, Second Wind tag/return and status marks are integrated. Sources and material pixels remain frozen. Attachment variants add transparent padding only; native and Lab use the same offsets.
+
+The native presenter reads the existing frame and accepted core state. It follows each travelling rock, kicked unit and Skyfall position, and renews the Second Wind anchor only while active. One single-frame lease per update shares the existing token bucket and its critical-impact reserve. Cleanup stops renewals; a previously emitted lease expires within at most ten ticks. Idle presentation allocates no cue list, reads no additional world snapshot and writes no combat state. No hidden targets are used for trails.
 
 A single versioned art manifest, `rules/kicker-art.json`, drives extraction, frame timing and Lab presentation. The builder produces the native body fanim and the shared presentation manifest. Atlas sizes are body 1024×512 and effects 512×512; together they decode to **3,145,728 bytes**, below 32 MiB. Both are below the 2048-pixel limit.
 
@@ -30,9 +32,13 @@ rtk proxy python tools/generate-kicker.py
 rtk proxy python tools/verify-kicker-art.py
 ```
 
-The verifier rebuilds packing twice, checks hashes, bounds, timing, mirrored pixels, foot anchors, body integration, absent unapproved FX and unchanged native mechanics/DLL. The original concept extractor remains for reproducing historical comparisons; the complete-art builder owns production outputs.
+The verifier rebuilds packing twice and checks hashes, bounds, timing, mirrored pixels, foot anchors, body/FX integration, attachment pixels and unchanged damage/stats/cooldowns. The only balance-rule edits are the wall-hop range and rules revision; state-transition tests cover persistent walls and interruption. The package builder separately verifies two identical DLL builds. The original concept extractor remains for historical comparisons; the complete-art builder owns production outputs.
 
 ## Playable Lab and review
+
+The requested wall pair is 226,274 units apart in the actual map. Wall-to-wall range is now **300,000** (previously 60,000), with unchanged charges, cooldown, speed and initial 40,000 mount range. Roof is an accepted stance: walking or a coarse ground-cell classification cannot automatically dismount him. Hard control interrupts even a long wall hop; deliberate Drop Kick/Skyfall still lands with the normal Drop-in. Death and Second Wind retain their original lifecycle rules.
+
+The Lab canvas is square rather than stretched by the sidebar. A range guide appears while on a wall; Shift+Q issues Drop-in and a stun button exercises interruption. The host model replaces an interrupted glide instead of resuming an old trajectory after landing.
 
 Run `tools/start-kicker-review.ps1` for port 7306.
 
@@ -46,23 +52,23 @@ Run `tools/start-kicker-review.ps1` for port 7306.
 
 ## Evidence
 
-Fresh checks for the completed approved body:
+Fresh checks for the approved artwork and wall-state correction:
 
 | Check | Result |
 |---|---|
-| Native GNU release suite | 1,251 passed, 18 ignored; four inherited unused-helper warnings in native_bridge/detour_tests.rs |
+| Native GNU release suite | 1,259 passed, 18 ignored; four inherited unused-helper warnings in native_bridge/detour_tests.rs |
 | Kicker Lab | Three tests passed |
-| Browser | 20 checks passed, eight scenario fixtures, 55 actors with stock sprite keys |
+| Browser | 25 checks passed, including the actual photographed wall pair, persistent stance, deliberate Drop-in, mid-hop stun and square map scale |
 | Native/WASM | 213 complete output frames identical |
 | Artwork enabled/disabled | Identical core inputs, outputs and model combat state |
-| Packing | Reproducible hashes; 285 animation-frame entries checked |
+| Packing | Reproducible hashes; 294 animation-frame entries checked |
 | Mod Manager tests | 15 passed, including the repository champion-load check |
-| Isolated Mod Manager comparison | 888 files identical; no installation or migration |
+| Isolated Mod Manager comparison | 890 files identical; no installation or migration |
 
-Machine-readable results are in `automated-results.json`, `browser-complete.json`, `verification.json` and `mod-manager.json`. Historical v1/v2 evidence remains separate.
+Machine-readable results are in `automated-results.json`, `browser-complete.json`, `verification.json`, `package.json` and `mod-manager.json`. Historical body-only evidence remains under `body-phase-*`; v1/v2 evidence remains separate.
 
 ## Pending gates
 
 Reihan explicitly deferred real-game checks to focus on artwork. Native wall standing/targetability/safe landing, kick/carry placement, Second Wind against towers/true damage with no kill, and real Flash cooldown use remain pending.
 
-Effects approval, safe native special-pose presentation, release packaging, actual-game visual acceptance, installation and backed-up career migration remain separate. No version or DLL was changed by this artwork pass.
+Safe native special-pose presentation, actual-game visual acceptance, installation and backed-up career migration remain separate. PR #80 retains its unused release reservations: native 0.10.102 and pack 0.2.105. The DLL and WASM are built from the final sources; `package.json` records two identical DLL builds and their hashes. No installation or migration is performed.

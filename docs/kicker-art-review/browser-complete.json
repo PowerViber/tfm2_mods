@@ -1,5 +1,5 @@
 {
-  "checks": 20,
+  "checks": 25,
   "passed": [
     "HTTP kicker-review.html",
     "HTTP editor/kicker-review.html",
@@ -12,12 +12,17 @@
     "14 full-body poses / both facings",
     "8 jogging drawings, 48 ticks",
     "all body rectangles in atlas",
-    "body approved; effects still gated",
+    "body and effects approved and integrated",
     "eight actual-map situations execute",
     "art on/off leaves complete inputs, outputs and model state identical",
     "native/WASM complete output parity",
     "mount at a real nearby wall",
     "roof throws three actual core rocks",
+    "photographed actual-map wall gap is reachable",
+    "ground classification does not drop wall stance",
+    "deliberate Drop-in still lands on ground",
+    "stun interrupts a long hop and does not resume the old glide",
+    "map canvas is square at one world scale",
     "actual WASD input moves on legal map",
     "focus loss clears held input",
     "no browser exceptions"
@@ -29,7 +34,7 @@
     "allFacings": true,
     "frameBounds": true,
     "native": true,
-    "effectsIntegrated": false,
+    "effectsIntegrated": true,
     "bodyIntegrated": true
   },
   "scenarios": [
@@ -109,8 +114,19 @@
     },
     "error": false
   },
+  "wallChange": {
+    "realWalls": true,
+    "distance": 226274.16997969523,
+    "range": 300000,
+    "arrived": true,
+    "noAutoDrop": true,
+    "drop": true,
+    "interrupted": true,
+    "stunDrop": true,
+    "aspect": 1
+  },
   "errors": [],
   "live_game": "pending by user request",
   "native_special_poses": "disabled; no Animation CC enabled",
-  "effects": "review-only; approval pending"
+  "effects": "approved and integrated"
 }

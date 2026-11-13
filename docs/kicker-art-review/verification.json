@@ -1,6 +1,5 @@
 {
-  "approved_body": true,
-  "effects_integrated": false,
+  "body_and_effects_approved": true,
   "decoded_bytes": 3145728,
   "atlases": {
     "body": {
@@ -16,28 +15,21 @@
         512,
         512
       ],
-      "tags": 55,
-      "sha256": "61198674162c60c6f794b8168f314c5a7e7bbd2e97c38bd3ef19abbe7b19fbd7"
+      "tags": 64,
+      "sha256": "b0f1bd8f7054be69555ce1b0a7b0cf21d082978fcc18cfeb38b78da799134a25"
     }
   },
-  "frame_entries": 285,
+  "frame_entries": 294,
   "reproducible_packing": true,
   "foot_anchor": [
     32,
     48
   ],
-  "whole_body_drawings": true,
-  "unchanged_native_and_rules": [
-    "rules/kicker.json",
-    "native/tfm2_custom_ai/src/kicker.rs",
-    "native/tfm2_custom_ai/src/kicker_core.rs",
-    "native/tfm2_custom_ai/src/kicker_data.rs",
-    "native/kicker_lab/src/lib.rs",
-    "editor/kicker-data.js",
-    "editor/kicker.wasm",
-    "mods/tfm2_custom_ai/tfm2_custom_ai.dll"
-  ],
-  "packaged_dll_sha256": "240dc001fba2e90607aa9e07203a039599814576b672a86c60650566797eb937",
-  "live_game": "pending at user request",
-  "special_native_pose_override": "disabled to avoid adding Animation CC"
+  "wall_range": 300000,
+  "rules_revision": "kicker-1.1",
+  "unchanged_damage_stats_cooldowns": true,
+  "native_special_pose_cc_enabled": false,
+  "native_effects": "short single-frame leases within the existing budget; no more than one per update",
+  "live_game": "pending by user request",
+  "packaged_dll_sha256": "e4216a3a2d98d26b5c55ba3fef323627fc8cafefd822c5491755b3433c8f1ea8"
 }

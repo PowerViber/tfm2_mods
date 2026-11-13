@@ -102,4 +102,3 @@ const fs=require('fs'),assert=require('assert'),cp=require('child_process');
   fs.writeFileSync('docs/kicker-art-review/browser-complete.json',JSON.stringify(report,null,2));console.log(JSON.stringify(report,null,2));
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exit(1);});
-

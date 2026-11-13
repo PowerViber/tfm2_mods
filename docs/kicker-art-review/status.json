@@ -1,18 +1,24 @@
 {
   "appearance_approved": true,
-  "effects_approved": false,
-  "native_rules_changed": false,
+  "effects_approved": true,
+  "native_rules_changed": true,
   "live_acceptance": {
     "wall_standing_targetability_safe_landing": "pending",
     "kick_and_skyfall_landing": "pending",
     "second_wind_true_damage_towers_no_kill": "pending",
     "real_flash_cooldown": "pending"
   },
-  "reason": "Approved revised appearance completed and integrated; effects require separate approval. Live checks deferred by user.",
+  "reason": "Both artwork approvals recorded. Wall-to-wall range increased and wall state persists across terrain cells; hard control and Drop-in still dismount.",
   "review_revision": "kicker-art-1",
   "rejected_revision": "kicker-art-concept-1",
   "native_body_integrated": true,
-  "native_effects_integrated": false,
+  "native_effects_integrated": true,
   "approved_appearance": "kicker-art-concept-2",
-  "native_special_poses": "Disabled to avoid adding Animation CC; native keeps its real visible base."
+  "native_special_poses": "Disabled to avoid adding Animation CC; native keeps its real visible base.",
+  "rules_revision": "kicker-1.1",
+  "wall_hop_range": 300000,
+  "release_packaging": "Two identical DLL builds, reserved native 0.10.102 / pack 0.2.105",
+  "installation": "not performed",
+  "career_migration": "not performed",
+  "packaged_dll_sha256": "e4216a3a2d98d26b5c55ba3fef323627fc8cafefd822c5491755b3433c8f1ea8"
 }
