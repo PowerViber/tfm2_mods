@@ -3963,3 +3963,12 @@ Approved effects are integrated in PR #77. Check Thalassa’s water-only wave and 
   - does he arrive in time;
   - does he dash on minions sensibly;
   - is there any wall/ground flip-flopping.
+
+## Nov 13: round 172 (native 0.10.106, tfm2_custom 0.2.109), `kicker-1.6`: kicks lead to hits, no 1v4, wall escapes
+- **What Reihan saw:** he pushed enemies away without hitting them, dived 1v4, and retreated on foot.
+- **Now:**
+  - kicks go only where someone can hit the target, and he follows (a dash or a walk);
+  - no re-kick of the same target;
+  - fights and tags are checked for numbers;
+  - retreats climb a safe wall and hop along walls, then come down when safe.
+- **Watch for:** fewer kicks overall (he holds them when nobody can follow up); is that too passive?
