@@ -68,3 +68,8 @@ The full kit and AI are in `docs/kagami-guide.md`. In short:
   - Mod Manager tests: 15 passed.
 - **DLL:** the Windows DLL reports **0.10.108**.
 - **Not checked here:** how the summoned `priest` clone looks and moves in the real game, and whether a banished ally keeps the `kg_sealed` buff visual.
+
+
+## Codex follow-up, 15 November 2026
+
+Approved outlined original body, Reflection and silver/lavender effects are integrated; all thirteen athlete decisions, seal/swap Global Flash guards and the actual-map playable Lab are included. Kit numbers are unchanged. See [the art/Lab review](kagami-art-lab-review.md) for previews, hashes, verification and live limitations. Earlier placeholder notes describe the original PR head. Installation and career migration remain separate.

@@ -61,7 +61,7 @@ champ['attack'].update(duration=b['duration'], cooltime=b['cooldownTicks'], star
                                'applied_effects': [{'effect': {'type': 'Attack', 'damage': 0, 'attack_ratio': 100}, 'casting_type': 'Targeting'}]})
 for slot in ['skill', 'skill2', 'ult']:
     champ[slot]['description'] = '#asset/base/text/champion?description.' + ID + '.' + slot
-champ['passive'] = {'passive_ref': 'tfm2_custom_ai:kagami', 'params': {}}
+champ['passive'] = {'passive_ref': 'tfm2_custom_ai:kagami', 'params': {'art_v1': 1} if (ROOT / 'rules/kagami-art.json').exists() else {}}
 champ['passive_ult'] = {'passive_ref': 'tfm2_custom_ai:ult_learned', 'params': {}}
 VFX = 'asset/tfm2_custom/vfx/kagami'
 if (ROOT / 'mods/tfm2_custom/vfx/kagami#sheet.png').exists():
@@ -75,6 +75,11 @@ PLACEHOLDER = {'swap': 'swap', 'stun_burst': 'surge', 'seal': 'rescue', 'revive'
 if (ROOT / 'mods/tfm2_custom/vfx/kagami#sheet.png').exists():
     champ['view_effects'] = [dict(type='Animation', name='kg_' + e, anim=VFX, tag=e, z=5, is_follow=False) for e in PLACEHOLDER]
     champ['view_buffs'] = [dict(type='Animated', name=n, anim=VFX, tag=n[3:], z=4) for n in ('kg_sealed', 'kg_charm', 'kg_revived')]
+    manifest=json.loads((ROOT/'rules/kagami-art.json').read_text())
+    for tag in manifest['effects']:
+        if (tag.startswith('clone_') and tag != 'clone_in') or tag.startswith('thread_p'):
+            champ['view_effects'].append(dict(type='Animation',name='kg_'+tag,anim=VFX,tag=tag,z=1 if tag.startswith('clone_') else 3,is_follow=tag.startswith('clone_')))
+
 else:
     TLS = 'asset/tfm2_custom/vfx/thalassa'
     champ['view_effects'] = [dict(type='Animation', name='kg_' + e, anim=TLS, tag=tag, z=-2 if e == 'thread' else 5, is_follow=False) for e, tag in PLACEHOLDER.items()]

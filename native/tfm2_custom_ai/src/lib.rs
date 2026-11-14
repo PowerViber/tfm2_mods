@@ -66,6 +66,8 @@ mod kicker_presentation;
 mod kicker_data;
 mod kagami;
 #[allow(dead_code)] mod kagami_core;
+mod kagami_ai;
+mod kagami_art;
 #[cfg(test)] mod kagami_tests;
 mod kagami_data;
 mod akane_presentation;

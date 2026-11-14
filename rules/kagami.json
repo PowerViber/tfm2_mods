@@ -8,7 +8,7 @@
     "Heal",
     "Shield"
   ],
-  "revision": "kagami-1.0",
+  "revision": "kagami-1.1",
   "stat": {
     "attack": 52,
     "magic_power": 0,
@@ -112,7 +112,15 @@
     "fightRange": 70000,
     "escapeRange": 90000,
     "hurtPct": 8,
-    "hurtTicks": 30
+    "hurtTicks": 30,
+    "reactionSlowTicks": 24,
+    "reactionFastTicks": 6,
+    "placementError": 6000,
+    "leadMinPct": 30,
+    "candidateLimit": 64,
+    "beamWidth": 8,
+    "maxContinuation": 3,
+    "sightingTicks": 180
   },
   "fxTokens": 12
 }

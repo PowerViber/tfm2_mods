@@ -2,6 +2,8 @@
 //! The page models the host (positions, glides, swaps, seals, hits); the rules and her AI all come from the core.
 #[path = "../../tfm2_custom_ai/src/kagami_core.rs"]
 pub mod kagami_core;
+#[path = "../../tfm2_custom_ai/src/kagami_ai.rs"]
+pub mod kagami_ai;
 #[path = "../../tfm2_custom_ai/src/kagami_data.rs"]
 pub mod kagami_data;
 use kagami_core::*;
@@ -27,7 +29,10 @@ pub struct Session {
 fn valid(f: &Frame) -> bool {
     let point = |p: Point| p.on_map();
     point(f.pos)
-        && f.units.len() <= 64
+        && f.units.len() <= 128
+        && (f.terrain.is_empty() || f.terrain.len() == 900)
+        && f.hazards.len() <= 16
+        && f.hazards.iter().all(|h| point(h.at) && (0..=960_000).contains(&h.radius))
         && f.profile.iter().all(|v| (0..=100).contains(v))
         && (1..=100_000_000).contains(&f.max_hp)
         && (0..=f.max_hp).contains(&f.hp)

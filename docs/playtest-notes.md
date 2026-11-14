@@ -3998,3 +3998,8 @@ Approved effects are integrated in PR #77. Check Thalassa’s water-only wave and 
   - does the clone stay useful (not lost far away, not dying instantly);
   - does Guardian Angel save her from divers;
   - how the clone body looks and slides in the game.
+
+
+### Kagami artwork and checklist follow-up (15 November 2026)
+
+Outlined body/effects approved and integrated. All thirteen athlete values affect decisions without changing skill strength. Global Flash is blocked during seals and participant swaps. The actual-map Lab uses stock actors and repeatable situations. Automated evidence and pending clone/seal/save live checks: docs/kagami-art-lab-review.md. No real installation or career migration was performed.

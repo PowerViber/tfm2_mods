@@ -7,7 +7,7 @@
     "Heal",
     "Shield"
   ],
-  "sprite": "asset/tfm2_custom/champions/tfm2_custom_thalassa",
+  "sprite": "asset/tfm2_custom/champions/tfm2_custom_kagami",
   "anim_prefix": "",
   "stat": {
     "attack": 52,
@@ -117,7 +117,9 @@
   },
   "passive": {
     "passive_ref": "tfm2_custom_ai:kagami",
-    "params": {}
+    "params": {
+      "art_v1": 1
+    }
   },
   "passive_ult": {
     "passive_ref": "tfm2_custom_ai:ult_learned",
@@ -127,15 +129,22 @@
     {
       "type": "Animated",
       "name": "kg_sealed",
-      "anim": "asset/tfm2_custom/vfx/thalassa",
-      "tag": "rescue_shield",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "sealed",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "kg_charm",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "charm",
       "z": 4
     },
     {
       "type": "Animated",
       "name": "kg_revived",
-      "anim": "asset/tfm2_custom/vfx/thalassa",
-      "tag": "rescue_shield",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "revived",
       "z": 4
     }
   ],
@@ -143,7 +152,7 @@
     {
       "type": "Animation",
       "name": "kg_swap",
-      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "anim": "asset/tfm2_custom/vfx/kagami",
       "tag": "swap",
       "z": 5,
       "is_follow": false
@@ -151,73 +160,633 @@
     {
       "type": "Animation",
       "name": "kg_stun_burst",
-      "anim": "asset/tfm2_custom/vfx/thalassa",
-      "tag": "surge",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "stun_burst",
       "z": 5,
       "is_follow": false
     },
     {
       "type": "Animation",
       "name": "kg_seal",
-      "anim": "asset/tfm2_custom/vfx/thalassa",
-      "tag": "rescue",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "seal",
       "z": 5,
       "is_follow": false
     },
     {
       "type": "Animation",
       "name": "kg_revive",
-      "anim": "asset/tfm2_custom/vfx/thalassa",
-      "tag": "trident_land",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "revive",
       "z": 5,
       "is_follow": false
     },
     {
       "type": "Animation",
       "name": "kg_angel",
-      "anim": "asset/tfm2_custom/vfx/thalassa",
-      "tag": "bounce",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "angel",
       "z": 5,
       "is_follow": false
     },
     {
       "type": "Animation",
       "name": "kg_clone_in",
-      "anim": "asset/tfm2_custom/vfx/thalassa",
-      "tag": "twin_spawn",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "clone_in",
       "z": 5,
       "is_follow": false
     },
     {
       "type": "Animation",
       "name": "kg_charm",
-      "anim": "asset/tfm2_custom/vfx/thalassa",
-      "tag": "dive_out",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "charm",
       "z": 5,
       "is_follow": false
     },
     {
       "type": "Animation",
       "name": "kg_heal",
-      "anim": "asset/tfm2_custom/vfx/thalassa",
-      "tag": "pool_rise",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "heal",
       "z": 5,
       "is_follow": false
     },
     {
       "type": "Animation",
       "name": "kg_shard_hit",
-      "anim": "asset/tfm2_custom/vfx/thalassa",
-      "tag": "bump",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "shard_hit",
       "z": 5,
       "is_follow": false
     },
     {
       "type": "Animation",
       "name": "kg_thread",
-      "anim": "asset/tfm2_custom/vfx/thalassa",
-      "tag": "tide_link",
-      "z": -2,
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "thread",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "kg_clone_idle_0",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "clone_idle_0",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "kg_clone_idle_1",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "clone_idle_1",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "kg_clone_idle_2",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "clone_idle_2",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "kg_clone_idle_3",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "clone_idle_3",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "kg_clone_idle_0_l",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "clone_idle_0_l",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "kg_clone_idle_1_l",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "clone_idle_1_l",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "kg_clone_idle_2_l",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "clone_idle_2_l",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "kg_clone_idle_3_l",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "clone_idle_3_l",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "kg_clone_run_0",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "clone_run_0",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "kg_clone_run_1",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "clone_run_1",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "kg_clone_run_2",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "clone_run_2",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "kg_clone_run_3",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "clone_run_3",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "kg_clone_run_4",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "clone_run_4",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "kg_clone_run_5",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "clone_run_5",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "kg_clone_run_0_l",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "clone_run_0_l",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "kg_clone_run_1_l",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "clone_run_1_l",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "kg_clone_run_2_l",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "clone_run_2_l",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "kg_clone_run_3_l",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "clone_run_3_l",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "kg_clone_run_4_l",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "clone_run_4_l",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "kg_clone_run_5_l",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "clone_run_5_l",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "kg_clone_attack_0",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "clone_attack_0",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "kg_clone_attack_1",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "clone_attack_1",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "kg_clone_attack_2",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "clone_attack_2",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "kg_clone_attack_3",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "clone_attack_3",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "kg_clone_attack_0_l",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "clone_attack_0_l",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "kg_clone_attack_1_l",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "clone_attack_1_l",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "kg_clone_attack_2_l",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "clone_attack_2_l",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "kg_clone_attack_3_l",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "clone_attack_3_l",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "kg_clone_skill1_0",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "clone_skill1_0",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "kg_clone_skill1_1",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "clone_skill1_1",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "kg_clone_skill1_2",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "clone_skill1_2",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "kg_clone_skill1_3",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "clone_skill1_3",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "kg_clone_skill1_0_l",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "clone_skill1_0_l",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "kg_clone_skill1_1_l",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "clone_skill1_1_l",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "kg_clone_skill1_2_l",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "clone_skill1_2_l",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "kg_clone_skill1_3_l",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "clone_skill1_3_l",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "kg_clone_skill2_0",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "clone_skill2_0",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "kg_clone_skill2_1",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "clone_skill2_1",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "kg_clone_skill2_2",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "clone_skill2_2",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "kg_clone_skill2_3",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "clone_skill2_3",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "kg_clone_skill2_0_l",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "clone_skill2_0_l",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "kg_clone_skill2_1_l",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "clone_skill2_1_l",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "kg_clone_skill2_2_l",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "clone_skill2_2_l",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "kg_clone_skill2_3_l",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "clone_skill2_3_l",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "kg_clone_ult_0",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "clone_ult_0",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "kg_clone_ult_1",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "clone_ult_1",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "kg_clone_ult_2",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "clone_ult_2",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "kg_clone_ult_3",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "clone_ult_3",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "kg_clone_ult_0_l",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "clone_ult_0_l",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "kg_clone_ult_1_l",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "clone_ult_1_l",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "kg_clone_ult_2_l",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "clone_ult_2_l",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "kg_clone_ult_3_l",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "clone_ult_3_l",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "kg_clone_hit_0",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "clone_hit_0",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "kg_clone_hit_0_l",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "clone_hit_0_l",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "kg_clone_dead_0",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "clone_dead_0",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "kg_clone_dead_1",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "clone_dead_1",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "kg_clone_dead_2",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "clone_dead_2",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "kg_clone_dead_3",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "clone_dead_3",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "kg_clone_dead_4",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "clone_dead_4",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "kg_clone_dead_5",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "clone_dead_5",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "kg_clone_dead_0_l",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "clone_dead_0_l",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "kg_clone_dead_1_l",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "clone_dead_1_l",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "kg_clone_dead_2_l",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "clone_dead_2_l",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "kg_clone_dead_3_l",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "clone_dead_3_l",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "kg_clone_dead_4_l",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "clone_dead_4_l",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "kg_clone_dead_5_l",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "clone_dead_5_l",
+      "z": 1,
+      "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "kg_thread_p0",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "thread_p0",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "kg_thread_p1",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "thread_p1",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "kg_thread_p2",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "thread_p2",
+      "z": 3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "kg_thread_p3",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "thread_p3",
+      "z": 3,
       "is_follow": false
     }
   ],
@@ -225,8 +794,8 @@
     {
       "type": "Animated",
       "name": "tfm2_custom_kagami_shard",
-      "anim": "asset/tfm2_custom/vfx/thalassa",
-      "tag": "bolt",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "shard",
       "z": 2,
       "repeat": true
     }

@@ -53,3 +53,8 @@ Until Codex's sheet arrives, her body is Thalassa's sheet. Her effects are bound
 ## Known limits
 - **Ult while she's dead:** Last Reflection wards nobody while she's dead. A teammate already sealed still revives.
 - **Clone body:** the clone's placeholder body slides when it moves (it's glided, not walked).
+
+
+## Codex follow-up, 15 November 2026
+
+Approved outlined original body, Reflection and silver/lavender effects are integrated; all thirteen athlete decisions, seal/swap Global Flash guards and the actual-map playable Lab are included. Kit numbers are unchanged. See [the art/Lab review](kagami-art-lab-review.md) for previews, hashes, verification and live limitations. Earlier placeholder notes describe the original PR head. Installation and career migration remain separate.

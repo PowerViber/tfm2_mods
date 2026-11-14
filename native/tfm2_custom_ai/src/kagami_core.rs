@@ -27,7 +27,16 @@ pub const MAP: i64 = 960_000;
 pub const EGO: usize = 0;
 pub const JUDGEMENT: usize = 1;
 pub const POSITIONING: usize = 2;
+pub const CONTROL_SPEED: usize = 3;
+pub const ACCURACY: usize = 4;
+pub const DODGE: usize = 5;
+pub const AGGRESSIVE: usize = 6;
+pub const ORDER: usize = 7;
+pub const ROAMING: usize = 8;
+pub const MACRO: usize = 9;
+pub const MICRO: usize = 10;
 pub const AWARENESS: usize = 11;
+pub const STRATEGY: usize = 12;
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct Point {
@@ -55,7 +64,10 @@ impl Point {
             return to;
         }
         let k = len as f64 / d;
-        Point::new(self.x + ((to.x - self.x) as f64 * k).round() as i64, self.y + ((to.y - self.y) as f64 * k).round() as i64)
+        Point::new(
+            self.x + ((to.x - self.x) as f64 * k).round() as i64,
+            self.y + ((to.y - self.y) as f64 * k).round() as i64,
+        )
     }
     pub fn clamp_map(self) -> Point {
         Point::new(self.x.clamp(1_000, MAP - 1_000), self.y.clamp(1_000, MAP - 1_000))
@@ -115,6 +127,14 @@ pub enum Order {
 }
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
+pub struct Hazard {
+    pub id: usize,
+    pub at: Point,
+    pub radius: i64,
+    pub until: u64,
+}
+
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct Frame {
     pub tick: u64,
     pub owner: usize,
@@ -136,6 +156,10 @@ pub struct Frame {
     pub profile: [i64; 13],
     pub manual: bool,
     pub order: Option<Order>,
+    #[serde(default)]
+    pub terrain: Vec<bool>,
+    #[serde(default)]
+    pub hazards: Vec<Hazard>,
 }
 impl Frame {
     pub fn enemy(&self, u: &Unit) -> bool {
@@ -146,7 +170,9 @@ impl Frame {
     }
     /// her teammates (never herself, never the clone)
     pub fn allies(&self) -> impl Iterator<Item = &Unit> {
-        self.units.iter().filter(move |u| u.champion && u.team == self.team && u.hp > 0 && u.id != self.owner)
+        self.units
+            .iter()
+            .filter(move |u| u.champion && u.team == self.team && u.hp > 0 && u.id != self.owner)
     }
     pub fn p(&self, i: usize) -> i64 {
         self.profile.get(i).copied().unwrap_or(50).clamp(0, 100)
@@ -191,34 +217,87 @@ impl Frame {
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum Effect {
     /// a new clone at this spot with this HP
-    SpawnClone { at: Point, hp: i64 },
+    SpawnClone {
+        at: Point,
+        hp: i64,
+    },
     /// the clone glides to `to` over `ticks`
-    CloneMove { to: Point, ticks: u64 },
+    CloneMove {
+        to: Point,
+        ticks: u64,
+    },
     /// the clone's light shard: damage from her (as the clone's), never a tower
-    CloneShot { target: usize, amount: i64, from: Point },
+    CloneShot {
+        target: usize,
+        amount: i64,
+        from: Point,
+    },
     /// a heal on `target` (`from` draws the light)
-    Heal { target: usize, amount: i64, from: Point },
+    Heal {
+        target: usize,
+        amount: i64,
+        from: Point,
+    },
     /// Kindred Charm on `target` for `ticks`
-    Charm { target: usize, ticks: u64 },
+    Charm {
+        target: usize,
+        ticks: u64,
+    },
     /// a swap has locked on to these two (draw the thread)
-    SwapLock { a: usize, b: usize, ticks: u64 },
+    SwapLock {
+        a: usize,
+        b: usize,
+        ticks: u64,
+    },
     /// trade the places of `a` and `b` (read where they are now)
-    Swap { a: usize, b: usize },
-    Stun { target: usize, ticks: u64 },
-    Knockback { target: usize },
-    Shield { target: usize, amount: i64, ticks: u64 },
+    Swap {
+        a: usize,
+        b: usize,
+    },
+    Stun {
+        target: usize,
+        ticks: u64,
+    },
+    Knockback {
+        target: usize,
+    },
+    Shield {
+        target: usize,
+        amount: i64,
+        ticks: u64,
+    },
     /// the ult's ward on a teammate (an `undying` buff), renewed each tick it lasts
-    Ward { target: usize, ticks: u64 },
+    Ward {
+        target: usize,
+        ticks: u64,
+    },
     /// her own Mirror Swap ward (an `undying` buff), renewed each tick it lasts
-    SelfWard { ticks: u64 },
+    SelfWard {
+        ticks: u64,
+    },
     /// sealed: untargetable, unseen, unable to act
-    Seal { target: usize, ticks: u64 },
+    Seal {
+        target: usize,
+        ticks: u64,
+    },
     /// back to `hp` (never lowered); `blessed` adds the ult's Charm, shield, Defence and CC immunity
-    Revive { target: usize, hp: i64, blessed: bool },
+    Revive {
+        target: usize,
+        hp: i64,
+        blessed: bool,
+    },
     /// the AI's walk
-    Steer { to: Point },
-    Fx { name: String, at: Point, ticks: u64 },
-    Log { text: String },
+    Steer {
+        to: Point,
+    },
+    Fx {
+        name: String,
+        at: Point,
+        ticks: u64,
+    },
+    Log {
+        text: String,
+    },
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -278,6 +357,8 @@ pub struct Core {
     pub steer_at: u64,
     #[serde(default)]
     pub rejection: String,
+    #[serde(default)]
+    pub ai: crate::kagami_ai::State,
 }
 
 impl Default for Core {
@@ -304,6 +385,7 @@ impl Default for Core {
             hp_log: vec![],
             steer_at: 0,
             rejection: String::new(),
+            ai: crate::kagami_ai::State::default(),
         }
     }
 }
@@ -315,6 +397,7 @@ fn travel(from: Point, to: Point, speed: i64) -> u64 {
 impl Core {
     /// She came back from death: her clone comes back with her (a fresh one at once), timers keep running.
     pub fn respawn(&mut self, tick: u64) {
+        self.ai = crate::kagami_ai::State::default();
         self.clone_back_at = tick;
         self.swap = None;
         self.seals.retain(|s| s.ult);
@@ -333,7 +416,7 @@ impl Core {
     pub fn self_save_ready(&self, f: &Frame) -> bool {
         f.tick >= self.self_save_at && self.clone_alive(f)
     }
-    fn charmed(&self, id: usize, tick: u64) -> bool {
+    pub(crate) fn charmed(&self, id: usize, tick: u64) -> bool {
         self.charmed.iter().any(|c| c.0 == id && tick < c.1)
     }
     fn last_hp_of(&self, id: usize) -> Option<i64> {
@@ -361,6 +444,7 @@ impl Core {
             // her own seal ends with her; the ult's keep their revive (the bridge applies them anyway)
             self.swap = None;
             self.hp_log.clear();
+            self.ai = crate::kagami_ai::State::default();
             self.note_hp(f);
             return out;
         }
@@ -406,11 +490,23 @@ impl Core {
                 continue;
             }
             if s.ult {
-                out.push(Effect::Revive { target: s.id, hp: max, blessed: true });
+                out.push(Effect::Revive {
+                    target: s.id,
+                    hp: max,
+                    blessed: true,
+                });
             } else {
-                out.push(Effect::Revive { target: s.id, hp: pct_of(max, d::SELF_SAVE_REVIVE_PCT).max(1), blessed: false });
+                out.push(Effect::Revive {
+                    target: s.id,
+                    hp: pct_of(max, d::SELF_SAVE_REVIVE_PCT).max(1),
+                    blessed: false,
+                });
             }
-            out.push(Effect::Fx { name: "kg_revive".into(), at: f.pos_of(s.id).unwrap_or(f.pos), ticks: 30 });
+            out.push(Effect::Fx {
+                name: "kg_revive".into(),
+                at: f.pos_of(s.id).unwrap_or(f.pos),
+                ticks: 30,
+            });
         }
         // a sealed teammate stays held at 1 HP until the revive
         for s in &self.seals {
@@ -435,11 +531,24 @@ impl Core {
             .map(|u| (u.id, u.pos));
         if let Some((id, at)) = hit {
             self.ult_at = f.tick + t(d::ULT_COOLDOWN_TICKS);
-            self.seals.push(Seal { id, until: f.tick + t(d::ULT_SEAL_TICKS), ult: true });
-            out.push(Effect::Seal { target: id, ticks: t(d::ULT_SEAL_TICKS) });
+            self.seals.push(Seal {
+                id,
+                until: f.tick + t(d::ULT_SEAL_TICKS),
+                ult: true,
+            });
+            out.push(Effect::Seal {
+                target: id,
+                ticks: t(d::ULT_SEAL_TICKS),
+            });
             out.push(Effect::Ward { target: id, ticks: 3 });
-            out.push(Effect::Fx { name: "kg_seal".into(), at, ticks: t(d::ULT_SEAL_TICKS) });
-            out.push(Effect::Log { text: format!("Last Reflection seals {id}") });
+            out.push(Effect::Fx {
+                name: "kg_seal".into(),
+                at,
+                ticks: t(d::ULT_SEAL_TICKS),
+            });
+            out.push(Effect::Log {
+                text: format!("Last Reflection seals {id}"),
+            });
             return;
         }
         for u in f.allies().filter(|u| !u.sealed) {
@@ -484,15 +593,33 @@ impl Core {
         for u in f.units.iter().filter(|u| f.enemy(u) && !u.tower && u.pos.within(f.pos, d::ANGEL_RADIUS)) {
             out.push(Effect::Knockback { target: u.id });
         }
-        out.push(Effect::Shield { target: f.owner, amount: pct_of(f.max_hp, d::ANGEL_SHIELD_PCT_MAX_HP), ticks: t(d::ANGEL_SHIELD_TICKS) });
-        out.push(Effect::Fx { name: "kg_angel".into(), at: f.pos, ticks: 36 });
+        out.push(Effect::Shield {
+            target: f.owner,
+            amount: pct_of(f.max_hp, d::ANGEL_SHIELD_PCT_MAX_HP),
+            ticks: t(d::ANGEL_SHIELD_TICKS),
+        });
+        out.push(Effect::Fx {
+            name: "kg_angel".into(),
+            at: f.pos,
+            ticks: 36,
+        });
     }
 
     // -------------------------------------------------------------- swaps
 
     fn lock(&mut self, f: &Frame, kind: SwapKind, clone: usize, other: usize, at: u64, out: &mut Vec<Effect>) {
-        self.swap = Some(PendingSwap { kind, other, clone, started: f.tick, at });
-        out.push(Effect::SwapLock { a: clone, b: other, ticks: at.saturating_sub(f.tick) });
+        self.swap = Some(PendingSwap {
+            kind,
+            other,
+            clone,
+            started: f.tick,
+            at,
+        });
+        out.push(Effect::SwapLock {
+            a: clone,
+            b: other,
+            ticks: at.saturating_sub(f.tick),
+        });
     }
 
     fn cancel_swap(&mut self, f: &Frame, out: &mut Vec<Effect>) {
@@ -528,19 +655,39 @@ impl Core {
         self.swap = None;
         self.clone_dash_until = 0;
         out.push(Effect::Swap { a: c.id, b: s.other });
-        out.push(Effect::Fx { name: "kg_swap".into(), at: c.pos, ticks: 24 });
-        out.push(Effect::Fx { name: "kg_swap".into(), at: other_pos, ticks: 24 });
+        out.push(Effect::Fx {
+            name: "kg_swap".into(),
+            at: c.pos,
+            ticks: 24,
+        });
+        out.push(Effect::Fx {
+            name: "kg_swap".into(),
+            at: other_pos,
+            ticks: 24,
+        });
         // the clone lands where the other side stood: the stun goes off there
         let stun = t(d::SWAP_STUN_TICKS);
-        for u in f.units.iter().filter(|u| f.enemy(u) && !u.tower && u.pos.within(other_pos, d::SWAP_STUN_RADIUS)) {
+        for u in f
+            .units
+            .iter()
+            .filter(|u| f.enemy(u) && !u.tower && u.pos.within(other_pos, d::SWAP_STUN_RADIUS))
+        {
             out.push(Effect::Stun { target: u.id, ticks: stun });
         }
-        out.push(Effect::Fx { name: "kg_stun_burst".into(), at: other_pos, ticks: 30 });
+        out.push(Effect::Fx {
+            name: "kg_stun_burst".into(),
+            at: other_pos,
+            ticks: 30,
+        });
         // after a swap into a fight the clone keeps its new spot a while
         self.clone_hold_until = f.tick + 180;
         if s.kind == SwapKind::SelfSave {
             let ticks = t(d::SELF_SAVE_SEAL_TICKS);
-            self.seals.push(Seal { id: f.owner, until: f.tick + ticks, ult: false });
+            self.seals.push(Seal {
+                id: f.owner,
+                until: f.tick + ticks,
+                ult: false,
+            });
             out.push(Effect::Seal { target: f.owner, ticks });
             out.push(Effect::SelfWard { ticks: 3 });
         }
@@ -553,8 +700,15 @@ impl Core {
             if self.clone.is_none() && f.alive && f.tick >= self.clone_back_at {
                 // the bridge reports the new id next frame; until then no second one is asked for
                 self.clone_back_at = f.tick + 30;
-                out.push(Effect::SpawnClone { at: f.pos, hp: pct_of(f.max_hp, d::CLONE_HP_PCT).max(1) });
-                out.push(Effect::Fx { name: "kg_clone_in".into(), at: f.pos, ticks: 24 });
+                out.push(Effect::SpawnClone {
+                    at: f.pos,
+                    hp: pct_of(f.max_hp, d::CLONE_HP_PCT).max(1),
+                });
+                out.push(Effect::Fx {
+                    name: "kg_clone_in".into(),
+                    at: f.pos,
+                    ticks: 24,
+                });
             }
             return;
         };
@@ -569,7 +723,11 @@ impl Core {
                 .filter(|u| u.champion || f.enemies_near(f.pos, d::AI_FIGHT_RANGE) == 0 || u.pos.within(f.pos, d::CLONE_ATTACK_RANGE));
             if let Some(u) = target {
                 self.clone_shot_at = f.tick + t(d::CLONE_ATTACK_TICKS);
-                out.push(Effect::CloneShot { target: u.id, amount: pct_of(f.attack, d::CLONE_DAMAGE_PCT).max(1), from: mine });
+                out.push(Effect::CloneShot {
+                    target: u.id,
+                    amount: pct_of(f.attack, d::CLONE_DAMAGE_PCT).max(1),
+                    from: mine,
+                });
             }
         }
         // its own Mend: the most hurt teammate near it (her included)
@@ -585,7 +743,11 @@ impl Core {
             {
                 self.clone_mend_at = f.tick + t(d::CLONE_MEND_COOLDOWN_TICKS);
                 let amount = pct_of(self.mend_amount(f), d::CLONE_MEND_PCT);
-                out.push(Effect::Heal { target: u.id, amount, from: mine });
+                out.push(Effect::Heal {
+                    target: u.id,
+                    amount,
+                    from: mine,
+                });
             }
         }
         // its own Charm: a teammate near it who is fighting
@@ -593,25 +755,40 @@ impl Core {
             if let Some(id) = self.charm_pick(f, mine) {
                 self.clone_charm_at = f.tick + t(d::CLONE_CHARM_COOLDOWN_TICKS);
                 self.charmed.push((id, f.tick + t(d::CHARM_TICKS)));
-                out.push(Effect::Charm { target: id, ticks: t(d::CHARM_TICKS) });
-                out.push(Effect::Fx { name: "kg_charm".into(), at: f.pos_of(id).unwrap_or(mine), ticks: 24 });
+                out.push(Effect::Charm {
+                    target: id,
+                    ticks: t(d::CHARM_TICKS),
+                });
+                out.push(Effect::Fx {
+                    name: "kg_charm".into(),
+                    at: f.pos_of(id).unwrap_or(mine),
+                    ticks: 24,
+                });
             }
         }
         // movement: never while a swap holds it (the lock follows ids, so it may still be pushed by others)
-        if self.swap.is_some() || f.tick < self.clone_dash_until || !f.alive || f.tick < self.clone_moved_at + 6 {
+        let cadence = if f.manual { 6 } else { crate::kagami_ai::cadence(f) };
+        if self.swap.is_some() || f.tick < self.clone_dash_until || !f.alive || f.tick < self.clone_moved_at.saturating_add(cadence) {
             return;
         }
         let far = !mine.within(f.pos, d::CLONE_RANGE - 10_000);
-        let shooting = f.units.iter().any(|u| f.enemy(u) && !u.tower && u.champion && u.pos.within(mine, d::CLONE_ATTACK_RANGE));
+        let shooting = f
+            .units
+            .iter()
+            .any(|u| f.enemy(u) && !u.tower && u.champion && u.pos.within(mine, d::CLONE_ATTACK_RANGE));
         if !far && (f.tick < self.clone_hold_until && shooting) {
             return;
         }
-        let spot = self.clone_spot(f);
+        let spot = if f.manual {
+            self.clone_spot(f)
+        } else {
+            crate::kagami_ai::clone_spot(self, f)
+        };
         if far || (!mine.within(spot, d::CLONE_FOLLOW_GAP / 2) && !(shooting && mine.within(f.pos, d::CLONE_RANGE / 2))) {
-            let step = mine.toward(spot, d::CLONE_MOVE_SPEED * 6);
+            let step = mine.toward(spot, d::CLONE_MOVE_SPEED * cadence as i64);
             if step != mine {
                 self.clone_moved_at = f.tick;
-                out.push(Effect::CloneMove { to: step, ticks: 6 });
+                out.push(Effect::CloneMove { to: step, ticks: cadence });
             }
         }
     }
@@ -626,7 +803,11 @@ impl Core {
             .unwrap_or_else(|| Point::new(2 * f.pos.x - f.home.x, 2 * f.pos.y - f.home.y));
         let d = f.pos.dist(away).max(1.0);
         let k = d::CLONE_FOLLOW_GAP as f64 / d;
-        Point::new(f.pos.x + ((f.pos.x - away.x) as f64 * k) as i64, f.pos.y + ((f.pos.y - away.y) as f64 * k) as i64).clamp_map()
+        Point::new(
+            f.pos.x + ((f.pos.x - away.x) as f64 * k) as i64,
+            f.pos.y + ((f.pos.y - away.y) as f64 * k) as i64,
+        )
+        .clamp_map()
     }
 
     // -------------------------------------------------------------- casts
@@ -647,8 +828,12 @@ impl Core {
     pub fn execute(&mut self, f: &Frame, o: Order, out: &mut Vec<Effect>) {
         match o {
             Order::StepAlly(id) => {
-                let Some(c) = f.clone.filter(|c| Some(c.id) == self.clone && c.hp > 0) else { return self.reject("no clone") };
-                let ok = f.unit(id).is_some_and(|u| u.team == f.team && u.champion && u.hp > 0 && u.targetable && !u.sealed && u.pos.within(c.pos, d::STEP_RANGE));
+                let Some(c) = f.clone.filter(|c| Some(c.id) == self.clone && c.hp > 0) else {
+                    return self.reject("no clone");
+                };
+                let ok = f
+                    .unit(id)
+                    .is_some_and(|u| u.team == f.team && u.champion && u.hp > 0 && u.targetable && !u.sealed && u.pos.within(c.pos, d::STEP_RANGE));
                 if f.tick < self.step_at || self.swap.is_some() || !ok || id == f.owner {
                     return self.reject("step");
                 }
@@ -656,7 +841,9 @@ impl Core {
                 self.lock(f, SwapKind::StepAlly, c.id, id, f.tick + t(d::SWAP_LOCK_TICKS), out);
             }
             Order::StepPoint(p) => {
-                let Some(c) = f.clone.filter(|c| Some(c.id) == self.clone && c.hp > 0) else { return self.reject("no clone") };
+                let Some(c) = f.clone.filter(|c| Some(c.id) == self.clone && c.hp > 0) else {
+                    return self.reject("no clone");
+                };
                 if f.tick < self.step_at || self.swap.is_some() || !p.within(f.pos, d::STEP_RANGE) || !p.on_map() {
                     return self.reject("step");
                 }
@@ -669,25 +856,48 @@ impl Core {
                 self.lock(f, SwapKind::StepPoint, c.id, f.owner, f.tick + dash + t(d::SWAP_LOCK_TICKS), out);
             }
             Order::Charm(id) => {
-                let target = if id == f.owner { Some(f.me_as_unit()) } else { f.unit(id).filter(|u| u.team == f.team && u.champion).cloned() };
-                let Some(u) = target.filter(|u| u.hp > 0 && !u.sealed && u.pos.within(f.pos, d::CHARM_RANGE)) else { return self.reject("charm") };
+                let target = if id == f.owner {
+                    Some(f.me_as_unit())
+                } else {
+                    f.unit(id).filter(|u| u.team == f.team && u.champion).cloned()
+                };
+                let Some(u) = target.filter(|u| u.hp > 0 && !u.sealed && u.pos.within(f.pos, d::CHARM_RANGE)) else {
+                    return self.reject("charm");
+                };
                 if f.tick < self.charm_at {
                     return self.reject("charm");
                 }
                 self.charm_at = f.tick + t(d::CHARM_COOLDOWN_TICKS);
                 self.charmed.retain(|c| c.0 != u.id);
                 self.charmed.push((u.id, f.tick + t(d::CHARM_TICKS)));
-                out.push(Effect::Charm { target: u.id, ticks: t(d::CHARM_TICKS) });
-                out.push(Effect::Fx { name: "kg_charm".into(), at: u.pos, ticks: 24 });
+                out.push(Effect::Charm {
+                    target: u.id,
+                    ticks: t(d::CHARM_TICKS),
+                });
+                out.push(Effect::Fx {
+                    name: "kg_charm".into(),
+                    at: u.pos,
+                    ticks: 24,
+                });
             }
             Order::Mend(id) => {
-                let target = if id == f.owner { Some(f.me_as_unit()) } else { f.unit(id).filter(|u| u.team == f.team && u.champion).cloned() };
-                let Some(u) = target.filter(|u| u.hp > 0 && !u.sealed && u.pos.within(f.pos, d::MEND_RANGE)) else { return self.reject("mend") };
+                let target = if id == f.owner {
+                    Some(f.me_as_unit())
+                } else {
+                    f.unit(id).filter(|u| u.team == f.team && u.champion).cloned()
+                };
+                let Some(u) = target.filter(|u| u.hp > 0 && !u.sealed && u.pos.within(f.pos, d::MEND_RANGE)) else {
+                    return self.reject("mend");
+                };
                 if f.tick < self.mend_at {
                     return self.reject("mend");
                 }
                 self.mend_at = f.tick + t(d::MEND_COOLDOWN_TICKS);
-                out.push(Effect::Heal { target: u.id, amount: self.mend_amount(f), from: f.pos });
+                out.push(Effect::Heal {
+                    target: u.id,
+                    amount: self.mend_amount(f),
+                    from: f.pos,
+                });
             }
         }
     }
@@ -704,7 +914,10 @@ impl Core {
 
     /// enemy champions near a spot, weighted by closeness
     pub fn danger_at(f: &Frame, p: Point) -> i64 {
-        f.enemy_champions().filter(|u| u.pos.within(p, d::AI_ESCAPE_RANGE)).map(|u| (d::AI_ESCAPE_RANGE as f64 - u.pos.dist(p)).max(0.0) as i64).sum()
+        f.enemy_champions()
+            .filter(|u| u.pos.within(p, d::AI_ESCAPE_RANGE))
+            .map(|u| (d::AI_ESCAPE_RANGE as f64 - u.pos.dist(p)).max(0.0) as i64)
+            .sum()
     }
 
     /// she lost a real share of her HP lately
@@ -743,57 +956,19 @@ impl Core {
 
     /// The teammate she keeps close to: the strongest hitter within reach.
     pub fn guard_target(&self, f: &Frame) -> Option<Unit> {
-        f.allies().filter(|u| !u.sealed && u.pos.within(f.pos, 160_000)).max_by_key(|u| (u.attack, std::cmp::Reverse(u.id))).cloned()
+        f.allies()
+            .filter(|u| !u.sealed && u.pos.within(f.pos, 160_000))
+            .max_by_key(|u| (u.attack, std::cmp::Reverse(u.id)))
+            .cloned()
     }
 
     pub fn decide(&mut self, f: &Frame) -> Option<Order> {
-        if self.sealed(f.owner) || f.stunned || self.swap.is_some_and(|s| s.kind != SwapKind::StepAlly) {
-            return None;
-        }
-        // 1. heal the lowest teammate (her included)
-        if f.tick >= self.mend_at {
-            let mut team: Vec<Unit> = f.allies().filter(|u| !u.sealed).cloned().collect();
-            team.push(f.me_as_unit());
-            if let Some(u) = team
-                .iter()
-                .filter(|u| u.pos.within(f.pos, d::MEND_RANGE) && Self::hp_pct(u) < d::AI_HEAL_BELOW_PCT)
-                .min_by_key(|u| (Self::hp_pct(u), u.id))
-            {
-                return Some(Order::Mend(u.id));
-            }
-        }
-        if f.tick >= self.step_at && self.swap.is_none() {
-            // 2. rescue a dived teammate
-            if let Some(id) = self.rescue_target(f) {
-                return Some(Order::StepAlly(id));
-            }
-            // 3. her own way out
-            if let Some(p) = self.escape_point(f) {
-                return Some(Order::StepPoint(p));
-            }
-        }
-        // 4. charm the hitter who is fighting
-        if f.tick >= self.charm_at {
-            if let Some(id) = self.charm_pick(f, f.pos) {
-                return Some(Order::Charm(id));
-            }
-        }
-        None
+        crate::kagami_ai::decide(self, f)
     }
 
-    /// Her walk: stay near the teammate she guards (the engine handles her basics and the rest).
+    /// Movement intentions never replace host attacks or casts.
     pub fn steer(&mut self, f: &Frame) -> Option<Point> {
-        if f.tick < self.steer_at {
-            return None;
-        }
-        let g = self.guard_target(f)?;
-        if g.pos.within(f.pos, d::AI_GUARD_RANGE) {
-            return None;
-        }
-        self.steer_at = f.tick + 6;
-        // a step behind them, on her side of the fight
-        let toward_me = g.pos.toward(f.pos, d::AI_GUARD_RANGE / 2);
-        Some(toward_me.clamp_map())
+        crate::kagami_ai::steer(self, f)
     }
 }
 
