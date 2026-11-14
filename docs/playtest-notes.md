@@ -3985,3 +3985,16 @@ Approved effects are integrated in PR #77. Check Thalassa’s water-only wave and 
   - escape bounces toward his team;
   - is he too tanky now, with no cooldown on the bounce;
   - is Akane still a threat.
+
+## Nov 14: round 174 (native 0.10.108, tfm2_custom 0.2.111), `kagami-1.0`: Kagami, the Mirror Priestess
+- **What Reihan asked:** a support whose ult is a global revive. A teammate about to die is sealed (can't be hit, can't act), then revives at full HP with buffs, armor and anti-CC.
+  - **Clone:** a permanent clone that shoots, heals and buffs;
+  - **Swaps:** Mirror Step swaps that lock on for 0.5 s (no root) and stun the danger spot;
+  - **Passives:** Guardian Angel (below 50%: knockback + shield) and Mirror Swap (her own save).
+- **Now:** everything above. Her body, effects and the clone are placeholders (Thalassa's sheet and the base `priest`) until Codex's art.
+- **Watch for:**
+  - does Last Reflection fire on the right teammate, and is 120 s right;
+  - does she rescue dived teammates with Mirror Step, or swap too late or too often;
+  - does the clone stay useful (not lost far away, not dying instantly);
+  - does Guardian Angel save her from divers;
+  - how the clone body looks and slides in the game.

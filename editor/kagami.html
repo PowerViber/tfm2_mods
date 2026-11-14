@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Kagami Lab</title>
+<style>
+  body { font: 13px/1.4 system-ui, sans-serif; margin: 0; display: flex; gap: 12px; padding: 12px; background: #15161a; color: #ddd; }
+  canvas { background: #22252c; border: 1px solid #333; cursor: crosshair; }
+  #side { width: 380px; display: flex; flex-direction: column; gap: 8px; }
+  button { background: #2d3340; color: #eee; border: 1px solid #445; padding: 5px 8px; border-radius: 4px; cursor: pointer; }
+  button:hover { background: #3a4252; }
+  #log { height: 260px; overflow: auto; background: #101114; padding: 6px; font: 12px monospace; white-space: pre-wrap; }
+  #state { height: 200px; overflow: auto; background: #101114; padding: 6px; font: 11px monospace; white-space: pre; }
+  .row { display: flex; gap: 6px; flex-wrap: wrap; }
+  .legend span { display: inline-block; margin-right: 10px; }
+</style>
+</head>
+<body>
+<canvas id="map" width="760" height="560"></canvas>
+<div id="side">
+  <h3 style="margin:0">Kagami Lab <small id="rev"></small></h3>
+  <div class="legend"><span style="color:#c9a0ff">● Kagami</span><span style="color:#e6d8ff">◌ clone</span><span style="color:#7fd28f">● allies</span><span style="color:#ff7b7b">● foes</span></div>
+  <div class="row">
+    <button id="play">Pause</button>
+    <button id="ai">AI: on</button>
+    <button id="reset">Reset</button>
+  </div>
+  <div class="row">
+    <button id="dive">Foes dive the carry</button>
+    <button id="diveMe">Foes dive Kagami</button>
+    <button id="hurtAlly">Carry −400</button>
+    <button id="hurtMe">Kagami −400</button>
+  </div>
+  <div class="row">
+    <button id="killClone">Kill the clone</button>
+    <button id="ult">Learn ult: on</button>
+  </div>
+  <div>With the AI off: click a teammate for Mirror Step on them, click open ground for Mirror Step to a point; shift-click a teammate for Kindred Charm, alt-click for Moonlit Mend.</div>
+  <div id="log"></div>
+  <div id="state"></div>
+</div>
+<script src="kagami-data.js"></script>
+<script>
+const R = window.KAGAMI_RULES;
+document.getElementById('rev').textContent = R.revision;
+const cv = document.getElementById('map'), g = cv.getContext('2d');
+// the lab shows a 380,000 x 280,000 window of the map
+const OX = 220000, OY = 360000, S = 760 / 380000;
+const sx = x => (x - OX) * S, sy = y => (y - OY) * S;
+const wx = px => px / S + OX, wy = py => py / S + OY;
+let wasm, mem, tick, units, me, clone, play = true, aiOn = true, ultOn = true, dive = null, logLines = [], fx = [], thread = null;
+
+function reset() {
+  tick = 1; dive = null; logLines = []; fx = []; thread = null;
+  me = { id: 1, team: 0, pos: { x: 360000, y: 500000 }, hp: 1000, max_hp: 1000, attack: 100, sealed: 0, wardSelf: 0 };
+  units = [
+    { id: 2, team: 0, pos: { x: 440000, y: 480000 }, hp: 1200, max_hp: 1200, attack: 180, champion: true, name: 'carry' },
+    { id: 3, team: 0, pos: { x: 400000, y: 560000 }, hp: 1500, max_hp: 1500, attack: 90, champion: true, name: 'tank' },
+    { id: 10, team: 1, pos: { x: 560000, y: 440000 }, hp: 1200, max_hp: 1200, attack: 160, champion: true, name: 'diver' },
+    { id: 11, team: 1, pos: { x: 580000, y: 520000 }, hp: 1200, max_hp: 1200, attack: 140, champion: true, name: 'bruiser' },
+  ];
+  for (const u of units) Object.assign(u, { tower: false, visible: true, targetable: true, sealed: false, stun: 0, ward: 0, sealT: 0, charm: 0, shield: 0 });
+  clone = null;
+  wasm.exports.kagami_reset();
+}
+const log = s => { logLines.push(`[${(tick / 60).toFixed(2)}s] ${s}`); if (logLines.length > 200) logLines.shift(); };
+const byId = id => id === 1 ? me : (clone && clone.id === id ? clone : units.find(u => u.id === id));
+const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+function damage(u, n) {
+  if (!u || u.sealed || u.sealT > 0 || u.hp <= 0) return;
+  if (u.shield) { const s = Math.min(u.shield, n); u.shield -= s; n -= s; }
+  const held = u === me ? me.wardSelf > 0 : u.ward > 0;
+  u.hp = Math.max(held ? 1 : 0, u.hp - n);
+  if (u.hp <= 0) log(`${u.name || (u === me ? 'Kagami' : 'clone')} died`);
+}
+
+let order = null;
+// the core reads whole numbers only
+const P = p => ({ x: Math.round(p.x), y: Math.round(p.y) }), N = Math.round;
+function step() {
+  const frame = {
+    tick, owner: 1, team: 0, alive: me.hp > 0, pos: P(me.pos), hp: N(me.hp), max_hp: me.max_hp, attack: me.attack, stunned: false,
+    ult_unlocked: ultOn, home: { x: 96000, y: 864000 },
+    units: units.filter(u => u.hp > 0).map(u => ({ id: u.id, team: u.team, pos: P(u.pos), hp: N(u.hp), max_hp: u.max_hp, attack: u.attack, champion: true, tower: false, visible: true, targetable: !u.sealT, sealed: u.sealT > 0 })),
+    clone: clone && clone.hp > 0 ? { id: clone.id, pos: P(clone.pos), hp: N(clone.hp), max_hp: clone.max_hp } : null,
+    profile: Array(13).fill(50), manual: !aiOn, order,
+  };
+  order = null;
+  const text = new TextEncoder().encode(JSON.stringify({ version: 1, rules_revision: R.revision, frame }));
+  const p = wasm.exports.kagami_input(text.length);
+  new Uint8Array(wasm.exports.memory.buffer, p, text.length).set(text);
+  let o;
+  try { o = wasm.exports.kagami_step(text.length); } catch (err) { play = false; log('core panic on frame: ' + JSON.stringify(frame)); console.error(String(err)); return; }
+  const n = wasm.exports.kagami_output_len();
+  const out = JSON.parse(new TextDecoder().decode(new Uint8Array(wasm.exports.memory.buffer, o, n)));
+  if (out.error) { log('error: ' + out.error); return; }
+  for (const e of out.effects) apply(e);
+  document.getElementById('state').textContent = JSON.stringify(out.state, null, 1);
+}
+function apply(e) {
+  switch (e.type) {
+    case 'spawn_clone': clone = { id: 99, pos: { ...e.at }, hp: e.hp, max_hp: e.hp, glide: null }; log('the clone appears'); break;
+    case 'clone_move': if (clone) clone.glide = { from: { ...clone.pos }, to: e.to, t0: tick, n: Math.max(1, e.ticks) }; break;
+    case 'clone_shot': damage(byId(e.target), e.amount); fx.push({ kind: 'shot', a: { ...e.from }, b: { ...byId(e.target).pos }, t: 8 }); break;
+    case 'heal': { const u = byId(e.target); if (u) { u.hp = Math.min(u.max_hp, u.hp + e.amount); fx.push({ kind: 'ring', at: { ...u.pos }, c: '#7fffa0', t: 20 }); log(`Mend ${e.amount} on ${u.name || 'Kagami'} from ${e.from.x === me.pos.x ? 'her' : 'the clone'}`); } break; }
+    case 'charm': { const u = byId(e.target); if (u) { u.charm = e.ticks; log(`Kindred Charm on ${u.name || 'Kagami'}`); } break; }
+    case 'swap_lock': thread = { a: e.a, b: e.b, t: e.ticks }; log('swap locked on'); break;
+    case 'swap': { const a = byId(e.a), b = byId(e.b); if (a && b) { const pa = { ...a.pos }; a.pos = { ...b.pos }; b.pos = pa; if (clone) clone.glide = null; } thread = null; log('swap!'); break; }
+    case 'stun': { const u = byId(e.target); if (u) u.stun = e.ticks; fx.push({ kind: 'ring', at: { ...u.pos }, c: '#ffe066', t: 30 }); log(`stunned ${u.name}`); break; }
+    case 'knockback': { const u = byId(e.target); if (u) { const d = dist(u.pos, me.pos) || 1; u.pos.x += (u.pos.x - me.pos.x) / d * R.angel.knockSpeed * R.angel.knockTicks; u.pos.y += (u.pos.y - me.pos.y) / d * R.angel.knockSpeed * R.angel.knockTicks; log(`Guardian Angel throws ${u.name} back`); } break; }
+    case 'shield': { const u = byId(e.target); if (u) { u.shield = (u.shield || 0) + e.amount; log(`shield ${e.amount}`); } break; }
+    case 'ward': { const u = byId(e.target); if (u) u.ward = e.ticks; break; }
+    case 'self_ward': me.wardSelf = e.ticks; break;
+    case 'seal': { const u = byId(e.target); if (u) { u.sealT = e.ticks; log(`${u.name || 'Kagami'} sealed`); } break; }
+    case 'revive': { const u = byId(e.target); if (u) { u.sealT = 0; u.hp = Math.max(u.hp, e.hp); if (e.blessed) { u.shield = (u.shield || 0) + Math.floor(u.max_hp * R.ult.shieldPctMaxHp / 100); u.charm = R.ult.reviveTicks; } log(`${u.name || 'Kagami'} revived at ${u.hp}${e.blessed ? ' (blessed)' : ''}`); } break; }
+    case 'steer': me.steer = e.to; break;
+    case 'log': log(e.text); break;
+  }
+}
+function world() {
+  // her walk: toward the steer point, else stay
+  const walk = (u, to, speed) => { const d = dist(u.pos, to); if (d > 1) { const k = Math.min(1, speed / d); u.pos.x += (to.x - u.pos.x) * k; u.pos.y += (to.y - u.pos.y) * k; } };
+  if (me.hp > 0 && !me.sealT && me.steer) walk(me, me.steer, 950);
+  if (clone && clone.glide) { const g2 = clone.glide, k = Math.min(1, (tick - g2.t0) / g2.n); clone.pos = { x: g2.from.x + (g2.to.x - g2.from.x) * k, y: g2.from.y + (g2.to.y - g2.from.y) * k }; if (k >= 1) clone.glide = null; }
+  if (clone && clone.hp <= 0) clone = null;
+  for (const u of [me, ...units]) { for (const k of ['ward', 'stun', 'charm']) if (u[k] > 0) u[k]--; if (u.sealT > 0) u.sealT--; }
+  if (me.wardSelf > 0) me.wardSelf--;
+  // foes: walk to their target and hit it every 40 ticks
+  for (const f of units.filter(u => u.team === 1 && u.hp > 0 && !u.stun)) {
+    const target = dive === 'me' ? me : dive === 'carry' ? units.find(u => u.id === 2) : null;
+    if (!target || target.hp <= 0) continue;
+    const t = target.sealT > 0 ? null : target;
+    if (!t) continue;
+    if (dist(f.pos, t.pos) > 15000) walk(f, t.pos, 900);
+    else if (tick % 40 === f.id % 40) damage(t, f.attack);
+  }
+  if (thread) thread.t--;
+  for (const e of fx) e.t--;
+  fx = fx.filter(e => e.t > 0);
+}
+function draw() {
+  g.clearRect(0, 0, cv.width, cv.height);
+  g.strokeStyle = '#2f3540';
+  for (let x = 0; x < 960000; x += 32000) { g.beginPath(); g.moveTo(sx(x), 0); g.lineTo(sx(x), cv.height); g.stroke(); }
+  for (let y = 0; y < 960000; y += 32000) { g.beginPath(); g.moveTo(0, sy(y)); g.lineTo(cv.width, sy(y)); g.stroke(); }
+  const dot = (p, r, c, ring) => { g.beginPath(); g.arc(sx(p.x), sy(p.y), r, 0, 7); if (ring) { g.strokeStyle = c; g.lineWidth = 2; g.stroke(); g.lineWidth = 1; } else { g.fillStyle = c; g.fill(); } };
+  const bar = (u) => { const w = 34, x = sx(u.pos.x) - w / 2, y = sy(u.pos.y) - 22; g.fillStyle = '#000'; g.fillRect(x, y, w, 4); g.fillStyle = '#5f5'; g.fillRect(x, y, w * Math.max(0, u.hp) / u.max_hp, 4); if (u.shield) { g.fillStyle = '#ddd'; g.fillRect(x, y - 4, Math.min(w, w * u.shield / u.max_hp), 3); } };
+  // ranges
+  g.setLineDash([4, 4]); dot(me.pos, R.step.range * S, '#c9a0ff44', true); g.setLineDash([]);
+  if (thread) { const a = byId(thread.a), b = byId(thread.b); if (a && b) { g.strokeStyle = '#e6d8ff'; g.setLineDash([2, 3]); g.beginPath(); g.moveTo(sx(a.pos.x), sy(a.pos.y)); g.lineTo(sx(b.pos.x), sy(b.pos.y)); g.stroke(); g.setLineDash([]); } }
+  for (const u of units.filter(u => u.hp > 0)) {
+    if (u.sealT > 0) { dot(u.pos, 16, '#ffffffaa', true); dot(u.pos, 10, '#ffffff33'); continue; }
+    dot(u.pos, 10, u.team === 0 ? '#7fd28f' : '#ff7b7b');
+    if (u.ward) dot(u.pos, 14, '#c9a0ff', true);
+    if (u.stun) dot(u.pos, 13, '#ffe066', true);
+    if (u.charm) dot(u.pos, 17, '#ffb3e6', true);
+    bar(u);
+    g.fillStyle = '#aaa'; g.fillText(u.name, sx(u.pos.x) - 14, sy(u.pos.y) + 22);
+  }
+  if (clone) { dot(clone.pos, 10, '#e6d8ff', true); bar(clone); }
+  if (me.hp > 0) { if (me.sealT > 0) dot(me.pos, 16, '#ffffffaa', true); else { dot(me.pos, 10, '#c9a0ff'); bar(me); } }
+  for (const e of fx) { if (e.kind === 'shot') { g.strokeStyle = '#e6d8ff'; g.beginPath(); g.moveTo(sx(e.a.x), sy(e.a.y)); g.lineTo(sx(e.b.x), sy(e.b.y)); g.stroke(); } else dot(e.at, 30 - e.t, e.c, true); }
+  document.getElementById('log').textContent = logLines.slice(-60).join('\n');
+}
+cv.addEventListener('click', ev => {
+  if (aiOn) return;
+  const r = cv.getBoundingClientRect(), p = { x: Math.round(wx(ev.clientX - r.left)), y: Math.round(wy(ev.clientY - r.top)) };
+  const ally = [me, ...units.filter(u => u.team === 0)].find(u => dist(u.pos, p) < 12000);
+  if (ally && ev.shiftKey) order = { kind: 'charm', aim: ally.id };
+  else if (ally && ev.altKey) order = { kind: 'mend', aim: ally.id };
+  else if (ally && ally !== me) order = { kind: 'step_ally', aim: ally.id };
+  else order = { kind: 'step_point', aim: p };
+});
+const btn = (id, f) => document.getElementById(id).addEventListener('click', f);
+btn('play', () => { play = !play; document.getElementById('play').textContent = play ? 'Pause' : 'Play'; });
+btn('ai', () => { aiOn = !aiOn; document.getElementById('ai').textContent = 'AI: ' + (aiOn ? 'on' : 'off'); });
+btn('ult', () => { ultOn = !ultOn; document.getElementById('ult').textContent = 'Learn ult: ' + (ultOn ? 'on' : 'off'); });
+btn('reset', reset);
+btn('dive', () => { dive = 'carry'; log('the foes dive the carry'); });
+btn('diveMe', () => { dive = 'me'; log('the foes dive Kagami'); });
+btn('hurtAlly', () => damage(units.find(u => u.id === 2), 400));
+btn('hurtMe', () => damage(me, 400));
+btn('killClone', () => { if (clone) { clone.hp = 0; log('the clone is killed'); } });
+WebAssembly.instantiateStreaming(fetch('kagami.wasm')).then(({ instance }) => {
+  wasm = instance; reset();
+  setInterval(() => { if (!play) return; world(); step(); tick++; draw(); }, 1000 / 60);
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,234 @@
+{
+  "id": "tfm2_custom_kagami",
+  "category": "Util",
+  "tags": [
+    "AD",
+    "Range",
+    "Heal",
+    "Shield"
+  ],
+  "sprite": "asset/tfm2_custom/champions/tfm2_custom_thalassa",
+  "anim_prefix": "",
+  "stat": {
+    "attack": 52,
+    "magic_power": 0,
+    "hp": 880,
+    "defence": 22,
+    "magic_resistance": 22,
+    "move_speed": 1040,
+    "hp_regen": 3,
+    "stack": 0,
+    "crit_chance": 0
+  },
+  "growth": {
+    "attack": 5,
+    "magic_power": 0,
+    "hp": 82,
+    "defence": 4,
+    "magic_resistance": 4,
+    "move_speed": 10,
+    "hp_regen": 0,
+    "stack": 0,
+    "crit_chance": 0
+  },
+  "attack": {
+    "action_name": "attack",
+    "cancelable": true,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 22,
+    "cooltime": 66,
+    "start_timing": 12,
+    "range": 55000,
+    "casting_type": "Targeting",
+    "casting_target": "Enemy",
+    "attack_type": "BaseAttack",
+    "effect": {
+      "type": "TargetProjectile",
+      "speed": 7000,
+      "name": "tfm2_custom_kagami_shard",
+      "y_offset": 0,
+      "applied_target": "Enemy",
+      "applied_effects": [
+        {
+          "effect": {
+            "type": "Attack",
+            "damage": 0,
+            "attack_ratio": 100
+          },
+          "casting_type": "Targeting"
+        }
+      ]
+    }
+  },
+  "skill": {
+    "action_name": "skill1",
+    "cancelable": false,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 6,
+    "cooltime": 5184000,
+    "start_timing": 3,
+    "range": 1,
+    "casting_type": "Targeting",
+    "casting_target": "EnemyChampionInCC",
+    "attack_type": "Skill",
+    "effect": {
+      "type": "Combine",
+      "effects": []
+    },
+    "description": "#asset/base/text/champion?description.tfm2_custom_kagami.skill"
+  },
+  "skill2": {
+    "action_name": "skill2",
+    "cancelable": false,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 6,
+    "cooltime": 5184000,
+    "start_timing": 3,
+    "range": 1,
+    "casting_type": "Targeting",
+    "casting_target": "EnemyChampionInCC",
+    "attack_type": "Skill",
+    "effect": {
+      "type": "Combine",
+      "effects": []
+    },
+    "description": "#asset/base/text/champion?description.tfm2_custom_kagami.skill2"
+  },
+  "ult": {
+    "action_name": "ult",
+    "cancelable": false,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 6,
+    "cooltime": 5184000,
+    "start_timing": 3,
+    "range": 1,
+    "casting_type": "Targeting",
+    "casting_target": "EnemyChampionInCC",
+    "attack_type": "Skill",
+    "effect": {
+      "type": "Combine",
+      "effects": []
+    },
+    "description": "#asset/base/text/champion?description.tfm2_custom_kagami.ult"
+  },
+  "passive": {
+    "passive_ref": "tfm2_custom_ai:kagami",
+    "params": {}
+  },
+  "passive_ult": {
+    "passive_ref": "tfm2_custom_ai:ult_learned",
+    "params": {}
+  },
+  "view_buffs": [
+    {
+      "type": "Animated",
+      "name": "kg_sealed",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "rescue_shield",
+      "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "kg_revived",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "rescue_shield",
+      "z": 4
+    }
+  ],
+  "view_effects": [
+    {
+      "type": "Animation",
+      "name": "kg_swap",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "swap",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "kg_stun_burst",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "surge",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "kg_seal",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "rescue",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "kg_revive",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "trident_land",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "kg_angel",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "bounce",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "kg_clone_in",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "twin_spawn",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "kg_charm",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "dive_out",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "kg_heal",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "pool_rise",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "kg_shard_hit",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "bump",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "kg_thread",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "tide_link",
+      "z": -2,
+      "is_follow": false
+    }
+  ],
+  "view_projectiles": [
+    {
+      "type": "Animated",
+      "name": "tfm2_custom_kagami_shard",
+      "anim": "asset/tfm2_custom/vfx/thalassa",
+      "tag": "bolt",
+      "z": 2,
+      "repeat": true
+    }
+  ]
+}
