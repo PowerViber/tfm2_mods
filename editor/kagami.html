@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Kagami Lab</title>
+<style>
+body{margin:0;background:#111b27;color:#e8e1f0;font:14px system-ui;display:flex;gap:16px;padding:16px}aside{width:320px;flex-shrink:0}h1{font-size:22px;margin:0}p{line-height:1.4;color:#bbc6d4}button,select,input{font:inherit}button,select{background:#263549;color:#eef;border:1px solid #6b7185;padding:6px;border-radius:5px;cursor:pointer}button{margin:3px}label{display:block;margin:7px 0}.row{display:flex;flex-wrap:wrap;gap:4px}canvas{width:min(900px,calc(100vw - 385px));height:auto;aspect-ratio:1;align-self:flex-start;background:#172d36;outline:2px solid #4d6678}canvas:focus{outline-color:#cfb3f1}pre{white-space:pre-wrap;font-size:12px;max-height:310px;overflow:auto}summary{cursor:pointer}#stats label{display:flex;justify-content:space-between}#stats input{width:62px}a{color:#c5b0fa}.badge{font-size:12px;background:#30435b;padding:3px}#log{max-height:140px;overflow:auto}small{color:#acbdd0}
+</style></head><body><aside>
+<h1>Kagami Lab <small id="revision"></small></h1>
+<p>Installed game map, wall cells and stock actors at one scale. Movement, combat, visibility and seals are a browser host model, not proof of native behaviour.</p>
+<a href="kagami-review.html">Artwork review</a> <span class="badge">Body and effects approved</span>
+<label>Situation <select id="scene"></select></label><p id="description"></p>
+<div class="row"><button id="reset">Reset</button><button id="play">Play / pause</button><button id="step">Step</button><button id="full">Full map</button><button id="follow">Follow</button></div>
+<label><input type="checkbox" id="ai"> Athlete AI decides</label>
+<label><input type="checkbox" id="incoming" checked> Simulated enemy combat</label>
+<label><input type="checkbox" id="ultimate" checked> Ultimate learned</label>
+<label><input type="checkbox" id="walls"> Show authoritative wall cells</label>
+<div class="row"><button data-order="step">Q Mirror Step</button><button data-order="charm">E Charm</button><button data-order="mend">C Mend</button></div>
+<div class="row"><button id="hurtCarry">Dive carry</button><button id="hurtOwner">Dive Kagami</button><button id="killClone">Destroy clone</button><button id="sealCarry">Test Last Reflection</button></div>
+<p>Focus arena: WASD move · Space basic · Q swap at aim/ally · E Charm · C Mend. Mouse aims; wheel zooms; middle drag pans. Swaps follow both participants without rooting them.</p>
+<div class="row"><button id="record">Record</button><button id="export">Export</button><button id="replay">Verify recording</button></div>
+<label>Inspect recording <input type="file" id="import" accept=".json"></label>
+<details><summary>Thirteen athlete values</summary><div id="stats"></div></details>
+<pre id="state">Loading game reference and shared core…</pre><pre id="log"></pre>
+</aside><canvas id="arena" width="900" height="900" tabindex="0" aria-label="Kagami arena"></canvas>
+<script src="game-world.js"></script><script src="lab-scenarios.js"></script><script src="kratos-clock.js"></script><script src="kagami-data.js"></script><script src="kagami-art.js"></script><script src="kagami-renderer.js"></script><script src="kagami-lab.js"></script>
+</body></html>

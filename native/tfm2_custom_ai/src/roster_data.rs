@@ -31,7 +31,7 @@ pub static FAMILY_RULES: [FamilyRule; 5] = [
     FamilyRule { id: "smoke_blocks_sight", from: "valorant", to: "*", rule: "Nobody outside Omen's Dark Cover sees in; someone inside sees only 15000 and nothing outside. Every champion's targeting respects it." },
     FamilyRule { id: "stopped_time", from: "jojo", to: "*", rule: "ZA WARUDO stops every caught champion, whatever its franchise; only DIO moves." },
 ];
-pub static CHAMPIONS: [ChampionDef; 86] = [
+pub static CHAMPIONS: [ChampionDef; 87] = [
     ChampionDef { id: "android", name: "Android", family: 0, role: "Melee", native: false, basic: BasicAttack { name: "Basic attack", range: 25000, reach: Range::Melee }, skills: &[
         SkillDef { slot: Slot::Skill, name: "Skill 1", kinds: 4 | 8 | 16 | 512, intents: 1 | 2 | 16 | 32 },
         SkillDef { slot: Slot::Skill2, name: "Skill 2", kinds: 256 | 512, intents: 2 | 4 | 8 },
@@ -459,11 +459,6 @@ pub static CHAMPIONS: [ChampionDef; 86] = [
         SkillDef { slot: Slot::Skill2, name: "Leviathan Rampage / Spartan Guard / Chain Dash", kinds: 1 | 16 | 8 | 256 | 512, intents: 2 | 4 | 8 | 1 },
         SkillDef { slot: Slot::Ult, name: "Fenrir's Charge", kinds: 8 | 1 | 512, intents: 2 },
     ] },
-    ChampionDef { id: "tfm2_custom_akane", name: "Akane", family: 13, role: "Assassin", native: true, basic: BasicAttack { name: "Katana", range: 22000, reach: Range::Melee }, skills: &[
-        SkillDef { slot: Slot::Skill, name: "Soul Harvest / Dismiss & Devour", kinds: 128 | 1024, intents: 4 | 8 },
-        SkillDef { slot: Slot::Skill2, name: "Kunai Flip / Crimson Edge", kinds: 1 | 4 | 16 | 512, intents: 2 | 4 | 1 },
-        SkillDef { slot: Slot::Ult, name: "Crimson Night", kinds: 1024 | 1, intents: 2 | 64 },
-    ] },
     ChampionDef { id: "tfm2_custom_thalassa", name: "Thalassa", family: 13, role: "Magician", native: true, basic: BasicAttack { name: "Harp bolt", range: 55000, reach: Range::Ranged }, skills: &[
         SkillDef { slot: Slot::Skill, name: "Tide Pool", kinds: 32 | 16 | 512, intents: 1 | 2 | 16 },
         SkillDef { slot: Slot::Skill2, name: "Dive / Tide Twin", kinds: 1 | 64 | 256, intents: 4 | 8 | 32 },
@@ -475,8 +470,18 @@ pub static CHAMPIONS: [ChampionDef; 86] = [
         SkillDef { slot: Slot::Ult, name: "Sky Carrier", kinds: 64 | 16 | 512, intents: 2 | 16 },
     ] },
     ChampionDef { id: "tfm2_custom_kicker", name: "Kicker", family: 13, role: "Fighter", native: true, basic: BasicAttack { name: "Kick", range: 22000, reach: Range::Melee }, skills: &[
-        SkillDef { slot: Slot::Skill, name: "Rooftop Runner / Wall Hop / Drop Kick / Marked Dash", kinds: 1 | 512 | 256, intents: 2 | 4 },
+        SkillDef { slot: Slot::Skill, name: "Wall Runner / Wall Bounce / Marked Dash", kinds: 1 | 512 | 256, intents: 2 | 4 },
         SkillDef { slot: Slot::Skill2, name: "Rock Throw / Homecoming Kick / Skyfall Kick", kinds: 4 | 1 | 512, intents: 2 | 1 | 8 },
         SkillDef { slot: Slot::Ult, name: "Second Wind", kinds: 1024, intents: 2 },
+    ] },
+    ChampionDef { id: "tfm2_custom_akane", name: "Akane", family: 13, role: "Assassin", native: true, basic: BasicAttack { name: "Katana", range: 22000, reach: Range::Melee }, skills: &[
+        SkillDef { slot: Slot::Skill, name: "Soul Harvest / Dismiss & Devour", kinds: 128 | 1024, intents: 4 | 8 },
+        SkillDef { slot: Slot::Skill2, name: "Kunai Flip / Crimson Edge", kinds: 1 | 4 | 16 | 512, intents: 2 | 4 | 1 },
+        SkillDef { slot: Slot::Ult, name: "Crimson Night", kinds: 1024 | 1, intents: 2 | 64 },
+    ] },
+    ChampionDef { id: "tfm2_custom_kagami", name: "Kagami", family: 13, role: "Support", native: true, basic: BasicAttack { name: "Mirror Shard", range: 55000, reach: Range::Ranged }, skills: &[
+        SkillDef { slot: Slot::Skill, name: "Reflection / Guardian Angel / Mirror Swap / Mirror Step", kinds: 64 | 2 | 512 | 256, intents: 8 | 4 | 2 },
+        SkillDef { slot: Slot::Skill2, name: "Kindred Charm", kinds: 1024, intents: 8 | 2 },
+        SkillDef { slot: Slot::Ult, name: "Moonlit Mend / Last Reflection", kinds: 128 | 256 | 1024, intents: 8 },
     ] },
 ];

@@ -1,0 +1,13 @@
+{
+  "body": {
+    "approved": true,
+    "date": "2026-11-15",
+    "source": "User: Approve this outlined appearance",
+    "source_file": "body-source-v3.png"
+  },
+  "effects": {
+    "approved": true,
+    "date": "2026-11-15",
+    "source": "User approved silver/lavender effects in chat"
+  }
+}

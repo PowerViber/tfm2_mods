@@ -45,6 +45,10 @@ pub(crate) struct Host {
     pub cleansed: Vec<usize>,
     /// (unit, ticks) for every `entity_set_invisible`
     pub invisible: Vec<(usize, usize)>,
+    /// (caster, target, ticks) for every `entity_banish`
+    pub banished: Vec<(usize, usize, usize)>,
+    /// (caster, target, speed, ticks) for every `entity_knockback`
+    pub knockbacks: Vec<(usize, usize, usize, usize)>,
 }
 impl Host {
     pub fn new(units: Vec<Unit>) -> RefCell<Host> {
@@ -209,6 +213,14 @@ unsafe extern "C" fn heal(p: *mut c_void, caster: usize, target: usize, amount: 
         u.hp = (u.hp + amount).min(2000);
     }
 }
+unsafe extern "C" fn banish(p: *mut c_void, caster: usize, e: E, ticks: usize, _: *const u8, _: usize, _: *const u8, _: usize) -> bool {
+    h(p).borrow_mut().banished.push((caster, id(e), ticks));
+    true
+}
+unsafe extern "C" fn knockback(p: *mut c_void, caster: usize, e: E, speed: usize, ticks: usize) -> bool {
+    h(p).borrow_mut().knockbacks.push((caster, id(e), speed, ticks));
+    true
+}
 unsafe extern "C" fn set_invisible(p: *mut c_void, e: E, ticks: usize) -> bool {
     h(p).borrow_mut().invisible.push((id(e), ticks));
     true
@@ -290,6 +302,8 @@ pub(crate) fn with_sim<T>(host: &RefCell<Host>, f: impl FnOnce(&mut StableSim) -
         t.heal = Some(heal);
         t.entity_clear_cc = Some(clear_cc);
         t.entity_set_invisible = Some(set_invisible);
+        t.entity_banish = Some(banish);
+        t.entity_knockback = Some(knockback);
         t.play_view_effect = Some(effect);
         t.projectile_count = Some(shot_count);
         t.projectile_at = Some(shot_at);

@@ -1,0 +1,14 @@
+
+==============================  TFM2 Mod Manager  ==============================
+ repo: C:\Users\arian\.codex\worktrees\kagami-art-lab\tfm2_mods [codex/kagami-art-lab] 07e5d41 Round 174: Kagami, the Mirror Priestess (native 0.10.108, tfm2_custom 0.2.111, kagami-1.0)
+ game: C:\Users\arian\.codex\worktrees\kagami-art-lab\tfm2_mods\backups\kagami-art-manager-av1amcvq
+ installed: native 0.10.108  champions 0.2.111
+ log: C:\Users\arian\.codex\worktrees\kagami-art-lab\tfm2_mods\logs\manager-20261114_200950.txt
+================================================================================
+Game folder: C:\Users\arian\.codex\worktrees\kagami-art-lab\tfm2_mods\backups\kagami-art-manager-av1amcvq
+  native (tfm2_custom_ai): repo 0.10.108  game 0.10.108
+  champions (tfm2_custom): repo 0.2.111  game 0.2.111
+  782 champion files compared, 0 differ, 0 missing; native DLL identical
+
+  UP TO DATE: the game has exactly the repo's mods.
+Log saved: C:\Users\arian\.codex\worktrees\kagami-art-lab\tfm2_mods\logs\manager-20261114_200950.txt

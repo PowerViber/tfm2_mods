@@ -1,0 +1,16 @@
+{
+  "native": "0.10.108",
+  "champion_pack": "0.2.111",
+  "rules": "kagami-1.1",
+  "baseCommit": "07e5d41cfa226bd11302cff58efe8d3bbc6f503d",
+  "sourceDateEpoch": "1794681323",
+  "nativeSourcesSha256": "2e2e4ecf3ba6bc14aacf1115071f6ad54552f250c5357eab83d58293d9f89fdd",
+  "toolchain": "rustc 1.98.1 (48a229cea 2026-09-01)",
+  "builtDllSha256": "dd11fcff1114a600089461c8096b29ec1303142a57328910aec1a95cc1e81131",
+  "reproducedDllSha256": "dd11fcff1114a600089461c8096b29ec1303142a57328910aec1a95cc1e81131",
+  "packagedDllSha256": "dd11fcff1114a600089461c8096b29ec1303142a57328910aec1a95cc1e81131",
+  "wasmSha256": "0f0e72797e2916678e125daa0e1541f168beb2c15c7c364609651863917488c4",
+  "installed": false,
+  "careerMigrationApplied": false,
+  "liveAcceptance": "Pending by user request"
+}

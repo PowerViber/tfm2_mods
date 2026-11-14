@@ -1,0 +1,38 @@
+{
+  "native_mock_host_1800_tick_runs": [
+    {
+      "ns_per_tick": 6046,
+      "effects": 0
+    },
+    {
+      "ns_per_tick": 5727,
+      "effects": 0
+    },
+    {
+      "ns_per_tick": 5654,
+      "effects": 0
+    },
+    {
+      "ns_per_tick": 5475,
+      "effects": 0
+    },
+    {
+      "ns_per_tick": 5313,
+      "effects": 0
+    }
+  ],
+  "art_enabled": false,
+  "scope": "core and adapter mock-host benchmark, not game Proceed duration",
+  "browser": {
+    "cold_ready_ms": 510.9433999999999,
+    "warm_step_and_render_ms": [
+      1.1075000000496706,
+      0.7450000000496705,
+      0.6450000000496705,
+      0.5283333333830039,
+      0.43416666661699616
+    ],
+    "actors": 56,
+    "scope": "headless Edge on this PC; includes simulated host, WASM transport and canvas drawing"
+  }
+}
