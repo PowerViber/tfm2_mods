@@ -213,7 +213,8 @@ pub fn decide(c: &mut Core, f: &Frame) -> Option<Order> {
             );
         }
     }
-    if f.tick >= c.step_at && c.swap.is_none() {
+    // Mirror Step's two cooldowns: a rescue and her own swap never wait on each other
+    if f.tick >= c.step_ally_at && c.swap.is_none() {
         if let Some(id) = c.rescue_target(f) {
             push(
                 Order::StepAlly(id),
@@ -222,6 +223,8 @@ pub fn decide(c: &mut Core, f: &Frame) -> Option<Order> {
                 vec!["Mend after rescue".into(), "Charm for disengagement".into()],
             );
         }
+    }
+    if f.tick >= c.step_self_at && c.swap.is_none() {
         if let Some(p) = c.escape_point(f).filter(|p| legal(f, *p)) {
             push(
                 Order::StepPoint(p),

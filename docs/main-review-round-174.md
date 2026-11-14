@@ -73,3 +73,25 @@ The full kit and AI are in `docs/kagami-guide.md`. In short:
 ## Codex follow-up, 15 November 2026
 
 Approved outlined original body, Reflection and silver/lavender effects are integrated; all thirteen athlete decisions, seal/swap Global Flash guards and the actual-map playable Lab are included. Kit numbers are unchanged. See [the art/Lab review](kagami-art-lab-review.md) for previews, hashes, verification and live limitations. Earlier placeholder notes describe the original PR head. Installation and career migration remain separate.
+
+## kagami-1.2: two Mirror Step cooldowns (Reihan, 15 November 2026)
+
+**Reihan:** "S1 Q swap has 2 different cooldowns, so ally and herself have different CDs."
+
+- **Two cooldowns:** Mirror Step on a teammate and Mirror Step on a point (her own swap) now each have their own **14 s** cooldown (`step.allyCooldownTicks` / `step.selfCooldownTicks`). She can rescue a teammate and still escape herself right after, or the reverse.
+- **Cancel refund:** a cancelled swap refunds half of only its own cooldown.
+- **AI:** in `kagami_ai.rs`, the rescue is gated on the teammate cooldown, and the escape and offensive swaps on her own.
+- **Unchanged:** the versions are still native 0.10.108 / `tfm2_custom` 0.2.111, since PR #86 isn't merged; only the rules revision moved to `kagami-1.2`.
+
+**Verification:**
+- **Native tests:** 1,309 pass, 0 warnings, including 32 Kagami tests. A new test checks that the two cooldowns are independent and that a cancel refunds only its own.
+- **Flaky test:** one run had a one-off failure in Rally's `two_rallys_with_storms…` budget test under full parallel load. It passed alone 4 times and on a full rerun.
+- **Lab and DLL:** `kagami_lab` passes and the wasm is rebuilt; the DLL reports 0.10.108; the Mod Manager tests (15) pass.
+- **Not run here:**
+  - `tools/test-kagami-parity.cjs` and `tools/package-kagami.py`, which need the installed game reference and Codex's Windows toolchain. `docs/kagami-art-review/package.json` and `parity.json` still describe the `kagami-1.1` build until re-run there.
+
+**Installing (Reihan):**
+1. Merge PR #86 and pull.
+2. Run the Mod Manager and press **Install**.
+
+She appears in exhibition matches and **new careers**; existing careers can't add new champions.

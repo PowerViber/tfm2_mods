@@ -4003,3 +4003,9 @@ Approved effects are integrated in PR #77. Check Thalassa’s water-only wave and 
 ### Kagami artwork and checklist follow-up (15 November 2026)
 
 Outlined body/effects approved and integrated. All thirteen athlete values affect decisions without changing skill strength. Global Flash is blocked during seals and participant swaps. The actual-map Lab uses stock actors and repeatable situations. Automated evidence and pending clone/seal/save live checks: docs/kagami-art-lab-review.md. No real installation or career migration was performed.
+
+## Nov 15: round 174 update (still native 0.10.108, tfm2_custom 0.2.111), `kagami-1.2`: two Mirror Step cooldowns
+- **What Reihan asked:** separate cooldowns for swapping a teammate and for her own swap; then put her in the game.
+- **Now:** teammate swap 14 s and her own swap 14 s, independent of each other.
+- **Install:** merge PR #86, pull, then Mod Manager â†’ Install. She appears in exhibition matches and new careers.
+- **Watch for:** she rescues and then escapes herself in the same fight; is two swaps per 14 s too much.

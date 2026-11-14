@@ -8,7 +8,7 @@
     "Heal",
     "Shield"
   ],
-  "revision": "kagami-1.1",
+  "revision": "kagami-1.2",
   "stat": {
     "attack": 52,
     "magic_power": 0,
@@ -78,7 +78,8 @@
     "cooldownTicks": 5400
   },
   "step": {
-    "cooldownTicks": 840,
+    "allyCooldownTicks": 840,
+    "selfCooldownTicks": 840,
     "range": 120000
   },
   "charm": {

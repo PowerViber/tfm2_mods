@@ -37,8 +37,8 @@ text = {
               f"swaps her with the clone; she's sealed for {sec(ss['sealTicks'])}, then revives at {ss['revivePct']}% HP. "
               f"Every swap takes {sec(sw['lockTicks'])}: it locks on to both sides (nobody is rooted) and trades them wherever they are, then stuns enemies within "
               f"{sw['stunRadius']} of the clone's new spot for {sec(sw['stunTicks'])}. "
-              f"Mirror Step ({sec(st['cooldownTicks'])}): on a teammate within {st['range']} of the clone, the teammate and the clone swap; on a point within "
-              f"{st['range']} of her, the clone dashes there and she swaps with it. A cancelled swap refunds {sw['refundPct']}% of the cooldown."),
+              f"Mirror Step (separate cooldowns: teammate {sec(st['allyCooldownTicks'])}, herself {sec(st['selfCooldownTicks'])}): on a teammate within {st['range']} of the clone, the teammate and the clone swap; on a point within "
+              f"{st['range']} of her, the clone dashes there and she swaps with it. A cancelled swap refunds {sw['refundPct']}% of that swap's cooldown."),
     'skill2': (f"Kindred Charm ({sec(ch['cooldownTicks'])}): a teammate within {ch['range']} gets +{ch['attackSpeedPct']}% attack speed, +{ch['moveSpeedPct']}% "
                f"move speed and +{ch['damagePct']}% Attack and Magic Power for {sec(ch['ticks'])}. Her clone casts its own."),
     'ult': (f"Moonlit Mend ({sec(me['cooldownTicks'])}): heals a teammate within {me['range']} (or herself) for {me['base']} + {me['adRatio']}% Attack. "

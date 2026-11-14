@@ -11,7 +11,7 @@ Category **Util**, tags AD / Range / Heal / Shield. Numbers live in `rules/kagam
 | Passive | Reflection | A mirror clone: 35% of her max HP, her Defence, **no time limit**. It follows her within 120,000. It shoots for 40% of her Attack and casts its own Moonlit Mend (50%) and Kindred Charm, each on its own cooldown. It never casts Mirror Step or the ult. A dead clone comes back at her side 15 s later. |
 | Passive | Guardian Angel (30 s) | Dropping below 50% HP knocks back enemies within 50,000 and shields her for 15% max HP (3 s). |
 | Passive | Mirror Swap (90 s) | A hit that would drop her under 10% with her clone alive holds her at 1 HP and swap-locks her with the clone. Then they trade places, she's sealed for 1 s, and she revives at 40% HP. |
-| S1 | Mirror Step (14 s) | **On a teammate within 120,000 of the clone:** the teammate and the clone swap. **On a point within 120,000 of her:** the clone dashes there, then she swaps with it. |
+| S1 | Mirror Step (**two separate cooldowns**: teammate 14 s, herself 14 s) | **On a teammate within 120,000 of the clone:** the teammate and the clone swap. **On a point within 120,000 of her:** the clone dashes there, then she swaps with it. |
 | S2 | Kindred Charm (12 s) | A teammate within 70,000: +25% attack speed, +15% move speed, +10% Attack and Magic Power for 5 s. |
 | S3 | Moonlit Mend (10 s) | Heals a teammate within 60,000 (or herself) for 80 + 60% Attack. |
 | Ult | Last Reflection (120 s, automatic, global) | While it's ready, every teammate but her is warded. The first one who'd drop under 10% HP is sealed for 2.5 s: untargetable, unseen, unable to act. Then they revive at **full HP** with Kindred Charm's buff, a 20% max-HP shield, +30% Defence and CC immunity for 4 s. One teammate per use. |
@@ -21,13 +21,13 @@ Category **Util**, tags AD / Range / Heal / Shield. Numbers live in `rules/kagam
 - **Nobody is rooted.** When the time ends, they trade the places they hold *at that moment*, even if one walked or was knocked past the swap's range. The range is checked only when the swap is cast.
 - A thin mirror thread between them shows the swap coming.
 - **The stun:** every swap stuns enemies within 50,000 of where the clone lands for 1 s.
-- **Cancel:** if a side dies, or the teammate becomes untargetable, the swap is cancelled and half of Mirror Step's cooldown is refunded.
+- **Cancel:** if a side dies, or the teammate becomes untargetable, the swap is cancelled and half of that swap's own cooldown (teammate or herself) is refunded.
 
 ## AI
 In priority order, each tick:
 1. **Heal:** Moonlit Mend on the lowest teammate (her included) under 60% HP.
-2. **Rescue:** Mirror Step a teammate who is low (35%, moved up to ±10 by Judgement) with an enemy champion within 40,000. Only when the clone's spot is safer than theirs, so nobody is swapped into a worse fight.
-3. **Escape:** dived (an enemy champion within 25,000) and hurt: Mirror Step to the clone when it stands somewhere safer, else to a point toward home.
+2. **Rescue** (the teammate cooldown): Mirror Step a teammate who is low (35%, moved up to ±10 by Judgement) with an enemy champion within 40,000. Only when the clone's spot is safer than theirs, so nobody is swapped into a worse fight.
+3. **Escape** (her own cooldown, so a rescue never leaves her without one): dived (an enemy champion within 25,000) and hurt: Mirror Step to the clone when it stands somewhere safer, else to a point toward home.
 4. **Buff:** Kindred Charm on the hardest hitter who is fighting.
 5. **Walk:** keep within 45,000 of the teammate she guards (the hardest hitter nearby). The engine plays her basics and the rest of her walking.
 

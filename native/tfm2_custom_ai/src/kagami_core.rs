@@ -8,7 +8,8 @@
 //!   P3 Mirror Swap: a hit that would drop her under 10% with her clone alive holds her at 1 HP and swaps her with
 //!      the clone; she's sealed 1 s, then revives at 40%.
 //!   Every swap takes 0.5 s: it locks on to both sides (nobody is rooted) and trades them wherever they are, then
-//!      stuns enemies within 50,000 of the clone's new spot for 1 s. A cancelled swap refunds half the cooldown.
+//!      stuns enemies within 50,000 of the clone's new spot for 1 s. A cancelled swap refunds half of its own cooldown.
+//!   Mirror Step has two cooldowns: on a teammate and on a point (her own swap).
 //!   S1 Mirror Step: on a teammate within 120,000 of the clone, they swap; on a point within 120,000 of her, the
 //!      clone dashes there and she swaps with it.
 //!   S2 Kindred Charm: +25% attack speed, +15% move speed, +10% Attack/Magic Power for 5 s on a teammate.
@@ -341,7 +342,10 @@ pub struct Core {
     /// the clone holds its spot (after being swapped into a fight) until this tick
     pub clone_hold_until: u64,
     pub clone_moved_at: u64,
-    pub step_at: u64,
+    /// Mirror Step on a teammate (its own cooldown)
+    pub step_ally_at: u64,
+    /// Mirror Step on a point: her own swap (its own cooldown)
+    pub step_self_at: u64,
     pub charm_at: u64,
     pub mend_at: u64,
     pub angel_at: u64,
@@ -372,7 +376,8 @@ impl Default for Core {
             clone_dash_until: 0,
             clone_hold_until: 0,
             clone_moved_at: 0,
-            step_at: 0,
+            step_ally_at: 0,
+            step_self_at: 0,
             charm_at: 0,
             mend_at: 0,
             angel_at: 0,
@@ -624,9 +629,17 @@ impl Core {
 
     fn cancel_swap(&mut self, f: &Frame, out: &mut Vec<Effect>) {
         if let Some(s) = self.swap.take() {
-            let cd = t(d::STEP_COOLDOWN_TICKS);
-            if matches!(s.kind, SwapKind::StepAlly | SwapKind::StepPoint) {
-                self.step_at = self.step_at.saturating_sub(cd * t(d::SWAP_REFUND_PCT) / 100).max(f.tick);
+            // only the cancelled swap's own cooldown is refunded
+            match s.kind {
+                SwapKind::StepAlly => {
+                    let back = t(d::STEP_ALLY_COOLDOWN_TICKS) * t(d::SWAP_REFUND_PCT) / 100;
+                    self.step_ally_at = self.step_ally_at.saturating_sub(back).max(f.tick);
+                }
+                SwapKind::StepPoint => {
+                    let back = t(d::STEP_SELF_COOLDOWN_TICKS) * t(d::SWAP_REFUND_PCT) / 100;
+                    self.step_self_at = self.step_self_at.saturating_sub(back).max(f.tick);
+                }
+                SwapKind::SelfSave => {}
             }
             self.clone_dash_until = 0;
             out.push(Effect::Log { text: "swap cancelled".into() });
@@ -834,20 +847,20 @@ impl Core {
                 let ok = f
                     .unit(id)
                     .is_some_and(|u| u.team == f.team && u.champion && u.hp > 0 && u.targetable && !u.sealed && u.pos.within(c.pos, d::STEP_RANGE));
-                if f.tick < self.step_at || self.swap.is_some() || !ok || id == f.owner {
+                if f.tick < self.step_ally_at || self.swap.is_some() || !ok || id == f.owner {
                     return self.reject("step");
                 }
-                self.step_at = f.tick + t(d::STEP_COOLDOWN_TICKS);
+                self.step_ally_at = f.tick + t(d::STEP_ALLY_COOLDOWN_TICKS);
                 self.lock(f, SwapKind::StepAlly, c.id, id, f.tick + t(d::SWAP_LOCK_TICKS), out);
             }
             Order::StepPoint(p) => {
                 let Some(c) = f.clone.filter(|c| Some(c.id) == self.clone && c.hp > 0) else {
                     return self.reject("no clone");
                 };
-                if f.tick < self.step_at || self.swap.is_some() || !p.within(f.pos, d::STEP_RANGE) || !p.on_map() {
+                if f.tick < self.step_self_at || self.swap.is_some() || !p.within(f.pos, d::STEP_RANGE) || !p.on_map() {
                     return self.reject("step");
                 }
-                self.step_at = f.tick + t(d::STEP_COOLDOWN_TICKS);
+                self.step_self_at = f.tick + t(d::STEP_SELF_COOLDOWN_TICKS);
                 let dash = if c.pos.within(p, 2_000) { 0 } else { travel(c.pos, p, d::CLONE_DASH_SPEED) };
                 if dash > 0 {
                     self.clone_dash_until = f.tick + dash;

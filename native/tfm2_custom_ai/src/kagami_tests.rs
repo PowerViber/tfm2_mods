@@ -354,19 +354,46 @@ fn mirror_step_on_a_point_dashes_the_clone_then_swaps_her_and_respects_range_and
 fn a_swap_is_cancelled_with_half_its_cooldown_back_if_a_side_dies_during_the_lock() {
     let mut w = World::with_clone(vec![champ(ALLY, 1, 470_000, 500_000)], Point::new(380_000, 500_000));
     w.tick(Some(Order::StepAlly(ALLY)));
-    let full = w.core.step_at;
+    let full = w.core.step_ally_at;
     w.run(10);
     w.unit(ALLY).hp = 0;
     w.tick(None);
     assert!(w.core.swap.is_none());
     assert!(!w.log.iter().any(|(_, e)| matches!(e, Effect::Swap { .. })));
-    assert_eq!(w.core.step_at, full - d::STEP_COOLDOWN_TICKS as u64 * d::SWAP_REFUND_PCT as u64 / 100);
+    assert_eq!(w.core.step_ally_at, full - d::STEP_ALLY_COOLDOWN_TICKS as u64 * d::SWAP_REFUND_PCT as u64 / 100);
+    assert_eq!(w.core.step_self_at, 0, "her own swap's cooldown is untouched");
     // the clone dying cancels too
     let mut w = World::with_clone(vec![champ(ALLY, 1, 470_000, 500_000)], Point::new(380_000, 500_000));
     w.tick(Some(Order::StepAlly(ALLY)));
     w.clone = None;
     w.tick(None);
     assert!(w.core.swap.is_none());
+}
+
+#[test]
+fn mirror_step_has_separate_cooldowns_for_a_teammate_and_for_herself() {
+    let mut w = World::with_clone(vec![champ(ALLY, 1, 470_000, 500_000)], Point::new(380_000, 500_000));
+    // a rescue first: her own swap is still ready right after it
+    w.tick(Some(Order::StepAlly(ALLY)));
+    assert_eq!(w.core.step_ally_at, w.f.tick - 1 + d::STEP_ALLY_COOLDOWN_TICKS as u64);
+    assert_eq!(w.core.step_self_at, 0);
+    w.run(d::SWAP_LOCK_TICKS as u64 + 1);
+    assert!(w.log.iter().any(|(_, e)| matches!(e, Effect::Swap { b: ALLY, .. })));
+    let p = Point::new(400_000, 440_000);
+    w.tick(Some(Order::StepPoint(p)));
+    assert!(w.core.rejection.is_empty(), "her own swap isn't blocked by the rescue: {}", w.core.rejection);
+    assert!(w.core.swap.is_some_and(|s| s.kind == SwapKind::StepPoint));
+    // and the other way: after her own swap the teammate swap is still on its own timer
+    let mut w = World::with_clone(vec![champ(ALLY, 1, 470_000, 500_000)], Point::new(380_000, 500_000));
+    w.tick(Some(Order::StepPoint(Point::new(380_000, 500_000))));
+    assert!(w.core.step_self_at > 0 && w.core.step_ally_at == 0);
+    w.run(d::SWAP_LOCK_TICKS as u64 + 1);
+    w.tick(Some(Order::StepAlly(ALLY)));
+    assert!(w.core.swap.is_some_and(|s| s.kind == SwapKind::StepAlly), "{}", w.core.rejection);
+    // each still respects its own cooldown
+    w.run(d::SWAP_LOCK_TICKS as u64 + 1);
+    w.tick(Some(Order::StepPoint(Point::new(400_000, 450_000))));
+    assert_eq!(w.core.rejection, "step");
 }
 
 // ------------------------------------------------------------------ Guardian Angel and Mirror Swap
