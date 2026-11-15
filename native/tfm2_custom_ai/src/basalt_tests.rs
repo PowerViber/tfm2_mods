@@ -357,12 +357,18 @@ fn crushing_clap_raises_a_v_snaps_it_shut_crushes_inside_and_fuses_into_one_wall
     assert_eq!(w.core.walls.len(), 2, "two walls at the upper left and right");
     let [l, r] = [w.core.walls[0], w.core.walls[1]];
     assert!(l.b.x != r.b.x, "a V");
+    for block in [l, r] {
+        assert!((block.mid().dist(w.f.pos) - d::CLAP_REACH as f64).abs() < 2.0,
+                "block starts at a maximum-range corner: {:?}", block.mid());
+    }
     assert!(out.iter().any(|e| matches!(e, Effect::Stun { target: FOE, .. })));
     assert!(!out.iter().any(|e| matches!(e, Effect::Stun { target: 11, .. })), "outside the V: untouched");
     w.run(d::CLAP_CLOSE_TICKS as u64 + 1);
     assert_eq!(w.core.walls.len(), 1, "fused into one");
     let wall = w.core.walls[0];
     assert!((wall.a.x - 400_000).abs() < 1_000 && (wall.b.x - 400_000).abs() < 1_000, "on the centre line: {wall:?}");
+    assert!((wall.mid().dist(w.f.pos) - d::CLAP_REACH as f64).abs() < 2.0,
+            "closed blocks fuse at the far end of the cone");
 }
 
 #[test]

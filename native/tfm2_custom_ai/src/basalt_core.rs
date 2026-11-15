@@ -1135,8 +1135,8 @@ impl Core {
     /// The V's two square walls at `k` (0 = open, 1 = shut): their centres on the left and right arms
     fn clap_walls(c: &Clap, k: f64) -> [Point; 2] {
         let half = d::CLAP_CONE_DEG as f64 / 2.0 * (1.0 - k);
-        let rm = (c.r0 + c.r1) / 2;
-        [c.apex.along(rotate(c.dir, half), rm), c.apex.along(rotate(c.dir, -half), rm)]
+        // The two square blocks occupy the far corners of the warned cone.
+        [c.apex.along(rotate(c.dir, half), c.r1), c.apex.along(rotate(c.dir, -half), c.r1)]
     }
 
     /// S3 ground: Crushing Clap. Two walls rise at the upper left and right of a V and the whip snaps them shut.
@@ -1184,7 +1184,7 @@ impl Core {
             }
             out.push(Effect::Fx {
                 name: "bs_slam".into(),
-                at: apex.along(dir, (c.r0 + c.r1) / 2),
+                at: apex.along(dir, c.r1),
                 ticks: 30,
             });
             self.claps.push(c);
@@ -1207,7 +1207,7 @@ impl Core {
                 self.walls.retain(|w| w.id != c.right);
                 out.push(Effect::Fx {
                     name: "bs_wall_slam".into(),
-                    at: c.apex.along(c.dir, (c.r0 + c.r1) / 2),
+                    at: c.apex.along(c.dir, c.r1),
                     ticks: 24,
                 });
             } else {
