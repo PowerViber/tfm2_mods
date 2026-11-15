@@ -3985,3 +3985,27 @@ Approved effects are integrated in PR #77. Check Thalassa’s water-only wave and 
   - escape bounces toward his team;
   - is he too tanky now, with no cooldown on the bounce;
   - is Akane still a threat.
+
+## Nov 14: round 174 (native 0.10.108, tfm2_custom 0.2.111), `kagami-1.0`: Kagami, the Mirror Priestess
+- **What Reihan asked:** a support whose ult is a global revive. A teammate about to die is sealed (can't be hit, can't act), then revives at full HP with buffs, armor and anti-CC.
+  - **Clone:** a permanent clone that shoots, heals and buffs;
+  - **Swaps:** Mirror Step swaps that lock on for 0.5 s (no root) and stun the danger spot;
+  - **Passives:** Guardian Angel (below 50%: knockback + shield) and Mirror Swap (her own save).
+- **Now:** everything above. Her body, effects and the clone are placeholders (Thalassa's sheet and the base `priest`) until Codex's art.
+- **Watch for:**
+  - does Last Reflection fire on the right teammate, and is 120 s right;
+  - does she rescue dived teammates with Mirror Step, or swap too late or too often;
+  - does the clone stay useful (not lost far away, not dying instantly);
+  - does Guardian Angel save her from divers;
+  - how the clone body looks and slides in the game.
+
+
+### Kagami artwork and checklist follow-up (15 November 2026)
+
+Outlined body/effects approved and integrated. All thirteen athlete values affect decisions without changing skill strength. Global Flash is blocked during seals and participant swaps. The actual-map Lab uses stock actors and repeatable situations. Automated evidence and pending clone/seal/save live checks: docs/kagami-art-lab-review.md. No real installation or career migration was performed.
+
+## Nov 15: round 174 update (still native 0.10.108, tfm2_custom 0.2.111), `kagami-1.2`: two Mirror Step cooldowns
+- **What Reihan asked:** separate cooldowns for swapping a teammate and for her own swap; then put her in the game.
+- **Now:** teammate swap 14 s and her own swap 14 s, independent of each other.
+- **Install:** merge PR #86, pull, then Mod Manager â†’ Install. She appears in exhibition matches and new careers.
+- **Watch for:** she rescues and then escapes herself in the same fight; is two swaps per 14 s too much.

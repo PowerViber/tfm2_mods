@@ -5419,6 +5419,61 @@
      "summary": "Crimson Night (100 s): for 4 s every enemy is nearsighted: her team is hidden from them beyond 20000. Recast once to dash, over walls, to a visible enemy champion within 240000 and slash for 85 + 75% Attack; the slash sets off a lesser crimson explosion (50% of Crimson Edge's burst, with the crimson bleed) that fears everyone it hits for 0.75 s. Her skills never hit towers."
     }
    ]
+  },
+  {
+   "id": "tfm2_custom_kagami",
+   "name": "Kagami",
+   "family": "original",
+   "role": "Support",
+   "native": true,
+   "basicAttack": {
+    "name": "Mirror Shard",
+    "kind": "ranged",
+    "range": 55000
+   },
+   "skills": [
+    {
+     "slot": "skill",
+     "name": "Reflection / Guardian Angel / Mirror Swap / Mirror Step",
+     "kinds": [
+      "Summon",
+      "Blink",
+      "Cc",
+      "Shield"
+     ],
+     "intents": [
+      "Protect",
+      "Escape",
+      "Engage"
+     ],
+     "summary": "Reflection (passive): Kagami always has a mirror clone (35% of her max HP, her Defence) with no time limit. It follows her within 120000, shoots light shards for 40% of her damage, and casts its own Moonlit Mend (50% heal) and Kindred Charm on teammates near it. It never casts Mirror Step or the ult. When it dies, a new one appears at her side 15 s later. Guardian Angel (passive, 30 s): dropping below 50% HP knocks back enemies within 50000 and shields her for 15% max HP (3 s). Mirror Swap (passive, 90 s): a hit that would drop her under 10% HP with her clone alive holds her at 1 HP and swaps her with the clone; she's sealed for 1 s, then revives at 40% HP. Every swap takes 0.5 s: it locks on to both sides (nobody is rooted) and trades them wherever they are, then stuns enemies within 50000 of the clone's new spot for 1 s. Mirror Step (separate cooldowns: teammate 14 s, herself 14 s): on a teammate within 120000 of the clone, the teammate and the clone swap; on a point within 120000 of her, the clone dashes there and she swaps with it. A cancelled swap refunds 50% of that swap's cooldown."
+    },
+    {
+     "slot": "skill2",
+     "name": "Kindred Charm",
+     "kinds": [
+      "Buff"
+     ],
+     "intents": [
+      "Protect",
+      "Engage"
+     ],
+     "summary": "Kindred Charm (12 s): a teammate within 70000 gets +25% attack speed, +15% move speed and +10% Attack and Magic Power for 5 s. Her clone casts its own."
+    },
+    {
+     "slot": "ult",
+     "name": "Moonlit Mend / Last Reflection",
+     "kinds": [
+      "Heal",
+      "Shield",
+      "Buff"
+     ],
+     "intents": [
+      "Protect"
+     ],
+     "summary": "Moonlit Mend (10 s): heals a teammate within 60000 (or herself) for 80 + 60% Attack. Last Reflection (ultimate, automatic, global, 120 s): while it's ready every teammate but her is warded. The first one who'd drop under 10% HP is sealed for 2.5 s (untargetable, unseen, unable to act), then revives at full HP with Kindred Charm's buff, a shield of 20% max HP, +30% Defence and crowd-control immunity for 4 s."
+    }
+   ]
   }
  ]
 }

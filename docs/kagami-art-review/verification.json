@@ -1,0 +1,22 @@
+{
+  "approved_body_and_effects": true,
+  "reproducible_packing": true,
+  "decoded_bytes": 4194304,
+  "frame_entries": 192,
+  "walk_drawings": 6,
+  "foot_offset_from_centre": 20,
+  "unchanged_stats_damage_heal_shield_cooldowns_mod_power": true,
+  "rules": "kagami-1.1",
+  "asset_sha256": {
+    "docs\\kagami-art-review\\body.png": "3b333078e8380903e16c28854c1365fc20bc84ecea94155c7c77c6f4bb30d719",
+    "docs\\kagami-art-review\\body.fanim": "47a486dd966e728a636053610aa6108402d41cf3cce13308766717380f717fd7",
+    "docs\\kagami-art-review\\effects.png": "d4d1240e177a78c56370db732abbe4600662b6257eed24c5bf211c9178905ce6",
+    "docs\\kagami-art-review\\effects.fanim": "17e63627d8d62ae9f06ab439a9dd629794d6121fbf722de1e1dbac60f5d96f3f",
+    "rules\\kagami-art.json": "448aa80d71bc3503fb9ec409c9c7e4358468dfc2200016b3ea7974c693383496",
+    "editor\\kagami-art.js": "aec2077ee4d41a3a72338785bfac278f8463f64eb7ad27d87437834a1889559d",
+    "native\\tfm2_custom_ai\\src\\kagami_art.rs": "a75c2f5211ea8325c78bf84c84c3dc50f0720d1d569f756b617d3db0632f1f0d"
+  },
+  "native_owner_animation_locks": false,
+  "native_clone_visual_mask": "single lifetime on existing core-controlled summon; native rendering acceptance pending",
+  "actual_game": "pending"
+}

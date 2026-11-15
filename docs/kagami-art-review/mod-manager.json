@@ -1,0 +1,9 @@
+{
+  "scope": "Disposable fixture comparison only; no real game installation or career migration",
+  "exit_code": 0,
+  "files_compared": 895,
+  "different_or_missing": [],
+  "isolated_appdata": true,
+  "existing_packaged_dll_sha256": "dd11fcff1114a600089461c8096b29ec1303142a57328910aec1a95cc1e81131",
+  "release_packaging": "See package.json for reproduction; comparison only, no installation or live rendering proof"
+}

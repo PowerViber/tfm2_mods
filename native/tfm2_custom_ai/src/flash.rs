@@ -57,6 +57,7 @@ fn blocked(c: &Champ) -> bool {
     c.stunned || c.buffs.iter().any(|b| {
         let n = b.name();
         n.starts_with("void_trapped") || n.starts_with("tsf") || n == "stv_riding" || n == "rly_flash_lock"
+            || n == crate::kagami::SEALED || n.starts_with(crate::kagami::SWAP_FLASH_GUARD)
             || n.starts_with(crate::grimhald_cage::MEMBER_PREFIX)
     })
 }

@@ -1,0 +1,20 @@
+{
+  "native": {
+    "passed": 1306,
+    "ignored": 18,
+    "kagami_ai_and_glue": 31,
+    "toolchain": "stable-x86_64-pc-windows-gnu",
+    "inherited_warnings": [
+      "native_bridge/detour_tests.rs: F2_HELPER, f3, f4, f5 unused"
+    ]
+  },
+  "lab": {
+    "passed": 9
+  },
+  "manager_tests": {
+    "passed": 15
+  },
+  "actual_game": "pending",
+  "installed": false,
+  "career_migrated": false
+}

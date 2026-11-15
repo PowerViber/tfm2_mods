@@ -1,0 +1,17 @@
+{
+  "revision": "kagami-1.1",
+  "development": 24,
+  "holdout": 12,
+  "ticks": 4320,
+  "events": 8495,
+  "complete_state_and_effects_match": true,
+  "trace_sha256": "7c9f11966218785721671dce553e8c9f192ad5abd9717002dfa14ec067f2d4fb",
+  "wasm_transport_us_per_tick": [
+    40.45999999999973,
+    40.85416666666788,
+    40.305833333331975,
+    48.236666666667816,
+    39.5150000000001
+  ],
+  "kind": "deterministic snapshot fixtures; not live-game balance results"
+}

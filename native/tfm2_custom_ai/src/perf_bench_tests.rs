@@ -8,6 +8,7 @@ fn roster() -> Vec<(&'static str, &'static str, Box<dyn StablePassive>)> {
     vec![
         ("tfm2_custom_akane", r#"{"art_v1":1}"#, Box::new(crate::akane::Akane::default())),
         ("tfm2_custom_kicker", "{}", Box::new(crate::kicker::Kicker::default())),
+        ("tfm2_custom_kagami", "{}", Box::new(crate::kagami::Kagami::default())),
         ("tfm2_custom_thalassa", r#"{"r165_art":1}"#, Box::new(crate::thalassa::Thalassa::default())),
         ("tfm2_custom_wright", r#"{"r165_art":1}"#, Box::new(crate::wright::Wright::default())),
         ("tfm2_custom_kratos", r#"{"weapon_layer":1}"#, Box::new(crate::kratos::Kratos::default())),

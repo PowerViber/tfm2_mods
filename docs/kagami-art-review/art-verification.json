@@ -1,0 +1,27 @@
+{
+  "approved": true,
+  "atlases": {
+    "body": {
+      "size": [
+        1024,
+        512
+      ],
+      "sha256": "3b333078e8380903e16c28854c1365fc20bc84ecea94155c7c77c6f4bb30d719"
+    },
+    "effects": {
+      "size": [
+        1024,
+        512
+      ],
+      "sha256": "d4d1240e177a78c56370db732abbe4600662b6257eed24c5bf211c9178905ce6"
+    }
+  },
+  "decoded_bytes": 4194304,
+  "source_sha256": {
+    "body-source-v3.png": "2d3800c0d41cae62b243805bd38aba545ea27c9996411d7161309594f72b467b",
+    "animation-source-v1.png": "b19a8b162c03db9939b6a942a08f5897bcdf423f27c450e7d56df0e77d0fcdd6",
+    "effects-source-v1.png": "529fdeeb8e33db0f155825a605bbcc68f3dad8118bf39d21a521cf3397e5aaf5"
+  },
+  "native_game": "pending",
+  "generation": "AI generation not deterministic; frozen source extraction and packing reproducible"
+}
