@@ -14,7 +14,7 @@ const fs=require('fs'),assert=require('assert'),vm=require('vm');
   check('art clocks preserve 22 tick attack and six walking drawings',await page.evaluate(()=>kagamiLab.painter.sample('attack',0).duration===22&&kagamiLab.painter.sample('run',0).count===6));
   await page.uncheck('#incoming');
   await page.evaluate(()=>kagamiLab.step());
-  check('real core creates its targetable Reflection',await page.evaluate(()=>kagamiLab.clone?.max_hp===Math.floor(kagamiLab.me.max_hp*.35)));
+  check('real core creates its three targetable Reflections',await page.evaluate(()=>kagamiLab.clones.filter(c=>c&&c.max_hp===Math.floor(kagamiLab.me.max_hp*.25)).length===3));
   const mend=await page.evaluate(()=>{const l=kagamiLab;l.me.hp-=300;l.aim={...l.me.pos};const before=l.me.hp;l.order('mend');return{before,after:l.me.hp,cd:l.state.mend_at-l.tick};});
   check('Mend and native cooldown from shared core',mend.after>mend.before&&mend.cd===599);
   await page.click('#reset');await page.uncheck('#incoming');await page.evaluate(()=>kagamiLab.step());

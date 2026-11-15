@@ -4009,3 +4009,13 @@ Outlined body/effects approved and integrated. All thirteen athlete values affec
 - **Now:** teammate swap 14 s and her own swap 14 s, independent of each other.
 - **Install:** merge PR #86, pull, then Mod Manager → Install. She appears in exhibition matches and new careers.
 - **Watch for:** she rescues and then escapes herself in the same fight; is two swaps per 14 s too much.
+
+## Nov 15: round 175 (native 0.10.109, tfm2_custom 0.2.112), `kagami-2.0`: three guarding clones
+- **What Reihan asked:** "she is too weak". Three clones, each guarding a champion with no range limit; each a save point (a swap, then a heal and a shield); a 2 s swap stun; the ult as the backup save with a stun on revive; Guardian Angel for teammates (2 charges, 30 s per champion); each clone on its own 12 s respawn timer.
+- **Now:** all of the above. Clones pick their champion by danger every 3 s, or at once when someone new is dived.
+- **Install:** merge the PR, pull, then Mod Manager → Install.
+- **Watch for:**
+  - do the clones spread to the right champions in fights;
+  - do saves fire before deaths (and not waste clones);
+  - do three clone bodies render and move cleanly;
+  - is she strong enough now, or too strong.

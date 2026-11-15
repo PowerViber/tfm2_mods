@@ -12,7 +12,7 @@ fn a_mirror_step_through_the_transport_locks_on_then_swaps_and_stuns() {
     let ally = json!({"id":2,"team":0,"pos":{"x":480000,"y":400000},"hp":300,"max_hp":1000,"attack":120,"champion":true,"tower":false,"visible":true,"targetable":true});
     let foe = json!({"id":10,"team":1,"pos":{"x":490000,"y":400000},"hp":1000,"max_hp":1000,"champion":true,"tower":false,"visible":true,"targetable":true});
     let mut frame = json!({"tick":1,"owner":1,"team":0,"alive":true,"pos":{"x":400000,"y":400000},"hp":1000,"max_hp":1000,"attack":100,"ult_unlocked":false,
-        "units":[ally, foe],"clone":{"id":99,"pos":{"x":380000,"y":400000},"hp":350,"max_hp":350},"profile":vec![50;13],"manual":true,
+        "units":[ally, foe],"clones":[{"slot":0,"id":99,"pos":{"x":380000,"y":400000},"hp":250,"max_hp":250}],"profile":vec![50;13],"manual":true,
         "order":{"kind":"step_ally","aim":2}});
     let out = step(&mut s, &frame);
     assert!(out["effects"].as_array().unwrap().iter().any(|e| e["type"] == "swap_lock"), "{out}");

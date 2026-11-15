@@ -163,19 +163,9 @@ pub fn guard(c: &Core, f: &Frame) -> Option<Unit> {
         })
         .cloned()
 }
-pub fn clone_spot(c: &Core, f: &Frame) -> Point {
-    let base = c.clone_spot(f);
-    let Some(g) = guard(c, f) else { return base };
-    let target = g.pos.toward(f.pos, 18000 + f.p(POSITIONING) * 180);
-    if legal(f, target) && Core::danger_at(f, target) < Core::danger_at(f, base) + 20000 {
-        target
-    } else {
-        base
-    }
-}
 pub fn decide(c: &mut Core, f: &Frame) -> Option<Order> {
     remember(c, f);
-    if c.sealed(f.owner) || f.stunned || c.swap.is_some_and(|s| s.kind != SwapKind::StepAlly) {
+    if c.sealed(f.owner) || f.stunned || c.self_swapping(f) {
         return None;
     }
     if c.ai.pending {
@@ -214,7 +204,7 @@ pub fn decide(c: &mut Core, f: &Frame) -> Option<Order> {
         }
     }
     // Mirror Step's two cooldowns: a rescue and her own swap never wait on each other
-    if f.tick >= c.step_ally_at && c.swap.is_none() {
+    if f.tick >= c.step_ally_at && !c.stepping() {
         if let Some(id) = c.rescue_target(f) {
             push(
                 Order::StepAlly(id),
@@ -224,7 +214,7 @@ pub fn decide(c: &mut Core, f: &Frame) -> Option<Order> {
             );
         }
     }
-    if f.tick >= c.step_self_at && c.swap.is_none() {
+    if f.tick >= c.step_self_at && !c.stepping() && !c.self_swapping(f) {
         if let Some(p) = c.escape_point(f).filter(|p| legal(f, *p)) {
             push(
                 Order::StepPoint(p),
@@ -236,7 +226,7 @@ pub fn decide(c: &mut Core, f: &Frame) -> Option<Order> {
         if c.clone_alive(f) {
             for u in f.enemy_champions().take(8) {
                 let p = predicted(c, f, u);
-                if !p.within(f.pos, d::STEP_RANGE) || !legal(f, p) || !clear(f, f.clone.unwrap().pos, p) {
+                if !p.within(f.pos, d::STEP_RANGE) || !legal(f, p) || !c.step_clone(f, p).is_some_and(|k| clear(f, k.pos, p)) {
                     continue;
                 }
                 let support = f
@@ -362,19 +352,22 @@ mod tests {
             attack: 100,
             profile: [50; 13],
             home: Point::new(96000, 864000),
-            clone: Some(CloneView {
+            clones: vec![CloneView {
+                slot: 0,
                 id: 99,
                 pos: Point::new(380000, 500000),
                 hp: 350,
                 max_hp: 350,
-            }),
+            }],
             units: vec![unit(2, 0, 440000 + variant * 1000, 280), unit(10, 1, 470000 + variant * 1000, 1000)],
             ..Frame::default()
         };
-        let mut c = Core {
-            clone: Some(99),
-            ..Core::default()
-        };
+        let mut c = Core::default();
+        c.clones[0].id = Some(99);
+        // the other two clones are on their timers in these fixtures
+        for s in c.clones.iter_mut().skip(1) {
+            s.back_at = u64::MAX / 2;
+        }
         c.ai.initialized = true;
         c.ai.observed = vec![(1, 1000), (2, 280)];
         c.ai.sightings.push(Sighting {

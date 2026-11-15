@@ -2,13 +2,14 @@
 //! walks her and fires her shard (the data basic attack); native code casts everything else (the data slots are
 //! never-cast shells, like Akane's and Kicker's).
 //!
-//! * The clone: a summoned unit (`spawn_unit`, a base body until Codex's art) at 35% of her HP with her Defence. It
-//!   never walks or swings by itself (move speed 1, attack and skills blocked); the core glides it
-//!   (`crate::motion::glide`) and deals its shards and casts. It carries `kg_clone:<owner>` so the frame finds it.
+//! * The clones (`kagami-2.0`: three): summoned units (`spawn_unit`, a base body under Codex's Reflection art) at 25%
+//!   of her HP with her Defence. They never walk or swing by themselves (move speed 1, attack and skills blocked); the
+//!   core glides them (`crate::motion::glide`) and deals their shards and casts. Each carries `kg_clone:<owner>:<slot>`
+//!   so the frame finds it; a spent clone is set to 0 HP.
 //! * Swaps: the core locks on to two ids for 0.5 s (nobody is rooted), then `Effect::Swap` trades the places they
 //!   hold at that moment: the two hand-set positions here (a teleport by design, allowlisted in
 //!   `motion_guard_tests.rs`), each through `place::safe`.
-//! * The ult's ward is `kg_ward` and her own Mirror Swap ward is `kg_self` (`undying`, renewed a few ticks at a time
+//! * The ult's ward is `kg_ward` and a clone save's ward is `kg_clone_ward` (`undying`, renewed a few ticks at a time
 //!   while they last): a burst can't skip the save. The seal is the engine's banish (untargetable, unseen,
 //!   input-locked) plus `kg_sealed`, so every Kagami's frame sees it.
 //! * The ult's revive: full HP, `kg_revived` (Kindred Charm's stats, +30% Defence, `cc_immune`) and a shield.
@@ -21,7 +22,7 @@ use mod_api_stable::{AttackTypeV1, BuffV1, CcKindV1, CcV1, StablePassive, Stable
 pub(crate) const GO_PREFIX: &str = "kg_go:";
 pub(crate) const CLONE_TAG: &str = "kg_clone:";
 pub(crate) const WARD: &str = "kg_ward";
-pub(crate) const SELF_WARD: &str = "kg_self";
+pub(crate) const CLONE_WARD: &str = "kg_clone_ward";
 pub(crate) const SWAP_FLASH_GUARD: &str = "kg_swap_pending:";
 pub(crate) const SEALED: &str = "kg_sealed";
 pub(crate) const CHARM: &str = "kg_charm";
@@ -99,6 +100,17 @@ fn ward_buff(name: &str, ticks: u64) -> BuffV1 {
     b
 }
 
+/// One clone body's presentation state (pose, facing, motion)
+#[derive(Clone, Default)]
+struct Body {
+    pose: String,
+    pose_start: usize,
+    pose_until: usize,
+    position: Option<(i64, i64)>,
+    left: bool,
+    moving_until: usize,
+}
+
 #[derive(Clone, Default)]
 pub struct Kagami {
     pub core: Core,
@@ -108,37 +120,54 @@ pub struct Kagami {
     fx_tick: u64,
     flash_guarded: Vec<usize>,
     art_v1: bool,
-    clone_pose: String,
-    clone_pose_start: usize,
-    clone_pose_until: usize,
-    clone_position: Option<(i64, i64)>,
-    clone_left: bool,
-    clone_moving_until: usize,
+    /// each clone's body presentation, by slot
+    bodies: Vec<Body>,
     shown_at: Option<usize>,
     terrain: Option<(u64, Vec<bool>)>,
 }
 
 impl Kagami {
-    /// Her live clone: the summon tagged with her id (the known one first; a full search only when it's gone).
-    pub(crate) fn find_clone(sim: &StableSim, owner: usize, known: Option<usize>) -> Option<CloneView> {
-        let tag = format!("{CLONE_TAG}{owner}");
-        let known = known.and_then(|id| sim.get_entity(id)).filter(|e| e.is_alive() && has_buff(sim, e.id(), &tag));
-        known
-            .or_else(|| {
-                (0..sim.entity_count())
-                    .filter_map(|i| sim.entity_at(i))
-                    .find(|e| e.is_alive() && !e.is_champion() && has_buff(sim, e.id(), &tag))
-            })
-            .map(|e| {
-                let p = e.pos();
-                let h = e.hp();
-                CloneView {
-                    id: e.id(),
-                    pos: Point::new(p.0 as i64, p.1 as i64),
-                    hp: h.0 as i64,
-                    max_hp: h.1.max(1) as i64,
+    /// The slot a clone unit was spawned for (its `kg_clone:<owner>:<slot>` tag), if it is hers.
+    fn slot_of_unit(sim: &StableSim, owner: usize, id: usize) -> Option<usize> {
+        let prefix = format!("{CLONE_TAG}{owner}:");
+        let e = sim.get_entity(id)?;
+        (0..e.buff_count()).filter_map(|i| e.buff_at(i)).find_map(|b| b.name().strip_prefix(&prefix).and_then(|n| n.parse().ok()))
+    }
+    fn view(sim: &StableSim, slot: usize, id: usize) -> Option<CloneView> {
+        let e = sim.get_entity(id).filter(|e| e.is_alive())?;
+        let p = e.pos();
+        let h = e.hp();
+        Some(CloneView {
+            slot,
+            id,
+            pos: Point::new(p.0 as i64, p.1 as i64),
+            hp: h.0 as i64,
+            max_hp: h.1.max(1) as i64,
+        })
+    }
+    /// Her live clones: the known ones first; a full search (for a newly spawned or unknown one) only when `search`.
+    pub(crate) fn find_clones(sim: &StableSim, owner: usize, known: &[Option<usize>], search: bool) -> Vec<CloneView> {
+        let mut out: Vec<CloneView> = known
+            .iter()
+            .enumerate()
+            .filter_map(|(slot, id)| id.filter(|id| Self::slot_of_unit(sim, owner, *id) == Some(slot)).and_then(|id| Self::view(sim, slot, id)))
+            .collect();
+        if search && out.len() < known.len() {
+            for e in (0..sim.entity_count()).filter_map(|i| sim.entity_at(i)) {
+                if !e.is_alive() || e.is_champion() || out.iter().any(|c| c.id == e.id()) {
+                    continue;
                 }
-            })
+                if let Some(slot) = Self::slot_of_unit(sim, owner, e.id()) {
+                    if slot < known.len() && !out.iter().any(|c| c.slot == slot) {
+                        out.extend(Self::view(sim, slot, e.id()));
+                    }
+                }
+            }
+        }
+        out
+    }
+    fn known(&self) -> Vec<Option<usize>> {
+        self.core.clones.iter().map(|s| s.id).collect()
     }
 
     pub(crate) fn frame(&mut self, sim: &StableSim, owner: usize) -> Frame {
@@ -160,18 +189,15 @@ impl Kagami {
         let mut values = [50; 13];
         values[..9].copy_from_slice(&profile.values);
         values[9..].copy_from_slice(&profile.sense.0);
-        // the full search only after a death, every 30 ticks (it is far dearer than the rest of the frame)
-        let known = self.core.clone;
-        let clone = if known.is_some() || tick % 30 == 0 || tick >= self.core.clone_back_at {
-            Self::find_clone(sim, owner, known)
-        } else {
-            None
-        };
+        // the full search only for a missing clone, every 30 ticks or when one is due back (it is far dearer)
+        let known = self.known();
+        let search = self.core.clones.iter().any(|c| c.id.is_none() && (tick % 30 == 0 || tick >= c.back_at));
+        let clones = Self::find_clones(sim, owner, &known, search);
         let snapshot = crate::champions_shared(sim);
         let realms = crate::realm::realms(sim);
         let mut units = vec![];
         for e in (0..sim.entity_count()).filter_map(|i| sim.entity_at(i)) {
-            if e.id() == owner || !e.is_alive() || clone.is_some_and(|c| c.id == e.id()) {
+            if e.id() == owner || !e.is_alive() || clones.iter().any(|c| c.id == e.id()) {
                 continue;
             }
             let e_team = e.team();
@@ -232,7 +258,7 @@ impl Kagami {
             ult_unlocked: has_buff(sim, owner, crate::ULT_LEARNED),
             home: Point::new(home.0, home.1),
             units,
-            clone,
+            clones,
             profile: values,
             manual: false,
             order: None,
@@ -244,14 +270,16 @@ impl Kagami {
     /// This lease only coordinates Global Flash. It never roots, hides or blocks ordinary actions.
     pub(crate) fn sync_flash_guards(&mut self, sim: &mut StableSim, owner: usize) {
         let tag = format!("{SWAP_FLASH_GUARD}{owner}");
-        let next: Vec<_> = self.core.swap.map(|s| vec![s.clone, s.other]).unwrap_or_default();
+        let mut next: Vec<usize> = self.core.swaps.iter().flat_map(|s| [s.clone, s.other]).collect();
+        next.sort_unstable();
+        next.dedup();
         for id in self.flash_guarded.iter().filter(|id| !next.contains(id)) {
             sim.entity_remove_buff(*id, &tag);
         }
-        if let Some(s) = self.core.swap {
+        for s in self.core.swaps.clone() {
             let ticks = s.at.saturating_sub(sim.tick() as u64).saturating_add(2).max(1) as usize;
-            for id in &next {
-                replace_buff(sim, *id, &crate::timed(&tag, ticks));
+            for id in [s.clone, s.other] {
+                replace_buff(sim, id, &crate::timed(&tag, ticks));
             }
         }
         self.flash_guarded = next;
@@ -266,35 +294,39 @@ impl Kagami {
             return;
         }
         self.shown_at = Some(tick);
-        if let Some(c) = Self::find_clone(sim, owner, self.core.clone) {
+        let known = self.known();
+        if self.bodies.len() < known.len() {
+            self.bodies.resize(known.len(), Body::default());
+        }
+        let live = Self::find_clones(sim, owner, &known, false);
+        for slot in 0..known.len() {
+            let Some(c) = live.iter().find(|c| c.slot == slot).copied() else {
+                self.bodies[slot].position = None;
+                continue;
+            };
+            let b = &mut self.bodies[slot];
             let pos = (c.pos.x, c.pos.y);
-            if let Some(old) = self.clone_position {
+            if let Some(old) = b.position {
                 if old.0 != pos.0 {
-                    self.clone_left = pos.0 < old.0;
+                    b.left = pos.0 < old.0;
                 }
             }
-            self.clone_position = Some(pos);
-            let pose = if tick < self.clone_pose_until {
-                self.clone_pose.as_str()
-            } else if tick < self.clone_moving_until {
-                "run"
+            b.position = Some(pos);
+            let pose = if tick < b.pose_until {
+                b.pose.clone()
+            } else if tick < b.moving_until {
+                "run".into()
             } else {
-                "idle"
+                "idle".into()
             };
-            let elapsed = if tick < self.clone_pose_until {
-                tick.saturating_sub(self.clone_pose_start)
-            } else {
-                tick
-            };
-            let frame = crate::kagami_art::frame(pose, elapsed);
-            let name = format!("kg_clone_{pose}_{frame}{}", if self.clone_left { "_l" } else { "" });
+            let elapsed = if tick < b.pose_until { tick.saturating_sub(b.pose_start) } else { tick };
+            let frame = crate::kagami_art::frame(&pose, elapsed);
+            let name = format!("kg_clone_{pose}_{frame}{}", if b.left { "_l" } else { "" });
             if self.fx_ok(tick as u64) {
                 crate::fx_unit(sim, &name, owner, c.id, crate::kagami_art::RENEW as u64);
             }
-        } else {
-            self.clone_position = None;
         }
-        if let Some(s) = self.core.swap {
+        for s in self.core.swaps.clone() {
             if let (Some(a), Some(b)) = (sim.get_entity(s.clone), sim.get_entity(s.other)) {
                 let pa = a.pos();
                 let pb = b.pos();
@@ -313,6 +345,15 @@ impl Kagami {
         }
     }
 
+    /// the presentation state of the clone with this id
+    fn body_of(&mut self, clone: usize) -> Option<&mut Body> {
+        let slot = self.core.clones.iter().position(|s| s.id == Some(clone))?;
+        if self.bodies.len() <= slot {
+            self.bodies.resize(slot + 1, Body::default());
+        }
+        self.bodies.get_mut(slot)
+    }
+
     fn fx_ok(&mut self, tick: u64) -> bool {
         if tick != self.fx_tick {
             let gained = (tick.saturating_sub(self.fx_tick) / 2) as usize;
@@ -327,7 +368,7 @@ impl Kagami {
         }
     }
 
-    fn spawn_clone(&self, sim: &mut StableSim, owner: usize, at: Point, hp: i64) -> Option<usize> {
+    fn spawn_clone(&self, sim: &mut StableSim, owner: usize, slot: usize, at: Point, hp: i64) -> Option<usize> {
         let me = sim.get_entity(owner)?;
         let (team, st) = (me.team(), me.stat());
         let stat = StatV1 {
@@ -356,7 +397,7 @@ impl Kagami {
             // Targetability/vision/HP are untouched; its existing attack/skill blocks remain the only action restrictions.
             sim.apply_cc(id, &named(CcKindV1::Animation, FOREVER, "kg_clone_hidden"));
         }
-        sim.add_buff(id, &crate::timed(&format!("{CLONE_TAG}{owner}"), FOREVER as usize));
+        sim.add_buff(id, &crate::timed(&format!("{CLONE_TAG}{owner}:{slot}"), FOREVER as usize));
         Some(id)
     }
 
@@ -372,23 +413,38 @@ impl Kagami {
         let pos_of = |sim: &StableSim, id: usize| sim.get_entity(id).filter(|e| e.is_alive()).map(|e| e.pos()).map(|p| (p.0 as i64, p.1 as i64));
         for e in effects {
             match e {
-                Effect::SpawnClone { at, hp } => {
-                    match self.spawn_clone(sim, owner, at, hp) {
+                Effect::SpawnClone { slot, at, hp } => {
+                    match self.spawn_clone(sim, owner, slot, at, hp) {
                         // the next frame looks it up directly
-                        Some(id) => self.core.clone = Some(id),
+                        Some(id) => {
+                            if let Some(s) = self.core.clones.get_mut(slot) {
+                                s.id = Some(id);
+                            }
+                        }
                         None => crate::mod_log(sim, "kagami_log.txt", &format!("clone{tick}"), "reflection: the host refused the clone unit"),
                     }
                 }
-                Effect::CloneMove { to, ticks } => {
-                    self.clone_moving_until = tick + ticks as usize;
-                    if let Some(c) = self.core.clone {
-                        crate::motion::glide(sim, c, (to.x, to.y), ticks, crate::motion::Kind::SelfMove);
+                Effect::DespawnClone { clone } => {
+                    // a spent clone breaks; the core already started its own respawn timer
+                    if let Some(p) = pos_of(sim, clone) {
+                        if self.fx_ok(tick as u64) {
+                            crate::fx_point(sim, "kg_clone_in", owner, p.0, p.1, 24);
+                        }
                     }
+                    sim.entity_set_hp(clone, 0);
                 }
-                Effect::CloneShot { target, amount, from } => {
-                    self.clone_pose = "attack".into();
-                    self.clone_pose_start = tick;
-                    self.clone_pose_until = tick + 22;
+                Effect::CloneMove { clone, to, ticks } => {
+                    if let Some(b) = self.body_of(clone) {
+                        b.moving_until = tick + ticks as usize;
+                    }
+                    crate::motion::glide(sim, clone, (to.x, to.y), ticks, crate::motion::Kind::SelfMove);
+                }
+                Effect::CloneShot { clone, target, amount, from } => {
+                    if let Some(b) = self.body_of(clone) {
+                        b.pose = "attack".into();
+                        b.pose_start = tick;
+                        b.pose_until = tick + 22;
+                    }
                     if !reach(owner, target) || !not_tower(sim, target) {
                         continue;
                     }
@@ -403,10 +459,13 @@ impl Kagami {
                     let _ = from;
                 }
                 Effect::Heal { target, amount, from } => {
-                    if Self::find_clone(sim, owner, self.core.clone).is_some_and(|c| c.pos.within(from, 1000)) {
-                        self.clone_pose = "skill2".into();
-                        self.clone_pose_start = tick;
-                        self.clone_pose_until = tick + 18;
+                    let caster = Self::find_clones(sim, owner, &self.known(), false).into_iter().find(|c| c.pos.within(from, 1000));
+                    if let Some(c) = caster {
+                        if let Some(b) = self.body_of(c.id) {
+                            b.pose = "skill2".into();
+                            b.pose_start = tick;
+                            b.pose_until = tick + 18;
+                        }
                     }
                     sim.heal(owner, target, amount.max(0) as usize);
                     if let Some(p) = pos_of(sim, target) {
@@ -437,16 +496,17 @@ impl Kagami {
                         sim.apply_cc(target, &named(CcKindV1::Stun, ticks, "kg_stun"));
                     }
                 }
-                Effect::Knockback { target } => {
+                Effect::Knockback { target, from } => {
+                    // away from the champion Guardian Angel protects
                     if reach(owner, target) && not_tower(sim, target) {
-                        sim.entity_knockback(owner, target, d::ANGEL_KNOCK_SPEED.max(0) as usize, d::ANGEL_KNOCK_TICKS.max(1) as usize);
+                        sim.entity_knockback(from, target, d::ANGEL_KNOCK_SPEED.max(0) as usize, d::ANGEL_KNOCK_TICKS.max(1) as usize);
                     }
                 }
                 Effect::Shield { target, amount, ticks } => {
                     sim.entity_add_shield(target, amount.max(0) as usize, ticks as usize);
                 }
                 Effect::Ward { target, ticks } => replace_buff(sim, target, &ward_buff(WARD, ticks)),
-                Effect::SelfWard { ticks } => replace_buff(sim, owner, &ward_buff(SELF_WARD, ticks)),
+                Effect::CloneWard { target, ticks } => replace_buff(sim, target, &ward_buff(CLONE_WARD, ticks)),
                 Effect::Seal { target, ticks } => {
                     sim.entity_banish(owner, target, ticks as usize, "", "");
                     replace_buff(sim, target, &crate::timed(SEALED, ticks as usize));
@@ -496,7 +556,7 @@ impl StablePassive for Kagami {
     fn on_spawn(&mut self, sim: &mut StableSim, _: usize, id: usize) {
         self.core.respawn(sim.tick() as u64);
         self.sync_flash_guards(sim, id);
-        for b in [SELF_WARD, SEALED] {
+        for b in [CLONE_WARD, SEALED] {
             sim.entity_remove_buff(id, b);
         }
         remove_prefix(sim, id, GO_PREFIX);

@@ -36,7 +36,8 @@ fn valid(f: &Frame) -> bool {
         && f.profile.iter().all(|v| (0..=100).contains(v))
         && (1..=100_000_000).contains(&f.max_hp)
         && (0..=f.max_hp).contains(&f.hp)
-        && f.clone.is_none_or(|c| point(c.pos) && c.id != f.owner && (1..=100_000_000).contains(&c.max_hp))
+        && f.clones.len() <= 8
+        && f.clones.iter().all(|c| point(c.pos) && c.id != f.owner && c.slot < 8 && (1..=100_000_000).contains(&c.max_hp))
         && f.units.iter().all(|u| u.id != f.owner && point(u.pos) && (1..=100_000_000).contains(&u.max_hp))
 }
 
@@ -104,10 +105,10 @@ mod transport_tests {
         assert!(run(&mut s, &input(1).to_string()).contains("error"));
     }
     #[test]
-    fn the_first_step_asks_for_the_clone() {
+    fn the_first_step_asks_for_the_three_clones() {
         let mut s = Session::default();
         let out = run(&mut s, &input(1).to_string());
-        assert!(out.contains("spawn_clone"), "{out}");
+        assert_eq!(out.matches("spawn_clone").count(), 3, "{out}");
     }
 }
 
@@ -119,18 +120,19 @@ mod effect_tests {
     fn every_effect_serializes() {
         let p = Point::new(1, 2);
         for e in [
-            Effect::SpawnClone { at: p, hp: 1 },
-            Effect::CloneMove { to: p, ticks: 1 },
-            Effect::CloneShot { target: 1, amount: 1, from: p },
+            Effect::SpawnClone { slot: 0, at: p, hp: 1 },
+            Effect::DespawnClone { clone: 1 },
+            Effect::CloneMove { clone: 1, to: p, ticks: 1 },
+            Effect::CloneShot { clone: 1, target: 1, amount: 1, from: p },
             Effect::Heal { target: 1, amount: 1, from: p },
             Effect::Charm { target: 1, ticks: 1 },
             Effect::SwapLock { a: 1, b: 2, ticks: 1 },
             Effect::Swap { a: 1, b: 2 },
             Effect::Stun { target: 1, ticks: 1 },
-            Effect::Knockback { target: 1 },
+            Effect::Knockback { target: 1, from: 2 },
             Effect::Shield { target: 1, amount: 1, ticks: 1 },
             Effect::Ward { target: 1, ticks: 1 },
-            Effect::SelfWard { ticks: 1 },
+            Effect::CloneWard { target: 1, ticks: 1 },
             Effect::Seal { target: 1, ticks: 1 },
             Effect::Revive { target: 1, hp: 1, blessed: true },
             Effect::Steer { to: p },

@@ -8,12 +8,12 @@ function fixtures(){
   const unit=(id,t,px,hp)=>({id,team:t,pos:{x:px,y},hp,max_hp:1000,attack:150,champion:true,tower:false,visible:true,targetable:true,sealed:false});
   for(let tick=1;tick<=120;tick++){
    let ally=unit(2,team,x+45000,kind==='heal'?300:kind==='rescue'?250:1000),foe=unit(10,1-team,x+55000,1000);
-   let clone={id:99,pos:{x:x-25000,y},hp:350,max_hp:350};
-   if(kind==='clone-death'&&tick>30&&tick<100)clone=null;
+   let clones=[0,1,2].map(slot=>({slot,id:99-slot,pos:{x:x-25000,y:y+slot*12000},hp:250,max_hp:250}));
+   if(kind==='clone-death'&&tick>30&&tick<100)clones=clones.slice(1);
    if(kind==='ult-seal'&&tick>10)ally.hp=50;
    const profile=Array(13).fill(50);profile[i%13]=i<24?20:80;
    const order=tick===20?(kind==='heal'?{kind:'mend',aim:2}:kind==='rescue'?{kind:'step_ally',aim:2}:kind==='charm'?{kind:'charm',aim:2}:null):null;
-   inputs.push({version:1,rules_revision:R.revision,frame:{tick,owner:1,team,alive:true,pos:{x,y},hp:kind==='escape'&&tick>10?400:1000,max_hp:1000,attack:100,stunned:i%9===0&&tick>60&&tick<80,ult_unlocked:true,home:{x:96000,y:864000},units:[ally,foe],clone,profile,manual:i%3===0,order,terrain,hazards:i%4===0?[{id:55,at:{x:x+20000,y},radius:14000,until:90}]:[]}});
+   inputs.push({version:1,rules_revision:R.revision,frame:{tick,owner:1,team,alive:true,pos:{x,y},hp:kind==='escape'&&tick>10?400:1000,max_hp:1000,attack:100,stunned:i%9===0&&tick>60&&tick<80,ult_unlocked:true,home:{x:96000,y:864000},units:[ally,foe],clones,profile,manual:i%3===0,order,terrain,hazards:i%4===0?[{id:55,at:{x:x+20000,y},radius:14000,until:90}]:[]}});
   }
   result.push({name:(i<24?'development':'holdout')+'-'+i+'-'+kind,inputs});
  }return result;
