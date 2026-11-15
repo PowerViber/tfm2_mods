@@ -31,7 +31,7 @@ pub static FAMILY_RULES: [FamilyRule; 5] = [
     FamilyRule { id: "smoke_blocks_sight", from: "valorant", to: "*", rule: "Nobody outside Omen's Dark Cover sees in; someone inside sees only 15000 and nothing outside. Every champion's targeting respects it." },
     FamilyRule { id: "stopped_time", from: "jojo", to: "*", rule: "ZA WARUDO stops every caught champion, whatever its franchise; only DIO moves." },
 ];
-pub static CHAMPIONS: [ChampionDef; 87] = [
+pub static CHAMPIONS: [ChampionDef; 88] = [
     ChampionDef { id: "android", name: "Android", family: 0, role: "Melee", native: false, basic: BasicAttack { name: "Basic attack", range: 25000, reach: Range::Melee }, skills: &[
         SkillDef { slot: Slot::Skill, name: "Skill 1", kinds: 4 | 8 | 16 | 512, intents: 1 | 2 | 16 | 32 },
         SkillDef { slot: Slot::Skill2, name: "Skill 2", kinds: 256 | 512, intents: 2 | 4 | 8 },
@@ -483,5 +483,10 @@ pub static CHAMPIONS: [ChampionDef; 87] = [
         SkillDef { slot: Slot::Skill, name: "Reflection / Clone Save / Guardian Angel / Mirror Step", kinds: 64 | 2 | 512 | 256, intents: 8 | 4 | 2 },
         SkillDef { slot: Slot::Skill2, name: "Kindred Charm", kinds: 1024, intents: 8 | 2 },
         SkillDef { slot: Slot::Ult, name: "Moonlit Mend / Last Reflection", kinds: 128 | 256 | 1024, intents: 8 },
+    ] },
+    ChampionDef { id: "tfm2_custom_basalt", name: "Basalt", family: 13, role: "Fighter", native: true, basic: BasicAttack { name: "Stone Whip", range: 33000, reach: Range::Melee }, skills: &[
+        SkillDef { slot: Slot::Skill, name: "Bedrock / Jump / Whip Pull / Raise & Punch / Air Dash", kinds: 1 | 512 | 16, intents: 2 | 4 },
+        SkillDef { slot: Slot::Skill2, name: "Hurl / Slab Drop / Crushing Clap / Whip Swing", kinds: 4 | 512 | 16, intents: 2 | 1 },
+        SkillDef { slot: Slot::Ult, name: "Boulder Throw / Meteor Punch", kinds: 4 | 16 | 512, intents: 2 },
     ] },
 ];

@@ -1,0 +1,197 @@
+{
+  "id": "tfm2_custom_basalt",
+  "category": "Melee",
+  "tags": [
+    "AD",
+    "Melee",
+    "CC"
+  ],
+  "sprite": "asset/tfm2_custom/champions/tfm2_custom_grimhald",
+  "anim_prefix": "",
+  "stat": {
+    "attack": 80,
+    "magic_power": 0,
+    "hp": 1040,
+    "defence": 28,
+    "magic_resistance": 24,
+    "move_speed": 1050,
+    "hp_regen": 3,
+    "stack": 0,
+    "crit_chance": 0
+  },
+  "growth": {
+    "attack": 8,
+    "magic_power": 0,
+    "hp": 96,
+    "defence": 4,
+    "magic_resistance": 4,
+    "move_speed": 10,
+    "hp_regen": 0,
+    "stack": 0,
+    "crit_chance": 0
+  },
+  "attack": {
+    "action_name": "attack",
+    "cancelable": true,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 20,
+    "cooltime": 60,
+    "start_timing": 10,
+    "range": 33000,
+    "casting_type": "Targeting",
+    "casting_target": "Enemy",
+    "attack_type": "BaseAttack",
+    "effect": {
+      "type": "Attack",
+      "damage": 0,
+      "attack_ratio": 100
+    }
+  },
+  "skill": {
+    "action_name": "skill1",
+    "cancelable": false,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 6,
+    "cooltime": 5184000,
+    "start_timing": 3,
+    "range": 1,
+    "casting_type": "Targeting",
+    "casting_target": "EnemyChampionInCC",
+    "attack_type": "Skill",
+    "effect": {
+      "type": "Combine",
+      "effects": []
+    },
+    "description": "#asset/base/text/champion?description.tfm2_custom_basalt.skill"
+  },
+  "skill2": {
+    "action_name": "skill2",
+    "cancelable": false,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 6,
+    "cooltime": 5184000,
+    "start_timing": 3,
+    "range": 1,
+    "casting_type": "Targeting",
+    "casting_target": "EnemyChampionInCC",
+    "attack_type": "Skill",
+    "effect": {
+      "type": "Combine",
+      "effects": []
+    },
+    "description": "#asset/base/text/champion?description.tfm2_custom_basalt.skill2"
+  },
+  "ult": {
+    "action_name": "ult",
+    "cancelable": false,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 6,
+    "cooltime": 5184000,
+    "start_timing": 3,
+    "range": 1,
+    "casting_type": "Targeting",
+    "casting_target": "EnemyChampionInCC",
+    "attack_type": "Skill",
+    "effect": {
+      "type": "Combine",
+      "effects": []
+    },
+    "description": "#asset/base/text/champion?description.tfm2_custom_basalt.ult"
+  },
+  "passive": {
+    "passive_ref": "tfm2_custom_ai:basalt",
+    "params": {}
+  },
+  "passive_ult": {
+    "passive_ref": "tfm2_custom_ai:ult_learned",
+    "params": {}
+  },
+  "view_buffs": [],
+  "view_effects": [
+    {
+      "type": "Animation",
+      "name": "bs_block",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "cage_block",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_rise",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "pillar_rise",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_break",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "pillar_break",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_slam",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "slam",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_leap",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "leap",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_land",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "land",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_dust",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "bash_dust",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_rock",
+      "anim": "asset/tfm2_custom/vfx/kicker",
+      "tag": "rock_hit",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_wall_slam",
+      "anim": "asset/tfm2_custom/vfx/kicker",
+      "tag": "wall_slam",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_dash",
+      "anim": "asset/tfm2_custom/vfx/kicker",
+      "tag": "dash",
+      "z": 5,
+      "is_follow": false
+    }
+  ],
+  "view_projectiles": []
+}

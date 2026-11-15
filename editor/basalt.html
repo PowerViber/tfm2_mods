@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Basalt Lab</title>
+<style>
+  body { font: 13px/1.4 system-ui, sans-serif; margin: 0; display: flex; gap: 12px; padding: 12px; background: #16171b; color: #ddd; }
+  canvas { background: #23262d; border: 1px solid #333; cursor: crosshair; }
+  #side { width: 400px; display: flex; flex-direction: column; gap: 8px; }
+  button { background: #2d3340; color: #eee; border: 1px solid #445; padding: 5px 8px; border-radius: 4px; cursor: pointer; }
+  #log { height: 240px; overflow: auto; background: #101114; padding: 6px; font: 12px monospace; white-space: pre-wrap; }
+  #state { background: #101114; padding: 6px; font: 12px monospace; white-space: pre; }
+  .row { display: flex; gap: 6px; flex-wrap: wrap; }
+  kbd { background: #333; padding: 0 4px; border-radius: 3px; }
+</style>
+</head>
+<body>
+<canvas id="map" width="760" height="620"></canvas>
+<div id="side">
+  <h3 style="margin:0">Basalt Lab <small id="rev"></small></h3>
+  <div class="row"><button id="play">Pause</button><button id="ai">AI: on</button><button id="reset">Reset</button></div>
+  <div>With the AI off, aim with the mouse:
+    <kbd>Space</kbd> Jump (double jump / wall kick) · <kbd>F</kbd> Whip Pull ·
+    <kbd>Q</kbd> Raise &amp; Punch / Air Dash · <kbd>W</kbd> Hurl / Slab Drop ·
+    <kbd>E</kbd> Crushing Clap / Whip Swing · <kbd>R</kbd> Boulder Throw / Meteor Punch (again: recast).</div>
+  <div id="state"></div>
+  <div id="log"></div>
+</div>
+<script src="basalt-data.js"></script>
+<script>
+const R = window.BASALT_RULES;
+document.getElementById('rev').textContent = R.revision;
+const cv = document.getElementById('map'), g = cv.getContext('2d');
+const OX = 160000, OY = 200000, S = 760 / 620000;
+const sx = x => (x - OX) * S, sy = y => (y - OY) * S, wx = px => px / S + OX, wy = py => py / S + OY;
+const CELL = 32000, CELLS = 30;
+// a small piece of terrain to slam into and slingshot over
+const TERRAIN = new Set(['12,13', '12,14', '12,15', '19,10', '20,10', '21,10', '17,18', '17,19']);
+const terrain = Array.from({ length: CELLS * CELLS }, (_, i) => TERRAIN.has((i % CELLS) + ',' + Math.floor(i / CELLS)));
+let wasm, tick, me, units, state = {}, play = true, aiOn = true, logLines = [], glides = new Map(), mouse = { x: 450000, y: 400000 }, pending = null;
+const P = p => ({ x: Math.round(p.x), y: Math.round(p.y) });
+const log = s => { logLines.push(`[${(tick / 60).toFixed(2)}s] ${s}`); if (logLines.length > 200) logLines.shift(); };
+function reset() {
+  tick = 1; logLines = []; glides.clear(); state = {};
+  me = { id: 1, team: 0, pos: { x: 380000, y: 500000 }, hp: 1600, max_hp: 1600, attack: 140, stun: 0, air: 0 };
+  units = [
+    { id: 2, team: 0, name: 'carry', pos: { x: 360000, y: 560000 } },
+    { id: 10, team: 1, name: 'diver', pos: { x: 470000, y: 420000 } },
+    { id: 11, team: 1, name: 'mage', pos: { x: 520000, y: 380000 } },
+    { id: 12, team: 1, name: 'archer', pos: { x: 640000, y: 300000 } },
+  ];
+  for (const u of units) Object.assign(u, { hp: 1400, max_hp: 1400, attack: 120, champion: true, tower: false, visible: true, targetable: true, stun: 0, up: 0, slow: 0 });
+  wasm.exports.basalt_reset();
+}
+const byId = id => id === 1 ? me : units.find(u => u.id === id);
+function step() {
+  // move along glides
+  for (const [id, gl] of glides) {
+    const u = byId(id); if (!u) { glides.delete(id); continue; }
+    const k = Math.min(1, (tick - gl.t0) / gl.n);
+    u.pos = { x: gl.a.x + (gl.b.x - gl.a.x) * k, y: gl.a.y + (gl.b.y - gl.a.y) * k };
+    if (k >= 1) glides.delete(id);
+  }
+  // enemies close on him when free
+  for (const u of units.filter(u => u.team === 1 && u.hp > 0 && tick >= u.stun && tick >= u.up && !glides.has(u.id))) {
+    const d = Math.hypot(me.pos.x - u.pos.x, me.pos.y - u.pos.y), sp = tick < u.slow ? 450 : 800;
+    if (d > 30000) { u.pos.x += (me.pos.x - u.pos.x) / d * sp; u.pos.y += (me.pos.y - u.pos.y) / d * sp; }
+    else if (tick % 50 === u.id % 50 && tick >= me.air) me.hp = Math.max(1, me.hp - u.attack * 0.6);
+  }
+  const frame = {
+    tick, owner: 1, team: 0, alive: me.hp > 0, pos: P(me.pos), hp: Math.round(me.hp), max_hp: me.max_hp, attack: me.attack, stunned: tick < me.stun,
+    ult_unlocked: true, home: { x: 96000, y: 864000 }, terrain, other_walls: [],
+    units: units.filter(u => u.hp > 0).map(u => ({ id: u.id, team: u.team, pos: P(u.pos), hp: Math.round(u.hp), max_hp: u.max_hp, attack: u.attack, champion: true, tower: false, visible: true, targetable: true })),
+    profile: Array(13).fill(50), manual: !aiOn, order: pending,
+  };
+  pending = null;
+  const text = new TextEncoder().encode(JSON.stringify({ version: 1, rules_revision: R.revision, frame }));
+  const p = wasm.exports.basalt_input(text.length);
+  new Uint8Array(wasm.exports.memory.buffer, p, text.length).set(text);
+  let o;
+  try { o = wasm.exports.basalt_step(text.length); } catch (e) { play = false; log('core panic: ' + JSON.stringify(frame)); return; }
+  const out = JSON.parse(new TextDecoder().decode(new Uint8Array(wasm.exports.memory.buffer, o, wasm.exports.basalt_output_len())));
+  if (out.error) { log('error: ' + out.error); return; }
+  state = out.state;
+  for (const e of out.effects) apply(e);
+}
+function apply(e) {
+  const u = byId(e.target);
+  switch (e.type) {
+    case 'damage': if (u) u.hp = Math.max(0, u.hp - e.amount); break;
+    case 'stun': if (u) { u.stun = tick + e.ticks; log(`${u.name} stunned ${(e.ticks / 60).toFixed(1)}s`); } break;
+    case 'knock_up': if (u) u.up = tick + e.ticks; break;
+    case 'slow': if (u) u.slow = tick + e.ticks; break;
+    case 'knock': if (u) glides.set(u.id, { a: { ...u.pos }, b: e.to, t0: tick, n: Math.max(1, e.ticks) }); break;
+    case 'glide': glides.set(1, { a: { ...me.pos }, b: e.to, t0: tick, n: Math.max(1, e.ticks) }); break;
+    case 'air': me.air = Math.max(me.air, tick + e.ticks); break;
+    case 'root': log('charging the rock'); break;
+    case 'steer': if (aiOn && !glides.has(1)) { const d = Math.hypot(e.to.x - me.pos.x, e.to.y - me.pos.y); if (d > 1) { const k = Math.min(1, 1050 * 6 / d); glides.set(1, { a: { ...me.pos }, b: { x: me.pos.x + (e.to.x - me.pos.x) * k, y: me.pos.y + (e.to.y - me.pos.y) * k }, t0: tick, n: 6 }); } } break;
+    case 'log': log(e.text); break;
+  }
+}
+function draw() {
+  g.clearRect(0, 0, cv.width, cv.height);
+  for (let i = 0; i < CELLS * CELLS; i++) if (terrain[i]) { const x = (i % CELLS) * CELL, y = Math.floor(i / CELLS) * CELL; g.fillStyle = '#4a4f5c'; g.fillRect(sx(x), sy(y), CELL * S, CELL * S); }
+  // his walls: thickness and integrity
+  for (const w of state.walls || []) {
+    g.strokeStyle = ['#7a2e2e', '#b5793a', '#c9b48a', '#d9d2c0'][w.integrity] || '#ddd'; g.lineWidth = 16000 * S; g.lineCap = 'round';
+    g.beginPath(); g.moveTo(sx(w.a.x), sy(w.a.y)); g.lineTo(sx(w.b.x), sy(w.b.y)); g.stroke(); g.lineWidth = 1;
+  }
+  for (const b of state.boulders || []) { g.fillStyle = '#e0a060'; g.beginPath(); g.arc(sx(b[1].x), sy(b[1].y), R.ult.radius * S, 0, 7); g.globalAlpha = .15; g.fill(); g.globalAlpha = 1; }
+  for (const m of state.meteors || []) { g.fillStyle = '#ff6a2a'; g.beginPath(); g.arc(sx(m[0].x), sy(m[0].y), 5, 0, 7); g.fill(); }
+  const dot = (p, r, c) => { g.beginPath(); g.arc(sx(p.x), sy(p.y), r, 0, 7); g.fillStyle = c; g.fill(); };
+  for (const u of units.filter(u => u.hp > 0)) {
+    dot(u.pos, 9, u.team === 0 ? '#7fd28f' : '#ff7b7b');
+    if (tick < u.stun) { g.strokeStyle = '#ffe066'; g.beginPath(); g.arc(sx(u.pos.x), sy(u.pos.y), 13, 0, 7); g.stroke(); }
+    if (tick < u.slow) { g.strokeStyle = '#66b3ff'; g.beginPath(); g.arc(sx(u.pos.x), sy(u.pos.y), 16, 0, 7); g.stroke(); }
+    g.fillStyle = '#000'; g.fillRect(sx(u.pos.x) - 16, sy(u.pos.y) - 20, 32, 4); g.fillStyle = '#5f5'; g.fillRect(sx(u.pos.x) - 16, sy(u.pos.y) - 20, 32 * u.hp / u.max_hp, 4);
+    g.fillStyle = '#aaa'; g.fillText(u.name, sx(u.pos.x) - 14, sy(u.pos.y) + 22);
+  }
+  if (state.swing) { const s = state.swing; g.strokeStyle = '#d9b36b'; g.beginPath(); g.arc(sx(s.center.x), sy(s.center.y), s.r1 * S, 0, 7); g.stroke(); }
+  const airborne = tick < me.air;
+  dot(me.pos, airborne ? 13 : 10, airborne ? '#ffd27a' : '#c9a36b');
+  g.fillStyle = '#000'; g.fillRect(sx(me.pos.x) - 16, sy(me.pos.y) - 22, 32, 4); g.fillStyle = '#5f5'; g.fillRect(sx(me.pos.x) - 16, sy(me.pos.y) - 22, 32 * me.hp / me.max_hp, 4);
+  const cd = t => Math.max(0, ((t || 0) - tick) / 60).toFixed(1) + 's';
+  document.getElementById('state').textContent =
+    `${airborne ? 'AIRBORNE' : 'ground'}${state.air ? (state.air.double_left ? ' · double jump ready' : '') + (state.air.spent ? ' · chain closed' : '') : ''}\n` +
+    `Jumps ${state.jumps} · Whip Pull ${cd(state.pull_at)} · S1 charges ${state.punches}\nS2 ${cd(state.s2_at)} · S3 ${cd(state.s3_at)} · Ult ${cd(state.ult_at)}${state.recast ? ' · RECAST ready' : ''}${state.charging ? ' · CHARGING' : ''}\n` +
+    `Walls ${(state.walls || []).length}/${R.wall.max}\n${state.reason || ''}`;
+  document.getElementById('log').textContent = logLines.slice(-60).join('\n');
+}
+cv.addEventListener('mousemove', ev => { const r = cv.getBoundingClientRect(); mouse = { x: Math.round(wx(ev.clientX - r.left)), y: Math.round(wy(ev.clientY - r.top)) }; });
+addEventListener('keydown', ev => {
+  if (aiOn) return;
+  const k = { ' ': 'jump', f: 'pull', q: 's1', w: 's2', e: 's3', r: 'ult' }[ev.key.toLowerCase()];
+  if (k) { pending = { kind: k, aim: mouse }; ev.preventDefault(); }
+});
+const btn = (id, f) => document.getElementById(id).addEventListener('click', f);
+btn('play', () => { play = !play; document.getElementById('play').textContent = play ? 'Pause' : 'Play'; });
+btn('ai', () => { aiOn = !aiOn; document.getElementById('ai').textContent = 'AI: ' + (aiOn ? 'on' : 'off'); });
+btn('reset', reset);
+WebAssembly.instantiateStreaming(fetch('basalt.wasm')).then(({ instance }) => {
+  wasm = instance; reset();
+  setInterval(() => { if (!play) return; step(); tick++; draw(); }, 1000 / 60);
+});
+</script>
+</body>
+</html>
