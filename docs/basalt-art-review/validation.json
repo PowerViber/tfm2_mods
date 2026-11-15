@@ -1,0 +1,9 @@
+{
+  "revision": "basalt-art-proposal-2",
+  "deterministic_extraction_and_packing": true,
+  "gameplay_rules_native_mod_dll_wasm_unchanged": true,
+  "decoded_review_atlas_bytes": 1572864,
+  "max_atlas_edge": 1024,
+  "body_approval": false,
+  "effects_approval": false
+}

@@ -1,0 +1,73 @@
+{
+  "checks": [
+    {
+      "fixture": "inside",
+      "core_hit": true,
+      "inside_displayed_region": true
+    },
+    {
+      "fixture": "behind",
+      "core_hit": false,
+      "inside_displayed_region": false
+    },
+    {
+      "fixture": "point blank gap",
+      "core_hit": false,
+      "inside_displayed_region": false
+    },
+    {
+      "fixture": "near boundary",
+      "core_hit": true,
+      "inside_displayed_region": true
+    },
+    {
+      "fixture": "near outside",
+      "core_hit": false,
+      "inside_displayed_region": false
+    },
+    {
+      "fixture": "far boundary",
+      "core_hit": true,
+      "inside_displayed_region": true
+    },
+    {
+      "fixture": "far outside",
+      "core_hit": false,
+      "inside_displayed_region": false
+    },
+    {
+      "fixture": "inside angle",
+      "core_hit": true,
+      "inside_displayed_region": true
+    },
+    {
+      "fixture": "outside angle",
+      "core_hit": false,
+      "inside_displayed_region": false
+    }
+  ],
+  "clock": [
+    {
+      "hz": 30,
+      "ticks": 600
+    },
+    {
+      "hz": 60,
+      "ticks": 600
+    },
+    {
+      "hz": 120,
+      "ticks": 600
+    },
+    {
+      "hz": 144,
+      "ticks": 600
+    },
+    {
+      "hz": 240,
+      "ticks": 600
+    }
+  ],
+  "native_rules_changed": false,
+  "scope": "Current core hit receipts versus review cone; fixed simulation clock across display refresh rates"
+}

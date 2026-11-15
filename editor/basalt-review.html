@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Basalt — original artwork review</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#14252d;color:#edf0e8;font:15px/1.55 system-ui,sans-serif}main{max-width:1220px;margin:32px auto;padding:0 20px}h1{font-size:34px;margin-bottom:4px}h2{font-size:22px}.intro{max-width:850px;color:#c6d3d3}section{background:#203942;padding:24px;border:1px solid #405457;border-radius:12px;margin:22px 0}a{color:#ffbd70}img,canvas{image-rendering:pixelated}img.sheet{width:100%;height:auto;display:block}canvas{width:100%;height:auto;background:#142c34;border:1px solid #536569}label{display:inline-block;margin:6px 10px 12px 0}select,button,input{font:inherit}select,button{padding:7px 11px;background:#314852;color:#fff;border:1px solid #758486;border-radius:5px}.badge{display:inline-block;padding:4px 12px;border:1px solid #b98245;color:#ffcf91;border-radius:20px;font-size:13px}.muted{color:#bfd0d0}.gallery{max-height:620px;overflow:auto}.note{border-left:3px solid #e79742;padding-left:14px}#error{color:#ffb0a1}summary{cursor:pointer}code{font-size:12px}
+</style>
+<style>.native-scroll,.gallery{overflow:auto}.native-scroll img.sheet,.gallery img.sheet{width:auto;max-width:none}canvas{width:1100px;max-width:100%}</style>
+<main><span class="badge">Appearance proposal · not integrated</span>
+<h1>Basalt, the Wallbreaker</h1>
+<p class="intro">Revised red-and-yellow appearance: a human stone-shaper with a crimson outfit, bright yellow headband/sash and smaller basalt accents. The original drawings below are shown at game size, with whole connected bodies and fixed foot anchors. The square blocks follow <b>basalt-1.1</b>'s 32,000 × 32,000 footprint.</p>
+<p><a href="basalt.html?art=proposal">Open the playable Lab with candidate artwork</a> · <a href="../docs/basalt-art-review/manifest.json">Source and packing hashes</a></p><p id="error"></p>
+<section><h2>Body scale and silhouette</h2><p>Actual size and 3×, beside the extracted Knight/Berserker and current Grimhald placeholder. Light and dark backgrounds use the same pixels. Scroll horizontally if needed; comparison pixels are not shrunk to fit.</p><div class="native-scroll"><img class="sheet" src="../docs/basalt-art-review/stock-comparison.png" alt="Basalt body compared with stock champions at one and three times size"></div></section>
+<section><h2>Pose and facing inspection</h2><p>Eight appearance poses, both facings. These are concepts; the complete walk, attack, cast and death cycles follow appearance approval.</p>
+<label>Pose <select id="pose"></select></label><label><input type="checkbox" id="left"> Left facing</label><label><input type="checkbox" id="grid"> Collision grid</label><label>Scale <select id="zoom"><option value=".001">1 world pixel</option><option value=".002" selected>2× inspection</option><option value=".003">3× inspection</option></select></label>
+<canvas id="arena" width="1100" height="480" aria-label="Basalt proposal on the actual extracted game map beside stock champions"></canvas>
+<p class="muted" id="mapStatus">Loading the installed game reference…</p><details><summary>All pose comparisons at native size and 3×</summary><div class="gallery"><img class="sheet" src="../docs/basalt-art-review/body-comparison.png" alt="Every Basalt appearance pose in both facings"></div></details></section>
+<section id="effects"><h2>Square blocks, whip and ultimate effects</h2><p>The solid square is an ordinary wall. The huge rounded boulder is the ground ultimate; burning fragments belong to Meteor Punch. Impacts and dust remain separate from the body's pixels.</p>
+<label>Sequence <select id="sequence"><option value="blocks">V clap — full cone from Basalt</option><option value="boulder">Ground boulder — 3 s charge</option><option value="meteors">Air punch — 3 s charge</option></select></label><label><input id="loop" type="checkbox" checked> Loop presentation preview</label><button id="restart">Restart</button><p class="muted">For the V clap, move the pointer over the preview to inspect its direction. The coloured ground sector shows the existing affected area.</p>
+<canvas id="effectsArena" width="1100" height="480" aria-label="Looped presentation-only Basalt skill sequences"></canvas>
+<p class="note" id="sequenceStatus">Presentation preview. The playable Lab runs the shared WASM core. This loop is for checking size, layers and readability.</p>
+<details><summary>Individual effects at native size and 2×</summary><div class="native-scroll"><img class="sheet" src="../docs/basalt-art-review/effects-comparison.png" alt="Basalt's sixteen effect proposals"></div></details></section>
+<section><h2>Approval and remaining work</h2><p>Body and effects await separate approval. After approval: complete pose cycles, native presentation bindings and game-pack validation. No gameplay values, AI, DLL, installed mod or career have been changed by this artwork proposal.</p><p class="muted">Built-in image generation supplied the original drawings. Extraction, mirroring and packing are reproducible; AI generation itself is not deterministic. Review atlases decode to 1.5 MiB, below the 32 MiB presentation budget.</p></section>
+</main>
+<script src="basalt-data.js"></script><script src="basalt-art.js"></script><script src="game-world.js"></script><script src="basalt-painter.js"></script>
+<script>
+(async()=>{try{
+const world=await new GameWorld().ready,painter=await new BasaltPainter().ready;await world.loadSprites(['champ-knight','champ-berserker']);
+const $=id=>document.getElementById(id),cv=$('arena'),ctx=cv.getContext('2d'),fxcv=$('effectsArena'),fx=fxcv.getContext('2d');
+for(const name of Object.keys(BASALT_ART.body_frames).filter(n=>!n.endsWith('_l')))$('pose').add(new Option(name.replaceAll('_',' '),name));$('pose').value='idle';
+let start=performance.now(),clapAim={x:440000,y:480000};$('restart').onclick=()=>start=performance.now();$('sequence').onchange=()=>start=performance.now();
+const cam={x:480000,y:480000};
+fxcv.addEventListener('pointermove',e=>{const r=fxcv.getBoundingClientRect();clapAim={x:cam.x+((e.clientX-r.left)*fxcv.width/r.width-fxcv.width/2)/.0017,y:cam.y+((e.clientY-r.top)*fxcv.height/r.height-fxcv.height/2)/.0017};});
+function background(g,c,s){g.clearRect(0,0,c.width,c.height);const P=p=>({x:c.width/2+(p.x-cam.x)*s,y:c.height/2+(p.y-cam.y)*s}),W=x=>x*s;world.drawMap(g,P,W);return{P,W};}
+function draw(now){
+ const s=+$('zoom').value,{P,W}=background(ctx,cv,s),z=W(1000),at={x:450000,y:480000};
+ if($('grid').checked){ctx.strokeStyle='#efdd9c77';for(let i=0;i<900;i++)if(world.walls[i]){const q=P({x:i%30*32000,y:Math.floor(i/30)*32000});ctx.strokeRect(q.x,q.y,W(32000),W(32000));}}
+ for(const [sprite,x]of[['champ-knight',515000],['champ-berserker',565000]])world.drawUnit(ctx,{sprite,pos:{x,y:480000},hp:100,moving:false},Math.floor(now*.06),P,W);
+ const p=P(at);painter.pose(ctx,$('pose').value,p,z,$('left').checked);painter.fx(ctx,'square',P({x:410000,y:480000}),z);
+ ctx.fillStyle='#f5e8cc';ctx.font='13px system-ui';ctx.fillText('Basalt',p.x-22,p.y+W(41000));ctx.fillText('32,000 square',P({x:410000,y:480000}).x-45,p.y+W(41000));
+ const age=(now-start)/1000,t=$('loop').checked?age%6.5:Math.min(age,6.49),seq=$('sequence').value;
+ const a=background(fx,fxcv,.0017),pp=a.P,zz=a.W(1000),origin=pp({x:330000,y:480000}),end=pp({x:620000,y:480000});
+ if(seq==='blocks'){
+  const apex={x:330000,y:480000},direction=Math.atan2(clapAim.y-apex.y,clapAim.x-apex.x),k=Math.max(0,Math.min(1,(t-1)/.3)),radius=62500,half=BASALT_ART.clap_geometry.cone_deg*Math.PI/360*(1-k);
+  painter.clapCone(fx,origin,pp(clapAim),.0017,t>=1&&t<1.3);painter.pose(fx,'raise',origin,zz);
+  for(const sign of[-1,1]){const a=direction+sign*half;painter.fx(fx,'square',pp({x:apex.x+Math.cos(a)*radius,y:apex.y+Math.sin(a)*radius}),zz);}
+  if(t>=1.3&&t<1.8)painter.fx(fx,'slam',pp({x:apex.x+Math.cos(direction)*radius,y:apex.y+Math.sin(direction)*radius}),zz,0,1-(t-1.3)*2);
+  $('sequenceStatus').textContent='70° cone starts at Basalt. Its fill follows the unchanged core hit region; the two square blocks close in 0.3 s and fuse. This loop illustrates the visuals; the playable Lab resolves the real cast.';
+ }else{
+  const airborne=seq==='meteors',lift=airborne?42*zz:0;
+  painter.pose(fx,t<3?(airborne?'air_punch':'charge'):(airborne?'air_punch':'whip'),{x:origin.x,y:origin.y-lift},zz);
+  fx.strokeStyle='#ffcc7d';fx.lineWidth=2;fx.beginPath();fx.arc(end.x,end.y,a.W(airborne?BASALT_RULES.ult.meteorSpread:BASALT_RULES.ult.radius),0,Math.PI*2);fx.stroke();
+  if(t<3){const b={x:origin.x+(airborne?55:0)*zz,y:origin.y-(airborne?62:70)*zz};painter.fx(fx,'boulder',b,zz);fx.fillStyle='#ffe4bb';fx.fillText((3-t).toFixed(1)+' s',origin.x-16,origin.y+45*zz);}
+  else if(airborne){
+   if(t<3.12)painter.fx(fx,'punch_impact',{x:origin.x+50*zz,y:origin.y-65*zz},zz);
+   for(let i=0;i<BASALT_RULES.ult.meteorCount;i++){const impact=4+i*.1,k=Math.max(0,Math.min(1,(t-3)/(impact-3))),angle=i*2.399,p={x:end.x+Math.cos(angle)*a.W(30000),y:end.y+Math.sin(angle)*a.W(30000)};if(t<impact)painter.fx(fx,'meteor',{x:origin.x+(p.x-origin.x)*k,y:origin.y+(p.y-origin.y)*k-150*Math.sin(Math.PI*k)},zz);else if(t<impact+.6)painter.fx(fx,'meteor_impact',p,zz,0,1-(t-impact)/.6);}
+  }else if(t<4){const k=t-3;painter.fx(fx,'boulder',{x:origin.x+(end.x-origin.x)*k,y:origin.y-70*zz+(end.y-origin.y+70*zz)*k-120*Math.sin(Math.PI*k)},zz);}else if(t<4.7)painter.fx(fx,'slam',end,zz,0,1-(t-4)/.7);
+  $('sequenceStatus').textContent=(airborne?'Meteor Punch: hold 3 s → punch → six hot meteors.':'Boulder Throw: hold 3 s → lob → impact.')+' Looped presentation preview; timings of flight and targets here are illustrative. The playable Lab uses shared core timings.';
+ }
+ requestAnimationFrame(draw);
+}
+$('mapStatus').textContent='Installed 5v5 map • '+world.geometry.registration.matching+'/900 collision cells match the extracted art • same 1,000 units/pixel for bodies and ranges. Native host acceptance remains pending.';
+window.basaltReview={loaded:true,world,painter};requestAnimationFrame(draw);
+}catch(e){document.getElementById('error').textContent=e.message;throw e;}})();
+</script></html>

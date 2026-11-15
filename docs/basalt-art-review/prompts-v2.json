@@ -1,0 +1,8 @@
+{
+  "revision": "basalt-art-proposal-2",
+  "body_edit": "Edit this Basalt whole-body character concept sheet. Preserve the SAME HUMAN CHARACTER, face, hair, body scale, eight poses, exact layout/grid positions, connected anatomy, whip grip, long stone-linked whip, transparent background and lighting. Change the character colour design so he is immediately recognisable from far away: dominant VIVID CRIMSON RED outfit, large BRIGHT GOLDEN YELLOW headband and waist sash, bold yellow chest/shoulder trim and yellow boot/cuff accents. Replace the grey clothing with rich red fabric. Repaint most of the large grey shoulder and forearm armour surfaces crimson with yellow edges; leave only SMALL dark basalt-grey stone accents and the dark articulated stone whip. Red and yellow should dominate the visible body, not grey. Keep exposed warm brown skin and the same silver hair streak. Make the face and silhouette clearer with crisp near-black outlines, flat bright colour regions and restrained shading; simple tiny BLOCKY GAME SPRITE style, not glossy, blurry, painterly or intricately textured. Do not change anatomy or invent any additional equipment. Do not add scenery, borders, words, labels or watermark. Keep every complete body and whip inside the same pose cell as the original. The source is an edit target, not just a style reference.",
+  "tool": "built-in image_gen",
+  "edit_target": "body-source-v1.png",
+  "approval": false,
+  "clap_change": "Core-derived 70-degree sector anchored at the champion; no new gameplay delay or damage."
+}

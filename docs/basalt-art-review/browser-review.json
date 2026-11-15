@@ -1,0 +1,33 @@
+{
+  "checks": [
+    "Both editor routes and candidate assets return 200",
+    "Extracted game map: 900/900 collision cells registered",
+    "Pose/facing inspector renders full candidate on real map",
+    "V clap shows a filled core-derived cone with its apex at Basalt",
+    "Three-second meteor presentation sequence runs",
+    "Artwork enabled/disabled: complete state/actor/damage trace equal",
+    "Manual profiles 20/80: complete trace equal",
+    "13 controls; stock champions, minions, camps and structures loaded",
+    "Actual focused Jump input and single-step reach WASM",
+    "Objective scenario loads at real map coordinates"
+  ],
+  "result": {
+    "equalPresentation": true,
+    "equalManual": true,
+    "stats": 13,
+    "actors": 56,
+    "allStock": true,
+    "walls": 1,
+    "kindCounts": {
+      "owner": 1,
+      "champion": 9,
+      "tower": 16,
+      "nexus": 2,
+      "camp": 8,
+      "objective": 2,
+      "minion": 18
+    }
+  },
+  "errors": [],
+  "scope": "Review-only original art; existing WASM skill core; simulated host; no native game acceptance or packaged art."
+}
