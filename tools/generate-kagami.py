@@ -8,7 +8,7 @@ import copy, json, re, sys
 ROOT = Path(__file__).resolve().parents[1]
 rules = json.loads((ROOT / 'rules/kagami.json').read_text())
 ID = rules['id']
-GROUPS = ['basic', 'clone', 'swap', 'angel', 'selfSave', 'step', 'charm', 'mend', 'ult', 'ai']
+GROUPS = ['basic', 'clone', 'swap', 'angel', 'save', 'step', 'charm', 'mend', 'ult', 'ai']
 
 
 def snake(s):
@@ -24,27 +24,30 @@ for group in GROUPS:
 lines.append(f'pub const FX_TOKENS: usize = {rules["fxTokens"]};')
 rust = '\n'.join(lines) + '\n'
 
-b, cl, sw, an, ss, st, ch, me, ul, _ = (rules[k] for k in GROUPS)
+b, cl, sw, an, sv, st, ch, me, ul, _ = (rules[k] for k in GROUPS)
 sec = lambda n: f'{n / 60:g} s'
 text = {
     'name': rules['name'],
-    'skill': (f"Reflection (passive): Kagami always has a mirror clone ({cl['hpPct']}% of her max HP, her Defence) with no time limit. It follows her within "
-              f"{cl['range']}, shoots light shards for {cl['damagePct']}% of her damage, and casts its own Moonlit Mend ({cl['mendPct']}% heal) and Kindred Charm "
-              f"on teammates near it. It never casts Mirror Step or the ult. When it dies, a new one appears at her side {sec(cl['respawnTicks'])} later. "
-              f"Guardian Angel (passive, {sec(an['cooldownTicks'])}): dropping below {an['thresholdPct']}% HP knocks back enemies within {an['radius']} and shields her "
-              f"for {an['shieldPctMaxHp']}% max HP ({sec(an['shieldTicks'])}). "
-              f"Mirror Swap (passive, {sec(ss['cooldownTicks'])}): a hit that would drop her under {ss['triggerPct']}% HP with her clone alive holds her at 1 HP and "
-              f"swaps her with the clone; she's sealed for {sec(ss['sealTicks'])}, then revives at {ss['revivePct']}% HP. "
+    'skill': (f"Reflection (passive): Kagami has {cl['count']} mirror clones ({cl['hpPct']}% of her max HP each, her Defence) with no time limit. Each one guards a "
+              f"champion on her team (her included), picked automatically by danger; several can guard the same champion, and there is no range limit. They shoot "
+              f"light shards for {cl['damagePct']}% of her damage and each casts its own Moonlit Mend ({cl['mendPct']}% heal) and Kindred Charm; never Mirror Step or the "
+              f"ult. A lost clone comes back at her side {sec(cl['respawnTicks'])} later, each on its own timer. "
+              f"Clone Save (passive): a clone guarding a champion is their save point. A hit that would drop them under {sv['triggerPct']}% HP holds them at 1 HP, "
+              f"then they swap with that clone and get back to {sv['healPct']}% max HP and a {sv['shieldPct']}% max-HP shield ({sec(sv['shieldTicks'])}). The clone is spent. "
+              f"Guardian Angel (passive, {an['charges']} charges, {sec(an['cooldownTicks'])} each): any champion on her team dropping below {an['thresholdPct']}% HP knocks "
+              f"back enemies within {an['radius']} of them and gets a {an['shieldPctMaxHp']}% max-HP shield ({sec(an['shieldTicks'])}); the same champion only once every "
+              f"{sec(an['perChampionCooldownTicks'])}. "
               f"Every swap takes {sec(sw['lockTicks'])}: it locks on to both sides (nobody is rooted) and trades them wherever they are, then stuns enemies within "
               f"{sw['stunRadius']} of the clone's new spot for {sec(sw['stunTicks'])}. "
-              f"Mirror Step (separate cooldowns: teammate {sec(st['allyCooldownTicks'])}, herself {sec(st['selfCooldownTicks'])}): on a teammate within {st['range']} of the clone, the teammate and the clone swap; on a point within "
-              f"{st['range']} of her, the clone dashes there and she swaps with it. A cancelled swap refunds {sw['refundPct']}% of that swap's cooldown."),
+              f"Mirror Step (separate cooldowns: teammate {sec(st['allyCooldownTicks'])}, herself {sec(st['selfCooldownTicks'])}): a teammate anywhere swaps with her safest "
+              f"clone; on a point within {st['range']} of her, her nearest clone dashes there and she swaps with it. A cancelled swap refunds {sw['refundPct']}% of that "
+              f"swap's cooldown."),
     'skill2': (f"Kindred Charm ({sec(ch['cooldownTicks'])}): a teammate within {ch['range']} gets +{ch['attackSpeedPct']}% attack speed, +{ch['moveSpeedPct']}% "
-               f"move speed and +{ch['damagePct']}% Attack and Magic Power for {sec(ch['ticks'])}. Her clone casts its own."),
+               f"move speed and +{ch['damagePct']}% Attack and Magic Power for {sec(ch['ticks'])}. Each of her clones casts its own."),
     'ult': (f"Moonlit Mend ({sec(me['cooldownTicks'])}): heals a teammate within {me['range']} (or herself) for {me['base']} + {me['adRatio']}% Attack. "
-            f"Last Reflection (ultimate, automatic, global, {sec(ul['cooldownTicks'])}): while it's ready every teammate but her is warded. The first one "
+            f"Last Reflection (ultimate, automatic, global, {sec(ul['cooldownTicks'])}): while it's ready every teammate but her with no clone save ready is warded. The first one "
             f"who'd drop under {ul['triggerPct']}% HP is sealed for {sec(ul['sealTicks'])} (untargetable, unseen, unable to act), then revives at full HP with "
-            f"Kindred Charm's buff, a shield of {ul['shieldPctMaxHp']}% max HP, +{ul['defencePct']}% Defence and crowd-control immunity for {sec(ul['reviveTicks'])}."),
+            f"Kindred Charm's buff, a shield of {ul['shieldPctMaxHp']}% max HP, +{ul['defencePct']}% Defence and crowd-control immunity for {sec(ul['reviveTicks'])}; enemies within {ul['reviveStunRadius']} are stunned for {sec(ul['reviveStunTicks'])}."),
 }
 
 champ = copy.deepcopy(json.loads((ROOT / 'mods/tfm2_custom/champion/tfm2_custom_contender.data_champion').read_text()))
@@ -89,7 +92,7 @@ data = json.dumps(champ, indent=2) + '\n'
 
 roster = dict(id=ID, name=rules['name'], family='original', role='Support', native=True,
               basicAttack=dict(name='Mirror Shard', kind='ranged', range=b['range']),
-              skills=[dict(slot='skill', name='Reflection / Guardian Angel / Mirror Swap / Mirror Step', kinds=['Summon', 'Blink', 'Cc', 'Shield'],
+              skills=[dict(slot='skill', name='Reflection / Clone Save / Guardian Angel / Mirror Step', kinds=['Summon', 'Blink', 'Cc', 'Shield'],
                            intents=['Protect', 'Escape', 'Engage'], summary=text['skill']),
                       dict(slot='skill2', name='Kindred Charm', kinds=['Buff'], intents=['Protect', 'Engage'], summary=text['skill2']),
                       dict(slot='ult', name='Moonlit Mend / Last Reflection', kinds=['Heal', 'Shield', 'Buff'], intents=['Protect'], summary=text['ult'])])

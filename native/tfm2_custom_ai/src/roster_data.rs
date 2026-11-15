@@ -480,7 +480,7 @@ pub static CHAMPIONS: [ChampionDef; 87] = [
         SkillDef { slot: Slot::Ult, name: "Crimson Night", kinds: 1024 | 1, intents: 2 | 64 },
     ] },
     ChampionDef { id: "tfm2_custom_kagami", name: "Kagami", family: 13, role: "Support", native: true, basic: BasicAttack { name: "Mirror Shard", range: 55000, reach: Range::Ranged }, skills: &[
-        SkillDef { slot: Slot::Skill, name: "Reflection / Guardian Angel / Mirror Swap / Mirror Step", kinds: 64 | 2 | 512 | 256, intents: 8 | 4 | 2 },
+        SkillDef { slot: Slot::Skill, name: "Reflection / Clone Save / Guardian Angel / Mirror Step", kinds: 64 | 2 | 512 | 256, intents: 8 | 4 | 2 },
         SkillDef { slot: Slot::Skill2, name: "Kindred Charm", kinds: 1024, intents: 8 | 2 },
         SkillDef { slot: Slot::Ult, name: "Moonlit Mend / Last Reflection", kinds: 128 | 256 | 1024, intents: 8 },
     ] },
