@@ -15,7 +15,7 @@
 ## Kagami `kagami-2.0`
 - **Reflection: three clones.**
   - **Stats:** each has 25% of her HP and her Defence, shoots for 35% of her Attack, and casts its own Mend (50%) and Charm.
-  - **Guarding:** each guards one champion, her included, and several can guard the same one. There's no range limit: past 60,000 a clone catches up at dash speed.
+  - **Guarding:** each guards one champion, her included, and several can guard the same one. There's no range limit: past 120,000 a clone catches up at dash speed (Reihan: "keep it at 120k"); closer, it walks.
   - **Respawn:** each comes back 12 s after it's lost, on its own timer.
 - **Assignment:** a need score (danger, low HP, Attack, minus the clones already there), re-run every 3 s and at once when someone new is in danger.
   - **Hysteresis:** a margin, so the clones don't flicker.

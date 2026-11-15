@@ -283,6 +283,32 @@ fn a_clone_follows_its_champion_across_the_map_with_no_range_limit() {
     assert!(w.clone_at(1).pos.within(Point::new(800_000, 150_000), d::CLONE_CATCH_UP_RANGE), "{:?}", w.clone_at(1).pos);
 }
 
+#[test]
+fn a_clone_within_120k_of_its_champion_walks_and_only_races_beyond_it() {
+    for (gap, speed) in [(100_000, d::CLONE_MOVE_SPEED), (150_000, d::CLONE_DASH_SPEED)] {
+        let mut w = World::with_clones(vec![champ(ALLY, 1, 400_000 + gap, 500_000), champ(FOE, 2, 400_000 + gap + 20_000, 500_000)]);
+        w.core.clones[1].guard = ALLY;
+        w.core.next_assign = u64::MAX;
+        w.core.endangered = vec![ALLY];
+        w.clone_at(1).pos = Point::new(400_000, 500_000);
+        for s in w.core.clones.iter_mut() {
+            s.moved_at = 0;
+        }
+        let mut step = None;
+        for _ in 0..12 {
+            let out = w.tick(None);
+            step = out
+                .iter()
+                .find_map(|e| if let Effect::CloneMove { clone, to, ticks } = e { (*clone == clone_id(1)).then_some((*to, *ticks)) } else { None });
+            if step.is_some() {
+                break;
+            }
+        }
+        let (to, ticks) = step.expect("it moves");
+        assert!((Point::new(400_000, 500_000).dist(to).round() as i64 - speed * ticks as i64).abs() <= 1, "gap {gap}");
+    }
+}
+
 // ------------------------------------------------------------------ assignment
 
 #[test]

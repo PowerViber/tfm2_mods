@@ -55,7 +55,7 @@
     "mendCooldownTicks": 600,
     "charmCooldownTicks": 720,
     "count": 3,
-    "catchUpRange": 60000,
+    "catchUpRange": 120000,
     "assignTicks": 180,
     "switchMargin": 25
   },
