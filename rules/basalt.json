@@ -7,7 +7,7 @@
     "Melee",
     "CC"
   ],
-  "revision": "basalt-1.0",
+  "revision": "basalt-1.1",
   "stat": {
     "attack": 80,
     "magic_power": 0,
@@ -42,7 +42,7 @@
   },
   "wall": {
     "max": 5,
-    "length": 70000,
+    "size": 32000,
     "integrity": 3,
     "keepRange": 150000,
     "fadeTicks": 180,

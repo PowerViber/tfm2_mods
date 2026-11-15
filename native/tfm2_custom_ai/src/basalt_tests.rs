@@ -183,6 +183,21 @@ fn only_his_hits_wear_a_wall_and_three_shatter_it() {
 }
 
 #[test]
+fn his_walls_are_big_square_blocks() {
+    let mut w = World::new(vec![], &[]);
+    w.tick(Some(Order::S1(Point::new(400_000, 400_000))));
+    let wall = w.core.walls[0];
+    assert_eq!(wall.a, wall.b, "a block, not a line");
+    let h = square_half();
+    assert_eq!(h * 2, d::WALL_SIZE);
+    let c = wall.mid();
+    // a square: the corner is inside, a point just past a side is outside
+    assert_eq!(wall.dist(Point::new(c.x + h - 1, c.y + h - 1)), 0.0);
+    assert!(wall.dist(Point::new(c.x + h + 2_000, c.y)) > 1_000.0);
+    assert!(h > 8_000 * 2 - 1, "bigger than a Grimhald block");
+}
+
+#[test]
 fn a_slam_stuns_once_every_2_s_per_target() {
     let mut w = World::new(vec![champ(FOE, 2, 400_000, 420_000)], &[]);
     let f = w.f.clone();
@@ -531,14 +546,15 @@ mod glue {
     }
 
     #[test]
-    fn his_walls_become_shared_walls_that_move_and_go() {
+    fn his_square_walls_become_two_shared_walls_that_move_and_go() {
         let (x, y) = open_spot(160_000);
         let host = Host::new(vec![champ(0, (x, y), "tfm2_custom_basalt")]);
         let mut b = Basalt::default();
+        let c = Point::new(x as i64, y as i64 + 40_000);
         b.core.walls.push(crate::basalt_core::StoneWall {
             id: 1,
-            a: Point::new(x as i64 - 30_000, y as i64 + 20_000),
-            b: Point::new(x as i64 + 30_000, y as i64 + 20_000),
+            a: c,
+            b: c,
             integrity: 3,
             born: 0,
             out_since: None,
@@ -546,17 +562,29 @@ mod glue {
         });
         with_sim(&host, |sim| b.sync_walls(sim, 0));
         let walls = |host: &std::cell::RefCell<Host>| -> Vec<String> { host.borrow().buffs[0].iter().map(|b| b.name().to_owned()).filter(|n| n.starts_with("sbw:")).collect() };
-        assert_eq!(walls(&host).len(), 1);
+        assert_eq!(walls(&host).len(), 2, "two shared walls fill one square");
         let all = with_sim(&host, |sim| crate::champions_shared(sim));
-        assert_eq!(crate::steve::walls_up(&all, 0).len(), 1, "the shared wall code sees it");
+        let up = crate::steve::walls_up(&all, 0);
+        assert_eq!(up.len(), 2, "the shared wall code sees them");
+        // together they cover the whole square: every point of it is within the shared walls' half thickness
+        let h = crate::basalt_core::square_half();
+        for (dx, dy) in [(-h + 1_000, -h + 1_000), (h - 1_000, h - 1_000), (0, 0), (h - 1_000, -h + 1_000)] {
+            let p = (c.x + dx, c.y + dy);
+            assert!(
+                up.iter().any(|w| crate::place::seg_dist2(p, (w.ax, w.ay), (w.bx, w.by)) <= (crate::steve::WALL_HALF as i128).pow(2)
+                    || (p.0 < w.ax.min(w.bx) || p.0 > w.ax.max(w.bx)) && ((p.1 - w.ay).abs() < crate::steve::WALL_HALF) && ((p.0 - w.ax).abs().min((p.0 - w.bx).abs()) <= crate::steve::WALL_HALF)),
+                "{p:?} is inside the square"
+            );
+        }
         // moved: rewritten
-        b.core.walls[0].a.y += 30_000;
-        b.core.walls[0].b.y += 30_000;
+        let c2 = Point::new(c.x, c.y + 30_000);
+        b.core.walls[0].a = c2;
+        b.core.walls[0].b = c2;
         host.borrow_mut().tick = 1;
         with_sim(&host, |sim| b.sync_walls(sim, 0));
         let w = walls(&host);
-        assert_eq!(w.len(), 1);
-        assert!(w[0].contains(&format!(":{}:", y as i64 + 50_000)), "{w:?}");
+        assert_eq!(w.len(), 2);
+        assert!(w.iter().all(|n| n.contains(&format!(":{}:", c2.y - (h - crate::basalt_core::WALL_HALF))) || n.contains(&format!(":{}:", c2.y + (h - crate::basalt_core::WALL_HALF)))), "{w:?}");
         // gone
         b.core.walls.clear();
         with_sim(&host, |sim| b.sync_walls(sim, 0));

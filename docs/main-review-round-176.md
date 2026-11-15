@@ -63,3 +63,10 @@ The kit and AI are in `docs/basalt-guide.md`.
 2. Run the Mod Manager and press **Install**.
 
 Basalt is in exhibition matches and new careers.
+
+## basalt-1.1: square walls (Reihan)
+**Reihan:** "the wall isn't a rectangle wall, it's a square wall like Grimhald's wall but bigger in size".
+- **Shape:** every wall of his is now a **square block, 32,000 a side** (`wall.size`), instead of a 70,000-long line. That's twice the shared walls' 16,000 thickness, about one terrain cell.
+- **In the world:** each square is laid down as **two parallel shared `sbw:` walls**, 16,000 apart, which together fill it. Everyone still collides with it, and it's drawn as a 2×2 cluster of blocks.
+- **In the core:** squares are axis-aligned. Collisions, the slingshot and wall kicks measure to the square's surface. The Clap's two squares ride the V's arms to the centre line and fuse. The punch carries enemies within the square's width.
+- **Checks:** 1,338 native tests pass, including 26 Basalt tests: a new square-shape test, and a glue test that the two shared walls fill the whole square. The wasm and the DLL (0.10.110) are rebuilt.

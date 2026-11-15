@@ -104,8 +104,11 @@ function draw() {
   for (let i = 0; i < CELLS * CELLS; i++) if (terrain[i]) { const x = (i % CELLS) * CELL, y = Math.floor(i / CELLS) * CELL; g.fillStyle = '#4a4f5c'; g.fillRect(sx(x), sy(y), CELL * S, CELL * S); }
   // his walls: thickness and integrity
   for (const w of state.walls || []) {
-    g.strokeStyle = ['#7a2e2e', '#b5793a', '#c9b48a', '#d9d2c0'][w.integrity] || '#ddd'; g.lineWidth = 16000 * S; g.lineCap = 'round';
-    g.beginPath(); g.moveTo(sx(w.a.x), sy(w.a.y)); g.lineTo(sx(w.b.x), sy(w.b.y)); g.stroke(); g.lineWidth = 1;
+    // a big square block; its colour shows integrity
+    const h = R.wall.size / 2;
+    g.fillStyle = ['#7a2e2e', '#b5793a', '#c9b48a', '#d9d2c0'][w.integrity] || '#ddd';
+    g.fillRect(sx(w.a.x - h), sy(w.a.y - h), R.wall.size * S, R.wall.size * S);
+    g.strokeStyle = '#2a2a2a'; g.strokeRect(sx(w.a.x - h), sy(w.a.y - h), R.wall.size * S, R.wall.size * S);
   }
   for (const b of state.boulders || []) { g.fillStyle = '#e0a060'; g.beginPath(); g.arc(sx(b[1].x), sy(b[1].y), R.ult.radius * S, 0, 7); g.globalAlpha = .15; g.fill(); g.globalAlpha = 1; }
   for (const m of state.meteors || []) { g.fillStyle = '#ff6a2a'; g.beginPath(); g.arc(sx(m[0].x), sy(m[0].y), 5, 0, 7); g.fill(); }

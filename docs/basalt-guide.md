@@ -1,4 +1,4 @@
-# Basalt, the Wallbreaker (`basalt-1.0`)
+# Basalt, the Wallbreaker (`basalt-1.1`)
 
 An original stone-shaper brawler with a **stone whip**. He raises walls, punches them, throws them, claps them shut and slams enemies into them. He leaps over every wall, and his whip slingshots him around the map.
 
@@ -6,7 +6,7 @@ Category **Melee** (bruiser), tags AD / Melee / CC. Numbers live in `rules/basal
 
 ## Passives (no skill slot; they fire on their own)
 - **Bedrock.**
-  - **Walls:** up to **5**, each 70,000 long. A wall stands while he's within **150,000** of it and fades **3 s** after he leaves that range (coming back cancels the fade).
+  - **Walls:** up to **5**, each a **big square block, 32,000 a side** (like Grimhald's blocks, but bigger; `wall.size`). A wall stands while he's within **150,000** of it and fades **3 s** after he leaves that range (coming back cancels the fade).
   - **Integrity:** only he can hit his walls. Each takes **3** of his hits (the punch, a throw landing, an enemy slammed into it) and then shatters into rubble: **+15%** on his next whip crack.
   - **Slam:** an enemy his skills drive into **any** wall (his, the map's, Steve's, Grimhald's) is **slammed**: a 1 s stun plus 40 + 60% Attack. The stun lands once every 2 s per target.
 - **Jump** (2 charges, 6 s each):
@@ -49,7 +49,7 @@ Re-run every tick, with no lock-on:
 ## Code
 - **Core:** `native/tfm2_custom_ai/src/basalt_core.rs`. It's deterministic, and the Lab runs this same file.
 - **Bridge:** `basalt.rs`.
-  - **Walls:** they become the shared `sbw:` walls (one buff on him per wall, renewed every 40 ticks, rewritten when they move), so everyone collides with them; `steve::note_map_buff` switches the shared pathing on. They're drawn as rows of stone blocks.
+  - **Walls:** they become the shared `sbw:` walls (each square is two parallel shared walls on him that together fill it, renewed every 40 ticks and rewritten when it moves), so everyone collides with them; `steve::note_map_buff` switches the shared pathing on. Each is drawn as a 2×2 cluster of stone blocks.
   - **Airborne:** `bs_air` (`cc_immune`, `ignore_wall`, basics miss) plus `place::MOVED`.
   - **Moves:** every move is a glide (no `entity_set_pos`).
   - **Slows and charge:** `bs_slow`; the ult's charge is a named Bind on himself (`bs_charge`).

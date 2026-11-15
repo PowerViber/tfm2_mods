@@ -3,7 +3,7 @@
 //! (`native/basalt_lab`) runs this same file.
 //!
 //! A stone-shaper brawler with a whip. Passives (no skill slot, they fire on their own):
-//!   Bedrock: up to 5 walls, 70,000 long. A wall stands while he is within 150,000 of it and fades 3 s
+//!   Bedrock: up to 5 walls, each a big square block (32,000 a side, like Grimhald's blocks but bigger). A wall stands while he is within 150,000 of it and fades 3 s
 //!     after he leaves. Only he can hit his walls: each takes 3 of his hits (a punch, a throw landing, an enemy
 //!     slammed into it) and shatters (rubble: +15% on his next whip). An enemy his skills drive into any wall (his,
 //!     the map's, Steve's) is slammed: a 1 s stun and damage, once every 2 s per target.
@@ -252,12 +252,28 @@ pub struct StoneWall {
     pub out_since: Option<u64>,
     pub slide: Option<Slide>,
 }
+/// half the side of his square walls
+pub fn square_half() -> i64 {
+    (d::WALL_SIZE / 2).max(WALL_HALF)
+}
 impl StoneWall {
+    /// the square's centre (`a` and `b` are both the centre: a square block, axis-aligned)
     pub fn mid(&self) -> Point {
         self.a.mid(self.b)
     }
+    /// distance from `p` to the square's surface (0 inside)
     pub fn dist(&self, p: Point) -> f64 {
-        seg_dist(p, self.a, self.b)
+        let c = self.mid();
+        let h = square_half();
+        let dx = ((p.x - c.x).abs() - h).max(0) as f64;
+        let dy = ((p.y - c.y).abs() - h).max(0) as f64;
+        dx.hypot(dy)
+    }
+    /// the point of the square nearest `p`
+    pub fn nearest(&self, p: Point) -> Point {
+        let c = self.mid();
+        let h = square_half();
+        Point::new(p.x.clamp(c.x - h, c.x + h), p.y.clamp(c.y - h, c.y + h))
     }
 }
 
@@ -586,13 +602,16 @@ impl Core {
         }
     }
 
-    fn raise(&mut self, f: &Frame, a: Point, b: Point, integrity: u8, out: &mut Vec<Effect>) -> u32 {
+    /// a square wall centred on `c`
+    fn raise(&mut self, f: &Frame, c: Point, integrity: u8, out: &mut Vec<Effect>) -> u32 {
         let id = self.next_wall;
         self.next_wall += 1;
+        let c = c.clamp_map();
+        let (a, b) = (c, c);
         self.walls.push(StoneWall {
             id,
-            a: a.clamp_map(),
-            b: b.clamp_map(),
+            a,
+            b,
             integrity,
             born: f.tick,
             out_since: None,
@@ -605,11 +624,9 @@ impl Core {
         });
         id
     }
-    /// a wall across `dir`, centred on `c`
-    fn raise_across(&mut self, f: &Frame, c: Point, dir: (f64, f64), out: &mut Vec<Effect>) -> u32 {
-        let n = perp(dir);
-        let h = d::WALL_LENGTH / 2;
-        self.raise(f, c.along(n, h), c.along(n, -h), d::WALL_INTEGRITY.max(1) as u8, out)
+    /// a square wall centred on `c` (the heading only matters to callers placing it)
+    fn raise_across(&mut self, f: &Frame, c: Point, _dir: (f64, f64), out: &mut Vec<Effect>) -> u32 {
+        self.raise(f, c, d::WALL_INTEGRITY.max(1) as u8, out)
     }
     /// A wall breaks (`shatter`: his hits used it up; otherwise it crumbled away). Either way: rubble.
     fn crumble(&mut self, f: &Frame, id: u32, shatter: bool, out: &mut Vec<Effect>) {
@@ -638,7 +655,7 @@ impl Core {
             return Hit::Terrain;
         }
         let m = (WALL_HALF + margin) as f64;
-        if let Some(w) = self.walls.iter().find(|w| Some(w.id) != skip && w.dist(p) < m) {
+        if let Some(w) = self.walls.iter().find(|w| Some(w.id) != skip && w.dist(p) < margin as f64) {
             return Hit::Mine(w.id);
         }
         if f.other_walls.iter().any(|s| seg_dist(p, s.a, s.b) < m) {
@@ -734,7 +751,7 @@ impl Core {
     pub fn kick_wall(&self, f: &Frame) -> Option<u32> {
         self.walls
             .iter()
-            .filter(|w| w.dist(f.pos) <= (d::JUMP_KICK_RANGE + WALL_HALF) as f64 && !self.kicked.contains(&w.id))
+            .filter(|w| w.dist(f.pos) <= d::JUMP_KICK_RANGE as f64 && !self.kicked.contains(&w.id))
             .min_by_key(|w| (w.dist(f.pos) as i64, w.id))
             .map(|w| w.id)
     }
@@ -814,7 +831,7 @@ impl Core {
             let k = (((f.pos.x - a.x) as f64 * vx + (f.pos.y - a.y) as f64 * vy) / len2).clamp(0.0, 1.0);
             Point::new(a.x + (vx * k) as i64, a.y + (vy * k) as i64)
         };
-        let mut pts: Vec<Point> = self.walls.iter().map(|w| near(w.a, w.b)).collect();
+        let mut pts: Vec<Point> = self.walls.iter().map(|w| w.nearest(f.pos)).collect();
         pts.extend(f.other_walls.iter().map(|s| near(s.a, s.b)));
         pts.extend(f.terrain_near(f.pos, range, 16).into_iter().map(|c| Frame::cell_point(c, f.pos)));
         pts.retain(|p| p.within(f.pos, range) && !p.within(f.pos, 12_000));
@@ -959,21 +976,21 @@ impl Core {
                 ticks,
             });
         }
-        let half = d::WALL_LENGTH / 2;
+        let half = square_half();
         let n = perp(dir);
         let targets: Vec<Unit> = f.units.iter().filter(|u| f.skill_target(u)).cloned().collect();
         for u in targets {
             let rel = Point::new(u.pos.x - c.x, u.pos.y - c.y);
             let ahead = rel.x as f64 * dir.0 + rel.y as f64 * dir.1;
             let side = (rel.x as f64 * n.0 + rel.y as f64 * n.1).abs();
-            if side > (half + 4_000) as f64 || ahead < -(WALL_HALF as f64) || ahead > slide as f64 + WALL_HALF as f64 {
+            if side > (half + 4_000) as f64 || ahead < -(half as f64) || ahead > slide as f64 + half as f64 {
                 continue;
             }
-            if ahead.abs() <= (WALL_HALF + 4_000) as f64 {
+            if ahead.abs() <= (half + 4_000) as f64 {
                 out.push(Effect::KnockUp { target: u.id, ticks: t(d::PUNCH_KNOCK_TICKS) });
             }
             // carried ahead of the wall to where it stops
-            let len = (slide as f64 - ahead).max(0.0) as i64 + WALL_HALF + 4_000;
+            let len = (slide as f64 - ahead).max(0.0) as i64 + half + 4_000;
             self.shove(f, &u, dir, len, ticks, pct(d::PUNCH_BASE, d::PUNCH_AD_RATIO, f.attack), Some(id), out);
         }
         // the punch itself is one of his hits on the wall
@@ -1115,12 +1132,11 @@ impl Core {
         }
     }
 
-    /// The V's walls at `k` (0 = open, 1 = shut): (left a, left b, right a, right b)
-    fn clap_walls(c: &Clap, k: f64) -> [(Point, Point); 2] {
+    /// The V's two square walls at `k` (0 = open, 1 = shut): their centres on the left and right arms
+    fn clap_walls(c: &Clap, k: f64) -> [Point; 2] {
         let half = d::CLAP_CONE_DEG as f64 / 2.0 * (1.0 - k);
-        let l = rotate(c.dir, half);
-        let r = rotate(c.dir, -half);
-        [(c.apex.along(l, c.r0), c.apex.along(l, c.r1)), (c.apex.along(r, c.r0), c.apex.along(r, c.r1))]
+        let rm = (c.r0 + c.r1) / 2;
+        [c.apex.along(rotate(c.dir, half), rm), c.apex.along(rotate(c.dir, -half), rm)]
     }
 
     /// S3 ground: Crushing Clap. Two walls rise at the upper left and right of a V and the whip snaps them shut.
@@ -1140,8 +1156,8 @@ impl Core {
                 r1: d::CLAP_REACH,
             };
             let [l, r] = Self::clap_walls(&c, 0.0);
-            c.left = self.raise(f, l.0, l.1, d::WALL_INTEGRITY.max(1) as u8, out);
-            c.right = self.raise(f, r.0, r.1, d::WALL_INTEGRITY.max(1) as u8, out);
+            c.left = self.raise(f, l, d::WALL_INTEGRITY.max(1) as u8, out);
+            c.right = self.raise(f, r, d::WALL_INTEGRITY.max(1) as u8, out);
             // who is caught inside the V: swept onto the centre line as it closes
             let half = d::CLAP_CONE_DEG as f64 / 2.0;
             let ticks = t(d::CLAP_CLOSE_TICKS);
@@ -1180,10 +1196,10 @@ impl Core {
         for c in claps {
             let k = (f.tick.saturating_sub(c.start) as f64 / d::CLAP_CLOSE_TICKS.max(1) as f64).min(1.0);
             let [l, r] = Self::clap_walls(&c, k);
-            for (id, seg) in [(c.left, l), (c.right, r)] {
+            for (id, at) in [(c.left, l), (c.right, r)] {
                 if let Some(w) = self.walls.iter_mut().find(|w| w.id == id) {
-                    w.a = seg.0;
-                    w.b = seg.1;
+                    w.a = at;
+                    w.b = at;
                 }
             }
             if k >= 1.0 {
@@ -1241,7 +1257,7 @@ impl Core {
         let r0 = (f.pos.dist(u.pos) as i64).max(12_000);
         let r1 = (r0 * 2).min(d::SWING_MAX_RADIUS);
         // a wall on that heading within the whip's reach takes the slam
-        let (_, into) = self.push_path(f, f.pos, head, r1 + WALL_HALF, None);
+        let (_, into) = self.push_path(f, f.pos, head, r1 + square_half(), None);
         self.swing = Some(Swing {
             target: u.id,
             center: f.pos,
@@ -1274,7 +1290,7 @@ impl Core {
             let hit = match s.into {
                 Hit::None => {
                     // no wall there: he raises one and slams them into it
-                    let id = self.raise_across(f, s.center.along(head, s.r1 + WALL_HALF), head, out);
+                    let id = self.raise_across(f, s.center.along(head, s.r1 + square_half() + 4_000), head, out);
                     Hit::Mine(id)
                 }
                 h => h,
@@ -1425,7 +1441,7 @@ impl Core {
         let Some((at, _)) = self.recast.take() else { return };
         let dir = unit_dir(f.pos, at);
         // he lands at the rock, on his side of it
-        let land = self.safe_land(f, at.along(dir, -(WALL_HALF + 10_000)), (-dir.0, -dir.1));
+        let land = self.safe_land(f, at.along(dir, -(square_half() + 10_000)), (-dir.0, -dir.1));
         let dist = f.pos.dist(land) as i64;
         let speed = (d::PULL_SPEED_BASE + dist / d::PULL_SPEED_DIVISOR.max(1)).min(d::ULT_RECAST_SPEED_CAP);
         let ticks = travel(f.pos, land, speed);

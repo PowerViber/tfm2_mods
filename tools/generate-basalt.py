@@ -28,7 +28,7 @@ b, w, sl, j, pu, pn, ad, hu, sb, cl, sw, ul, _ = (rules[k] for k in GROUPS)
 sec = lambda n: f'{n / 60:g} s'
 text = {
     'name': rules['name'],
-    'skill': (f"Bedrock (passive): Basalt keeps up to {w['max']} walls ({w['length']} long). A wall stays while he is within {w['keepRange']} of it and fades "
+    'skill': (f"Bedrock (passive): Basalt keeps up to {w['max']} walls, each a {w['size']} square block. A wall stays while he is within {w['keepRange']} of it and fades "
               f"{sec(w['fadeTicks'])} after he leaves that range. Only he can hit his walls: each takes {w['integrity']} of his hits (a punch, a Hurl landing, an enemy "
               f"slammed into it) and then shatters into rubble (+{w['rubblePct']}% on his next whip). Any enemy his skills drive into a wall (his or the map's) is "
               f"slammed: stunned {sec(sl['stunTicks'])} and {sl['base']} + {sl['adRatio']}% Attack (once every {sec(sl['repeatTicks'])} per target). "

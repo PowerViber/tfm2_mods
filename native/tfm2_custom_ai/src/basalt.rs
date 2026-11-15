@@ -2,7 +2,7 @@
 //! walls in the world. The engine walks him and cracks his whip (the data basic attack); native code casts everything
 //! else (the data slots are never-cast shells, like Kicker's and Kagami's).
 //!
-//! * His walls are the shared walls: one `sbw:ax:ay:bx:by:t0:tb:tend` buff on him per wall (Steve's format, also used
+//! * His walls are square blocks laid down as the shared walls: two `sbw:ax:ay:bx:by:t0:tb:tend` buffs on him per square (Steve's format, also used
 //!   by Grimhald's cage), renewed while it stands and rewritten when it moves. So everyone paths around them, walks,
 //!   dashes and knockbacks stop at them, blinks never land in them and they block sight (`steve::enforce_walls`,
 //!   `steve::wall_fog`). `steve::note_map_buff` switches the shared wall pathing on for the match.
@@ -76,8 +76,8 @@ pub struct Basalt {
     in_skill: bool,
     fx_tokens: usize,
     fx_tick: u64,
-    /// the shared-wall buffs on him now: (wall id, buff name, lease end, drawn at)
-    shown: Vec<(u32, String, u64, u64)>,
+    /// the shared-wall buffs on him now: (wall id, its two buff names, lease end, drawn at, centre)
+    shown: Vec<(u32, Vec<String>, u64, u64, Point)>,
 }
 
 impl Basalt {
@@ -246,47 +246,57 @@ impl Basalt {
         }
     }
 
-    /// His walls in the world: one shared-wall buff each, renewed before its lease ends and rewritten when it moves;
-    /// gone walls lose theirs. Each wall is drawn as a row of stone blocks.
+    /// His walls in the world. Each square wall (32,000 a side) is two parallel shared walls 16,000 apart: the shared
+    /// walls are 16,000 thick and reach 8,000 past their ends, so together they fill the square. Renewed before their
+    /// lease ends and rewritten when the square moves; gone walls lose theirs. Each square is drawn as 2x2 blocks.
     pub(crate) fn sync_walls(&mut self, sim: &mut StableSim, owner: usize) {
         let tick = sim.tick() as u64;
         let walls: Vec<core::StoneWall> = self.core.walls.clone();
-        let mut next: Vec<(u32, String, u64, u64)> = vec![];
+        let h = core::square_half();
+        let q = (h - core::WALL_HALF).max(0);
+        let mut next: Vec<(u32, Vec<String>, u64, u64, Point)> = vec![];
         let mut added = false;
         for w in &walls {
+            let c = w.mid();
             let old = self.shown.iter().find(|s| s.0 == w.id).cloned();
-            let moving = w.slide.is_some() || self.core.claps.iter().any(|c| c.left == w.id || c.right == w.id);
-            let same_spot = old.as_ref().is_some_and(|o| o.1.starts_with(&format!("{WALL_PREFIX}{}:{}:{}:{}:", w.a.x, w.a.y, w.b.x, w.b.y)));
-            let (name, tend, drawn) = match old {
-                Some(o) if same_spot && tick + 10 < o.2 => (o.1, o.2, o.3),
+            let moving = w.slide.is_some() || self.core.claps.iter().any(|cl| cl.left == w.id || cl.right == w.id);
+            let (names, tend, drawn) = match old {
+                Some(o) if o.4 == c && tick + 10 < o.2 => (o.1, o.2, o.3),
                 o => {
                     if let Some(o) = &o {
-                        sim.entity_remove_buff(owner, &o.1);
+                        for n in &o.1 {
+                            sim.entity_remove_buff(owner, n);
+                        }
                     }
                     let tend = tick + WALL_LEASE;
-                    let name = wall_name(w.a, w.b, w.born.min(tick), tend);
-                    sim.add_buff(owner, &crate::timed(&name, (WALL_LEASE + 5) as usize));
+                    let t0 = w.born.min(tick);
+                    let names: Vec<String> = [-q, q]
+                        .iter()
+                        .map(|dy| wall_name(Point::new(c.x - q, c.y + dy), Point::new(c.x + q, c.y + dy), t0, tend))
+                        .collect();
+                    for n in &names {
+                        sim.add_buff(owner, &crate::timed(n, (WALL_LEASE + 5) as usize));
+                    }
                     added = true;
-                    (name, tend, o.map_or(0, |o| o.3))
+                    (names, tend, o.map_or(0, |o| o.3))
                 }
             };
-            // the blocks: redrawn every 6 ticks while it moves, every 28 when it stands
+            // the block art: redrawn every 6 ticks while it moves, every 28 when it stands
             let every = if moving { 6 } else { 28 };
-            let drawn = if tick >= drawn + every || drawn == 0 {
-                let len = w.a.dist(w.b);
-                let n = ((len / 14_000.0).ceil() as i64).max(1);
-                for k in 0..=n {
-                    let p = Point::new(w.a.x + (w.b.x - w.a.x) * k / n, w.a.y + (w.b.y - w.a.y) * k / n);
-                    crate::fx_point(sim, "bs_block", owner, p.x, p.y, every + 2);
+            let drawn = if drawn == 0 || tick >= drawn + every {
+                for (dx, dy) in [(-1, -1), (1, -1), (-1, 1), (1, 1)] {
+                    crate::fx_point(sim, "bs_block", owner, c.x + dx * h / 2, c.y + dy * h / 2, every + 2);
                 }
                 tick
             } else {
                 drawn
             };
-            next.push((w.id, name, tend, drawn));
+            next.push((w.id, names, tend, drawn, c));
         }
         for s in self.shown.iter().filter(|s| !walls.iter().any(|w| w.id == s.0)) {
-            sim.entity_remove_buff(owner, &s.1);
+            for n in &s.1 {
+                sim.entity_remove_buff(owner, n);
+            }
         }
         self.shown = next;
         if added {
