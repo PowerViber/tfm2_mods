@@ -30,7 +30,7 @@ specs=[
 body=Image.new('RGBA',(CW*len(specs),CH*2));frames={};poses={}
 for i,(name,rect,foot,hair) in enumerate(specs):
     crop=source.crop(rect)
-    scale=44/(foot[1]-hair)
+    scale=38/(foot[1]-hair)
     size=(round(crop.width*scale),round(crop.height*scale))
     sprite=crisp(crop,size)
     x=FX-round(foot[0]*scale);y=FY-round(foot[1]*scale)
@@ -56,7 +56,7 @@ effect_specs=[
  ('land',(8,627,317,913),(64,58)),
  ('dash',(348,654,616,854),(52,39)),
  ('rock',(715,648,883,822),(24,25)),
- ('boulder',(951,593,1257,890),(88,86)),
+ ('boulder',(951,593,1257,890),(60,58)),
  ('meteor',(0,882,330,1190),(62,58)),
  ('meteor_impact',(322,934,638,1186),(64,52)),
  ('whip_link',(648,954,950,1160),(48,33)),
@@ -70,23 +70,24 @@ for i,(name,rect,size) in enumerate(effect_specs):
     eframes[name]={'x':i%4*FW+px,'y':i//4*FH+py,'w':size[0],'h':size[1]}
 effects.save(OUT/'effect-proposals.png')
 
-meta={'revision':'basalt-art-proposal-2','review_only':True,'approved':False,
- 'rules_revision':'basalt-1.1','base_commit':'3790d7ddb9578f3fc051e67bfa5f8f0bbb1f200a',
+meta={'revision':'basalt-art-4','review_only':True,'approved':False,
+ 'rules_revision':json.loads((ROOT/'rules/basalt.json').read_text())['revision'],'base_commit':'3790d7ddb9578f3fc051e67bfa5f8f0bbb1f200a',
  'body_file':'../docs/basalt-art-review/body-proposals.png','effects_file':'../docs/basalt-art-review/effect-proposals.png',
- 'body_canvas':[CW,CH],'feet':[FX,FY],'visible_idle_body_height':44,'world_units_per_pixel':1000,
+ 'body_canvas':[CW,CH],'feet':[FX,FY],'visible_idle_body_height':38,'world_units_per_pixel':1000,
  'wall_footprint':[32000,32000],'body_frames':frames,'effect_frames':eframes,
  'sources':{p.name:digest(p) for p in [OUT/'body-source-v1.png',OUT/'body-source-v2.png',OUT/'effects-source-v1.png']},
  'outputs':{p.name:digest(p) for p in [OUT/'body-proposals.png',OUT/'effect-proposals.png']},
  'decoded_review_atlas_bytes':body.width*body.height*4+effects.width*effects.height*4,
  'generation_deterministic':False,'packing_deterministic':True,
- 'notes':['Appearance concepts only; complete walk/cast/death cycles follow approval.',
-          'Native frames and gameplay unchanged. These files live outside mods/.']}
+ 'body_approved':True,'effects_approved':False,
+ 'notes':['Concept comparison atlas; approved complete body animations are in body-presentation.json.',
+          'Candidate effects stay outside mods/. Native source/WASM use the basalt-1.2 corner placement.']}
 rules=json.loads((ROOT/'rules/basalt.json').read_text())
 core=(ROOT/'native/tfm2_custom_ai/src/basalt_core.rs').read_text()
 section=core[core.index('fn crushing_clap'):core.index('fn run_claps')]
 inner=int(re.search(r'r0:\s*([0-9_]+)',section)[1].replace('_',''))
 slack=int(re.search(r'r >= c.r0 - ([0-9_]+)',section)[1].replace('_',''))
-meta['clap_geometry']={'cone_deg':rules['clap']['coneDeg'],'nominal_reach':rules['clap']['reach'],'near':max(0,inner-slack),'far':rules['clap']['reach']+slack,'close_ticks':rules['clap']['closeTicks'],'source':'Current canonical rules and unchanged crushing_clap hit test'}
+meta['clap_geometry']={'cone_deg':rules['clap']['coneDeg'],'nominal_reach':rules['clap']['reach'],'block_radius':rules['clap']['reach'],'near':max(0,inner-slack),'far':rules['clap']['reach']+slack,'close_ticks':rules['clap']['closeTicks'],'source':'Current canonical rules and unchanged crushing_clap hit test'}
 (OUT/'manifest.json').write_text(json.dumps(meta,indent=2)+'\n')
 (ROOT/'editor/basalt-art.js').write_text('window.BASALT_ART='+json.dumps(meta,separators=(',',':'))+';\n')
 

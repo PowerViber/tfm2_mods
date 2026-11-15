@@ -1,8 +1,8 @@
 {
-  "revision": "basalt-art-proposal-2",
+  "revision": "basalt-art-4",
   "review_only": true,
   "approved": false,
-  "rules_revision": "basalt-1.1",
+  "rules_revision": "basalt-1.2",
   "base_commit": "3790d7ddb9578f3fc051e67bfa5f8f0bbb1f200a",
   "body_file": "../docs/basalt-art-review/body-proposals.png",
   "effects_file": "../docs/basalt-art-review/effect-proposals.png",
@@ -14,7 +14,7 @@
     64,
     60
   ],
-  "visible_idle_body_height": 44,
+  "visible_idle_body_height": 38,
   "world_units_per_pixel": 1000,
   "wall_footprint": [
     32000,
@@ -250,10 +250,10 @@
       "h": 25
     },
     "boulder": {
-      "x": 404,
-      "y": 237,
-      "w": 88,
-      "h": 86
+      "x": 418,
+      "y": 251,
+      "w": 60,
+      "h": 58
     },
     "meteor": {
       "x": 33,
@@ -286,19 +286,22 @@
     "effects-source-v1.png": "d22f38f4466354e743cfd81d18880a17b1bd46dcbb8df98c09c224a8ed59ebd1"
   },
   "outputs": {
-    "body-proposals.png": "afb950cad7a43949e7ce3c60a8d6f110bc52536483a4114900c3e026fa04caf1",
-    "effect-proposals.png": "34185143e979784a4aa4404b8326836c475d03f50d8d93652a3f4ede3e76305b"
+    "body-proposals.png": "1a0f4a559d063a0546af0266bbf2732148a260535895ca751492fddd3e08241f",
+    "effect-proposals.png": "dc34b17b6cf35fd354a13a7e8d4166e66ed94824c2d4d88aea43080a80aee090"
   },
   "decoded_review_atlas_bytes": 1572864,
   "generation_deterministic": false,
   "packing_deterministic": true,
+  "body_approved": true,
+  "effects_approved": false,
   "notes": [
-    "Appearance concepts only; complete walk/cast/death cycles follow approval.",
-    "Native frames and gameplay unchanged. These files live outside mods/."
+    "Concept comparison atlas; approved complete body animations are in body-presentation.json.",
+    "Candidate effects stay outside mods/. Native source/WASM use the basalt-1.2 corner placement."
   ],
   "clap_geometry": {
     "cone_deg": 70,
     "nominal_reach": 110000,
+    "block_radius": 110000,
     "near": 11000,
     "far": 114000,
     "close_ticks": 18,

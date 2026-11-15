@@ -1,0 +1,11 @@
+{
+  "scope": "Disposable fixture comparison only. No real game installation, process changes or career migration. Source manager.cfg untouched.",
+  "exit_code": 0,
+  "files_compared": 898,
+  "body_integrated": true,
+  "effects_integrated": false,
+  "source_mods_unchanged": true,
+  "isolated_appdata": true,
+  "dll_packaging": "Original PR DLL retained; source/WASM basalt-1.2 still requires release packaging",
+  "live_game": "pending"
+}

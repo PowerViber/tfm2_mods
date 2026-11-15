@@ -1,8 +1,14 @@
 // Review-only projection of generated pixels. No combat decisions or mechanics.
 window.BasaltPainter=class {
-  constructor(){this.meta=window.BASALT_ART;this.loaded=false;this.ready=Promise.all([this.image(this.meta.body_file),this.image(this.meta.effects_file)]).then(([body,fx])=>{this.body=body;this.effects=fx;this.loaded=true;return this;});}
+  constructor(){this.meta=window.BASALT_ART;this.bodyMeta=window.BASALT_BODY;this.loaded=false;this.ready=Promise.all([this.image(this.bodyMeta?.body_file||this.meta.body_file),this.image(this.meta.effects_file)]).then(([body,fx])=>{this.body=body;this.effects=fx;this.loaded=true;return this;});}
   image(src){return new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>resolve(im);im.onerror=()=>reject(new Error('Missing Basalt proposal: '+src));im.src=src;});}
-  pose(ctx,name,p,scale=1,left=false){if(!this.loaded)return;const r=this.meta.body_frames[name+(left?'_l':'')]||this.meta.body_frames.idle;ctx.imageSmoothingEnabled=false;ctx.drawImage(this.body,r.x,r.y,r.w,r.h,p.x-r.w*scale/2,p.y-r.h*scale/2,r.w*scale,r.h*scale);}
+  bodyFrame(name,left=false,elapsed=0,loop=true){
+    if(!this.bodyMeta)return this.meta.body_frames[name+(left?'_l':'')]||this.meta.body_frames.idle;
+    const seq=(this.bodyMeta.body_anims[name+(left?'_l':'')]||this.bodyMeta.body_anims.idle).frames;
+    const length=seq.reduce((n,f)=>n+f.duration*60,0);let time=loop?Math.max(0,elapsed)%length:Math.min(Math.max(0,elapsed),length-1e-6);
+    for(const f of seq){time-=f.duration*60;if(time<0)return f.data;}return seq.at(-1).data;
+  }
+  pose(ctx,name,p,scale=1,left=false,elapsed=0,loop=true){if(!this.loaded)return;const r=this.bodyFrame(name,left,elapsed,loop);ctx.imageSmoothingEnabled=false;ctx.drawImage(this.body,r.x,r.y,r.w,r.h,p.x-r.w*scale/2,p.y-r.h*scale/2,r.w*scale,r.h*scale);}
   fx(ctx,name,p,scale=1,angle=0,alpha=1){if(!this.loaded)return;const r=this.meta.effect_frames[name];if(!r)return;ctx.save();ctx.imageSmoothingEnabled=false;ctx.globalAlpha=alpha;ctx.translate(p.x,p.y);ctx.rotate(angle);ctx.drawImage(this.effects,r.x,r.y,r.w,r.h,-r.w*scale/2,-r.h*scale/2,r.w*scale,r.h*scale);ctx.restore();}
   clapContains(origin,aim,p){const spec=this.meta.clap_geometry,dx=p.x-origin.x,dy=p.y-origin.y,r=Math.floor(Math.hypot(dx,dy)),ax=aim.x-origin.x,ay=aim.y-origin.y,n=Math.hypot(ax,ay)||1;if(r<spec.near||r>spec.far)return false;return(dx*ax+dy*ay)/(Math.hypot(dx,dy)*n)>=Math.cos(spec.cone_deg*Math.PI/360)-1e-12;}
   clapCone(ctx,origin,aim,worldScale,active=false){const spec=this.meta.clap_geometry,a=Math.atan2(aim.y-origin.y,aim.x-origin.x),half=spec.cone_deg*Math.PI/360,far=spec.far*worldScale,near=spec.near*worldScale;

@@ -68,6 +68,16 @@
       "ticks": 600
     }
   ],
-  "native_rules_changed": false,
-  "scope": "Current core hit receipts versus review cone; fixed simulation clock across display refresh rates"
+  "corner_positions": [
+    {
+      "x": 390107,
+      "y": 363093
+    },
+    {
+      "x": 390107,
+      "y": 236907
+    }
+  ],
+  "native_rules_changed": true,
+  "scope": "basalt-1.2 far-corner placement; unchanged hit receipts versus review cone; fixed clock across display refresh rates"
 }

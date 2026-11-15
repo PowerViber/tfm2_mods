@@ -1,0 +1,19 @@
+{
+  "native": {
+    "passed": 1336,
+    "failed": 0,
+    "ignored": 18,
+    "focused_basalt": 26,
+    "build_warnings": [
+      "Four existing unused-code warnings in native_bridge/detour_tests.rs"
+    ],
+    "command": "rtk proxy cargo +stable-x86_64-pc-windows-gnu test --manifest-path native/tfm2_custom_ai/Cargo.toml --release -- --test-threads=1"
+  },
+  "lab_crate": {
+    "passed": 3,
+    "failed": 0
+  },
+  "rules_revision": "basalt-1.2",
+  "windows_dll": "unchanged; release packaging pending",
+  "live_game": "pending"
+}

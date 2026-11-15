@@ -3,8 +3,8 @@
 (async()=>{try{
 const world=await new GameWorld().ready,painter=await new BasaltPainter().ready,$=id=>document.getElementById(id);
 while(!wasm)await new Promise(r=>setTimeout(r,25));clearInterval(window.basaltLegacyTimer);
-const clock=new KratosClock(),held=new Set(),effects=[],rocks=new Map();let scene,walkGoal=null,pose='idle',poseUntil=0,left=false,lastPos=null,movedAt=-100,lastWallKey='',cam={x:480000,y:480000,s:.0018};
-const panel=document.createElement('div');panel.innerHTML='<p style="color:#ffc887">Original artwork proposal — approval pending. Real map and stock actors; host movement, attacks, armour and visibility are simulated.</p><label>Situation <select id="scenario"></select></label><button id="loadScene">Load</button><p id="sceneText"></p><label><input id="follow" type="checkbox" checked> Follow / game-size view</label><label><input id="wallGrid" type="checkbox"> Collision grid</label><label><input id="showArt" type="checkbox" checked> Candidate presentation</label><label><input id="hostModel" type="checkbox" checked> Opponents / waves</label><p>Focus arena. Arrow keys / right-click: move. Space: Jump · F: Whip Pull · Q/W/E: S1/S2/S3 · R: ultimate/recast.</p><button id="singleStep">Step once</button><button id="incomingStun">Incoming stun</button><details><summary>13 athlete values</summary><div id="athleteStats"></div></details>';
+const clock=new KratosClock(),held=new Set(),effects=[],rocks=new Map();let scene,walkGoal=null,pose='idle',poseUntil=0,poseStart=0,walkClock=0,deathAt=null,left=false,lastPos=null,movedAt=-100,lastWallKey='',cam={x:480000,y:480000,s:.0018};
+const panel=document.createElement('div');panel.innerHTML='<p style="color:#ffc887">Approved red/yellow body at smaller scale; effects under review. Real map and stock actors; host movement, attacks, armour and visibility are simulated.</p><label>Situation <select id="scenario"></select></label><button id="loadScene">Load</button><p id="sceneText"></p><label><input id="follow" type="checkbox" checked> Follow / game-size view</label><label><input id="wallGrid" type="checkbox"> Collision grid</label><label><input id="showArt" type="checkbox" checked> Candidate presentation</label><label><input id="hostModel" type="checkbox" checked> Opponents / waves</label><p>Focus arena. Arrow keys / right-click: move. Space: Jump · F: Whip Pull · Q/W/E: S1/S2/S3 · R: ultimate/recast.</p><button id="singleStep">Step once</button><button id="incomingStun">Incoming stun</button><details><summary>13 athlete values</summary><div id="athleteStats"></div></details>';
 $('side').insertBefore(panel,$('state'));$('side').style.width='430px';
 for(const [value,label]of Object.entries(GameScenario.choices))$('scenario').add(new Option(label,value));$('scenario').value='gank';
 const statNames=['Ego','Judgement','Positioning','Control Speed','Skill Accuracy','Skill Dodge','Aggressive','Order','Roaming','Macro','Micro','Map Awareness','Strategy'];
@@ -12,14 +12,14 @@ $('athleteStats').innerHTML=statNames.map(n=>'<label style="display:inline-block
 const gridWall=world.wallAt.bind(world);world.wallAt=(p,r=0)=>{if(gridWall(p,r))return true;return(state.walls||[]).some(w=>Math.abs(p.x-w.a.x)<R.wall.size/2+r&&Math.abs(p.y-w.a.y)<R.wall.size/2+r);};
 const baseMove=world.move.bind(world);world.move=(u,to,speed)=>{if(glides.has(u.id))return false;return baseMove(u,to,speed);};
 reset=function(){
- wasm.exports.basalt_reset();effects.length=0;rocks.clear();glides.clear();held.clear();logLines=[];state={};walkGoal=null;pose='idle';lastPos=null;lastWallKey='';world.routes.clear();
+ wasm.exports.basalt_reset();effects.length=0;rocks.clear();glides.clear();held.clear();logLines=[];state={};walkGoal=null;pose='idle';poseStart=0;walkClock=0;deathAt=null;lastPos=null;lastWallKey='';world.routes.clear();
  scene=new GameScenario(world,$('scenario').value,8);const setup=scene.setup(),stats=scene.stats({stat:R.stat,growth:R.growth});
  tick=setup.clock;me={id:1,team:0,pos:setup.pos,hp:Math.floor(stats.hp*(1+R.modPower[2]/100)),max_hp:Math.floor(stats.hp*(1+R.modPower[2]/100)),attack:Math.floor(stats.attack*(1+R.modPower[0]/100)),stats:{...stats,defence:Math.floor(stats.defence*(1+R.modPower[3]/100)),magic_resistance:Math.floor(stats.magic_resistance*(1+R.modPower[4]/100))},radius:world.data.settings.champion_radius,champion:true,stun:0,air:0,shields:[]};
  units=setup.units.map(u=>({...u,stun:0,up:0,slow:0}));lastPos={...me.pos};movedAt=-100;terrain.splice(0,terrain.length,...world.walls);$('sceneText').textContent=setup.description;scene.refreshVisibility(me,units);
  world.loadSprites(units.map(u=>u.sprite)).catch(fail);pending=null;draw();
 };
 function fail(e){play=false;log('Reference error: '+e.message);$('sceneText').textContent=e.message;}
-function presentOrder(order){if(!order)return;left=order.aim.x<me.pos.x;pose=order.kind==='s1'?(tick<me.air?'air_punch':'raise'):order.kind==='s2'?'whip':order.kind==='s3'?'whip':order.kind==='ult'?(state.recast?'whip':tick<me.air?'air_punch':'charge'):'air_punch';poseUntil=tick+24;}
+function presentOrder(order){if(!order)return;left=order.aim.x<me.pos.x;pose=order.kind==='s1'?(tick<me.air?'ult_punch':'raise'):order.kind==='s2'?'throw':order.kind==='s3'?(tick<me.air?'swing':'snare'):order.kind==='ult'?(state.recast?'snare':tick<me.air?'air':'charge'):'jump';poseStart=tick;poseUntil=tick+24;}
 step=function(){
  if(!scene)return;
  for(const[id,gl]of glides){const u=byId(id);if(!u){glides.delete(id);continue;}const k=Math.min(1,(tick-gl.t0)/gl.n);u.pos={x:gl.a.x+(gl.b.x-gl.a.x)*k,y:gl.a.y+(gl.b.y-gl.a.y)*k};u.left=gl.b.x<gl.a.x;if(k>=1)glides.delete(id);}
@@ -50,10 +50,10 @@ step=function(){
  }
  for(const b of state.boulders||[]){const key=JSON.stringify(b);if(!rocks.has(key))rocks.set(key,{air:b[0],to:b[1],end:b[2],start:tick,from:{...me.pos}});}
  for(const[key,b]of rocks)if(tick>b.end)rocks.delete(key);
- if(previous.charging&&!state.charging){pose=previous.charging[0]?'air_punch':'whip';poseUntil=tick+20;}
+ if(previous.charging&&!state.charging){pose=previous.charging[0]?'ult_punch':'throw';poseStart=tick;poseUntil=tick+20;}
  const wallKey=JSON.stringify((state.walls||[]).map(w=>[w.id,w.a]));if(wallKey!==lastWallKey){world.routes.clear();lastWallKey=wallKey;}
  for(let i=effects.length-1;i>=0;i--)if(tick>=effects[i].end)effects.splice(i,1);
- if(lastPos&&Math.hypot(me.pos.x-lastPos.x,me.pos.y-lastPos.y)>100){left=me.pos.x<lastPos.x;movedAt=tick;}lastPos={...me.pos};
+ if(lastPos){const distance=Math.hypot(me.pos.x-lastPos.x,me.pos.y-lastPos.y);if(distance>100){left=me.pos.x<lastPos.x;movedAt=tick;if(tick>=me.air&&!glides.has(1))walkClock+=distance/1050;}}lastPos={...me.pos};if(me.hp<=0&&deathAt===null)deathAt=tick;
 };
 draw=function(){
  if(!scene)return;const c=cv.getContext('2d');cam=$('follow').checked?{x:me.pos.x,y:me.pos.y,s:.0018}:{x:480000,y:480000,s:Math.min(cv.width,cv.height)/960000};
@@ -64,12 +64,13 @@ draw=function(){
  for(const w of state.walls||[]){const p=PP(w.a);if(art)painter.fx(c,'square',p,z);c.strokeStyle='#ffbc6e';c.strokeRect(p.x-W(R.wall.size/2),p.y-W(R.wall.size/2),W(R.wall.size),W(R.wall.size));c.fillStyle='#fff3d9';c.fillText('◆'.repeat(w.integrity),p.x-12,p.y+W(25000));}
  for(const u of units){if(!u.visible)continue;world.drawUnit(c,u,tick,PP,W);if(u.hp>0){const p=PP(u.pos);c.fillStyle='#171e24';c.fillRect(p.x-16,p.y-28*z,32,4);c.fillStyle=u.team===0?'#81d6ba':u.team===9?'#e6bb6a':'#ef786b';c.fillRect(p.x-16,p.y-28*z,32*u.hp/u.max_hp,4);}}
  if(art)for(const e of effects)painter.fx(c,e.name,PP(e.at),z,0,Math.min(1,(e.end-tick)/10));
- for(const b of rocks.values()){const aim=PP(b.to),k=Math.max(0,Math.min(1,(tick-b.start)/Math.max(1,b.end-b.start))),p=PP({x:b.from.x+(b.to.x-b.from.x)*k,y:b.from.y+(b.to.y-b.from.y)*k});p.y-=W(70000)*Math.sin(Math.PI*k);c.strokeStyle='#ffbc6e';c.beginPath();c.arc(aim.x,aim.y,W(R.ult.radius),0,Math.PI*2);c.stroke();c.fillStyle='#fff4d9';c.fillText(((b.end-tick)/60).toFixed(1)+'s',aim.x-10,aim.y);if(art)painter.fx(c,'boulder',p,z);}
+ for(const b of rocks.values()){const aim=PP(b.to),k=Math.max(0,Math.min(1,(tick-b.start)/Math.max(1,b.end-b.start))),p=PP({x:b.from.x+(b.to.x-b.from.x)*k,y:b.from.y+(b.to.y-b.from.y)*k});p.y-=W((b.air?85000:55000)*(1-k)+70000*Math.sin(Math.PI*k));c.strokeStyle='#ffbc6e';c.beginPath();c.arc(aim.x,aim.y,W(R.ult.radius),0,Math.PI*2);c.stroke();c.fillStyle='#fff4d9';c.fillText(((b.end-tick)/60).toFixed(1)+'s',aim.x-10,aim.y);if(art)painter.fx(c,'boulder',p,z);}
  for(const m of state.meteors||[]){const p=PP(m[0]),remaining=m[1]-tick;c.strokeStyle='#ed9d64';c.beginPath();c.arc(p.x,p.y,W(R.ult.meteorHitRadius),0,Math.PI*2);c.stroke();if(art&&remaining<30)painter.fx(c,'meteor',{x:p.x-remaining*1.5*z,y:p.y-remaining*3*z},z);}
  const moving=tick<=movedAt+2;
- let body=state.charging?(state.charging[0]?'air_punch':'charge'):tick<poseUntil?pose:tick<me.air?'air_punch':moving?(Math.floor(tick/12)%2?'walk_a':'walk_b'):'idle';
- const p=PP(me.pos),rise=tick<me.air?W(state.charging?35000:20000):0;if(art)painter.pose(c,body,{x:p.x,y:p.y-rise},z,left);
- if(state.charging&&art){const q={x:p.x+(state.charging[0]?55*z:0),y:p.y-rise-70*z};painter.fx(c,'boulder',q,z);c.fillStyle='#ffe8c4';c.fillText('Charge '+((state.charging[2]-tick)/60).toFixed(1)+'s',p.x-35,p.y+40*z);}
+ let body=me.hp<=0?'dead':state.charging?(state.charging[0]?'air':'charge'):tick<poseUntil?pose:tick<me.air?'air':moving?'run':'idle';
+ const age=me.hp<=0?tick-deathAt:state.charging?tick-(state.charging[2]-R.ult.chargeTicks):tick<poseUntil?tick-poseStart:body==='run'?walkClock:tick;
+ const p=PP(me.pos),rise=tick<me.air?W(state.charging?35000:20000):0;if(art)painter.pose(c,body,{x:p.x,y:p.y-rise},z,left,age,['idle','run','air'].includes(body));
+ if(state.charging&&art){const q={x:p.x+(state.charging[0]?55*z:0),y:p.y-rise-(state.charging[0]?50:55)*z};painter.fx(c,'boulder',q,z);c.fillStyle='#ffe8c4';c.fillText('Charge '+((state.charging[2]-tick)/60).toFixed(1)+'s',p.x-35,p.y+40*z);}
  if(state.swing){const target=units.find(u=>u.id===state.swing.target);if(target&&art)painter.whip(c,{x:p.x,y:p.y-rise-8*z},PP(target.pos),z);}
  const ownGlide=glides.get(1);if(ownGlide&&art&&tick<me.air)painter.whip(c,{x:p.x,y:p.y-rise},PP(ownGlide.b),z);
  c.fillStyle='#171e24';c.fillRect(p.x-22,p.y-rise-32*z,44,5);c.fillStyle='#83dcb6';c.fillRect(p.x-22,p.y-rise-32*z,44*me.hp/me.max_hp,5);

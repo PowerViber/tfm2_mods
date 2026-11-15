@@ -2,7 +2,7 @@
   "checks": [
     "Both editor routes and candidate assets return 200",
     "Extracted game map: 900/900 collision cells registered",
-    "Pose/facing inspector renders full candidate on real map",
+    "Pose/facing inspector renders packed full-body animations on real map",
     "V clap shows a filled core-derived cone with its apex at Basalt",
     "Three-second meteor presentation sequence runs",
     "Artwork enabled/disabled: complete state/actor/damage trace equal",
@@ -29,5 +29,5 @@
     }
   },
   "errors": [],
-  "scope": "Review-only original art; existing WASM skill core; simulated host; no native game acceptance or packaged art."
+  "scope": "Approved smaller body in package; effects review-only; shared basalt-1.2 core; simulated host, not native game acceptance."
 }

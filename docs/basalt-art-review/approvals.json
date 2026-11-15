@@ -1,0 +1,15 @@
+{
+  "date": "2026-11-16",
+  "body": {
+    "approved": true,
+    "source": "body-source-v2.png",
+    "sha256": "90a2e9213fb8632266ca93a3cbb7a071c6a41e56907315c9f824e0d434a25a1b",
+    "user_answer": "Approve the red/yellow body",
+    "size_correction": "After appearance approval: 47 px too tall/wide; reduce proportionally to about 40 visible px, preserving red/yellow appearance"
+  },
+  "effects": {
+    "approved": false,
+    "user_answer": "47 is too tall and too wide, the boulder ults are too big",
+    "required_correction": "Reduce boulder material from 88x86 to 60x58; preserve 32k square wall and all collision/blast geometry"
+  }
+}
