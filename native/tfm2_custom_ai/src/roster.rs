@@ -171,7 +171,7 @@ mod tests {
         for name in ["android", "archer", "fighter", "wind_mage"] {
             assert!(def(name).is_some_and(|d| !d.native), "{name}");
         }
-        assert_eq!(CHAMPIONS.len(), 87); // round 149: Rally; round 155: Grimhald; round 157: Thalassa; Wright; Kratos; Akane; Kicker; Kagami
+        assert_eq!(CHAMPIONS.len(), 88); // round 149: Rally; round 155: Grimhald; round 157: Thalassa; Wright; Kratos; Akane; Kicker; Kagami; Basalt
     }
 
     #[test]

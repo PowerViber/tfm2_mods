@@ -1,0 +1,26 @@
+{
+  "revision": "basalt-art-5",
+  "world_units_per_pixel": 1000,
+  "cone_headings": 64,
+  "whip_headings": 32,
+  "whip_lengths": [8000,16000,32000,64000,96000],
+  "max_lease_emissions": 4,
+  "max_cues": 48,
+  "dynamic_period": 3,
+  "whip_period": 6,
+  "standing_wall_period": 6,
+  "ground_boulder_lift": 55000,
+  "air_boulder_lift": 85000,
+  "boulder_arc": 70000,
+  "materials": {
+    "block": [16,18], "square": [32,36], "rise": [64,54],
+    "break": [64,54], "dust": [28,24], "slam": [120,96],
+    "wall_slam": [64,44], "leap": [48,29], "land": [64,58],
+    "dash": [52,39], "rock": [24,25], "boulder": [60,58],
+    "meteor": [62,58], "meteor_impact": [48,48],
+    "whip_link": [48,33], "punch_impact": [104,96],
+    "hurl_impact": [50,50], "clap_impact": [64,44]
+  },
+  "ground_tags": ["dust","land","slam","wall_slam","meteor_impact","hurl_impact","clap_impact"],
+  "notes": "Approved source pixels. Native cone/whip direction atlases are quantised; hit rules remain exact. Single-frame leases never restart animations."
+}

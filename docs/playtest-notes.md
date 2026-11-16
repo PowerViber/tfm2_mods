@@ -4019,3 +4019,16 @@ Outlined body/effects approved and integrated. All thirteen athlete values affec
   - do saves fire before deaths (and not waste clones);
   - do three clone bodies render and move cleanly;
   - is she strong enough now, or too strong.
+
+## Nov 15: round 176 (native 0.10.110, tfm2_custom 0.2.113), `basalt-1.0`: Basalt, the Wallbreaker
+- **What Reihan asked:** a whip-wielding wall brawler.
+  - **Passives:** Jump (double jump, wall kicks, passing every wall) and Whip Pull (a slingshot, faster from farther).
+  - **Walls:** 5 walls with 3 integrity each (only his hits count), fading 3 s after he's 150,000 away.
+  - **Skills (ground / airborne):** Raise & Punch / Air Dash, Hurl / Slab Drop, Crushing Clap (the V slam) / Whip Swing (360° + x, toward a teammate or away from their team), and a 3 s charged global Boulder Throw / Meteor Punch with a recast whip to the rock.
+- **Placeholder art:** Grimhald's body and effects until Codex's art.
+- **Install:** merge, pull, then Mod Manager → Install.
+- **Watch for:**
+  - do walls block everyone, and do slams into the map's terrain trigger;
+  - does the AI chain jumps, slingshots and Whip Swing;
+  - is the 3 s ult charge used safely (only with no enemy close);
+  - is he too strong with this much mobility.

@@ -1,0 +1,19 @@
+{
+  "date": "2026-11-16",
+  "body": {
+    "approved": true,
+    "source": "body-source-v2.png",
+    "sha256": "90a2e9213fb8632266ca93a3cbb7a071c6a41e56907315c9f824e0d434a25a1b",
+    "user_answer": "Approve the red/yellow body",
+    "size_correction": "After appearance approval: 47 px too tall/wide; reduce proportionally to about 40 visible px, preserving red/yellow appearance"
+  },
+  "effects": {
+    "approved": true,
+    "user_answer": "Approve these effects",
+    "required_correction": "Reduce boulder material from 88x86 to 60x58; preserve 32k square wall and all collision/blast geometry",
+    "source": "effects-source-v1.png",
+    "sha256": "d22f38f4466354e743cfd81d18880a17b1bd46dcbb8df98c09c224a8ed59ebd1",
+    "approved_review": "basalt-art-4",
+    "review_manifest_sha256": "73234cb95a2d52559ac1e910f5aa448b1ca6c3f53e4ec6ca27fd26b6055f92f2"
+  }
+}

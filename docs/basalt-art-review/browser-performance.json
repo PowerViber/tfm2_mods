@@ -1,0 +1,31 @@
+{
+  "samples": [
+    {
+      "run": 1,
+      "fresh_context_ready_ms": 402,
+      "warm_model_step_and_draw_ms": 0.3966666666169961
+    },
+    {
+      "run": 2,
+      "fresh_context_ready_ms": 187,
+      "warm_model_step_and_draw_ms": 0.4429166667163372
+    },
+    {
+      "run": 3,
+      "fresh_context_ready_ms": 183,
+      "warm_model_step_and_draw_ms": 0.38333333333333336
+    },
+    {
+      "run": 4,
+      "fresh_context_ready_ms": 204,
+      "warm_model_step_and_draw_ms": 0.6166666666666667
+    },
+    {
+      "run": 5,
+      "fresh_context_ready_ms": 182,
+      "warm_model_step_and_draw_ms": 0.34958333323399227
+    }
+  ],
+  "decoded_native_body_and_effect_bytes": 25165824,
+  "scope": "Five fresh browser contexts and warm 240-step Lab samples. Includes simulated host/WASM/canvas; no disk-cache flush, native renderer, actual-game or Proceed-time claim."
+}

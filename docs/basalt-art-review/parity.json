@@ -1,0 +1,263 @@
+{
+  "rules_revision": "basalt-1.2",
+  "cases": [
+    {
+      "group": "development",
+      "fixture": 0,
+      "angle": 0,
+      "ticks": 300,
+      "damage_packets": 6
+    },
+    {
+      "group": "development",
+      "fixture": 1,
+      "angle": 0,
+      "ticks": 300,
+      "damage_packets": 0
+    },
+    {
+      "group": "development",
+      "fixture": 2,
+      "angle": 0,
+      "ticks": 300,
+      "damage_packets": 2
+    },
+    {
+      "group": "development",
+      "fixture": 3,
+      "angle": 0,
+      "ticks": 300,
+      "damage_packets": 2
+    },
+    {
+      "group": "development",
+      "fixture": 4,
+      "angle": 0,
+      "ticks": 300,
+      "damage_packets": 0
+    },
+    {
+      "group": "development",
+      "fixture": 5,
+      "angle": 0,
+      "ticks": 300,
+      "damage_packets": 1
+    },
+    {
+      "group": "development",
+      "fixture": 6,
+      "angle": 0,
+      "ticks": 300,
+      "damage_packets": 0
+    },
+    {
+      "group": "development",
+      "fixture": 7,
+      "angle": 0,
+      "ticks": 300,
+      "damage_packets": 0
+    },
+    {
+      "group": "development",
+      "fixture": 8,
+      "angle": 0,
+      "ticks": 300,
+      "damage_packets": 5
+    },
+    {
+      "group": "development",
+      "fixture": 9,
+      "angle": 0,
+      "ticks": 300,
+      "damage_packets": 0
+    },
+    {
+      "group": "development",
+      "fixture": 10,
+      "angle": 0,
+      "ticks": 300,
+      "damage_packets": 5
+    },
+    {
+      "group": "development",
+      "fixture": 11,
+      "angle": 0,
+      "ticks": 300,
+      "damage_packets": 5
+    },
+    {
+      "group": "development",
+      "fixture": 0,
+      "angle": 90,
+      "ticks": 300,
+      "damage_packets": 6
+    },
+    {
+      "group": "development",
+      "fixture": 1,
+      "angle": 90,
+      "ticks": 300,
+      "damage_packets": 0
+    },
+    {
+      "group": "development",
+      "fixture": 2,
+      "angle": 90,
+      "ticks": 300,
+      "damage_packets": 2
+    },
+    {
+      "group": "development",
+      "fixture": 3,
+      "angle": 90,
+      "ticks": 300,
+      "damage_packets": 2
+    },
+    {
+      "group": "development",
+      "fixture": 4,
+      "angle": 90,
+      "ticks": 300,
+      "damage_packets": 0
+    },
+    {
+      "group": "development",
+      "fixture": 5,
+      "angle": 90,
+      "ticks": 300,
+      "damage_packets": 1
+    },
+    {
+      "group": "development",
+      "fixture": 6,
+      "angle": 90,
+      "ticks": 300,
+      "damage_packets": 0
+    },
+    {
+      "group": "development",
+      "fixture": 7,
+      "angle": 90,
+      "ticks": 300,
+      "damage_packets": 0
+    },
+    {
+      "group": "development",
+      "fixture": 8,
+      "angle": 90,
+      "ticks": 300,
+      "damage_packets": 5
+    },
+    {
+      "group": "development",
+      "fixture": 9,
+      "angle": 90,
+      "ticks": 300,
+      "damage_packets": 0
+    },
+    {
+      "group": "development",
+      "fixture": 10,
+      "angle": 90,
+      "ticks": 300,
+      "damage_packets": 5
+    },
+    {
+      "group": "development",
+      "fixture": 11,
+      "angle": 90,
+      "ticks": 300,
+      "damage_packets": 7
+    },
+    {
+      "group": "holdout",
+      "fixture": 0,
+      "angle": 37,
+      "ticks": 300,
+      "damage_packets": 6
+    },
+    {
+      "group": "holdout",
+      "fixture": 1,
+      "angle": 37,
+      "ticks": 300,
+      "damage_packets": 0
+    },
+    {
+      "group": "holdout",
+      "fixture": 2,
+      "angle": 37,
+      "ticks": 300,
+      "damage_packets": 2
+    },
+    {
+      "group": "holdout",
+      "fixture": 3,
+      "angle": 37,
+      "ticks": 300,
+      "damage_packets": 2
+    },
+    {
+      "group": "holdout",
+      "fixture": 4,
+      "angle": 37,
+      "ticks": 300,
+      "damage_packets": 0
+    },
+    {
+      "group": "holdout",
+      "fixture": 5,
+      "angle": 37,
+      "ticks": 300,
+      "damage_packets": 1
+    },
+    {
+      "group": "holdout",
+      "fixture": 6,
+      "angle": 37,
+      "ticks": 300,
+      "damage_packets": 0
+    },
+    {
+      "group": "holdout",
+      "fixture": 7,
+      "angle": 37,
+      "ticks": 300,
+      "damage_packets": 0
+    },
+    {
+      "group": "holdout",
+      "fixture": 8,
+      "angle": 37,
+      "ticks": 300,
+      "damage_packets": 5
+    },
+    {
+      "group": "holdout",
+      "fixture": 9,
+      "angle": 37,
+      "ticks": 300,
+      "damage_packets": 0
+    },
+    {
+      "group": "holdout",
+      "fixture": 10,
+      "angle": 37,
+      "ticks": 300,
+      "damage_packets": 5
+    },
+    {
+      "group": "holdout",
+      "fixture": 11,
+      "angle": 37,
+      "ticks": 300,
+      "damage_packets": 7
+    }
+  ],
+  "development_cases": 24,
+  "holdout_cases": 12,
+  "compared_ticks": 10800,
+  "complete_state_and_effects_equal": true,
+  "sha256": "7b76c4339ff81003dee5ab8abe81210ea35c093c98d710030d6e70f7d341fd11",
+  "scope": "Exact native transport versus WASM serialization on fixed input fixtures. Not host physics, live combat, or balance acceptance."
+}

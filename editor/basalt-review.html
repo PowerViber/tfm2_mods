@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Basalt — original artwork review</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#14252d;color:#edf0e8;font:15px/1.55 system-ui,sans-serif}main{max-width:1220px;margin:32px auto;padding:0 20px}h1{font-size:34px;margin-bottom:4px}h2{font-size:22px}.intro{max-width:850px;color:#c6d3d3}section{background:#203942;padding:24px;border:1px solid #405457;border-radius:12px;margin:22px 0}a{color:#ffbd70}img,canvas{image-rendering:pixelated}img.sheet{width:100%;height:auto;display:block}canvas{width:100%;height:auto;background:#142c34;border:1px solid #536569}label{display:inline-block;margin:6px 10px 12px 0}select,button,input{font:inherit}select,button{padding:7px 11px;background:#314852;color:#fff;border:1px solid #758486;border-radius:5px}.badge{display:inline-block;padding:4px 12px;border:1px solid #b98245;color:#ffcf91;border-radius:20px;font-size:13px}.muted{color:#bfd0d0}.gallery{max-height:620px;overflow:auto}.note{border-left:3px solid #e79742;padding-left:14px}#error{color:#ffb0a1}summary{cursor:pointer}code{font-size:12px}
+</style>
+<style>.native-scroll,.gallery{overflow:auto}.native-scroll img.sheet,.gallery img.sheet{width:auto;max-width:none}canvas{width:1100px;max-width:100%}</style>
+<main><span class="badge">Approved body and effects · native bindings integrated</span>
+<h1>Basalt, the Wallbreaker</h1>
+<p class="intro">Approved red-and-yellow appearance, reduced to about 40 visible pixels after your size correction. Whole connected drawings use one palette and fixed foot anchors. The ultimate boulder is one third smaller. Square walls retain their <b>basalt-1.2</b> 32,000 × 32,000 footprint; V-clap blocks start at maximum-range corners.</p>
+<p><a href="basalt.html?art=proposal">Open the playable Lab with candidate artwork</a> · <a href="../docs/basalt-art-review/manifest.json">Source and packing hashes</a></p><p id="error"></p>
+<section><h2>Body scale and silhouette</h2><p>Actual size and 3×, beside the extracted Knight/Berserker and current Grimhald placeholder. Light and dark backgrounds use the same pixels. Scroll horizontally if needed; comparison pixels are not shrunk to fit.</p><div class="native-scroll"><img class="sheet" src="../docs/basalt-art-review/stock-comparison.png" alt="Basalt body compared with stock champions at one and three times size"></div></section>
+<section><h2>Pose and facing inspection</h2><p>Fourteen complete animation sequences, both facings, using the actual body atlas. Walk cadence is six frames over 0.8 seconds at normal speed. The playable Lab slows the animation with actual distance travelled.</p>
+<label>Pose <select id="pose"></select></label><label><input type="checkbox" id="animate" checked> Animate</label><label>Frame <input id="frame" type="range" min="0" max="3" value="0"><span id="frameNumber"></span></label><label><input type="checkbox" id="left"> Left facing</label><label><input type="checkbox" id="grid"> Collision grid</label><label>Scale <select id="zoom"><option value=".001" selected>1× game scale</option><option value=".002">2× inspection</option><option value=".003">3× inspection</option></select></label>
+<canvas id="arena" width="1100" height="480" aria-label="Basalt proposal on the actual extracted game map beside stock champions"></canvas>
+<p class="muted" id="mapStatus">Loading the installed game reference…</p><details><summary>Approved appearance comparisons at native size and 3×</summary><div class="gallery"><img class="sheet" src="../docs/basalt-art-review/body-comparison.png" alt="Basalt appearance poses in both facings"></div></details><details><summary>Animated idle, walking and death comparisons</summary><div class="gallery"><img class="sheet" src="../docs/basalt-art-review/idle.gif" alt="Idle on light and dark terrain, both facings"><img class="sheet" src="../docs/basalt-art-review/run.gif" alt="Six-frame walk, both facings"><img class="sheet" src="../docs/basalt-art-review/dead.gif" alt="Connected death drawings, both facings"></div></details></section>
+<section id="effects"><h2>Square blocks, whip and ultimate effects</h2><p>The solid square is an ordinary wall. The huge rounded boulder is the ground ultimate; burning fragments belong to Meteor Punch. Impacts and dust remain separate from the body's pixels.</p>
+<label>Sequence <select id="sequence"><option value="blocks">V clap — full cone from Basalt</option><option value="boulder">Ground boulder — 3 s charge</option><option value="meteors">Air punch — 3 s charge</option></select></label><label><input id="loop" type="checkbox" checked> Loop presentation preview</label><button id="restart">Restart</button><p class="muted">For the V clap, move the pointer over the preview to inspect its direction. The coloured ground sector shows the existing affected area.</p>
+<canvas id="effectsArena" width="1100" height="480" aria-label="Looped presentation-only Basalt skill sequences"></canvas>
+<p class="note" id="sequenceStatus">Presentation preview. The playable Lab runs the shared WASM core. This loop is for checking size, layers and readability.</p>
+<details><summary>Actual packaged effects and direction inspection</summary><label>Effect <select id="material"></select></label><label>Frame <input id="materialFrame" type="range" min="0" max="3" value="0"></label><canvas id="materialArena" width="1100" height="310" aria-label="Packaged effect at one and three times size on light and dark backgrounds"></canvas></details></section>
+<section><h2>Approval and remaining work</h2><p>The red/yellow appearance, smaller scale and corrected effects are approved and integrated. The playable Lab receives effect positions and phases from the same Rust presentation layer as native gameplay. Damage, hit area and closing time are preserved. Installation and careers remain untouched.</p><p class="muted">The native engine selects ordinary idle, movement, basic, hit and death poses. Extra skill poses are inspectable here; no animation locks or movement restrictions were introduced to force them onto the native actor. Actual-game alignment remains pending. Native cones use 64 direction drawings, whips 32; hit tests stay exact. Persistent effects stop renewing on cleanup, with leases no longer than seven ticks.</p><p class="muted">Built-in image generation supplied original drawings. Extraction and packing reproduce; generation is not deterministic. Body: 8 MiB, 1024 × 2048. Effects: 16 MiB, 2048 × 2048. Total: 24 MiB, below 32 MiB.</p></section>
+</main>
+<script src="basalt-data.js"></script><script src="basalt-art.js"></script><script src="basalt-body.js"></script><script src="basalt-effects.js"></script><script src="game-world.js"></script><script src="basalt-painter.js"></script>
+<script>
+(async()=>{try{
+const world=await new GameWorld().ready,painter=await new BasaltPainter().ready;await world.loadSprites(['champ-knight','champ-berserker']);
+const $=id=>document.getElementById(id),cv=$('arena'),ctx=cv.getContext('2d'),fxcv=$('effectsArena'),fx=fxcv.getContext('2d');
+for(const name of Object.keys(BASALT_FX.animations))$('material').add(new Option(name.replaceAll('_',' '),name));$('material').value='boulder';$('material').onchange=()=>{$('materialFrame').max=BASALT_FX.animations[$('material').value].frames.length-1;$('materialFrame').value=0;};$('material').onchange();
+for(const name of Object.keys(BASALT_BODY.pose_frames))$('pose').add(new Option(name.replaceAll('_',' '),name));$('pose').value='idle';
+let poseStart=performance.now();$('pose').onchange=()=>{poseStart=performance.now();$('frame').max=BASALT_BODY.pose_frames[$('pose').value]-1;$('frame').value=0;};$('frame').oninput=()=>$('animate').checked=false;
+let start=performance.now(),clapAim={x:440000,y:480000};$('restart').onclick=()=>start=performance.now();$('sequence').onchange=()=>start=performance.now();
+const cam={x:480000,y:480000};
+fxcv.addEventListener('pointermove',e=>{const r=fxcv.getBoundingClientRect();clapAim={x:cam.x+((e.clientX-r.left)*fxcv.width/r.width-fxcv.width/2)/.0017,y:cam.y+((e.clientY-r.top)*fxcv.height/r.height-fxcv.height/2)/.0017};});
+function background(g,c,s){g.clearRect(0,0,c.width,c.height);const P=p=>({x:c.width/2+(p.x-cam.x)*s,y:c.height/2+(p.y-cam.y)*s}),W=x=>x*s;world.drawMap(g,P,W);return{P,W};}
+function draw(now){
+ const mc=$('materialArena').getContext('2d'),material=$('material').value,mseq=BASALT_FX.animations[material].frames,melapsed=mseq.slice(0,+$('materialFrame').value).reduce((n,f)=>n+f.duration*60,0);mc.clearRect(0,0,1100,310);for(const [x,bg,ink]of[[0,'#203b44','#fff0d2'],[550,'#b9c5a9','#142a33']]){mc.fillStyle=bg;mc.fillRect(x,0,550,310);painter.fx(mc,material,{x:x+100,y:155},1,0,1,melapsed);painter.fx(mc,material,{x:x+340,y:155},3,0,1,melapsed);mc.fillStyle=ink;mc.fillText(material+' · 1× / 3×',x+12,20);}
+ const s=+$('zoom').value,{P,W}=background(ctx,cv,s),z=W(1000),at={x:450000,y:480000};
+ if($('grid').checked){ctx.strokeStyle='#efdd9c77';for(let i=0;i<900;i++)if(world.walls[i]){const q=P({x:i%30*32000,y:Math.floor(i/30)*32000});ctx.strokeRect(q.x,q.y,W(32000),W(32000));}}
+ for(const [sprite,x]of[['champ-knight',515000],['champ-berserker',565000]])world.drawUnit(ctx,{sprite,pos:{x,y:480000},hp:100,moving:false},Math.floor(now*.06),P,W);
+ const bodySeq=BASALT_BODY.body_anims[$('pose').value].frames,elapsed=$('animate').checked?(now-poseStart)*.06:bodySeq.slice(0,+$('frame').value).reduce((n,f)=>n+f.duration*60,0),p=P(at);painter.pose(ctx,$('pose').value,p,z,$('left').checked,elapsed,$('pose').value!=='dead');painter.fx(ctx,'square',P({x:410000,y:480000}),z);
+ if($('animate').checked){const total=bodySeq.reduce((n,f)=>n+f.duration*60,0);let age=$('pose').value==='dead'?Math.min(elapsed,total-1e-6):elapsed%total,index=0;while(index<bodySeq.length-1&&age>=bodySeq[index].duration*60){age-=bodySeq[index].duration*60;index++;}$('frame').value=index;}$('frameNumber').textContent=(+$('frame').value+1)+'/'+bodySeq.length;
+ ctx.fillStyle='#f5e8cc';ctx.font='13px system-ui';ctx.fillText('Basalt',p.x-18,p.y+W(41000));ctx.fillText('32,000 square',P({x:410000,y:480000}).x-45,p.y-W(26000));
+ const age=(now-start)/1000,t=$('loop').checked?age%6.5:Math.min(age,6.49),seq=$('sequence').value;
+ const a=background(fx,fxcv,.0017),pp=a.P,zz=a.W(1000),origin=pp({x:330000,y:480000}),end=pp({x:620000,y:480000});
+ if(seq==='blocks'){
+  const apex={x:330000,y:480000},direction=Math.atan2(clapAim.y-apex.y,clapAim.x-apex.x),k=Math.max(0,Math.min(1,(t-1)/.3)),radius=BASALT_ART.clap_geometry.block_radius,half=BASALT_ART.clap_geometry.cone_deg*Math.PI/360*(1-k);
+  painter.clapCone(fx,origin,pp(clapAim),.0017,t>=1&&t<1.3);painter.pose(fx,'raise',origin,zz,false,Math.max(0,t-1)*60,false);
+  for(const sign of[-1,1]){const a=direction+sign*half;painter.fx(fx,'square',pp({x:apex.x+Math.cos(a)*radius,y:apex.y+Math.sin(a)*radius}),zz);}
+  if(t>=1.3&&t<1.8)painter.fx(fx,'slam',pp({x:apex.x+Math.cos(direction)*radius,y:apex.y+Math.sin(direction)*radius}),zz,0,1-(t-1.3)*2);
+  $('sequenceStatus').textContent='70° cone starts at Basalt. Both blocks start at 110,000 range, on the far left/right corners, close in 0.3 s and fuse at the far centre. Its fill follows the existing hit region. The playable Lab resolves the real cast.';
+ }else{
+  const airborne=seq==='meteors',lift=airborne?42*zz:0;
+  painter.pose(fx,t<3?(airborne?'air':'charge'):(airborne?'ult_punch':'throw'),{x:origin.x,y:origin.y-lift},zz,false,(t<3?t:t-3)*60,false);
+  fx.strokeStyle='#ffcc7d';fx.lineWidth=2;fx.beginPath();fx.arc(end.x,end.y,a.W(airborne?BASALT_RULES.ult.meteorSpread:BASALT_RULES.ult.radius),0,Math.PI*2);fx.stroke();
+  if(t<3){const b={x:origin.x+(airborne?55:0)*zz,y:origin.y-(airborne?92:55)*zz};painter.fx(fx,'boulder',b,zz);fx.fillStyle='#ffe4bb';fx.fillText((3-t).toFixed(1)+' s',origin.x-16,origin.y+45*zz);}
+  else if(airborne){
+   if(t<3.12)painter.fx(fx,'punch_impact',{x:origin.x+50*zz,y:origin.y-65*zz},zz);
+   for(let i=0;i<BASALT_RULES.ult.meteorCount;i++){const impact=4+i*.1,k=Math.max(0,Math.min(1,(t-3)/(impact-3))),angle=i*2.399,p={x:end.x+Math.cos(angle)*a.W(30000),y:end.y+Math.sin(angle)*a.W(30000)};if(t<impact)painter.fx(fx,'meteor',{x:origin.x+(p.x-origin.x)*k,y:origin.y+(p.y-origin.y)*k-150*Math.sin(Math.PI*k)},zz);else if(t<impact+.6)painter.fx(fx,'meteor_impact',p,zz,0,1-(t-impact)/.6);}
+  }else if(t<4){const k=t-3;painter.fx(fx,'boulder',{x:origin.x+(end.x-origin.x)*k,y:origin.y-55*zz+(end.y-origin.y+55*zz)*k-120*Math.sin(Math.PI*k)},zz);}else if(t<4.7)painter.fx(fx,'slam',end,zz,0,1-(t-4)/.7);
+  $('sequenceStatus').textContent=(airborne?'Meteor Punch: hold 3 s → punch → six hot meteors.':'Boulder Throw: hold 3 s → lob → impact.')+' Looped presentation preview; timings of flight and targets here are illustrative. The playable Lab uses shared core timings.';
+ }
+ requestAnimationFrame(draw);
+}
+$('mapStatus').textContent='Installed 5v5 map • '+world.geometry.registration.matching+'/900 collision cells match the extracted art • same 1,000 units/pixel for bodies and ranges. Native host acceptance remains pending.';
+window.basaltReview={loaded:true,world,painter};requestAnimationFrame(draw);
+}catch(e){document.getElementById('error').textContent=e.message;throw e;}})();
+</script></html>
