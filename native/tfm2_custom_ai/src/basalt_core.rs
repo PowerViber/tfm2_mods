@@ -13,7 +13,7 @@
 //!     half the distance past it (up to 60,000), airborne all the way; enemies he flies through are knocked aside.
 //! Eight skills: each slot has a ground version and a jump (airborne) version, sharing one cooldown.
 //!   S1 Raise & Punch / Air Dash (2 charges)   S2 Hurl / Slab Drop   S3 Crushing Clap (the V slam) / Whip Swing
-//!   Ult Boulder Throw / Meteor Punch: a 3 s charge, then a global rock (knock-up, slow) or, from the air, a punched
+//!   Ult Boulder Throw / Meteor Punch: a 0.5 s charge, then a global rock (knock-up, slow) or, from the air, a punched
 //!     rock raining burning meteors (burn, slow, a little knock-up); a recast whips him to where it landed.
 //! His AI is Kicker's flat priority list (ult, escape, peel, follow-up, help, best target, farm), engaging mobility
 //! first and skills second. Nothing of his hits a tower.
@@ -1318,7 +1318,7 @@ impl Core {
         }
     }
 
-    /// The ult's 3 s charge: he holds still (in the air he hangs there, airborne), then throws or punches the rock.
+    /// The ult's 0.5 s charge: he holds still (in the air he hangs there, airborne), then throws or punches the rock.
     fn ult_charge(&mut self, f: &Frame, aim: Point, air: bool, out: &mut Vec<Effect>) {
         let ticks = t(d::ULT_CHARGE_TICKS);
         self.ult_at = f.tick + t(d::ULT_COOLDOWN_TICKS);
@@ -1656,7 +1656,7 @@ impl Core {
                 return Some(Order::Ult(rock));
             }
         }
-        // The charge holds him for 3 s: only with no enemy champion within his fight range. Anywhere on the map: a group of three
+        // The charge holds him for 0.5 s: only with no enemy champion within his fight range. Anywhere on the map: a group of three
         // (or two his team is fighting), else a low champion trying to get away. In the air it's Meteor Punch.
         if self.ult_ready(f) && !f.enemy_champions().any(|u| u.pos.within(f.pos, d::AI_FIGHT_RANGE)) && self.air.is_none_or(|a| !a.spent || f.tick >= a.until) {
             let around = |u: &Unit| f.enemy_champions().filter(|o| o.pos.within(u.pos, d::ULT_RADIUS)).count() as i64;

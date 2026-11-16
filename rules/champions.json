@@ -5526,7 +5526,7 @@
      "intents": [
       "Engage"
      ],
-     "summary": "Boulder Throw (90 s): he stands and charges for 3 s, then throws a massive rock anywhere on the map. Enemies within 60000 of the impact are knocked up 1 s, slowed 40% for 2 s and take 150 + 120% Attack; the rock stands as one of his walls. In the air: Meteor Punch, he hangs in the air charging for 3 s, then punches the rock apart and 6 burning meteors rain on the area: each knocks up briefly, slows 30% and burns for 3 s. Recast within 5 s of the landing: his whip catches the rock and slingshots him to where it landed. His skills never hit towers."
+     "summary": "Boulder Throw (90 s): he stands and charges for 0.5 s, then throws a massive rock anywhere on the map. Enemies within 60000 of the impact are knocked up 1 s, slowed 40% for 2 s and take 150 + 120% Attack; the rock stands as one of his walls. In the air: Meteor Punch, he hangs in the air charging for 0.5 s, then punches the rock apart and 6 burning meteors rain on the area: each knocks up briefly, slows 30% and burns for 3 s. Recast within 5 s of the landing: his whip catches the rock and slingshots him to where it landed. His skills never hit towers."
     }
    ]
   }

@@ -95,3 +95,10 @@ Two independent builds reproduce packaged native **0.10.110**; champion pack
 
 Actual-game visual/pathfinding/balance acceptance is pending. No installation
 or career migration was performed.
+
+## basalt-1.3: a 0.5 s ult charge (Reihan)
+**Reihan:** "make the ult 0.5, but keep the boulder travel time".
+- **Charge:** Boulder Throw and Meteor Punch now charge for **0.5 s** (`ult.chargeTicks` 180 → 30). The rock's flight is unchanged (`rockSpeed` 8,000 per tick, at least 0.5 s), and so are the meteor timings and the recast.
+- **AI:** it still charges only with no enemy champion within 80,000 of him (a far-fight tool).
+- **Checks:** 1,344 native tests pass; `basalt_lab` passes; the wasm and the DLL (0.10.110) are rebuilt; the Mod Manager tests (15) pass.
+- **Not re-run here:** Codex's art evidence files (`docs/basalt-art-review/*`, `editor/basalt-art.js`) still record `basalt-1.2` as metadata. They don't gate anything, and the charge pose and warning follow the core's charge state.

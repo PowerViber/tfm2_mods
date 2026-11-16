@@ -414,7 +414,7 @@ fn boulder_throw_charges_3_s_then_a_global_rock_knocks_up_and_slows_and_the_reca
     w.tick(Some(Order::S1(Point::new(400_000, 400_000))));
     assert_eq!(w.core.punches, d::PUNCH_CHARGES, "no casting during the charge");
     w.run(d::ULT_CHARGE_TICKS as u64);
-    assert_eq!(w.core.boulders.len(), 1, "thrown after 3 s");
+    assert_eq!(w.core.boulders.len(), 1, "thrown after the 0.5 s charge");
     let flight = (Point::new(400_000, 500_000).dist(far) / d::ULT_ROCK_SPEED as f64).ceil() as u64;
     w.run(flight.max(d::ULT_MIN_FLIGHT_TICKS as u64) + 1);
     assert!(w.seen(|e| matches!(e, Effect::KnockUp { target: FOE, ticks } if *ticks == d::ULT_KNOCK_TICKS as u64)), "global: it lands across the map");
@@ -462,7 +462,7 @@ fn the_ai_throws_the_boulder_at_a_far_teamfight_and_never_charges_with_an_enemy_
         &[],
     );
     w.tick(None);
-    assert!(w.core.charging.is_none(), "an enemy on him: no 3 s charge");
+    assert!(w.core.charging.is_none(), "an enemy close: no charge");
 }
 
 #[test]
