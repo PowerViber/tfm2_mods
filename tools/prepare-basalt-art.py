@@ -70,7 +70,9 @@ for i,(name,rect,size) in enumerate(effect_specs):
     eframes[name]={'x':i%4*FW+px,'y':i//4*FH+py,'w':size[0],'h':size[1]}
 effects.save(OUT/'effect-proposals.png')
 
-meta={'revision':'basalt-art-4','review_only':True,'approved':False,
+approval=json.loads((OUT/'approvals.json').read_text())
+fx_ok=approval['effects']['approved']
+meta={'revision':'basalt-art-5','review_only':not fx_ok,'approved':fx_ok,
  'rules_revision':json.loads((ROOT/'rules/basalt.json').read_text())['revision'],'base_commit':'3790d7ddb9578f3fc051e67bfa5f8f0bbb1f200a',
  'body_file':'../docs/basalt-art-review/body-proposals.png','effects_file':'../docs/basalt-art-review/effect-proposals.png',
  'body_canvas':[CW,CH],'feet':[FX,FY],'visible_idle_body_height':38,'world_units_per_pixel':1000,
@@ -79,9 +81,9 @@ meta={'revision':'basalt-art-4','review_only':True,'approved':False,
  'outputs':{p.name:digest(p) for p in [OUT/'body-proposals.png',OUT/'effect-proposals.png']},
  'decoded_review_atlas_bytes':body.width*body.height*4+effects.width*effects.height*4,
  'generation_deterministic':False,'packing_deterministic':True,
- 'body_approved':True,'effects_approved':False,
+ 'body_approved':True,'effects_approved':fx_ok,
  'notes':['Concept comparison atlas; approved complete body animations are in body-presentation.json.',
-          'Candidate effects stay outside mods/. Native source/WASM use the basalt-1.2 corner placement.']}
+          'Approved effects are packed by build-basalt-effects.py. Native source/WASM use basalt-1.2 corner placement.']}
 rules=json.loads((ROOT/'rules/basalt.json').read_text())
 core=(ROOT/'native/tfm2_custom_ai/src/basalt_core.rs').read_text()
 section=core[core.index('fn crushing_clap'):core.index('fn run_claps')]

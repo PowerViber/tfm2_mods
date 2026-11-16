@@ -1,8 +1,8 @@
 {
-  "revision": "basalt-art-4",
+  "revision": "basalt-art-5",
   "rules_revision": "basalt-1.2",
   "body_approved": true,
-  "effects_approved": false,
+  "effects_approved": true,
   "body_file": "../docs/basalt-art-review/body.png",
   "canvas": [
     160,

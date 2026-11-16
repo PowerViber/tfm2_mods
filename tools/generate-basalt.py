@@ -77,7 +77,10 @@ PLACEHOLDER = {'block': ('grimhald', 'cage_block'), 'rise': ('grimhald', 'pillar
                'slam': ('grimhald', 'slam'), 'leap': ('grimhald', 'leap'), 'land': ('grimhald', 'land'), 'dust': ('grimhald', 'bash_dust'),
                'rock': ('kicker', 'rock_hit'), 'wall_slam': ('kicker', 'wall_slam'), 'dash': ('kicker', 'dash')}
 if (ROOT / 'mods/tfm2_custom/vfx/basalt#sheet.png').exists():
-    champ['view_effects'] = [dict(type='Animation', name='bs_' + e, anim=VFX, tag=e, z=5, is_follow=False) for e in PLACEHOLDER]
+    art=json.loads((ROOT/'docs/basalt-art-review/effects-presentation.json').read_text())
+    assert art['approved']
+    champ['view_effects'] = [dict(type='Animation', name='bs_' + e, anim=VFX, tag=e, z=art['layers'][e], is_follow=False) for e in art['animations']]
+    champ['passive']['params']={'art_fx_v1':1}
 else:
     champ['view_effects'] = [dict(type='Animation', name='bs_' + e, anim='asset/tfm2_custom/vfx/' + sheet, tag=tag, z=-2 if e in ('land', 'dust') else 5,
                                   is_follow=False) for e, (sheet, tag) in PLACEHOLDER.items()]

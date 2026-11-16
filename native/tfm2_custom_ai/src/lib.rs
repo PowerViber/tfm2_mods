@@ -71,6 +71,8 @@ mod kagami_art;
 #[cfg(test)] mod kagami_tests;
 mod kagami_data;
 mod basalt;
+mod basalt_art_data;
+mod basalt_presentation;
 #[allow(dead_code)] mod basalt_core;
 #[cfg(test)] mod basalt_tests;
 mod basalt_data;

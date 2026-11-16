@@ -637,4 +637,33 @@ mod glue {
             with_sim(&host, |sim| b.on_update(sim, t as u64, 0, 0));
         }
     }
+
+    #[test]
+    fn approved_art_preserves_complete_core_damage_movement_and_control_trace() {
+        let _guard=crate::walls::TEST_LOCK.lock();
+        let (x,y)=open_spot(90000);
+        let run=|art:bool| {
+            let host=Host::new(vec![champ(0,(x,y),"tfm2_custom_basalt"),champ(1,(x+35000,y),"foe")]);
+            host.borrow_mut().record_view_effects=true;
+            let mut b=Basalt::default();b.configure(if art{"{\"art_fx_v1\":1}"}else{"{}"});
+            let mut trace=Vec::new();
+            for t in 1..=180 {host.borrow_mut().tick=t;with_sim(&host,|sim|b.on_update(sim,t as u64,0,0));let h=host.borrow();trace.push((serde_json::to_string(&b.core).unwrap(),format!("{:?}{:?}{:?}{:?}{:?}",h.damage,h.moves,h.ccs,h.buffs,h.shields)));}
+            let count=host.borrow().view_effects.len();(trace,count)
+        };
+        let (legacy,old_fx)=run(false);let (approved,new_fx)=run(true);
+        assert_eq!(legacy,approved);assert!(new_fx>0&&old_fx>0);
+    }
+
+    #[test]
+    fn native_approved_effects_attach_to_core_positions_and_stop_after_cleanup() {
+        let _guard=crate::walls::TEST_LOCK.lock();let (x,y)=open_spot(90000);
+        let host=Host::new(vec![champ(0,(x,y),"tfm2_custom_basalt")]);host.borrow_mut().record_view_effects=true;
+        let mut b=Basalt::default();b.configure("{\"art_fx_v1\":1}");
+        let at=Point::new(x as i64+40000,y as i64);
+        b.core.walls.push(crate::basalt_core::StoneWall{id:1,a:at,b:at,integrity:3,born:1,out_since:None,slide:None});
+        b.core.charging=Some((false,Point::new(x as i64+200000,y as i64),181));
+        for t in 1..=12 {host.borrow_mut().tick=t;with_sim(&host,|sim|b.on_update(sim,t as u64,0,0));}
+        let h=host.borrow();assert!(h.view_effects.iter().any(|c|c.0=="bs_square"&&c.2.x==at.x as u64&&c.2.y==at.y as u64));assert!(h.view_effects.iter().any(|c|c.0=="bs_boulder"));assert!(h.view_effects.iter().all(|c|c.3<=7));assert!(h.damage.is_empty()&&h.moves.is_empty());let count=h.view_effects.len();drop(h);
+        b.core.walls.clear();b.core.charging=None;host.borrow_mut().units[0].hp=0;host.borrow_mut().tick=13;with_sim(&host,|sim|b.on_update(sim,13,0,0));assert_eq!(host.borrow().view_effects.len(),count);
+    }
 }

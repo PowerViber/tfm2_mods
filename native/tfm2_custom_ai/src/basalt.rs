@@ -71,6 +71,8 @@ pub(crate) fn wall_name(a: Point, b: Point, t0: u64, tend: u64) -> String {
 #[derive(Clone, Default)]
 pub struct Basalt {
     pub core: Core,
+    art: bool,
+    presenter: crate::basalt_presentation::Presenter,
     profile: Option<crate::athlete_ai_core::Profile>,
     terrain: Option<(u64, Vec<bool>)>,
     in_skill: bool,
@@ -237,7 +239,7 @@ impl Basalt {
                     sim.add_buff(owner, &crate::timed(&format!("{GO_PREFIX}{}:{}", to.x, to.y), 6));
                 }
                 Effect::Fx { name, at, ticks } => {
-                    if self.fx_ok(tick as u64) {
+                    if !self.art && self.fx_ok(tick as u64) {
                         crate::fx_point(sim, &name, owner, at.x, at.y, ticks);
                     }
                 }
@@ -284,8 +286,10 @@ impl Basalt {
             // the block art: redrawn every 6 ticks while it moves, every 28 when it stands
             let every = if moving { 6 } else { 28 };
             let drawn = if drawn == 0 || tick >= drawn + every {
-                for (dx, dy) in [(-1, -1), (1, -1), (-1, 1), (1, 1)] {
-                    crate::fx_point(sim, "bs_block", owner, c.x + dx * h / 2, c.y + dy * h / 2, every + 2);
+                if !self.art {
+                    for (dx, dy) in [(-1, -1), (1, -1), (-1, 1), (1, 1)] {
+                        crate::fx_point(sim, "bs_block", owner, c.x + dx * h / 2, c.y + dy * h / 2, every + 2);
+                    }
                 }
                 tick
             } else {
@@ -306,13 +310,16 @@ impl Basalt {
 }
 
 impl StablePassive for Basalt {
-    fn configure(&mut self, _: &str) {}
+    fn configure(&mut self, text: &str) {
+        self.art=serde_json::from_str::<serde_json::Value>(text).ok().and_then(|v|v.get("art_fx_v1").and_then(|n|n.as_u64())).is_some_and(|n|n==1);
+    }
     fn clone_box(&self) -> Box<dyn StablePassive> {
         Box::new(self.clone())
     }
     fn on_spawn(&mut self, sim: &mut StableSim, _: usize, id: usize) {
         self.core.respawn(sim.tick() as u64);
         self.core.walls.clear();
+        self.presenter.reset(&self.core);
         sim.entity_remove_buff(id, AIR);
         remove_prefix(sim, id, GO_PREFIX);
         remove_prefix(sim, id, WALL_PREFIX);
@@ -339,12 +346,17 @@ impl StablePassive for Basalt {
         let f = self.frame(sim, id);
         if !f.alive {
             let _ = self.core.step(&f);
+            self.presenter.reset(&self.core);
             self.core.walls.clear();
             self.sync_walls(sim, id);
             return;
         }
         let effects = self.core.step(&f);
+        let visuals=if self.art {self.presenter.step(&self.core,&f,&effects)} else {crate::basalt_presentation::Visuals::default()};
         self.apply(sim, id, effects);
         self.sync_walls(sim, id);
+        for cue in visuals.events.into_iter().chain(visuals.leases) {
+            crate::fx_point(sim,&cue.name,id,cue.at.x,cue.at.y,cue.ticks);
+        }
     }
 }

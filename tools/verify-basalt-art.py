@@ -1,4 +1,4 @@
-"""Approved body validation. Effects deliberately remain outside the game pack."""
+"""Verify approved body/effects, reproducible packing and unchanged combat data."""
 from pathlib import Path
 import hashlib,json,subprocess
 from PIL import Image,ImageOps
@@ -7,13 +7,13 @@ BASE='3790d7ddb9578f3fc051e67bfa5f8f0bbb1f200a'
 def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
 def old(p):return subprocess.check_output(['rtk','proxy','git','show',BASE+':'+p],cwd=ROOT)
 def main():
-    files=['body.png','body.fanim','body-presentation.json','body-frame-metrics.json','body-proposals.png','effect-proposals.png','manifest.json']
+    files=['body.png','body.fanim','body-presentation.json','body-frame-metrics.json','body-proposals.png','effect-proposals.png','manifest.json','effects.png','effects.fanim','effects-presentation.json']
     before={n:sha(OUT/n) for n in files}
-    for script in ['prepare-basalt-art.py','build-basalt-body.py']:
+    for script in ['prepare-basalt-art.py','build-basalt-body.py','build-basalt-effects.py']:
         subprocess.run(['rtk','proxy','python',str(ROOT/'tools'/script)],cwd=ROOT,check=True,capture_output=True)
     assert before=={n:sha(OUT/n) for n in files},'Non-reproducible packing'
     meta=json.loads((OUT/'body-presentation.json').read_text());sheet=Image.open(OUT/'body.png').convert('RGBA')
-    assert meta['body_approved'] and not meta['effects_approved']
+    assert meta['body_approved'] and meta['effects_approved']
     assert max(sheet.size)<=2048 and sheet.width*sheet.height*4<=32*1024*1024
     for n,h in meta['source_hashes'].items():assert sha(OUT/n)==h,n
     anims=meta['body_anims'];metrics={};entries=0
@@ -46,11 +46,22 @@ def main():
     assert (OUT/'body.fanim').read_bytes()==Path(str(target)+'#anim.fanim').read_bytes()
     prior=json.loads(old('mods/tfm2_custom/champion/tfm2_custom_basalt.data_champion'));current=json.loads((ROOT/'mods/tfm2_custom/champion/tfm2_custom_basalt.data_champion').read_text())
     assert current['sprite']=='asset/tfm2_custom/champions/tfm2_custom_basalt'
-    assert {k:v for k,v in prior.items() if k!='sprite'}=={k:v for k,v in current.items() if k!='sprite'},'Unexpected nonvisual champion change'
+    strip=lambda c:{k:v for k,v in c.items() if k not in ['sprite','view_effects','passive']}
+    assert strip(prior)==strip(current),'Unexpected nonvisual champion change'
+    assert current['passive']=={'passive_ref':'tfm2_custom_ai:basalt','params':{'art_fx_v1':1}}
     rules=json.loads((ROOT/'rules/basalt.json').read_text());previous=json.loads(old('rules/basalt.json'));previous['revision']=rules['revision'];assert previous==rules,'Balance value changed'
-    fx=Image.open(OUT/'effect-proposals.png');manifest=json.loads((OUT/'manifest.json').read_text());assert manifest['effect_frames']['boulder']['w']==60
-    assert not (ROOT/'mods/tfm2_custom/vfx/basalt#sheet.png').exists(),'Unapproved effects integrated'
+    fx=Image.open(OUT/'effects.png');fm=json.loads((OUT/'effects-presentation.json').read_text());manifest=json.loads((OUT/'manifest.json').read_text());assert manifest['effect_frames']['boulder']['w']==60
+    assert fm['approved'] and sha(OUT/'effects-source-v1.png')==fm['source_sha256']
+    assert max(fx.size)<=2048
+    for tag,anim in fm['animations'].items():
+        for f in anim['frames']:
+            r=f['data'];assert r['x']>=0 and r['y']>=0 and r['x']+r['w']<=fx.width and r['y']+r['h']<=fx.height
+        if tag.startswith(('clap_cone_','whip_')) or tag in ['block','square','boulder','meteor']:assert len(anim['frames'])==1,tag
+    for suffix,ext in [('sheet','.png'),('anim','.fanim')]:assert (OUT/('effects'+ext)).read_bytes()==(ROOT/f'mods/tfm2_custom/vfx/basalt#{suffix}{ext}').read_bytes()
+    for binding in current['view_effects']:assert binding['tag'] in fm['animations'],binding
+    presenter=(ROOT/'native/tfm2_custom_ai/src/basalt_presentation.rs').read_text().split('#[cfg(test)]')[0]
+    for banned in ['deal_damage(', 'apply_cc(', 'entity_set_pos(', 'set_input(', 'random(']:assert banned not in presenter,banned
     total=sheet.width*sheet.height*4+fx.width*fx.height*4;assert total<=32*1024*1024
-    report={'body_approved':True,'effects_approved':False,'body_visible_pixels':{'idle':[b[3]-b[1] for b in metrics['idle']],'run':[b[3]-b[1] for b in metrics['run']]},'body_atlas':sheet.size,'frame_entries':entries,'unique_pose_count':len(meta['pose_frames']),'decoded_body_and_candidate_effect_bytes':total,'reproducible_packing':True,'fixed_foot_anchor':meta['foot_anchor'],'foot_offset_below_frame_centre':20,'shared_palette':True,'six_distinct_walk_drawings':True,'walk_cycle_seconds':.8,'body_integrated':True,'effects_integrated':False,'balance_unchanged':True,'native_dll_unchanged':sha(ROOT/'mods/tfm2_custom_ai/tfm2_custom_ai.dll')==hashlib.sha256(old('mods/tfm2_custom_ai/tfm2_custom_ai.dll')).hexdigest(),'live_game':'pending'}
+    report={'body_approved':True,'effects_approved':True,'body_visible_pixels':{'idle':[b[3]-b[1] for b in metrics['idle']],'run':[b[3]-b[1] for b in metrics['run']]},'body_atlas':sheet.size,'effects_atlas':fx.size,'frame_entries':entries,'unique_pose_count':len(meta['pose_frames']),'decoded_body_and_effect_bytes':total,'reproducible_packing':True,'fixed_foot_anchor':meta['foot_anchor'],'foot_offset_below_frame_centre':20,'shared_palette':True,'six_distinct_walk_drawings':True,'walk_cycle_seconds':.8,'body_integrated':True,'effects_integrated':True,'balance_unchanged':True,'native_dll_unchanged':sha(ROOT/'mods/tfm2_custom_ai/tfm2_custom_ai.dll')==hashlib.sha256(old('mods/tfm2_custom_ai/tfm2_custom_ai.dll')).hexdigest(),'live_game':'pending'}
     (OUT/'body-verification.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report,indent=2))
 if __name__=='__main__':main()

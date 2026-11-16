@@ -4,6 +4,10 @@
 pub mod basalt_core;
 #[path = "../../tfm2_custom_ai/src/basalt_data.rs"]
 pub mod basalt_data;
+#[path = "../../tfm2_custom_ai/src/basalt_art_data.rs"]
+pub mod basalt_art_data;
+#[path = "../../tfm2_custom_ai/src/basalt_presentation.rs"]
+pub mod basalt_presentation;
 use basalt_core::*;
 use serde::Deserialize;
 use serde_json::json;
@@ -21,6 +25,7 @@ pub struct Input {
 #[derive(Default)]
 pub struct Session {
     pub core: Core,
+    presenter: basalt_presentation::Presenter,
     last_tick: Option<u64>,
 }
 
@@ -45,7 +50,8 @@ pub fn run(session: &mut Session, text: &str) -> String {
     }
     session.last_tick = Some(f.tick);
     let effects = session.core.step(&f);
-    json!({"version": 1, "rules_revision": REVISION, "state": session.core, "effects": effects, "rejection": session.core.rejection}).to_string()
+    let presentation=session.presenter.step(&session.core,&f,&effects);
+    json!({"version": 1, "rules_revision": REVISION, "state": session.core, "effects": effects, "presentation":presentation,"rejection": session.core.rejection}).to_string()
 }
 
 #[derive(Default)]

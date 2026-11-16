@@ -8,8 +8,12 @@
     "size_correction": "After appearance approval: 47 px too tall/wide; reduce proportionally to about 40 visible px, preserving red/yellow appearance"
   },
   "effects": {
-    "approved": false,
-    "user_answer": "47 is too tall and too wide, the boulder ults are too big",
-    "required_correction": "Reduce boulder material from 88x86 to 60x58; preserve 32k square wall and all collision/blast geometry"
+    "approved": true,
+    "user_answer": "Approve these effects",
+    "required_correction": "Reduce boulder material from 88x86 to 60x58; preserve 32k square wall and all collision/blast geometry",
+    "source": "effects-source-v1.png",
+    "sha256": "d22f38f4466354e743cfd81d18880a17b1bd46dcbb8df98c09c224a8ed59ebd1",
+    "approved_review": "basalt-art-4",
+    "review_manifest_sha256": "73234cb95a2d52559ac1e910f5aa448b1ca6c3f53e4ec6ca27fd26b6055f92f2"
   }
 }

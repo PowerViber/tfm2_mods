@@ -143,7 +143,7 @@ def main():
     atlas.save(OUT/'body.png');save(OUT/'body.fanim',{'anims':meta});save(OUT/'body-frame-metrics.json',frame_metrics)
     target=ROOT/'mods/tfm2_custom/champions/tfm2_custom_basalt'
     for source,suffix in [('body.png','#sheet.png'),('body.fanim','#anim.fanim')]:shutil.copyfile(OUT/source,str(target)+suffix)
-    presentation={'revision':'basalt-art-4','rules_revision':json.loads((ROOT/'rules/basalt.json').read_text())['revision'],'body_approved':True,'effects_approved':False,'body_file':'../docs/basalt-art-review/body.png','canvas':[CW,CH],'foot_anchor':FOOT,'body_anims':meta,'source_hashes':sources,'atlas_sha256':sha(OUT/'body.png'),'decoded_body_bytes':atlas.width*atlas.height*4,'pose_frames':{tag:len(fs) for tag,fs in poses.items()},'generation_deterministic':False,'packing_deterministic':True}
+    presentation={'revision':'basalt-art-5','rules_revision':json.loads((ROOT/'rules/basalt.json').read_text())['revision'],'body_approved':True,'effects_approved':approval['effects']['approved'],'body_file':'../docs/basalt-art-review/body.png','canvas':[CW,CH],'foot_anchor':FOOT,'body_anims':meta,'source_hashes':sources,'atlas_sha256':sha(OUT/'body.png'),'decoded_body_bytes':atlas.width*atlas.height*4,'pose_frames':{tag:len(fs) for tag,fs in poses.items()},'generation_deterministic':False,'packing_deterministic':True}
     save(OUT/'body-presentation.json',presentation)
     (ROOT/'editor/basalt-body.js').write_text('window.BASALT_BODY='+json.dumps(presentation,separators=(',',':'))+';\n',encoding='utf-8')
     # Actual packed frames at 1x/3x, on both light and dark backgrounds.
@@ -164,6 +164,6 @@ def main():
         d.text((2,row*90+4),tag,fill='#ffda75')
         for i,f in enumerate(fs):contact.paste(f,(60+i*160,row*90),f)
     contact.save(OUT/'all-body-frames.png')
-    print(json.dumps({'poses':len(poses),'unique_frames':len(unique),'tags':len(meta),'atlas':atlas.size,'decoded_bytes':presentation['decoded_body_bytes'],'body_integrated':True,'effects_integrated':False}))
+    print(json.dumps({'poses':len(poses),'unique_frames':len(unique),'tags':len(meta),'atlas':atlas.size,'decoded_bytes':presentation['decoded_body_bytes'],'body_integrated':True,'effects_integrated':approval['effects']['approved']}))
 
 if __name__=='__main__':main()

@@ -1,7 +1,7 @@
 {
-  "revision": "basalt-art-4",
-  "review_only": true,
-  "approved": false,
+  "revision": "basalt-art-5",
+  "review_only": false,
+  "approved": true,
   "rules_revision": "basalt-1.2",
   "base_commit": "3790d7ddb9578f3fc051e67bfa5f8f0bbb1f200a",
   "body_file": "../docs/basalt-art-review/body-proposals.png",
@@ -293,10 +293,10 @@
   "generation_deterministic": false,
   "packing_deterministic": true,
   "body_approved": true,
-  "effects_approved": false,
+  "effects_approved": true,
   "notes": [
     "Concept comparison atlas; approved complete body animations are in body-presentation.json.",
-    "Candidate effects stay outside mods/. Native source/WASM use the basalt-1.2 corner placement."
+    "Approved effects are packed by build-basalt-effects.py. Native source/WASM use basalt-1.2 corner placement."
   ],
   "clap_geometry": {
     "cone_deg": 70,
