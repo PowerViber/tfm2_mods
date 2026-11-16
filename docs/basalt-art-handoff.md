@@ -1,8 +1,8 @@
 # Basalt art handoff (for Codex)
 
-Basalt, the Wallbreaker: an original stone-shaper brawler with a **long stone-linked whip**. His palette is basalt grey and ember orange, with dust. The kit is in `docs/basalt-guide.md`; the numbers are in `rules/basalt.json`.
+Basalt, the Wallbreaker: an original stone-shaper brawler with a **long stone-linked whip**. Reihan approved a recognisable **red-and-yellow** body after rejecting the original grey/orange direction, then requested a stock-sized (~40 visible pixels) body and smaller boulder. Corrected effects are also approved. The kit is in `docs/basalt-guide.md`; numbers are in `rules/basalt.json`; completed art, approvals, hashes, limits and verification are in `docs/basalt-art-review/README.md`.
 
-## What exists now (placeholders)
+## Original placeholder state (superseded by approved integration)
 - **Body:** Grimhald's sheet (`tools/generate-basalt.py` falls back to it while `mods/tfm2_custom/champions/tfm2_custom_basalt#sheet.png` is missing).
 - **Effects:** every `bs_*` name is bound to an existing Grimhald or Kicker effect (`PLACEHOLDER` in the generator). Once `mods/tfm2_custom/vfx/basalt#sheet.png` exists, each name binds to the same tag on his own sheet.
 
@@ -23,4 +23,4 @@ Basalt, the Wallbreaker: an original stone-shaper brawler with a **long stone-li
 | `dash` | Air Dash, Whip Pull and whip snares |
 | `rock` | a meteor or rock hit |
 
-**Wanted later:** the boulder in flight, the meteor shower, and the whip itself (drawn between him and its target during pulls and swings).
+**Completed:** boulder flight, meteor shower and live-endpoint whip tethers use the shared native/WASM presentation projection. Ordinary body states are bound; supported native selection of every additional passive-skill owner pose is not claimed. See the review's explicit limits. No cosmetic Animation CC, installation or career migration was introduced.

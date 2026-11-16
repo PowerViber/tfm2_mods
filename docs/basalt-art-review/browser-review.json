@@ -1,15 +1,18 @@
 {
   "checks": [
-    "Both editor routes and candidate assets return 200",
+    "Both editor routes and packaged assets return 200",
     "Extracted game map: 900/900 collision cells registered",
     "Pose/facing inspector renders packed full-body animations on real map",
     "V clap shows a filled core-derived cone with its apex at Basalt",
     "Three-second meteor presentation sequence runs",
+    "Effect inspector uses the packaged 2048 atlas, including native direction drawings",
     "Artwork enabled/disabled: complete state/actor/damage trace equal",
     "Manual profiles 20/80: complete trace equal",
     "13 controls; stock champions, minions, camps and structures loaded",
     "Actual focused Jump input and single-step reach WASM",
-    "Objective scenario loads at real map coordinates"
+    "Objective scenario loads at real map coordinates",
+    "Shared Rust cues render charge, flight, landing and the committed cone",
+    "Lease emission cap, binding coverage and owner-death cleanup"
   ],
   "result": {
     "equalPresentation": true,
@@ -28,6 +31,12 @@
       "minion": 18
     }
   },
+  "shared": {
+    "shot": true,
+    "cone": true,
+    "max": 2,
+    "cleanup": true
+  },
   "errors": [],
-  "scope": "Approved smaller body in package; effects review-only; shared basalt-1.2 core; simulated host, not native game acceptance."
+  "scope": "Approved packaged body/effects; shared native/WASM presentation; simulated host, not native game acceptance."
 }

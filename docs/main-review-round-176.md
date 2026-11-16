@@ -70,3 +70,28 @@ Basalt is in exhibition matches and new careers.
 - **In the world:** each square is laid down as **two parallel shared `sbw:` walls**, 16,000 apart, which together fill it. Everyone still collides with it, and it's drawn as a 2×2 cluster of blocks.
 - **In the core:** squares are axis-aligned. Collisions, the slingshot and wall kicks measure to the square's surface. The Clap's two squares ride the V's arms to the centre line and fuse. The punch carries enemies within the square's width.
 - **Checks:** 1,338 native tests pass, including 26 Basalt tests: a new square-shape test, and a glue test that the two shared walls fill the whole square. The wasm and the DLL (0.10.110) are rebuilt.
+
+## Approved original artwork and `basalt-1.2` — 16 November 2026
+
+Reihan approved the red/yellow body, requested a smaller approximately 40-pixel
+silhouette and smaller boulder, and then explicitly approved the corrected
+effects. The V-clap blocks now start at the maximum-range corners (110,000)
+and merge at the far centre. Damage, hit region, cooldowns and the 18-tick
+closure are unchanged.
+
+Body and effects are integrated. Native/WASM share a read-only presentation
+projection for accepted blocks, tosses, charge/flight, meteors, impacts and
+live-endpoint whip tethers. The Lab uses the real map and stock actors with
+labelled host simulation. Full evidence and native pose/lease/direction limits
+are in `docs/basalt-art-review/README.md`.
+
+Current checks: **1,342 native tests**, 18 ignored, **7 Lab tests**, **13 browser
+checks**, **36 exact native/WASM traces** (10,800 ticks), **15 Mod Manager tests**
+and a **900-file** disposable Mod Manager comparison pass. Four existing unused
+native-bridge test-helper warnings remain. Body/effects total **24 MiB** decoded.
+Two independent builds reproduce packaged native **0.10.110**; champion pack
+**0.2.113** remains reserved by this PR. SHA-256 and reproduction details are in
+`docs/basalt-art-review/package.json`.
+
+Actual-game visual/pathfinding/balance acceptance is pending. No installation
+or career migration was performed.

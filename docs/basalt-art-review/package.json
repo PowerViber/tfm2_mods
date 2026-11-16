@@ -1,0 +1,18 @@
+{
+  "native": "0.10.110",
+  "champion_pack": "0.2.113",
+  "rules": "basalt-1.2",
+  "baseline_commit": "3790d7ddb9578f3fc051e67bfa5f8f0bbb1f200a",
+  "source_date_epoch": "1794770719",
+  "native_sources_sha256": "abe24c115783a591aa188d1a681adf8c444710557e4594c485d42f5befe7b67a",
+  "toolchain": "rustc 1.98.1 (48a229cea 2026-09-01)",
+  "built_dll_sha256": "fc0ef2e63d55712f8c9b8d9140c4ddccbb36bbc7b23e1c05a6f405bfdcfee2ce",
+  "reproduced_dll_sha256": "fc0ef2e63d55712f8c9b8d9140c4ddccbb36bbc7b23e1c05a6f405bfdcfee2ce",
+  "packaged_dll_sha256": "fc0ef2e63d55712f8c9b8d9140c4ddccbb36bbc7b23e1c05a6f405bfdcfee2ce",
+  "wasm_sha256": "5dd780865ed67352c415856d5c267c2dcefd73cc8dc298a6a7b1d3cb1db04c1b",
+  "body_sha256": "05dd42a15c98061d608794ad4465c831be0b8b8e4a0a82adb85cb37604532281",
+  "effects_sha256": "1a3e9551e0f326ee7c3f2b2fcba8b51fe96251a1a210ca1d3b2f558f6b83ece1",
+  "installed": false,
+  "career_migration_applied": false,
+  "live_acceptance": "pending"
+}

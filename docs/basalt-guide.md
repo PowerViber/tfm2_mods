@@ -49,10 +49,10 @@ Re-run every tick, with no lock-on:
 ## Code
 - **Core:** `native/tfm2_custom_ai/src/basalt_core.rs`. It's deterministic, and the Lab runs this same file.
 - **Bridge:** `basalt.rs`.
-  - **Walls:** they become the shared `sbw:` walls (each square is two parallel shared walls on him that together fill it, renewed every 40 ticks and rewritten when it moves), so everyone collides with them; `steve::note_map_buff` switches the shared pathing on. Each is drawn as a 2×2 cluster of stone blocks.
+  - **Walls:** they become the shared `sbw:` walls (each square is two parallel shared walls on him that together fill it, renewed every 40 ticks and rewritten when it moves), so everyone collides with them; `steve::note_map_buff` switches the shared pathing on. Approved artwork draws one composite square at its current core position; legacy definitions retain the four-stamp fallback.
   - **Airborne:** `bs_air` (`cc_immune`, `ignore_wall`, basics miss) plus `place::MOVED`.
   - **Moves:** every move is a glide (no `entity_set_pos`).
   - **Slows and charge:** `bs_slow`; the ult's charge is a named Bind on himself (`bs_charge`).
 - **Tests:** `basalt_tests.rs` (25: core, AI and glue).
-- **Lab:** `native/basalt_lab` builds `editor/basalt.wasm`; the page is `editor/basalt.html`. It's a sandbox with terrain, the AI toggle, and every skill on a key.
-- **Art:** placeholders (Grimhald's body; Grimhald's cage blocks and pillars, and Kicker's rocks and slams). See `docs/basalt-art-handoff.md`.
+- **Lab:** `native/basalt_lab` builds `editor/basalt.wasm`; `editor/basalt.html` uses the extracted game map and stock champions, minions, camps, towers and objectives, with mid-game scenarios, thirteen-stat controls, fixed 60 Hz playback and every skill on a key. Host movement/combat/visibility are labelled simulations. Shared Rust presentation drives the actual packaged effects.
+- **Art:** approved original red/yellow body at approximately 40 visible pixels, whole-body animations in both facings, square blocks, whips, smaller boulder and meteors. Crushing Clap's blocks start at its 110,000-range corners and fuse at the far centre. Native ordinary poses are supported; every extra passive-skill owner pose is not claimed. See `docs/basalt-art-review/README.md` for approvals, reproducible hashes and native/Lab limits. Installation and real-career migration remain separate.

@@ -14,8 +14,9 @@ Work on `codex/basalt-art`, based on PR #88 head
 - Crushing Clap shows a cone from Basalt, like Vader's choke. Its two blocks
   now start at the **maximum-range corners**, 110,000 from Basalt, merging at
   the far centre. Hit eligibility, damage, stun and 18-tick closure are unchanged.
-- **Effects remain unapproved.** Subsequent answers were corrections, not
-  integration approval. Candidate effects stay outside `mods/`.
+- **Effects approved:** “Approve these effects,” for the corrected art-4
+  review. The smaller boulder, far-corner cone and stone/whip/meteor materials
+  are now integrated into the game pack.
 
 Answers: `approvals.json`. Source hashes: `body-frozen-sources.json`. Complete
 animations of the approved appearance require no repeat appearance approval.
@@ -40,14 +41,15 @@ deterministic. Extraction, palette matching and packing reproduce:
 ```text
 rtk proxy python tools/prepare-basalt-art.py
 rtk proxy python tools/build-basalt-body.py
+rtk proxy python tools/build-basalt-effects.py
 rtk proxy python tools/generate-basalt.py
 rtk proxy python tools/verify-basalt-art.py
 ```
 
 Body files: `mods/tfm2_custom/champions/tfm2_custom_basalt#*`. The review
 `body.png`, `body.fanim`, `body-presentation.json` and GIFs show the same frames.
-Atlas: 1024×2048, 8 MiB decoded. Body plus candidate effects: 9,306,112 bytes,
-under 32 MiB; no atlas exceeds 2048 pixels. Effects are not packaged yet.
+Body atlas: 1024×2048, 8 MiB decoded. Effects atlas: 2048×2048, 16 MiB.
+Total: **24 MiB**, under 32 MiB; no atlas exceeds 2048 pixels. Both are packaged.
 
 ## Native presentation limits and release gates
 
@@ -57,11 +59,28 @@ claim supported selection of every owner pose during passive-only native
 skills. No hiding, renewed Animation CC, idle/basic locks or cosmetic movement
 restrictions were added to force a pose.
 
-The PR's original packaged DLL is byte-identical. The far-corner correction is
-in source and rebuilt WASM, and still requires DLL release packaging. Native
-effects integration and boulder/meteor/tether bindings await effects approval.
+The reserved native **0.10.110** DLL and champion pack **0.2.113** are packaged.
+Two independent Windows GNU builds have identical SHA-256:
+`fc0ef2e63d55712f8c9b8d9140c4ddccbb36bbc7b23e1c05a6f405bfdcfee2ce`.
+See `package.json` for source identity, compiler, epoch, WASM and atlas hashes.
+
+`basalt_presentation.rs` projects accepted core state without combat writes.
+Native and WASM share its immutable launch positions, charge/release clocks,
+flight paths, target-following whip segments, impact selection and cleanup.
+The native adapter emits only the resulting visual cues; it never adds damage,
+movement, CC, vision, target scans or RNG. New definitions opt into it using
+`art_fx_v1: 1`; older embedded definitions retain the existing fallback.
+
+The cone uses 64 direction drawings (maximum angular quantisation 2.8125°),
+whip strips 32 (5.625°); exact hit tests are unchanged. Short single-frame
+leases prevent animation restarts. Cleanup stops renewals; already-emitted
+leases expire within seven ticks because the SDK has no individual FX cancel.
+One-shot impact events retain the existing token budget. Persistent updates
+emit at most four cues per tick, replacing the old four stamps per wall.
+
 Native alignment, moving-wall pathfinding and combat acceptance remain live
-checks. Lab animation is not proof of native rendering.
+checks. Lab animation is not proof of actual-game rendering. No release or
+career installation occurred.
 
 ## Real-map review and playable Lab
 
@@ -70,7 +89,7 @@ rtk proxy node editor/extract-game-world.js "C:/Program Files (x86)/Steam/steama
 rtk proxy node tools/serve-basalt-review.cjs 7308
 ```
 
-Open http://localhost:7308/editor/basalt-review.html?build=basalt-art-4 or
+Open http://localhost:7308/editor/basalt-review.html?build=basalt-art-5 or
 http://localhost:7308/editor/basalt.html?art=proposal . Root and /editor/ routes
 work; this review server has no installation or career endpoints.
 
@@ -83,25 +102,36 @@ laning, gank, countergank, objective and tower scenarios, plus all thirteen stat
 Skills and decisions run in shared Rust/WASM. Host movement, opponents, damage
 mitigation and visibility are explicitly simulated. Cone fill uses the real hit
 test, including its existing point-blank gap and edge tolerance. The separate
-illustrative effect loop is labelled. Simulation runs at 60 ticks independently
-of display refresh.
+illustrative effect loop is labelled. The playable Lab draws the same packed
+effect frames and shared Rust cues as native gameplay. The inspector also
+shows every direction/phase from the actual atlas. Simulation runs at 60 ticks
+independently of display refresh.
 
 ## Verified evidence
 
-- Native: **1,336 passed, 18 ignored**, including 26 Basalt tests. Four existing
+- Native: **1,342 passed, 18 ignored**, including 32 Basalt tests. Four existing
   unused-code warnings remain in `native_bridge/detour_tests.rs`.
-- Lab crate: **3 passed** (two transport, one integration).
+- Lab crate: **7 passed**, including four presentation tests.
 - Native/WASM: **36 fixtures, 10,800 ticks**, complete state/effect equality;
   24 development and 12 holdout inputs. This is transport parity, not balance.
-- Browser: **10 checks**, no page errors; actual keyboard jump, routes/assets,
+- Browser: **13 checks**, no page errors; actual keyboard jump, routes/assets,
   real map, stock actors, pose/facing inspection, presentation on/off and
-  manual-profile trace equality in covered fixtures.
+  manual-profile trace equality in covered fixtures, shared charge/flight/
+  impact/cone cues, emission limits and owner-death cleanup.
 - Nine cone boundary comparisons and maximum-range starting-block checks.
   30/60/120/144/240-Hz clock fixtures produce 600 ticks over ten seconds.
 - Reproducible packing, bounds, mirrored anchors, one palette, six distinct
-  walking leg drawings, timings, hashes and approved-body-only integration.
-- Mod Manager: successful **898-file** comparison in a disposable repo/game
+  walking leg drawings, timings, hashes and approved body/effects integration.
+- Mod Manager: **15 unit tests**, and successful **900-file** comparison in a disposable repo/game
   pair. Real manager configuration, mods, game processes and careers untouched.
+- Native adapter art-on/off traces match complete core, damage, movement,
+  control, buffs and shields. Presentation tests cover launch/impact clocks,
+  owner independence, cleanup and binding positions.
+- Five matched synthetic core/projection runs per case: median **0.069 µs**
+  inactive, **0.880 µs** with five blocks, **1.328 µs** with synthetic charge
+  plus five blocks. SDK queries, rendering and actual Proceed time are excluded.
+- Five fresh browser contexts: ready in 182–402 ms; median warm model-step plus
+  draw ~0.397 ms. These are Lab observations, not native game performance.
 
 ```text
 rtk proxy cargo +stable-x86_64-pc-windows-gnu test --manifest-path native/tfm2_custom_ai/Cargo.toml --release -- --test-threads=1
@@ -112,7 +142,8 @@ rtk proxy node tools/test-basalt-art-review.cjs
 rtk proxy node tools/test-basalt-cone.cjs
 rtk proxy python tools/check-basalt-art-manager.py
 rtk proxy python tools/generate-basalt.py --check
+rtk proxy python tools/package-basalt.py
 ```
 
 No installation, career migration, live-game visual acceptance or balance claim.
-Effects approval and release packaging remain pending.
+Artwork approval, integration and reproducible DLL packaging are complete.

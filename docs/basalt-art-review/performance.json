@@ -1,0 +1,125 @@
+{
+  "samples": [
+    {
+      "combat_state_equal": true,
+      "core_and_presentation_us_per_tick": 0.070225,
+      "core_us_per_tick": 0.037305,
+      "emissions": 0,
+      "run": 1,
+      "scenario": "inactive"
+    },
+    {
+      "combat_state_equal": true,
+      "core_and_presentation_us_per_tick": 0.069235,
+      "core_us_per_tick": 0.035460000000000005,
+      "emissions": 0,
+      "run": 2,
+      "scenario": "inactive"
+    },
+    {
+      "combat_state_equal": true,
+      "core_and_presentation_us_per_tick": 0.06869499999999999,
+      "core_us_per_tick": 0.036495,
+      "emissions": 0,
+      "run": 3,
+      "scenario": "inactive"
+    },
+    {
+      "combat_state_equal": true,
+      "core_and_presentation_us_per_tick": 0.0684,
+      "core_us_per_tick": 0.035015,
+      "emissions": 0,
+      "run": 4,
+      "scenario": "inactive"
+    },
+    {
+      "combat_state_equal": true,
+      "core_and_presentation_us_per_tick": 0.06811500000000001,
+      "core_us_per_tick": 0.034935,
+      "emissions": 0,
+      "run": 5,
+      "scenario": "inactive"
+    },
+    {
+      "combat_state_equal": true,
+      "core_and_presentation_us_per_tick": 0.83783,
+      "core_us_per_tick": 0.08777,
+      "emissions": 16670,
+      "run": 1,
+      "scenario": "five_stationary_blocks"
+    },
+    {
+      "combat_state_equal": true,
+      "core_and_presentation_us_per_tick": 0.88461,
+      "core_us_per_tick": 0.09792999999999999,
+      "emissions": 16670,
+      "run": 2,
+      "scenario": "five_stationary_blocks"
+    },
+    {
+      "combat_state_equal": true,
+      "core_and_presentation_us_per_tick": 0.87984,
+      "core_us_per_tick": 0.06368,
+      "emissions": 16670,
+      "run": 3,
+      "scenario": "five_stationary_blocks"
+    },
+    {
+      "combat_state_equal": true,
+      "core_and_presentation_us_per_tick": 0.8721899999999999,
+      "core_us_per_tick": 0.06322,
+      "emissions": 16670,
+      "run": 4,
+      "scenario": "five_stationary_blocks"
+    },
+    {
+      "combat_state_equal": true,
+      "core_and_presentation_us_per_tick": 1.0592849999999998,
+      "core_us_per_tick": 0.07946,
+      "emissions": 16670,
+      "run": 5,
+      "scenario": "five_stationary_blocks"
+    },
+    {
+      "combat_state_equal": true,
+      "core_and_presentation_us_per_tick": 1.4746199999999998,
+      "core_us_per_tick": 0.10609500000000001,
+      "emissions": 26671,
+      "run": 1,
+      "scenario": "synthetic_charge_and_five_blocks"
+    },
+    {
+      "combat_state_equal": true,
+      "core_and_presentation_us_per_tick": 1.569485,
+      "core_us_per_tick": 0.09933,
+      "emissions": 26671,
+      "run": 2,
+      "scenario": "synthetic_charge_and_five_blocks"
+    },
+    {
+      "combat_state_equal": true,
+      "core_and_presentation_us_per_tick": 1.32776,
+      "core_us_per_tick": 0.11845499999999999,
+      "emissions": 26671,
+      "run": 3,
+      "scenario": "synthetic_charge_and_five_blocks"
+    },
+    {
+      "combat_state_equal": true,
+      "core_and_presentation_us_per_tick": 1.27721,
+      "core_us_per_tick": 0.12049000000000001,
+      "emissions": 26671,
+      "run": 4,
+      "scenario": "synthetic_charge_and_five_blocks"
+    },
+    {
+      "combat_state_equal": true,
+      "core_and_presentation_us_per_tick": 1.235375,
+      "core_us_per_tick": 0.09924999999999999,
+      "emissions": 26671,
+      "run": 5,
+      "scenario": "synthetic_charge_and_five_blocks"
+    }
+  ],
+  "scope": "Five matched synthetic runs per scenario; core plus read-only projection. Excludes SDK queries, asset loading, native renderer and real-game Proceed time."
+}

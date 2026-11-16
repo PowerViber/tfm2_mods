@@ -1,14 +1,14 @@
 
 ==============================  TFM2 Mod Manager  ==============================
- repo: C:\Users\arian\.codex\worktrees\basalt-art\tfm2_mods\backups\basalt-art-manager-xckl46rt\repo [codex/basalt-art] 2284e60 Basalt: red-yellow art proposals and real-map Lab review
- game: C:\Users\arian\.codex\worktrees\basalt-art\tfm2_mods\backups\basalt-art-manager-xckl46rt\game
+ repo: C:\Users\arian\.codex\worktrees\basalt-art\tfm2_mods\backups\basalt-art-manager-gbssw55g\repo [codex/basalt-art] 3f62635 Basalt: complete approved smaller body and real-map art Lab
+ game: C:\Users\arian\.codex\worktrees\basalt-art\tfm2_mods\backups\basalt-art-manager-gbssw55g\game
  installed: native 0.10.110  champions 0.2.113
- log: C:\Users\arian\.codex\worktrees\basalt-art\tfm2_mods\backups\basalt-art-manager-xckl46rt\repo\logs\manager-20261115_202958.txt
+ log: C:\Users\arian\.codex\worktrees\basalt-art\tfm2_mods\backups\basalt-art-manager-gbssw55g\repo\logs\manager-20261116_013642.txt
 ================================================================================
-Game folder: C:\Users\arian\.codex\worktrees\basalt-art\tfm2_mods\backups\basalt-art-manager-xckl46rt\game
+Game folder: C:\Users\arian\.codex\worktrees\basalt-art\tfm2_mods\backups\basalt-art-manager-gbssw55g\game
   native (tfm2_custom_ai): repo 0.10.110  game 0.10.110
   champions (tfm2_custom): repo 0.2.113  game 0.2.113
-  785 champion files compared, 0 differ, 0 missing; native DLL identical
+  787 champion files compared, 0 differ, 0 missing; native DLL identical
 
   UP TO DATE: the game has exactly the repo's mods.
-Log saved: C:\Users\arian\.codex\worktrees\basalt-art\tfm2_mods\backups\basalt-art-manager-xckl46rt\repo\logs\manager-20261115_202958.txt
+Log saved: C:\Users\arian\.codex\worktrees\basalt-art\tfm2_mods\backups\basalt-art-manager-gbssw55g\repo\logs\manager-20261116_013642.txt

@@ -1,6 +1,6 @@
 {
   "body_approved": true,
-  "effects_approved": false,
+  "effects_approved": true,
   "body_visible_pixels": {
     "idle": [
       41,
@@ -21,9 +21,13 @@
     1024,
     2048
   ],
+  "effects_atlas": [
+    2048,
+    2048
+  ],
   "frame_entries": 204,
   "unique_pose_count": 14,
-  "decoded_body_and_candidate_effect_bytes": 9306112,
+  "decoded_body_and_effect_bytes": 25165824,
   "reproducible_packing": true,
   "fixed_foot_anchor": [
     80,
@@ -34,8 +38,8 @@
   "six_distinct_walk_drawings": true,
   "walk_cycle_seconds": 0.8,
   "body_integrated": true,
-  "effects_integrated": false,
+  "effects_integrated": true,
   "balance_unchanged": true,
-  "native_dll_unchanged": true,
+  "native_dll_unchanged": false,
   "live_game": "pending"
 }

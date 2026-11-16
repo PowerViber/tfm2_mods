@@ -258,6 +258,6 @@
   "holdout_cases": 12,
   "compared_ticks": 10800,
   "complete_state_and_effects_equal": true,
-  "sha256": "5d87f1d12a0253f8aadf329609a786bbc317ed0a94291a7bec7673d089cb5d04",
+  "sha256": "7b76c4339ff81003dee5ab8abe81210ea35c093c98d710030d6e70f7d341fd11",
   "scope": "Exact native transport versus WASM serialization on fixed input fixtures. Not host physics, live combat, or balance acceptance."
 }
