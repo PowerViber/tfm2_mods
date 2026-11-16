@@ -339,6 +339,39 @@ pub(crate) fn marked_enemy(sim: &StableSim<'_>, me: &Champ, marker: &str) -> Opt
         .min_by_key(|e| (d2(me.x, me.y, e.x, e.y), e.id))
 }
 
+/// Enemy creeps (lane minions, camp monsters, summons; never champions or towers) within `r` of `me`, visible and
+/// targetable, nearest first, as champion-shaped snapshots. round 177: for finishing a skill the engine already
+/// committed onto a creep (every skill but the ult may go on creeps), so no farming-eligibility re-check here.
+pub(crate) fn creeps_around(sim: &StableSim<'_>, me: &Champ, r: i64) -> Vec<Champ> {
+    let mut out: Vec<Champ> = crate::units(sim)
+        .into_iter()
+        .filter(|(id, team, x, y)| *team != me.team && d2(me.x, me.y, *x, *y) <= sq(r) && sim.is_visible(me.team, *id))
+        .filter_map(|(id, team, x, y)| {
+            let e = sim.get_entity(id)?;
+            if !e.is_targetable() {
+                return None;
+            }
+            let (hp, max_hp) = e.hp();
+            Some(Champ {
+                id,
+                team,
+                x,
+                y,
+                hp,
+                max_hp,
+                attack: e.stat().attack,
+                name: e.name().unwrap_or_default(),
+                buffs: (0..e.buff_count()).filter_map(|i| e.buff_at(i)).collect(),
+                stunned: false,
+                pushed: false,
+            })
+        })
+        .collect();
+    out.sort_by_key(|e| (d2(me.x, me.y, e.x, e.y), e.id));
+    out.truncate(32);
+    out
+}
+
 static ENABLED: OnceLock<bool> = OnceLock::new();
 static LINES: AtomicUsize = AtomicUsize::new(0);
 static FARM_LINES: AtomicUsize = AtomicUsize::new(0);

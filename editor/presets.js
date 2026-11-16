@@ -287,8 +287,9 @@
         effect: all(buff('vader_throw', 8), markTarget('vader_saber_target', 8)) }),
       // the wedge, damage, lift and slashes are native (a red V shows the area). The skill's own action lasts the whole
       // sequence (96 ticks: choke pose, then two saber swings timed to the native slashes at 68 and 86), so nothing
-      // cuts the pose short (the CasterAnimation version never showed)
-      skill2: act('skill2', { duration: 96, cooltime: o.chokeCd, start_timing: 8, range: o.chokeRange, casting_type: 'Targeting', casting_target: 'EnemyChampion', attack_type: 'Skill',
+      // cuts the pose short (the CasterAnimation version never showed). round 177: any enemy but a tower, so the choke
+      // also farms minions and camps (champions first natively)
+      skill2: act('skill2', { duration: 96, cooltime: o.chokeCd, start_timing: 8, range: o.chokeRange, casting_type: 'Targeting', casting_target: 'EnemyWithoutTower', attack_type: 'Skill',
         effect: all(buff('vader_choking', 6), markTarget('vader_choke_aim', 6)) }),
       // castable only at an enemy in crowd control: the native passive holds the nearest enemy for 2 ticks once he
       // has 10 stacks, which is what lets the AI press it (Rage itself needs the 10 stacks, checked here)

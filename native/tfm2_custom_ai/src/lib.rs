@@ -169,6 +169,8 @@ mod tick_budget_tests;
 #[cfg(test)]
 mod glue_tests;
 #[cfg(test)]
+mod creep_skill_tests;
+#[cfg(test)]
 mod perf_bench_tests;
 mod servers;
 pub mod roster;
@@ -1450,6 +1452,11 @@ mod raijin {
         let kcm = m.has("minato_kcm");
         let (range_mult, speed_mult) = if kcm { (2.0, 1.5) } else { (1.0, 1.0) };
         let enemies: Vec<&Champ> = all.iter().filter(|c| c.team != m.team).collect();
+        // round 177: Flying Raijin cast on a minion or camp monster (every skill but the ult works on creeps). The
+        // creeps are read only while a normal throw starts or its kunai fly, and only after the champions.
+        let kunai_live = m.has("raijin_throw") || m.buffs.iter().any(|b| b.name().starts_with("rkm0:") || b.name().starts_with("rkb:"));
+        let creeps: Vec<Champ> = if kunai_live { crate::farming::creeps_around(sim, m, 260_000) } else { vec![] };
+        let creep_hit = |x: i64, y: i64| creeps.iter().filter(|e| d2(e.x, e.y, x, y) <= sq(HIT_RADIUS)).min_by_key(|e| (d2(e.x, e.y, x, y), e.id));
         // enemy towers: a spot inside one is a dive. tower_hit = damage he'd take there (0 = safe),
         // tower_ok = safe, or he survives one shot with margin (the last-resort rule).
         let towers = enemy_towers(sim, m);
@@ -1490,8 +1497,9 @@ mod raijin {
                 sim.entity_remove_buff(m.id, "tp_wait");        // a new throw cancels a held teleport
                 sim.entity_remove_buff(m.id, "tp_wait_last");
             }
-            let target = enemies.iter().filter(|e| set == 0 && e.has("raijin_target")).min_by_key(|e| (d2(e.x, e.y, m.x, m.y), e.id))
-                .or_else(|| enemies.iter().filter(|e| d2(e.x, e.y, m.x, m.y) <= sq(200_000)).min_by_key(|e| (d2(e.x, e.y, m.x, m.y), e.id)));
+            let target = enemies.iter().filter(|e| set == 0 && e.has("raijin_target")).min_by_key(|e| (d2(e.x, e.y, m.x, m.y), e.id)).copied()
+                .or_else(|| enemies.iter().filter(|e| d2(e.x, e.y, m.x, m.y) <= sq(200_000)).min_by_key(|e| (d2(e.x, e.y, m.x, m.y), e.id)).copied())
+                .or_else(|| creeps.iter().filter(|e| set == 0 && e.has("raijin_target")).min_by_key(|e| (d2(e.x, e.y, m.x, m.y), e.id)));
             let Some(t) = target else { continue };
             if set == 0 {
                 throw_fan(sim, m, set, t, &kunai_name, speed_mult, range_mult);
@@ -1520,7 +1528,8 @@ mod raijin {
                 }
                 travelled += speed;
                 sim.entity_remove_buff(m.id, &old_name);
-                let hit = enemies.iter().filter(|e| d2(e.x, e.y, x, y) <= sq(HIT_RADIUS)).min_by_key(|e| (d2(e.x, e.y, x, y), e.id)).copied();
+                let hit = enemies.iter().filter(|e| d2(e.x, e.y, x, y) <= sq(HIT_RADIUS)).min_by_key(|e| (d2(e.x, e.y, x, y), e.id)).copied()
+                    .or_else(|| creep_hit(x, y));
                 if hit.is_some() || travelled >= range || walled {
                     let mut struck = 0;
                     if let Some(t) = hit {
@@ -1597,7 +1606,8 @@ mod raijin {
                 if !walled { x = nx; y = ny; }
                 travelled += speed;
                 sim.entity_remove_buff(m.id, &old_name);
-                let hit = enemies.iter().filter(|e| d2(e.x, e.y, x, y) <= sq(HIT_RADIUS)).min_by_key(|e| (d2(e.x, e.y, x, y), e.id)).copied();
+                let hit = enemies.iter().filter(|e| d2(e.x, e.y, x, y) <= sq(HIT_RADIUS)).min_by_key(|e| (d2(e.x, e.y, x, y), e.id)).copied()
+                    .or_else(|| creep_hit(x, y));
                 if hit.is_some() || travelled >= range || walled {
                     let mut struck = 0;
                     if let Some(t) = hit {

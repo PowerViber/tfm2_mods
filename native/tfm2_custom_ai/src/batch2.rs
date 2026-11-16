@@ -412,7 +412,9 @@ pub fn run_dio(sim: &mut StableSim<'_>, d: &Champ, all: &[Champ], tick: usize) {
         if !d.has("dio_guard") { sim.add_buff(d.id, &BuffV1::named("dio_guard")); }
     } else if (d.has("dio_knives3") || d.has("dio_knives4")) && !d.has("dio_kseen") {
         sim.add_buff(d.id, &timed("dio_kseen", 8));
-        if let Some(t) = frozen.first().copied().or_else(|| target("dio_target", KNIFE_RANGE + 10_000)) {
+        // round 177: cast on a minion or camp monster (no champion to throw at): the fan goes at that creep
+        let creep = crate::farming::marked_enemy(sim, d, "dio_target");
+        if let Some(t) = frozen.first().copied().or_else(|| target("dio_target", KNIFE_RANGE + 10_000)).or(creep.as_ref()) {
             if stopped {
                 hang_fan(sim, d, t, (tick / 7 % 2) * TS_KNIVES);
             } else {
@@ -853,6 +855,13 @@ impl StablePassive for Dio {
         let enemies: Vec<&Champ> = all.iter().filter(|c| c.team != m.team).collect();
         let v = |n: &str| vname(&m.name, DIO_ID, n);
         let ad = |sim: &StableSim<'_>, base: usize, pct: usize| base + attack_of(sim, entity) * pct / 100;
+        // round 177: Stand Out / Stand In cast on a minion or camp monster. The creeps near him are read only while an
+        // S2 is starting or in flight, and only ever after the champions (champions first).
+        let s2_live = m.has("dio_lunge") || m.has("dio_dash") || self.dash_pending.is_some()
+            || matches!(self.act, Some(StandAct::Windup { .. }) | Some(StandAct::Lunge { .. }) | Some(StandAct::Grab { .. }));
+        let creeps: Vec<Champ> = if s2_live { crate::farming::creeps_around(sim, &m, LUNGE_RANGE + 100_000) } else { vec![] };
+        let creep = |id: usize| creeps.iter().find(|c| c.id == id);
+        let marked_creep = creeps.iter().filter(|c| c.has("dio_target")).min_by_key(|c| (d2(c.x, c.y, m.x, m.y), c.id));
 
         // facing: toward the nearest enemy close by, otherwise the way he moves
         let near = nearest(&m, &enemies, 90_000);
@@ -954,7 +963,8 @@ impl StablePassive for Dio {
         if m.has("dio_lunge") && !m.has("dio_lseen") {
             sim.add_buff(entity, &timed("dio_lseen", 10));
             let t = enemies.iter().filter(|e| e.has("dio_target")).min_by_key(|e| (d2(e.x, e.y, m.x, m.y), e.id)).copied()
-                .or_else(|| nearest(&m, &enemies, LUNGE_RANGE));
+                .or_else(|| nearest(&m, &enemies, LUNGE_RANGE))
+                .or(marked_creep);
             if let Some(t) = t {
                 self.act = Some(StandAct::Windup { t0: tick, tid: t.id });
                 // golden streaks gathering at the Stand's fist for the whole wind-up
@@ -971,7 +981,8 @@ impl StablePassive for Dio {
                 enemies.iter().filter(|e| d2(e.x, e.y, nx, ny) <= sq(40_000) && d2(e.x, e.y, m.x, m.y) <= sq(100_000))
                     .min_by_key(|e| (d2(e.x, e.y, nx, ny), e.id)).copied());
             let t = over.or_else(|| enemies.iter().filter(|e| e.has("dio_target")).min_by_key(|e| (d2(e.x, e.y, m.x, m.y), e.id)).copied())
-                .or_else(|| nearest(&m, &enemies, 90_000));
+                .or_else(|| nearest(&m, &enemies, 90_000))
+                .or(marked_creep);
             if let Some(t) = t {
                 fx_on(sim, &v("mark"), entity, t.id, DASH_DELAY as u64);
                 self.dash_pending = Some((t.id, tick));
@@ -979,7 +990,7 @@ impl StablePassive for Dio {
         }
         if let Some((tid, t0)) = self.dash_pending {
             if let Some((n, _)) = state(&m, "dmk:") { sim.entity_remove_buff(entity, &n); }
-            match all.iter().find(|c| c.id == tid && c.team != m.team) {
+            match all.iter().find(|c| c.id == tid && c.team != m.team).or_else(|| creep(tid)) {
                 None => self.dash_pending = None,
                 Some(t) if tick < t0 + DASH_DELAY => {
                     sim.add_buff(entity, &timed(&format!("dmk:{}:{}:{t0}", t.x, t.y), 3));
@@ -1046,7 +1057,7 @@ impl StablePassive for Dio {
             }
             Some(StandAct::Windup { t0, tid }) => {
                 if tick >= t0 + LUNGE_WINDUP {
-                    let (tx, ty) = all.iter().find(|c| c.id == tid).map_or((m.x + self.face * 1000, m.y), |c| (c.x, c.y));
+                    let (tx, ty) = all.iter().find(|c| c.id == tid).or_else(|| creep(tid)).map_or((m.x + self.face * 1000, m.y), |c| (c.x, c.y));
                     let (sx, sy) = (m.x + self.face * 6_000, m.y - STAND_UP);
                     let (dx, dy) = dir(sx, sy, tx, ty - STAND_UP);
                     next = Some(StandAct::Lunge { t0: tick, x: sx, y: sy, dx: (dx * 1000.0) as i64, dy: (dy * 1000.0) as i64, travelled: 0 });
@@ -1055,7 +1066,8 @@ impl StablePassive for Dio {
             Some(StandAct::Lunge { t0, x, y, dx, dy, travelled }) => {
                 // through walls: no wall checks here
                 let (nx, ny) = (x + dx * LUNGE_SPEED / 1000, y + dy * LUNGE_SPEED / 1000);
-                let hit = enemies.iter().filter(|e| d2(e.x, e.y - STAND_UP, nx, ny) <= sq(LUNGE_HIT_R)).min_by_key(|e| (d2(e.x, e.y, nx, ny), e.id)).copied();
+                let hit = enemies.iter().filter(|e| d2(e.x, e.y - STAND_UP, nx, ny) <= sq(LUNGE_HIT_R)).min_by_key(|e| (d2(e.x, e.y, nx, ny), e.id)).copied()
+                    .or_else(|| creeps.iter().filter(|e| d2(e.x, e.y - STAND_UP, nx, ny) <= sq(LUNGE_HIT_R)).min_by_key(|e| (d2(e.x, e.y, nx, ny), e.id)));
                 if let Some(e) = hit {
                     if try_parry(sim, e, entity, hit_estimate(sim, &m, 120)) {
                         next = Some(StandAct::Return { t0: tick, x: nx, y: ny });
@@ -1074,7 +1086,7 @@ impl StablePassive for Dio {
             }
             Some(StandAct::Grab { t0, foe }) => {
                 let el = tick.saturating_sub(t0);
-                let fpos = all.iter().find(|c| c.id == foe).map(|c| (c.x, c.y));
+                let fpos = all.iter().find(|c| c.id == foe).or_else(|| creep(foe)).map(|c| (c.x, c.y));
                 match fpos {
                     Some((fx, fy)) if el < GRAB_TICKS => {
                         if el % (GRAB_TICKS / GRAB_HITS) == 0 {
@@ -1660,7 +1672,12 @@ impl V1 {
         } else {
             shoot_linear(sim, &v("coin_ray"), "noop", m.id, m.team, m.x, m.y, hx, hy, 16_000, 1_000, true);
         }
-        let hits: Vec<&Champ> = all.iter().filter(|e| e.team != m.team && d2(e.x, e.y, cx, cy) <= sq(COIN_REACH)).collect();
+        let mut hits: Vec<&Champ> = all.iter().filter(|e| e.team != m.team && d2(e.x, e.y, cx, cy) <= sq(COIN_REACH)).collect();
+        // round 177: no champion by the coin → the ricochet goes to the minions and camp monsters there
+        let creeps = if hits.is_empty() { crate::farming::creeps_around(sim, m, COIN_FAR + COIN_REACH + 20_000) } else { vec![] };
+        if hits.is_empty() {
+            hits = creeps.iter().filter(|e| d2(e.x, e.y, cx, cy) <= sq(COIN_REACH)).take(4).collect();
+        }
         if !hits.is_empty() {
             // round 19 (V1 did 27k in mid): 40 + 60% AD on top of the shot (was 70 + 100%); the split shot gives each
             // enemy 60% of it (was 100%)
@@ -1760,8 +1777,11 @@ impl StablePassive for V1 {
         // coin toss: ONE coin, up in the air just in front of him
         if m.has("v1_coin") && !m.has("v1_coin_seen") {
             sim.add_buff(entity, &timed("v1_coin_seen", 12));
+            // round 177: cast on a minion or camp monster with no champion near: the coin goes up toward that creep
+            let creep = crate::farming::marked_enemy(sim, &m, "v1_coin_target");
             let t = enemies.iter().filter(|e| e.has("v1_coin_target")).min_by_key(|e| (d2(e.x, e.y, m.x, m.y), e.id)).copied()
-                .or_else(|| nearest(&m, &enemies, 100_000));
+                .or_else(|| nearest(&m, &enemies, 100_000))
+                .or(creep.as_ref());
             let (dx, dy) = t.map_or((1.0, 0.0), |t| dir(m.x, m.y, t.x, t.y));
             // toward the enemy: 60% of the way there (at least COIN_AHEAD, at most COIN_FAR), so the ricochet is
             // centred on them, not on V1
@@ -1787,7 +1807,8 @@ impl StablePassive for V1 {
         if let Some((cx, cy, t0)) = self.coin {
             let el = tick.saturating_sub(t0);
             if el >= COIN_AUTO_AT && el < COIN_AIR && !m.stunned
-                && enemies.iter().any(|e| d2(e.x, e.y, cx, cy) <= sq(COIN_REACH)) {
+                && (enemies.iter().any(|e| d2(e.x, e.y, cx, cy) <= sq(COIN_REACH))
+                    || crate::farming::creeps_around(sim, &m, COIN_FAR + COIN_REACH + 20_000).iter().any(|e| d2(e.x, e.y, cx, cy) <= sq(COIN_REACH))) {
                 let shotgun = m.has("v1_shotgun");
                 if self.shoot_coin(sim, &m, &all, m.attack * 60 / 100, shotgun, tick) && shotgun {
                     sim.entity_remove_buff(entity, "v1_shotgun");
@@ -2085,22 +2106,31 @@ impl StablePassive for Vader {
         }
 
         // Force choke: a V-shaped wedge in front of him (drawn in red); everyone inside is lifted, the knock-up shared
+        // round 177: the choke may be cast on a minion or camp monster (every skill but the ult works on creeps); the
+        // creeps are read only while a choke starts or holds, and only when no champion is caught (champions first)
+        let choke_live = (m.has("vader_choking") && !m.has("vader_choke_seen")) || self.choke_seq.is_some();
+        let creeps: Vec<Champ> = if choke_live { crate::farming::creeps_around(sim, &m, CHOKE_LEN + 30_000) } else { vec![] };
         if m.has("vader_choking") && !m.has("vader_choke_seen") {
             sim.add_buff(entity, &timed("vader_choke_seen", 10));
             let aim = enemies.iter().filter(|e| e.has("vader_choke_aim")).min_by_key(|e| (d2(e.x, e.y, m.x, m.y), e.id)).copied()
-                .or_else(|| nearest(&m, &enemies, CHOKE_LEN));
+                .or_else(|| nearest(&m, &enemies, CHOKE_LEN))
+                .or_else(|| creeps.iter().filter(|e| e.has("vader_choke_aim")).min_by_key(|e| (d2(e.x, e.y, m.x, m.y), e.id)));
             if let Some(t) = aim {
                 // aimed exactly at the target (not snapped to 8 ways); the target itself can't slip out of the edge
                 let (ax, ay) = dir(m.x, m.y, t.x, t.y);
                 draw_wedge(sim, &m, ax, ay);
-                let caught: Vec<&&Champ> = enemies.iter().filter(|e| {
+                let in_wedge = |e: &Champ| -> bool {
                     let dd = d2(e.x, e.y, m.x, m.y);
                     if e.id == t.id && dd <= sq(CHOKE_LEN + CHOKE_TARGET_SLACK) { return true; }
                     if dd > sq(CHOKE_LEN) { return false; }
                     if dd < sq(8_000) { return true; }
                     let (ex, ey) = dir(m.x, m.y, e.x, e.y);
                     (ex * ax + ey * ay) >= CHOKE_HALF_ANGLE.cos()
-                }).collect();
+                };
+                let mut caught: Vec<&Champ> = enemies.iter().copied().filter(|e| in_wedge(e)).collect();
+                if caught.is_empty() {
+                    caught = creeps.iter().filter(|e| in_wedge(e)).take(6).collect();
+                }
                 if !caught.is_empty() {
                     let choke = sv("choke");
                     for e in &caught {
@@ -2121,12 +2151,12 @@ impl StablePassive for Vader {
             let el = tick.saturating_sub(t0);
             // the wedge stays up through the hold, following the one he's choking
             if el > 0 && el < CHOKE_HOLD && el % 20 == 0 {
-                if let Some(c) = all.iter().find(|c| ids.first() == Some(&c.id)) {
+                if let Some(c) = all.iter().chain(creeps.iter()).find(|c| ids.first() == Some(&c.id)) {
                     let (ax, ay) = dir(m.x, m.y, c.x, c.y);
                     draw_wedge(sim, &m, ax, ay);
                 }
             }
-            let targets: Vec<&Champ> = all.iter().filter(|c| ids.contains(&c.id) && d2(c.x, c.y, m.x, m.y) <= sq(SLASH_REACH)).collect();
+            let targets: Vec<&Champ> = all.iter().chain(creeps.iter()).filter(|c| ids.contains(&c.id) && d2(c.x, c.y, m.x, m.y) <= sq(SLASH_REACH)).collect();
             if el == SLASH1_AT || el == SLASH2_AT {
                 fx_on(sim, &sv("swing"), entity, entity, 12);
                 let (b, r) = if el == SLASH1_AT { SLASH1 } else { SLASH2 };
@@ -2157,7 +2187,9 @@ const DAVID_ID: &str = "tfm2_cyberpunk_david";
 const FULL: i32 = 10_000;            // bars are kept ×100 (0..10000 = 0..100)
 const FUEL_DRAIN: i32 = 2_200 / 60;  // 22/s while Sandevistan is on
 const FUEL_REGEN: i32 = 800 / 60;    // 8/s while off
-const FUEL_BACK: i32 = 1_500;        // after running dry, usable again at 15 (was 30)
+const FUEL_BACK: i32 = 1_500;
+/// round 177: a creep this close while calm → a farming burst of Sandevistan
+const FARM_SANDE_R: i64 = 35_000;        // after running dry, usable again at 15 (was 30)
 const CP_SANDE: i32 = 1_000 / 60;    // +10/s while on
 const CP_DRAIN: i32 = 400 / 60;      // −4/s …
 const CP_IDLE: usize = 150;          // … after 2.5 s without Sandevistan
@@ -2372,6 +2404,17 @@ impl StablePassive for David {
                     sande = true;
                 }
             }
+        }
+        // round 177: clearing a camp or wave (every skill but the ult works on creeps): calm (the shared farm window),
+        // no enemy champion near, fuel nearly full and the meter low, a creep in his reach → a 1 s burst of Sandevistan
+        if !sande && !self.dry && !self.psycho && self.fuel >= TRAVEL_FUEL && self.cp < TRAVEL_CP_MAX && m.has(crate::FARM_BUFF)
+            && nearest(&m, &enemies, TRAVEL_CLEAR_R).is_none()
+            && !crate::farming::creeps_around(sim, &m, FARM_SANDE_R).is_empty() {
+            let mut b = timed("dv_sande", 60);
+            b.move_speed_mult = SANDE_MS;
+            b.attack_speed_mult = SANDE_AS;
+            sim.add_buff(entity, &b);
+            sande = true;
         }
         if sande {
             self.idle = 0;

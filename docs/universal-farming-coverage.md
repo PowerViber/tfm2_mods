@@ -1,5 +1,7 @@
 # Farming capability coverage
 
+Round 177: the native kits of Minato, David, DIO, Darth Vader and V1 finish every non-ult skill the engine casts on a creep (V1's Parry is a guard stance, so it stays champion-only); see `docs/main-review-round-177.md`.
+
 Metadata establishes suitability only. Selection, accepted execution and delivery require separate evidence. Stock actions remain engine-owned.
 
 | Champion | Route | Skill 1 | Skill 2 | Ultimate | Live execution |

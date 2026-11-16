@@ -72,10 +72,24 @@
 | Magnus, Unified Theory | eligible units in their planners | Complete. |
 | Omen | Paranoia as wave clear | Dark Cover and Shadow Step are utility. |
 | Aegis Zero | marked-enemy slices | The ult is never used for farming. |
-| Minato, David, Dio, Vader, V1 | the universal AI's capability table (`docs/universal-farming-coverage.md`) | Only "offense" slots farm; live execution is still pending there. A per-skill pass is a follow-up. |
+| Minato, David, Dio, Vader, V1 | fixed this round (next section) | |
+
+### Minato, David, Dio, Vader and V1
+These are data champions: the engine casts their skills by each skill's `casting_target`, and the native passives (`batch2.rs`, Minato's `raijin` in `lib.rs`) finish them from marker buffs. The engine already cast most of their non-ult skills on any non-tower enemy, but the native side only aimed and hit **champions**, so a skill cast on a creep fizzled.
+- **The fix:** a shared helper, `farming::creeps_around`, returns the creeps near him. Each kit now falls back to the creep the engine marked, and its hits fall back to creeps, but only when no champion is there. Champions always come first, and creeps are read only while such a skill is starting or in flight.
+- **Minato:** Flying Raijin's normal throw goes at the marked creep, and the middle and backpack kunai strike creeps. The Kurama kunai (the ult form) stays on champions.
+- **DIO:**
+  - **Knife fan:** it goes at the marked creep.
+  - **Stand Out:** the lunge winds up at the creep, hits it and grabs it.
+  - **Stand In:** the dash strikes the creep.
+- **V1:** the coin goes up toward the marked creep, and the ricochet hits up to 4 creeps by the coin when no champion is there.
+- **Darth Vader:** Force Choke was champion-only in its data file; it's now `EnemyWithoutTower` (`tfm2_starwars` 0.1.15, which now requires native 0.10.111). The wedge lifts and slashes up to 6 creeps when it catches no champion.
+- **David:** Sandevistan is a self-buff with fuel, so instead of the engine spamming it on every minion, the native code fires a 1 s burst while he clears creeps. That happens only when calm (the shared farm window), with no enemy champion within 150,000, fuel nearly full and the meter low.
+- **Not changed:** V1's Parry stays champion-only. It's a guard stance against incoming hits, which makes it utility.
+- **Tests** (`creep_skill_tests.rs`, on the glue mock host): Vader's choke on a camp monster, champions first for the choke, V1's coin, DIO's Stand Out grab, David's farming burst (and none with an enemy champion near), and Minato's kunai on a creep. Five of the six fail on the old code; the sixth checks champions first.
 
 ## Checks
-- **Native tests:** 1,362 passed, 18 ignored. That includes the new pace, flicker and creeps tests.
+- **Native tests:** 1,368 passed, 18 ignored. That includes the new pace, flicker and creeps tests.
 - **Lab tests:** the Basalt, Kicker, Thalassa, Akane, Grimhald, Kagami, Kratos and Wright Lab tests pass. The Basalt transport test now spaces its orders past the recovery.
 - **Lab wasm:** rebuilt for Basalt, Kicker, Thalassa, Akane, Grimhald, Kagami and Wright.
 - **Other checks:** the generators are current; the DLL (0.10.111) is built; the Mod Manager tests (15) pass.
