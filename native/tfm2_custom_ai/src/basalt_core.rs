@@ -115,6 +115,9 @@ pub struct Unit {
     pub tower: bool,
     pub visible: bool,
     pub targetable: bool,
+    /// a minion or jungle monster his farming may spend skills on (the shared farming rules say so, and it's calm)
+    #[serde(default)]
+    pub farmable: bool,
 }
 
 /// Another champion's shared wall (Steve's boat walls, Grimhald's cage edges): he can whip and slam into it.
@@ -411,6 +414,9 @@ pub struct Core {
     /// a purposeful walk his AI asked for this tick
     #[serde(default)]
     pub pending_walk: Option<Point>,
+    /// cast recovery: no skill, jump or pull before this tick (the ult's recast excepted)
+    #[serde(default)]
+    pub ready_at: u64,
     #[serde(default)]
     pub reason: String,
     #[serde(default)]
@@ -446,6 +452,7 @@ impl Default for Core {
             hp_log: vec![],
             steer_at: 0,
             pending_walk: None,
+            ready_at: 0,
             reason: String::new(),
             rejection: String::new(),
         }
@@ -468,6 +475,7 @@ impl Core {
         self.last_slammed = None;
         self.charging = None;
         self.recast = None;
+        self.ready_at = 0;
     }
     pub fn airborne(&self, f: &Frame) -> bool {
         self.air.is_some_and(|a| f.tick < a.until)
@@ -477,6 +485,10 @@ impl Core {
     }
     pub fn ult_ready(&self, f: &Frame) -> bool {
         f.ult_unlocked && f.tick >= self.ult_at && self.charging.is_none()
+    }
+    /// recovering from his last skill, jump or pull
+    pub fn recovering(&self, f: &Frame) -> bool {
+        f.tick < self.ready_at
     }
     pub fn recast_ready(&self, f: &Frame) -> bool {
         self.recast.is_some_and(|r| f.tick < r.1)
@@ -549,8 +561,23 @@ impl Core {
         self.pending_walk = None;
         let order = if self.charging.is_some() { None } else if f.manual { f.order } else { self.decide(f) };
         if let Some(o) = order {
-            if !f.stunned || self.airborne(f) {
+            let recast = matches!(o, Order::Ult(_)) && self.recast_ready(f);
+            if self.recovering(f) && !recast {
+                if f.manual {
+                    self.reject("recover");
+                } else if !matches!(o, Order::Pull(_) | Order::Ult(_)) && self.pending_walk.is_none() {
+                    // the AI walks on toward its target while it recovers
+                    let (Order::Jump(p) | Order::S1(p) | Order::S2(p) | Order::S3(p) | Order::Pull(p) | Order::Ult(p)) = o;
+                    if !p.within(f.pos, d::BASIC_RANGE) {
+                        self.walk(f, p);
+                    }
+                }
+            } else if !f.stunned || self.airborne(f) {
                 self.execute(f, o, &mut out);
+                if self.rejection.is_empty() {
+                    let air = self.airborne(f) || self.air.is_some_and(|a| a.until > f.tick);
+                    self.ready_at = f.tick + t(if air { d::RECOVER_AIR_RECOVER_TICKS } else { d::RECOVER_RECOVER_TICKS });
+                }
             }
         }
         if let Some(to) = self.pending_walk.take() {
@@ -765,7 +792,7 @@ impl Core {
             return Some(("kick", d::JUMP_KICK_JUMP));
         }
         if self.airborne(f) {
-            return self.air.filter(|a| a.double_left).map(|_| ("double", d::JUMP_RANGE));
+            return self.air.filter(|a| a.double_left).map(|_| ("double", d::JUMP_DOUBLE_RANGE));
         }
         (self.jumps > 0).then_some(("jump", d::JUMP_RANGE))
     }
@@ -798,7 +825,7 @@ impl Core {
                 self.fly(f, to, t(d::JUMP_AIR_TICKS) * range as u64 / d::JUMP_RANGE.max(1) as u64, true, out);
             }
             "double" => {
-                self.fly(f, to, t(d::JUMP_AIR_TICKS), false, out);
+                self.fly(f, to, (t(d::JUMP_AIR_TICKS) * range as u64 / d::JUMP_RANGE.max(1) as u64).max(t(d::JUMP_AIR_TICKS) * 2 / 3), false, out);
             }
             _ => {
                 self.spend_jump(f);
@@ -817,7 +844,7 @@ impl Core {
     pub fn sling(&self, f: &Frame, w: Point) -> (Point, u64, i64) {
         let dist = f.pos.dist(w) as i64;
         let dir = unit_dir(f.pos, w);
-        let speed = d::PULL_SPEED_BASE + dist / d::PULL_SPEED_DIVISOR.max(1);
+        let speed = (d::PULL_SPEED_BASE + dist / d::PULL_SPEED_DIVISOR.max(1)).min(d::PULL_SPEED_CAP);
         let over = (dist * d::PULL_OVERSHOOT_PCT / 100).min(d::PULL_OVERSHOOT_MAX);
         let land = self.safe_land(f, w.along(dir, over.max(WALL_HALF + 6_000)), dir);
         (land, travel(f.pos, land, speed), speed)
@@ -848,7 +875,7 @@ impl Core {
         self.pull_at = f.tick + t(d::PULL_COOLDOWN_TICKS);
         let (land, ticks, speed) = self.sling(f, w);
         // fly-through: knocked aside, harder the faster he flies
-        let scale = (speed * 100 / 2_500).clamp(100, 200);
+        let scale = (speed * 100 / 1_500).clamp(100, 150);
         let dir = unit_dir(f.pos, land);
         for u in f.units.iter().filter(|u| f.skill_target(u)) {
             if seg_dist(u.pos, f.pos, land) <= d::PULL_HIT_RADIUS as f64 {
@@ -1237,12 +1264,15 @@ impl Core {
 
     /// S3 air: Whip Swing. Snare, swing 360° + x with the whip growing to 2x, slam at x into a wall (raised if none).
     fn whip_swing(&mut self, f: &Frame, aim: Point, out: &mut Vec<Effect>) {
-        let Some(u) = f
-            .enemy_champions()
-            .filter(|u| !u.tower && u.pos.within(f.pos, d::SWING_RANGE))
-            .min_by_key(|u| (u.pos.d2(aim), u.id))
-            .cloned()
-        else {
+        // an enemy champion first; with none in reach, a minion or jungle monster (every skill but the ult works on creeps)
+        let near = |champ: bool| {
+            f.units
+                .iter()
+                .filter(|u| f.skill_target(u) && u.champion == champ && u.pos.within(f.pos, d::SWING_RANGE))
+                .min_by_key(|u| (u.pos.d2(aim), u.id))
+                .cloned()
+        };
+        let Some(u) = near(true).or_else(|| near(false)) else {
             return self.reject("s3");
         };
         self.s3_at = f.tick + t(d::CLAP_COOLDOWN_TICKS);
@@ -1704,7 +1734,7 @@ impl Core {
             }
         }
         // 3. follow-up: go hit what he slammed
-        if let Some(u) = self.last_slammed.and_then(|l| f.unit(l.0)).filter(|u| f.skill_target(u)).cloned() {
+        if let Some(u) = self.last_slammed.and_then(|l| f.unit(l.0)).filter(|u| u.champion && f.skill_target(u)).cloned() {
             if let Some(o) = self.engage(f, &u) {
                 return Some(o);
             }
@@ -1740,17 +1770,88 @@ impl Core {
             self.walk(f, u.pos);
             return None;
         }
-        // 6. farm: Hurl through a wave (never S3 or the ult)
-        if f.tick >= self.s2_at && !self.airborne(f) && f.enemy_champions().all(|u| !u.pos.within(f.pos, d::AI_ENGAGE_RANGE)) {
-            let minions: Vec<&Unit> = f.units.iter().filter(|u| f.skill_target(u) && !u.champion && u.pos.within(f.pos, d::HURL_RANGE)).collect();
-            if let Some(m) = minions.iter().max_by_key(|m| (minions.iter().filter(|o| o.pos.within(m.pos, d::HURL_RADIUS)).count(), std::cmp::Reverse(m.id))) {
-                if minions.iter().filter(|o| o.pos.within(m.pos, d::HURL_RADIUS)).count() >= 3 && !self.walls.is_empty() {
-                    self.reason = "Farm".into();
-                    return Some(Order::S2(m.pos));
-                }
+        // 6. farm: every skill but the ult works on minions and jungle monsters (only when calm: no enemy champion near)
+        if f.enemy_champions().all(|u| !u.pos.within(f.pos, d::AI_ENGAGE_RANGE)) {
+            if let Some(o) = self.farm(f) {
+                return Some(o);
             }
         }
         self.reason.clear();
+        None
+    }
+
+    /// a camp monster or big creep: worth a single-target skill
+    fn big(u: &Unit) -> bool {
+        u.max_hp >= 1_000
+    }
+    /// His farming (basalt-1.4): all six non-ult skills on farmable units. Ground: Crushing Clap on two creeps or a
+    /// monster, Raise & Punch into a camp, Hurl on two creeps or a monster. Airborne: Whip Swing a monster, Slab Drop on
+    /// a group or a monster, Air Dash onto a camp. A jump onto a camp in reach opens the air skills.
+    pub fn farm(&mut self, f: &Frame) -> Option<Order> {
+        let farm: Vec<Unit> = f.units.iter().filter(|u| u.farmable && f.skill_target(u) && u.pos.within(f.pos, d::HURL_RANGE)).cloned().collect();
+        if farm.is_empty() {
+            return None;
+        }
+        let around = |p: Point, r: i64| farm.iter().filter(|o| o.pos.within(p, r)).count();
+        let best = |pick: &dyn Fn(&Unit) -> bool, r: i64| -> Option<Unit> {
+            farm.iter()
+                .filter(|u| pick(u))
+                .max_by_key(|u| (around(u.pos, r), Self::big(u), std::cmp::Reverse(u.pos.d2(f.pos)), std::cmp::Reverse(u.id)))
+                .cloned()
+        };
+        let air = self.airborne(f);
+        if air {
+            if !self.air.is_some_and(|a| !a.spent) {
+                return None;
+            }
+            if f.tick >= self.s3_at {
+                if let Some(u) = best(&|u| Self::big(u) && u.pos.within(f.pos, d::SWING_RANGE), 0) {
+                    self.reason = "Farm: Whip Swing".into();
+                    return Some(Order::S3(u.pos));
+                }
+            }
+            if f.tick >= self.s2_at {
+                if let Some(u) = best(&|u| u.pos.within(f.pos, d::SLAB_RANGE), d::SLAB_RADIUS).filter(|u| around(u.pos, d::SLAB_RADIUS) >= 2 || Self::big(u)) {
+                    self.reason = "Farm: Slab Drop".into();
+                    return Some(Order::S2(u.pos));
+                }
+            }
+            if self.punches > 0 {
+                if let Some(u) = best(&|u| Self::big(u) && !u.pos.within(f.pos, d::SWING_RANGE) && u.pos.within(f.pos, d::AIR_DASH_RANGE + d::SWING_RANGE), 0) {
+                    self.reason = "Farm: Air Dash".into();
+                    return Some(Order::S1(u.pos));
+                }
+            }
+            return None;
+        }
+        // a jump onto a camp opens the air skills (only with both charges, so one stays for fights)
+        if self.jumps >= d::JUMP_CHARGES && (f.tick >= self.s3_at || f.tick >= self.s2_at) {
+            if let Some(u) = best(&|u| Self::big(u) && u.pos.within(f.pos, d::JUMP_RANGE + d::SWING_RANGE) && !u.pos.within(f.pos, 30_000), 0) {
+                if f.enemy_tower_at(u.pos).is_none() {
+                    self.reason = "Farm: jump onto the camp".into();
+                    return Some(Order::Jump(u.pos));
+                }
+            }
+        }
+        if f.tick >= self.s3_at {
+            if let Some(u) = best(&|u| u.pos.within(f.pos, d::CLAP_REACH), 0).filter(|u| Self::clap_hits(f, u.pos) >= 2 || Self::big(u) && Self::clap_hits(f, u.pos) >= 1) {
+                self.reason = "Farm: Crushing Clap".into();
+                return Some(Order::S3(u.pos));
+            }
+        }
+        if self.punches > 0 {
+            if let Some(u) = best(&|u| Self::big(u) && u.pos.within(f.pos, 45_000), 0) {
+                self.reason = "Farm: Raise & Punch".into();
+                return Some(Order::S1(u.pos));
+            }
+        }
+        let throwable = !self.walls.is_empty() || !f.terrain_near(f.pos, d::HURL_GRAB_RANGE, 1).is_empty();
+        if f.tick >= self.s2_at && throwable {
+            if let Some(u) = best(&|_| true, d::HURL_RADIUS).filter(|u| around(u.pos, d::HURL_RADIUS) >= 2 || Self::big(u)) {
+                self.reason = "Farm: Hurl".into();
+                return Some(Order::S2(u.pos));
+            }
+        }
         None
     }
 

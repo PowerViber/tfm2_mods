@@ -46,7 +46,7 @@ Every number lives in `rules/grimhald.json`. `tools/generate-grimhald.py` writes
   - bashes an enemy whose knockback line runs into the pillar;
   - otherwise relocates the pillar behind the target;
   - otherwise charges into the pillar himself when 2+ enemies stand near it.
-- **Farming:** S2 on lines of 2+ farmable units or big camps, and S3 on big camps, only when calm. The ult is never used for farming.
+- **Farming** (calm; round 177, every skill but the ult works on creeps): S2 on lines of 2+ farmable units or big camps, S3 on any camp monster (1,000+ HP) or a bunch of three, and Iron Ghost to close onto a camp out of Bash reach. The ult is never used for farming.
 
 ## Code
 

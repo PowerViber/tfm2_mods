@@ -24,7 +24,7 @@ Her athlete attributes change her choices, never her power.
 - **S3:** spawns the twin when 2+ enemies are close, on a pool when she can (for the tide link). She swaps when dived onto or hit hard. The twin's own AI: nearest visible enemy champion within 70,000 (a farmable unit when no champion is near), walk into range, back off below 60% of its range, otherwise return near her.
 - **Ult:** throws at groups or low enemies, leading their movement. Aim improves with `skill_hit`. She prefers throwing from water.
 - **The trident's clone:** fights like the twin (target, range, kiting) but within 80,000 of where it landed, and casts on its own: Tide Pool onto the spot that catches the most champions (a pool below it on land), Dive onto a champion beyond its bolts, or away when below 40% HP.
-- **Farming:** surges whirlpools onto waves and camps when it's calm.
+- **Farming** (calm; round 177, every skill but the ult works on creeps): Tide Pool on a wave of three or a camp monster, Tide Twin sent at a camp or wave, and Dive onto one from water. Never the ult.
 
 ## Code
 - `native/tfm2_custom_ai/src/thalassa_core.rs` (core), `thalassa.rs` (bridge), `thalassa_core_tests.rs` + `thalassa_tests.rs`.

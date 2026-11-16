@@ -31,6 +31,7 @@ Category **Util**, tags AD / Range / Heal / Shield. Numbers live in `rules/kagam
 - **Concurrency:** several swaps can run at once, one per clone.
 
 ## AI
+- **Jungling** (round 177, Reihan: a roamer can jungle too): when calm, her clones guarding her shoot the camp, she Charms herself at a camp, Mirror Steps onto a far camp, and Mends herself below 60%. Ally-only uses stay on allies; the ult never goes to creeps.
 Her own casts, in priority order (the athlete values still shape the thresholds):
 1. **Heal:** Moonlit Mend on the lowest teammate (her included) under 60% HP.
 2. **Rescue** (the teammate cooldown): Mirror Step a teammate who is low, with an enemy champion close, when one of her clones stands somewhere safer than they do.

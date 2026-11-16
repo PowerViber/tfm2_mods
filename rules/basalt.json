@@ -7,7 +7,7 @@
     "Melee",
     "CC"
   ],
-  "revision": "basalt-1.3",
+  "revision": "basalt-1.4",
   "stat": {
     "attack": 80,
     "magic_power": 0,
@@ -40,6 +40,10 @@
     "duration": 20,
     "startTiming": 10
   },
+  "recover": {
+    "recoverTicks": 30,
+    "airRecoverTicks": 21
+  },
   "wall": {
     "max": 5,
     "size": 32000,
@@ -59,21 +63,23 @@
   "jump": {
     "charges": 2,
     "rechargeTicks": 360,
-    "range": 90000,
-    "airTicks": 36,
+    "range": 60000,
+    "doubleRange": 40000,
+    "airTicks": 48,
     "landRadius": 20000,
     "landBase": 30,
     "landAdRatio": 30,
     "kickRange": 25000,
-    "kickJump": 140000
+    "kickJump": 80000
   },
   "pull": {
     "cooldownTicks": 420,
-    "range": 120000,
-    "speedBase": 2000,
-    "speedDivisor": 40,
-    "overshootPct": 50,
-    "overshootMax": 60000,
+    "range": 80000,
+    "speedBase": 1200,
+    "speedDivisor": 100,
+    "speedCap": 2000,
+    "overshootPct": 20,
+    "overshootMax": 20000,
     "hitRadius": 12000,
     "hitBase": 20,
     "hitAdRatio": 30
@@ -83,15 +89,15 @@
     "rechargeTicks": 480,
     "raiseAhead": 20000,
     "knockTicks": 30,
-    "slide": 110000,
-    "slideTicks": 36,
+    "slide": 80000,
+    "slideTicks": 54,
     "base": 50,
     "adRatio": 60
   },
   "airDash": {
-    "range": 90000,
-    "ticks": 18,
-    "extraAirTicks": 24,
+    "range": 50000,
+    "ticks": 36,
+    "extraAirTicks": 30,
     "hitRadius": 12000,
     "base": 40,
     "adRatio": 40
@@ -100,7 +106,7 @@
     "cooldownTicks": 540,
     "grabRange": 120000,
     "range": 160000,
-    "flightTicks": 30,
+    "flightTicks": 48,
     "radius": 25000,
     "knock": 35000,
     "base": 80,
@@ -108,7 +114,7 @@
   },
   "slab": {
     "range": 90000,
-    "flightTicks": 18,
+    "flightTicks": 36,
     "radius": 25000,
     "knockTicks": 60,
     "base": 80,
@@ -118,7 +124,7 @@
     "cooldownTicks": 720,
     "coneDeg": 70,
     "reach": 110000,
-    "closeTicks": 18,
+    "closeTicks": 42,
     "stunTicks": 75,
     "base": 110,
     "adRatio": 110
@@ -126,7 +132,7 @@
   "swing": {
     "range": 45000,
     "maxRadius": 90000,
-    "spinTicks": 36,
+    "spinTicks": 60,
     "base": 120,
     "adRatio": 150,
     "allyReach": 200000
@@ -155,7 +161,7 @@
     "burnBase": 10,
     "burnAdRatio": 12,
     "recastTicks": 300,
-    "recastSpeedCap": 9000
+    "recastSpeedCap": 4000
   },
   "ai": {
     "engageRange": 160000,

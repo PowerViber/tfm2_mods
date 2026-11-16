@@ -629,3 +629,34 @@ fn the_cage_drops_as_soon_as_no_enemy_champion_is_inside() {
     run(&mut core, &mut f, 2, &mut log);
     assert!(core.planted.is_none());
 }
+
+// ------------------------------------------------------------------ grimhald-1.4: every skill but the ult on creeps
+
+#[test]
+fn he_farms_with_bulwark_skull_bash_and_iron_ghost_never_the_ult() {
+    let monster = |id: usize, x: i64, y: i64| Unit { champion: false, farmable: true, hp: 1_200, max_hp: 1_200, ..unit(id, 1, x, y) };
+    let wave = |id: usize, x: i64, y: i64| Unit { champion: false, farmable: true, hp: 300, max_hp: 300, ..unit(id, 1, x, y) };
+    let mut f = frame(0, 300_000, 300_000, vec![wave(40, 330_000, 300_000), wave(41, 345_000, 300_000), monster(30, 368_000, 300_000)]);
+    f.manual = false;
+    let mut c = Core::default();
+    let mut used: Vec<&'static str> = vec![];
+    let mut log = vec![];
+    for tick in 0..1_800u64 {
+        f.tick = tick;
+        run(&mut c, &mut f, 1, &mut log);
+        if !c.last_skill.is_empty() && !used.contains(&c.last_skill) {
+            used.push(c.last_skill);
+        }
+        for u in f.units.iter_mut() {
+            u.hp = u.max_hp;
+        }
+        if tick % 400 == 0 {
+            f.pos = Point::new(300_000, 300_000);
+            f.units[2].pos = Point::new(368_000, 300_000);
+        }
+    }
+    for k in ["bulwark", "bash", "ghost"] {
+        assert!(used.iter().any(|u| u.starts_with(k)), "{k} never used on creeps: {used:?}");
+    }
+    assert!(!used.iter().any(|u| u.contains("verdict") || *u == "ult"), "never the ult on creeps: {used:?}");
+}

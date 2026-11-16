@@ -57,8 +57,22 @@ fn lifted(p: Point, height: i64) -> Point {
     Point::new(p.x, p.y - height)
 }
 type Lease = (String, Cue, u64);
+/// Emission priority (basalt-1.4, the flicker fix): standing walls first, then the ult's rock, meteors and their
+/// warnings, then everything else. Walls and ult cues never wait behind the per-tick cap.
+fn priority(key: &str) -> u8 {
+    if key.starts_with("wall:") {
+        0
+    } else if key.starts_with("charge") || key.starts_with("shot:") || key.starts_with("meteor:") {
+        1
+    } else {
+        2
+    }
+}
+/// Most standing walls plus ult cues alive at once (5 walls; a charge, its warning, the rock or 3 meteors and its
+/// warning, six falling meteors with warnings)
+pub const PRIORITY_CUES: usize = 24;
 fn add(out: &mut Vec<Lease>, key: String, name: String, at: Point, period: u64) {
-    if out.len() < a::MAX_CUES as usize {
+    {
         out.push((
             key,
             Cue {
@@ -409,16 +423,36 @@ impl Presenter {
                 } as u64,
             );
         }
+        // Priority first, then oldest due: walls and the ult are never starved by whip strips and cones.
+        list.sort_by_key(|l| (priority(&l.0), self.due.get(&l.0).copied().unwrap_or(0)));
+        let (mut top, mut rest) = (0usize, 0usize);
+        list.retain(|l| {
+            if priority(&l.0) < 2 {
+                top += 1;
+                top <= PRIORITY_CUES
+            } else {
+                rest += 1;
+                rest <= a::MAX_CUES as usize
+            }
+        });
         self.due.retain(|key, _| list.iter().any(|l| &l.0 == key));
-        // Oldest due first avoids starving a static wall behind moving cues.
-        list.sort_by_key(|l| self.due.get(&l.0).copied().unwrap_or(0));
-        for (key, cue, period) in list {
-            if result.leases.len() >= a::MAX_EMISSIONS as usize {
-                break;
+        let mut capped = 0;
+        for (key, mut cue, period) in list {
+            let top = priority(&key) < 2;
+            if !top && capped >= a::MAX_EMISSIONS as usize {
+                continue;
             }
             if self.due.get(&key).copied().unwrap_or(0) <= f.tick {
+                // a cue that stays put lives two periods, so one late renewal never leaves a gap; a moving one keeps
+                // period + 1 so no doubled image trails behind it
+                if top && period != a::DYNAMIC_PERIOD as u64 {
+                    cue.ticks = 2 * period + 1;
+                }
                 self.due.insert(key, f.tick + period);
                 result.leases.push(cue);
+                if !top {
+                    capped += 1;
+                }
             }
         }
         result
@@ -531,9 +565,74 @@ mod tests {
         }
         for t in 1..100 {
             let v = p.step(&c, &frame(t), &[]);
-            assert!(v.leases.len() <= a::MAX_EMISSIONS as usize);
-            assert!(v.leases.iter().all(|c| c.ticks <= 7));
-            assert!(p.due.len() <= a::MAX_CUES as usize);
+            assert!(v.leases.iter().filter(|c| c.name != "bs_square").count() <= a::MAX_EMISSIONS as usize);
+            assert!(v.leases.len() <= a::MAX_EMISSIONS as usize + PRIORITY_CUES);
+            assert!(v.leases.iter().all(|c| c.ticks <= 2 * a::WALL_PERIOD as u64 + 1));
+            assert!(p.due.len() <= a::MAX_CUES as usize + PRIORITY_CUES);
+        }
+    }
+
+    /// Every lease name -> the last tick it is covered through
+    fn coverage(cover: &mut BTreeMap<String, u64>, v: &Visuals, t: u64, key: impl Fn(&Cue) -> Option<String>) {
+        for c in &v.leases {
+            if let Some(k) = key(c) {
+                let e = cover.entry(k).or_insert(0);
+                *e = (*e).max(t + c.ticks - 1);
+            }
+        }
+    }
+    fn busy_core(meteors: bool) -> Core {
+        let mut c = Core::default();
+        for i in 0..5 {
+            let at = Point::new(250000 + i * 40000, 200000);
+            c.walls.push(crate::basalt_core::StoneWall { id: i as u32, a: at, b: at, integrity: 3, born: 1, out_since: None, slide: None });
+        }
+        // a clap (cone + two whip strips) and a swing tether keep the capped cues full
+        c.claps.push(crate::basalt_core::Clap { start: 1, apex: Point::new(300000, 300000), dir: (0.0, -1.0), left: 0, right: 1, r0: 0, r1: 0 });
+        if meteors {
+            for k in 0..6 {
+                c.meteors.push((Point::new(500000 + k * 20000, 450000), 10_000 + k as u64));
+            }
+        }
+        c
+    }
+
+    #[test]
+    fn standing_walls_never_blink_even_with_the_emission_cap_full() {
+        let mut p = Presenter::default();
+        let c = busy_core(false);
+        let mut cover = BTreeMap::new();
+        for t in 1..=600u64 {
+            let v = p.step(&c, &frame(t), &[]);
+            coverage(&mut cover, &v, t, |x| (x.name == "bs_square").then(|| format!("{:?}", x.at)));
+            if t > 1 {
+                assert_eq!(cover.len(), 5, "every wall drawn");
+                for (k, until) in &cover {
+                    assert!(*until >= t, "wall {k} has a gap at tick {t}");
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn the_ult_never_blinks_while_six_meteors_fall_beside_walls_and_whips() {
+        let mut p = Presenter::default();
+        let mut c = busy_core(true);
+        c.charging = Some((true, Point::new(500000, 450000), 10_000));
+        let mut cover = BTreeMap::new();
+        for t in 1..=600u64 {
+            let v = p.step(&c, &frame(t), &[]);
+            coverage(&mut cover, &v, t, |x| {
+                (x.name.starts_with("bs_meteor") || x.name.starts_with("bs_boulder") || x.name == "bs_square").then(|| format!("{}:{:?}", x.name, x.at))
+            });
+            if t > 1 {
+                // the falling meteors move each renewal, so check by name class: something of each kind covers every tick
+                for kind in ["bs_meteor:", "bs_meteor_warning:", "bs_meteor_area_warning:", "bs_boulder:", "bs_square:"] {
+                    assert!(cover.iter().any(|(k, u)| k.starts_with(kind) && *u >= t), "{kind} gap at tick {t}");
+                }
+                let warnings = cover.iter().filter(|(k, u)| k.starts_with("bs_meteor_warning:") && **u >= t).count();
+                assert_eq!(warnings, 6, "every meteor warning drawn at tick {t}");
+            }
         }
     }
 }

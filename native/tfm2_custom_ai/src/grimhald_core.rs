@@ -1313,30 +1313,44 @@ impl Core {
         Some(Order::Ghost(t.pos.offset(dir(f.pos, t.pos), 6_000.0)))
     }
 
+    /// His farming (grimhald-1.4: every skill but the ult works on minions and jungle monsters), calm only: Stone
+    /// Bulwark through a line of two or a big monster, Skull Bash a camp monster (or a bunch of three), and Iron Ghost
+    /// as the gap-closer onto a camp out of reach with the Bash ready.
     fn decide_farm(&self, f: &Frame) -> Option<Order> {
         if f.enemy_champions().any(|e| e.pos.within(f.pos, 70_000)) {
             return None;
         }
-        let farm: Vec<&Unit> = f.units.iter().filter(|u| u.farmable && !u.champion && u.pos.within(f.pos, d::BULWARK_LENGTH)).collect();
+        let reach = d::BULWARK_LENGTH.max(d::BASH_RANGE).max(d::GHOST_MAX_DISTANCE + 26_000);
+        let farm: Vec<&Unit> = f.units.iter().filter(|u| u.farmable && !u.champion && u.pos.within(f.pos, reach)).collect();
         if farm.is_empty() {
             return None;
         }
-        if self.ready(1, f.tick) {
+        let near: Vec<&Unit> = farm.iter().copied().filter(|u| u.pos.within(f.pos, d::BULWARK_LENGTH)).collect();
+        if self.ready(1, f.tick) && !near.is_empty() {
             // the line through the most of them
-            let best = farm.iter().max_by_key(|t| {
+            let line = |t: &Unit| {
                 let end = f.pos.toward(t.pos, d::BULWARK_LENGTH);
-                (farm.iter().filter(|o| seg_d2(o.pos, f.pos, end) <= ((d::BULWARK_WIDTH + o.radius) as f64).powi(2)).count(), std::cmp::Reverse(t.id))
-            })?;
-            let end = f.pos.toward(best.pos, d::BULWARK_LENGTH);
-            let n = farm.iter().filter(|o| seg_d2(o.pos, f.pos, end) <= ((d::BULWARK_WIDTH + o.radius) as f64).powi(2)).count();
-            if n >= 2 || best.max_hp >= 1_500 {
-                return Some(Order::Bulwark(best.pos));
+                near.iter().filter(|o| seg_d2(o.pos, f.pos, end) <= ((d::BULWARK_WIDTH + o.radius) as f64).powi(2)).count()
+            };
+            if let Some(best) = near.iter().max_by_key(|t| (line(t), std::cmp::Reverse(t.id))) {
+                if line(best) >= 2 || best.max_hp >= 1_500 {
+                    return Some(Order::Bulwark(best.pos));
+                }
             }
         }
         if self.ready(2, f.tick) {
-            let t = farm.iter().filter(|u| u.pos.within(f.pos, d::BASH_RANGE)).max_by_key(|u| (u.max_hp, std::cmp::Reverse(u.id)))?;
-            if t.max_hp >= 1_500 {
-                return Some(Order::Bash(t.pos));
+            let bashable: Vec<&&Unit> = farm.iter().filter(|u| u.pos.within(f.pos, d::BASH_RANGE)).collect();
+            if let Some(t) = bashable.iter().max_by_key(|u| (u.max_hp, std::cmp::Reverse(u.id))) {
+                let bunch = bashable.iter().filter(|o| o.pos.within(t.pos, 25_000)).count();
+                if t.max_hp >= 1_000 || bunch >= 3 {
+                    return Some(Order::Bash(t.pos));
+                }
+            }
+            // Iron Ghost onto a camp monster beyond the Bash, so the Bash lands next
+            if self.ready(0, f.tick) {
+                if let Some(t) = farm.iter().filter(|u| u.max_hp >= 1_000 && !u.pos.within(f.pos, d::BASH_RANGE) && f.can_reach(u)).min_by_key(|u| (u.pos.d2(f.pos), u.id)) {
+                    return Some(Order::Ghost(t.pos.offset(dir(f.pos, t.pos), -6_000.0)));
+                }
             }
         }
         None

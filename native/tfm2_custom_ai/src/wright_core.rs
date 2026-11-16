@@ -1038,11 +1038,11 @@ impl Core {
             if let Some(at) = best_bomb() {
                 return Some(Order::Bomber(at));
             }
-            // calm: carpet-bomb a camp or a wave (3+ units)
+            // calm: carpet-bomb a wave (3+ units) or a camp monster (every skill but the ult works on creeps)
             if f.calm() {
                 let farm: Vec<&Unit> = f.units.iter().filter(|u| f.enemy(u) && u.farmable && u.pos.within(f.pos, d::BOMBER_RANGE)).collect();
                 if let Some(u) = farm.iter().find(|u|bomber_centres(f.pos,u.pos).is_some_and(|centres|
-                    farm.iter().filter(|o|centres.iter().any(|c|o.pos.within(*c,d::BOMBER_RADIUS+o.radius))).count()>=3)) {
+                    u.max_hp>=1_000 || farm.iter().filter(|o|centres.iter().any(|c|o.pos.within(*c,d::BOMBER_RADIUS+o.radius))).count()>=3)) {
                     return Some(Order::Bomber(u.pos));
                 }
             }

@@ -111,6 +111,7 @@ impl Basalt {
         values[9..].copy_from_slice(&profile.sense.0);
         let snapshot = crate::champions_shared(sim);
         let realms = crate::realm::realms(sim);
+        let farming = crate::farming::Context::new(sim, owner);
         let mut units = vec![];
         for e in (0..sim.entity_count()).filter_map(|i| sim.entity_at(i)) {
             if e.id() == owner || !e.is_alive() {
@@ -122,6 +123,14 @@ impl Basalt {
             let h = e.hp();
             let reach = crate::realm::can_interact(&realms, owner, e.id()) && crate::grimhald_cage::can_interact(&snapshot, owner, e.id());
             let kind = e.kind();
+            let champion = e.is_champion();
+            let targetable = e.is_targetable() && reach;
+            let farmable = farming.calm()
+                && e_team != team
+                && targetable
+                && visible
+                && !champion
+                && farming.eligible_known(e.id(), e_team, kind, p, kind.is_none() && e.is_minion(), &crate::entity_buffs(&snapshot, &e));
             units.push(Unit {
                 id: e.id(),
                 team: e_team,
@@ -129,10 +138,11 @@ impl Basalt {
                 hp: h.0 as i64,
                 max_hp: h.1.max(1) as i64,
                 attack: e.stat().attack as i64,
-                champion: e.is_champion(),
+                champion,
                 tower: e.is_tower() || kind == Some(mod_api_stable::EntityKindV1::Nexus),
                 visible,
-                targetable: e.is_targetable() && reach,
+                targetable,
+                farmable,
             });
         }
         // other champions' shared walls (Steve's boats, Grimhald's cage): his own are his core's
@@ -288,7 +298,7 @@ impl Basalt {
             let drawn = if drawn == 0 || tick >= drawn + every {
                 if !self.art {
                     for (dx, dy) in [(-1, -1), (1, -1), (-1, 1), (1, 1)] {
-                        crate::fx_point(sim, "bs_block", owner, c.x + dx * h / 2, c.y + dy * h / 2, every + 2);
+                        crate::fx_point(sim, "bs_block", owner, c.x + dx * h / 2, c.y + dy * h / 2, if moving { every + 2 } else { 2 * every + 1 });
                     }
                 }
                 tick

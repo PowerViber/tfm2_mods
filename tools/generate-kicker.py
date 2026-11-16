@@ -44,10 +44,10 @@ text = {
                f"{rk['adRatio']}% Attack and marking each unit it hits. While Bounced: Rock Rain, {rk['rainCount']} rocks in a narrow fan ({rk['rainRange']}), "
                f"{rk['rainPct']}% damage each. "
                f"Homecoming Kick / Skyfall Kick ({ki['charges']} charges, {sec(ki['rechargeTicks'])} each): on the ground he dashes up to {ki['dashRange']} to an enemy "
-               f"champion and kicks it {ki['distance']} away from him for {ki['base']} + {ki['adRatio']}% Attack. The flying body hits up to {ki['secondaryMax']} other "
+               f"champion (or a minion or camp monster) and kicks it {ki['distance']} away from him for {ki['base']} + {ki['adRatio']}% Attack. The flying body hits up to {ki['secondaryMax']} other "
                f"enemy champions ({ki['secondaryPct']}% damage, knocked up {sec(ki['secondaryKnockTicks'])}); a wall stops it and stuns for {sec(ki['wallStunTicks'])}. "
                f"Flash just before or during the kick re-aims it. While Bounced: Skyfall Kick, a {sk['range']} dive that carries the first enemy champion in its line "
-               f"to the end, through walls, for {sk['base']} + {sk['adRatio']}% Attack; he lands behind it with a Drop-in."),
+               f"(else the first minion or creep) to the end, through walls, for {sk['base']} + {sk['adRatio']}% Attack; he lands behind it with a Drop-in."),
     'ult': (f"Second Wind ({sec(ul['cooldownTicks'])}): he sprays a tag where he stands and fights freely for {sec(ul['ticks'])}. If he would die in that time "
             f"he doesn't: he's sent back to the tag with full HP. If the time runs out, he's sent back to the tag with the HP he had when he cast it. "
             f"His skills never hit towers."),

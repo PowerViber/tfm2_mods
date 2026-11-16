@@ -1444,9 +1444,19 @@ impl Core {
                 }
             }
         }
-        // ---- calm: farm a wave or camp with the kunai and the edge
+        // ---- calm: farm a wave or camp with every skill but the ult (akane-1.7): the kunai, the edge, and Dismiss &
+        // Devour to heal up between camps or close on a camp monster (a charge always kept)
         if f.calm() {
             let farm: Vec<&Unit> = f.units.iter().filter(|u| f.skill_target(u) && u.farmable && u.pos.within(f.pos, d::KUNAI_RANGE)).collect();
+            if self.charges >= d::SOUL_CHARGES && !self.soul_on {
+                if let Some(u) = farm.iter().min_by_key(|u| (u.pos.d2(f.pos), u.id)) {
+                    let hurt = Self::hp_pct(f) < 60;
+                    let far_camp = u.max_hp >= 1_000 && !u.pos.within(f.pos, d::BASIC_RANGE + u.radius + 15_000);
+                    if (hurt || far_camp) && f.enemy_tower_at(u.pos).is_none() {
+                        return Some(Order::Soul);
+                    }
+                }
+            }
             if let Some(u) = farm.iter().min_by_key(|u| (u.pos.d2(f.pos), u.id)) {
                 if self.ready(KUNAI, f.tick) && f.enemy_tower_at(u.pos).is_none() {
                     return Some(Order::Kunai(u.pos));

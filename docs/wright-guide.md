@@ -19,6 +19,7 @@ Wright is an Original-family **summoner mage**, designed by Reihan. He plays mid
 - **S3** first when an ally (or he) is below 60% HP.
 - **S2** onto the spot catching the most champions; when calm, onto a camp or wave of 3+.
 - **S1** when champions are near, or (calm) to farm.
+- **S2 farming** (round 177): the Carpet Bomber on a wave of three or a lone camp monster. Repair stays for allies; the Carrier never goes to creeps.
 - His athlete attributes change his choices, never his power.
 
 ## Code

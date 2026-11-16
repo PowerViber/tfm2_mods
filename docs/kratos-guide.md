@@ -24,7 +24,7 @@ Kratos is a **God of War**-family **engage bruiser (diver)**, designed by Reihan
 - **Heimdall's Sight** when focused (2+ champions close) or hurt with one close.
 - **Guard → Dash** to engage from 55,000–90,000; **Dash → Guard** when he lands in a crowd or hurt.
 - **Rampage** once a champion is in reach, or 2+ enemies in a fight; it steers its next advance at the nearest champion.
-- **Farming when calm** (no enemy champion within 90,000): the Rampage on a wave or camp, and the Chain Dash onto a far camp or wave (it's movement too).
+- **Farming when calm** (no enemy champion within 90,000): the Rampage on a wave or camp, and the Chain Dash onto a far camp or wave (it's movement too). Fenrir is never used on creeps (a test confirms both, round 177).
 - His athlete attributes change his choices (how hurt he'll engage at), never his power.
 
 ## Code

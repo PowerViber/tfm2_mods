@@ -1239,3 +1239,32 @@ fn bench_tick_cost() {
     }
     println!("BENCH akane ns/tick {} effects {}", t0.elapsed().as_nanos() / 36_000, fx);
 }
+
+// ------------------------------------------------------------------ akane-1.7: every skill but the ult on creeps
+
+#[test]
+fn she_farms_with_kunai_edge_and_dismiss_and_devour_never_the_ult() {
+    let monster = Unit { champion: false, farmable: true, hp: 2_000, max_hp: 2_000, ..champ(30, 9, 460_000, 400_000) };
+    let wave: Vec<Unit> = (0..3).map(|i| minion(40 + i, 408_000 + i as i64 * 4_000, 404_000)).collect();
+    let mut f = frame(0, std::iter::once(monster).chain(wave).collect());
+    f.manual = false;
+    f.hp = 800; // hurt: Dismiss heals her between camps
+    let mut c = Core::default();
+    let mut used = vec![];
+    for tick in 0..1_200u64 {
+        f.tick = tick;
+        c.step(&f);
+        if !c.last_skill.is_empty() && !used.contains(&c.last_skill) {
+            used.push(c.last_skill);
+        }
+        for u in f.units.iter_mut() {
+            u.hp = u.max_hp;
+        }
+        f.pos = Point::new(400_000, 400_000);
+    }
+    for k in ["soul", "kunai", "edge"] {
+        assert!(used.contains(&k), "{k} never used on creeps: {used:?}");
+    }
+    assert!(!used.iter().any(|k| k.contains("night")), "never the ult on creeps: {used:?}");
+    assert!(c.charges >= 1, "a Dismiss charge always kept");
+}

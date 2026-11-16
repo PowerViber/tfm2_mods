@@ -555,7 +555,7 @@ fn second_wind_saves_a_death_at_full_hp_and_otherwise_returns_with_the_cast_hp()
 // ------------------------------------------------------------------ AI
 
 #[test]
-fn ai_farms_with_the_rock_only_and_never_kicks_minions() {
+fn ai_throws_the_rock_through_a_wave_and_keeps_kicks_for_camp_monsters() {
     let mut c = Core::default();
     let mut f = frame(0, Point::new(400_000, 400_000), vec![minion(30, 440_000, 400_000), minion(31, 460_000, 400_000), minion(32, 480_000, 400_000)]);
     f.manual = false;
@@ -1182,4 +1182,72 @@ mod glue {
         let go: Vec<_> = g.buffs[0].iter().filter_map(|b| crate::kicker::steer_of(b.name())).collect();
         assert_eq!(go, vec![(124_000, 457_000)]);
     }
+}
+
+// ------------------------------------------------------------------ kicker-2.1: every skill but the ult on creeps
+
+fn monster(id: usize, x: i64, y: i64) -> Unit {
+    Unit { champion: false, farmable: true, hp: 2_000, max_hp: 2_000, team: 9, ..champ(id, 9, x, y) }
+}
+
+#[test]
+fn the_kick_and_skyfall_take_a_creep_when_no_champion_is_there() {
+    let mut c = Core::default();
+    let f = frame(0, Point::new(400_000, 400_000), vec![monster(30, 410_000, 400_000)]);
+    order(&mut c, &f, Order::Kick(30, Point::new(500_000, 400_000)));
+    assert!(c.rejection.is_empty(), "{}", c.rejection);
+    let mut f2 = f.clone();
+    let out = run(&mut c, &mut f2, None, 1, 40);
+    assert!(knock_to(&out, 30).is_some(), "the camp monster is kicked");
+    assert!(Core::skyfall_target(&f, Point::new(380_000, 400_000), Point::new(460_000, 400_000)) == Some(30));
+    let mut g = f.clone();
+    g.units.push(champ(FOE, 2, 430_000, 400_000));
+    assert_eq!(Core::skyfall_target(&g, Point::new(380_000, 400_000), Point::new(460_000, 400_000)), Some(FOE), "a champion first");
+}
+
+#[test]
+fn ai_farms_a_camp_with_every_skill_but_the_ult() {
+    let w = cell(10, 10);
+    let mut c = Core::default();
+    let mut f = frame(0, Point::new(w.x - 60_000, w.y), vec![monster(30, w.x + 50_000, w.y), monster(31, w.x + 55_000, w.y + 10_000), minion(32, w.x + 45_000, w.y - 8_000)]);
+    f.terrain = walls(&[(10, 10)]);
+    f.manual = false;
+    let mut kinds = vec![];
+    let mut glide: Option<(Point, Point, u64, u64)> = None;
+    for tick in 0..1_800 {
+        f.tick = tick;
+        if let Some((a, b, s, n)) = glide {
+            let k = ((tick - s) as f64 / n as f64).min(1.0);
+            f.pos = Point::new(a.x + ((b.x - a.x) as f64 * k) as i64, a.y + ((b.y - a.y) as f64 * k) as i64);
+            if k >= 1.0 {
+                glide = None;
+            }
+        }
+        let out = c.step(&f);
+        for e in &out {
+            if let Effect::Glide { to, ticks } = e {
+                glide = Some((f.pos, *to, tick, (*ticks).max(1)));
+            }
+            // a kicked monster lands where it was sent (then walks back to its camp)
+            if let Effect::Knock { target, to, .. } = e {
+                if let Some(u) = f.units.iter_mut().find(|u| u.id == *target) {
+                    u.pos = *to;
+                }
+            }
+        }
+        if tick % 240 == 0 {
+            f.units[0].pos = Point::new(w.x + 50_000, w.y);
+        }
+        // the camp stays alive
+        for u in f.units.iter_mut() {
+            u.hp = u.max_hp;
+        }
+        if !c.last_skill.is_empty() && kinds.last() != Some(&c.last_skill) {
+            kinds.push(c.last_skill);
+        }
+    }
+    for k in ["rock", "bounce", "kick", "skyfall", "dash"] {
+        assert!(kinds.contains(&k), "{k} never used on the camp: {kinds:?}");
+    }
+    assert!(!kinds.contains(&"second_wind"), "never the ult on creeps");
 }

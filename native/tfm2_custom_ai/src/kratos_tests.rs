@@ -777,3 +777,27 @@ fn spartan_charge_speeds_him_toward_a_champion_then_waits_its_cooldown() {
     f.pos.x -= 1_000;
     assert!(haste(&c.step(&f)).is_empty());
 }
+
+// ------------------------------------------------------------------ the creeps rule: every damaging skill but the ult on creeps
+
+#[test]
+fn he_farms_with_rampage_and_the_chain_dash_never_fenrir() {
+    let monster = Unit { champion: false, farmable: true, hp: 2_000, max_hp: 2_000, ..unit(30, 9, 400_000, 450_000) };
+    let mut f = frame(0, vec![minion(40, 410_000, 400_000), minion(41, 412_000, 403_000), monster]);
+    f.manual = false;
+    let mut c = Core::default();
+    let mut used = vec![];
+    for tick in 0..1_200u64 {
+        f.tick = tick;
+        c.step(&f);
+        if !c.last_skill.is_empty() && !used.contains(&c.last_skill) {
+            used.push(c.last_skill);
+        }
+        for u in f.units.iter_mut() {
+            u.hp = u.max_hp;
+        }
+        f.pos = Point::new(400_000, 400_000);
+    }
+    assert!(used.contains(&"rampage") && used.contains(&"dash"), "{used:?}");
+    assert!(!used.contains(&"fenrir"), "never the ult on creeps: {used:?}");
+}

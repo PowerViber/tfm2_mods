@@ -265,6 +265,28 @@ pub fn decide(c: &mut Core, f: &Frame) -> Option<Order> {
             );
         }
     }
+    // kagami-2.1, jungling (Reihan: a roamer can jungle too): calm, a camp or wave of hers to clear. Her clones guarding her
+    // shoot it; she Charms herself for the attack speed, Mends herself between camps (above), and her own Mirror Step
+    // carries her onto a far camp.
+    let calm = f.enemy_champions().all(|u| !u.pos.within(f.pos, d::AI_FIGHT_RANGE));
+    if calm {
+        let farm: Vec<&Unit> = f.units.iter().filter(|u| u.farmable && !u.champion && !u.tower && u.team != f.team).take(32).collect();
+        if f.tick >= c.charm_at && !c.charmed(f.owner, f.tick) && farm.iter().any(|u| u.pos.within(f.pos, 45_000)) {
+            push(Order::Charm(f.owner), 50 + f.p(AGGRESSIVE) / 5, "Jungle: Charm herself to clear the camp", vec!["Mend between camps".into()]);
+        }
+        if f.tick >= c.step_self_at && !c.stepping() && c.clone_alive(f) {
+            if let Some(m) = farm
+                .iter()
+                .filter(|u| u.max_hp >= 1_000 && !u.pos.within(f.pos, 45_000) && u.pos.within(f.pos, d::STEP_RANGE + 20_000))
+                .min_by_key(|u| (u.pos.d2(f.pos), u.id))
+            {
+                let p = m.pos.toward(f.pos, 15_000).clamp_map();
+                if p.within(f.pos, d::STEP_RANGE) && legal(f, p) && c.step_clone(f, p).is_some_and(|k| clear(f, k.pos, p)) && hazard(f, p) == 0 {
+                    push(Order::StepPoint(p), 45 + f.p(MACRO) / 5, "Jungle: Mirror Step onto a far camp", vec!["Charm herself at the camp".into()]);
+                }
+            }
+        }
+    }
     c.ai.evaluated = candidates.len();
     c.ai.horizon = horizon;
     // A bounded beam compares authored, legal-action continuations. Revalidate on every acceptance.
