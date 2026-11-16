@@ -107,6 +107,9 @@ pub struct Unit {
     /// sealed by any Kagami's ult (`kg_sealed`)
     #[serde(default)]
     pub sealed: bool,
+    /// a minion or jungle monster her farming may work on (the shared farming rules say so, and it's calm)
+    #[serde(default)]
+    pub farmable: bool,
 }
 
 /// One of her clones as the bridge sees it (alive, in the world), with the slot it was spawned for
@@ -226,6 +229,7 @@ impl Frame {
             visible: true,
             targetable: true,
             sealed: false,
+            farmable: false,
         }
     }
 }

@@ -8,7 +8,7 @@ import copy, json, re, sys
 ROOT = Path(__file__).resolve().parents[1]
 rules = json.loads((ROOT / 'rules/basalt.json').read_text())
 ID = rules['id']
-GROUPS = ['basic', 'wall', 'slam', 'jump', 'pull', 'punch', 'airDash', 'hurl', 'slab', 'clap', 'swing', 'ult', 'ai']
+GROUPS = ['basic', 'recover', 'wall', 'slam', 'jump', 'pull', 'punch', 'airDash', 'hurl', 'slab', 'clap', 'swing', 'ult', 'ai']
 
 
 def snake(s):
@@ -24,7 +24,7 @@ for group in GROUPS:
 lines.append(f'pub const FX_TOKENS: usize = {rules["fxTokens"]};')
 rust = '\n'.join(lines) + '\n'
 
-b, w, sl, j, pu, pn, ad, hu, sb, cl, sw, ul, _ = (rules[k] for k in GROUPS)
+b, rc, w, sl, j, pu, pn, ad, hu, sb, cl, sw, ul, _ = (rules[k] for k in GROUPS)
 sec = lambda n: f'{n / 60:g} s'
 text = {
     'name': rules['name'],
@@ -33,9 +33,11 @@ text = {
               f"slammed into it) and then shatters into rubble (+{w['rubblePct']}% on his next whip). Any enemy his skills drive into a wall (his or the map's) is "
               f"slammed: stunned {sec(sl['stunTicks'])} and {sl['base']} + {sl['adRatio']}% Attack (once every {sec(sl['repeatTicks'])} per target). "
               f"Jump (passive, {j['charges']} charges, {sec(j['rechargeTicks'])} each): a {j['range']} leap, airborne {sec(j['airTicks'])} (crowd-control immune, "
-              f"passes every wall), with one free double jump; kicking off one of his walls goes {j['kickJump']} and restores the double jump. "
+              f"passes every wall), with one free {j['doubleRange']} double jump; kicking off one of his walls goes {j['kickJump']} and restores the double jump. "
               f"Whip Pull (passive, {sec(pu['cooldownTicks'])}): his whip catches any wall within {pu['range']} and slingshots him over it, faster the farther he is "
-              f"({pu['speedBase']} + distance / {pu['speedDivisor']} per tick), landing {pu['overshootPct']}% of the distance past it, airborne all the way. "
+              f"({pu['speedBase']} + distance / {pu['speedDivisor']} per tick, at most {pu['speedCap']}), landing {pu['overshootPct']}% of the distance past it (at most "
+              f"{pu['overshootMax']}), airborne all the way. After any skill, jump or pull he recovers for {sec(rc['recoverTicks'])} "
+              f"({sec(rc['airRecoverTicks'])} in the air) before the next. "
               f"S1 Raise & Punch ({pn['charges']} charges, {sec(pn['rechargeTicks'])} each): a wall rises in front of him and his punch launches it {pn['slide']} "
               f"forward, pushing enemies ({pn['base']} + {pn['adRatio']}% Attack) and slamming anyone pinned. In the air: Air Dash, a {ad['range']} dash that keeps "
               f"him airborne and can be followed by anything."),

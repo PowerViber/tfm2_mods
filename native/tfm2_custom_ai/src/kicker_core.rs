@@ -782,7 +782,7 @@ impl Core {
         }
         self.kick = None;
         let Some(u) = f.unit(k.target).cloned() else { return };
-        if !f.skill_target(&u) || !u.champion || !u.pos.within(f.pos, u.radius + d::KICK_REACH + 8_000) {
+        if !f.skill_target(&u) || !u.pos.within(f.pos, u.radius + d::KICK_REACH + 8_000) {
             out.push(Effect::Log("the kick missed (out of reach)".into()));
             return;
         }
@@ -973,8 +973,9 @@ impl Core {
                 if self.kicks <= 0 {
                     return self.reject("no kick charge");
                 }
-                let Some(u) = f.unit(id).cloned().filter(|u| u.champion && f.skill_target(u)) else {
-                    return self.reject("not an enemy champion");
+                // an enemy champion, or a minion or jungle monster (every skill but the ult works on creeps)
+                let Some(u) = f.unit(id).cloned().filter(|u| f.skill_target(u)) else {
+                    return self.reject("not an enemy unit");
                 };
                 let dir = unit_dir(u.pos, toward);
                 let spot = f.nearest_ground(Self::kick_spot(&u, dir));
@@ -1077,10 +1078,12 @@ impl Core {
     }
 
     /// The first enemy champion along a Skyfall line.
+    /// The first enemy champion along a Skyfall line; with none, the first minion or jungle monster.
     pub fn skyfall_target(f: &Frame, from: Point, end: Point) -> Option<usize> {
-        f.enemy_champions()
-            .filter(|u| u.pos.seg(from, end).0 <= (d::SKYFALL_WIDTH + u.radius) as f64)
-            .min_by(|a, b| a.pos.seg(from, end).1.total_cmp(&b.pos.seg(from, end).1).then(a.id.cmp(&b.id)))
+        f.units
+            .iter()
+            .filter(|u| f.skill_target(u) && u.pos.seg(from, end).0 <= (d::SKYFALL_WIDTH + u.radius) as f64)
+            .min_by(|a, b| b.champion.cmp(&a.champion).then(a.pos.seg(from, end).1.total_cmp(&b.pos.seg(from, end).1)).then(a.id.cmp(&b.id)))
             .map(|u| u.id)
     }
 
@@ -1538,7 +1541,9 @@ impl Core {
             }
             return None;
         }
-        // 6. farming: Rock Throw through the wave (S2 only; S3 and the ult never on minions)
+        // 6. farming (kicker-2.1): every skill but the ult works on minions and jungle monsters. Rock Throw through the
+        // wave; then Wall Bounce onto a camp or wave, Skyfall through it while Bounced, the Kick on a camp monster (into
+        // a wall, else toward home; never under an enemy tower) and Marked Dash onto a marked one.
         let calm = !f.enemy_champions().any(|u| u.pos.within(f.pos, d::AI_CALM_RANGE));
         if calm && f.tick >= self.rock_ready {
             let farm: Vec<&Unit> = f.units.iter().filter(|u| u.farmable && f.skill_target(u) && u.pos.within(f.pos, d::ROCK_RANGE)).collect();
@@ -1554,6 +1559,58 @@ impl Core {
                 if best.0 >= d::AI_FARM_MIN_HITS {
                     return Some(Order::Rock(best.1));
                 }
+            }
+        }
+        if calm {
+            if let Some(o) = self.farm_skills(f) {
+                return Some(o);
+            }
+        }
+        None
+    }
+
+    /// a camp monster or big creep: worth a single-target skill
+    fn big(u: &Unit) -> bool {
+        u.max_hp >= 1_000
+    }
+    /// Kicker's creep skills past Rock Throw (calm only): the Wall Bounce, Skyfall, the Kick and Marked Dash.
+    pub fn farm_skills(&self, f: &Frame) -> Option<Order> {
+        let farm: Vec<Unit> = f.units.iter().filter(|u| u.farmable && f.skill_target(u) && u.pos.within(f.pos, d::ROCK_RANGE)).cloned().collect();
+        let around = |p: Point| farm.iter().filter(|o| o.pos.within(p, 30_000)).count();
+        let pick = |ok: &dyn Fn(&Unit) -> bool| {
+            farm.iter()
+                .filter(|u| ok(u) && f.enemy_tower_at(u.pos).is_none())
+                .max_by_key(|u| (Self::big(u), around(u.pos), std::cmp::Reverse(u.pos.d2(f.pos)), std::cmp::Reverse(u.id)))
+                .cloned()
+        };
+        // Skyfall while Bounced: through the camp or wave
+        if self.skyfall_ready(f.tick) && self.kicks >= d::KICK_CHARGES {
+            if let Some(u) = pick(&|u| u.pos.within(f.pos, d::SKYFALL_RANGE)) {
+                return Some(Order::Skyfall(u.pos));
+            }
+        }
+        // the Kick on a camp monster within reach: into a wall, else toward home (not while Bounced: that's Skyfall)
+        if self.kicks >= 1 && !self.skyfall_ready(f.tick) {
+            if let Some(u) = pick(&|u| Self::big(u) && u.pos.within(f.pos, d::KICK_DASH_RANGE + d::KICK_REACH + u.radius)) {
+                let wall = (0..16).map(|k| rotate((1.0, 0.0), k as f64 * 22.5)).find(|dir| f.flight(u.pos, *dir, d::KICK_DISTANCE).1);
+                let dir = wall.unwrap_or_else(|| unit_dir(u.pos, f.home));
+                if f.enemy_tower_at(f.flight(u.pos, dir, d::KICK_DISTANCE).0).is_none() {
+                    return Some(Order::Kick(u.id, u.pos.along(dir, d::KICK_DISTANCE)));
+                }
+            }
+        }
+        // Wall Bounce onto a camp or a wave (the landing kicks the creep there), when the Drop-in is ready
+        if f.tick >= self.drop_ready {
+            if let Some(u) = pick(&|u| (Self::big(u) || around(u.pos) >= 2) && !u.pos.within(f.pos, 30_000)) {
+                if let Some(o) = Self::bounce_wall(f, u.pos).filter(|w| u.pos.within(*w, d::HOP_SPRING_RANGE)).map(|_| Order::Bounce(u.pos)) {
+                    return Some(o);
+                }
+            }
+        }
+        // Marked Dash onto a marked camp monster (one charge kept for fights)
+        if self.dashes >= d::DASH_CHARGES && !self.skyfall_ready(f.tick) {
+            if let Some(u) = pick(&|u| Self::big(u) && self.marked(u.id, f.tick) && !u.pos.within(f.pos, 30_000) && u.pos.within(f.pos, d::DASH_RANGE)) {
+                return Some(Order::Dash(u.id));
             }
         }
         None

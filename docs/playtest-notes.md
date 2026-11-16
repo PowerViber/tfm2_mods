@@ -4032,3 +4032,18 @@ Outlined body/effects approved and integrated. All thirteen athlete values affec
   - does the AI chain jumps, slingshots and Whip Swing;
   - is the 3 s ult charge used safely (only with no enemy close);
   - is he too strong with this much mobility.
+
+## Nov 16: round 177 (native 0.10.111, tfm2_custom 0.2.114), `basalt-1.4`: Basalt slowed, flicker fixed, creeps for everyone
+- **What Reihan asked:** his walls and ult flickered; his slingshot and moves were far too fast and too far ("nerf him greatly", cooldowns fine). Every champion, supports included, should be able to use every non-ult skill on creeps.
+- **Changed:**
+  - **Basalt's moves:** roughly half the range at about half the speed.
+  - **Cast recovery:** 0.5 s between his skills (0.35 s in the air).
+  - **Flicker:** walls and ult effects are drawn first with overlapping leases.
+  - **Farming:** Basalt, Kicker, Thalassa, Akane, Grimhald, Kagami and Wright farm with more of their skills.
+- **Install:** merge, pull, then Mod Manager → Install.
+- **Watch for:**
+  - do walls and the boulder/meteors still blink at all;
+  - does the slingshot read as a whip-pull rather than a teleport;
+  - is Basalt now too slow, or still too slippery;
+  - do champions clear camps and waves with their skills, and Kagami jungle on her own;
+  - does anyone burn skills on creeps when a fight is about to start.

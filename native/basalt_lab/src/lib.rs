@@ -110,10 +110,11 @@ mod transport_tests {
     fn every_order_reaches_the_core_and_every_effect_serializes() {
         let mut s = Session::default();
         for (t, o) in [
+            // basalt-1.4: each order after the cast recovery of the one before it
             (1, json!({"kind":"s1","aim":{"x":400000,"y":300000}})),
-            (2, json!({"kind":"jump","aim":{"x":400000,"y":350000}})),
-            (3, json!({"kind":"s3","aim":{"x":400000,"y":300000}})),
-            (4, json!({"kind":"ult","aim":{"x":800000,"y":100000}})),
+            (40, json!({"kind":"jump","aim":{"x":400000,"y":350000}})),
+            (70, json!({"kind":"s3","aim":{"x":400000,"y":300000}})),
+            (100, json!({"kind":"ult","aim":{"x":800000,"y":100000}})),
         ] {
             let mut i = input(t);
             i["frame"]["order"] = o;

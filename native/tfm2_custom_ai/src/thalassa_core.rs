@@ -1075,15 +1075,43 @@ impl Core {
         Some(Order::Ult(Point::new(lead.x + jitter(f.tick, 3, err * 2 + 1) - err, lead.y + jitter(f.tick, 4, err * 2 + 1) - err).clamp_map()))
     }
 
+    /// Her farming (thalassa-1.6: every skill but the ult works on minions and jungle monsters), calm only: Tide Pool on
+    /// a wave of three or a camp monster, Tide Twin sent at a camp or wave (its copies and bolts hit creeps), and Dive onto
+    /// a camp or wave from water (a pool opens there).
     fn decide_farm(&self, f: &Frame, wet: bool) -> Option<Order> {
-        if !self.ready(0, f.tick) || f.enemy_champions().any(|u| u.pos.within(f.pos, 70_000)) {
+        if f.enemy_champions().any(|u| u.pos.within(f.pos, 70_000)) {
             return None;
         }
-        let farm: Vec<&Unit> = f.units.iter().filter(|u| u.farmable && !u.champion && u.pos.within(f.pos, d::TIDE_POOL_RANGE)).collect();
+        let reach = d::TIDE_POOL_RANGE.max(d::DIVE_RANGE).max(d::TWIN_RANGE);
+        let farm: Vec<&Unit> = f.units.iter().filter(|u| u.farmable && !u.champion && u.pos.within(f.pos, reach)).collect();
         let r = d::WATER_POOL_RADIUS * d::TIDE_POOL_WHIRL_SCALE_PCT / 100;
-        let (n, u) = farm.iter().map(|u| (farm.iter().filter(|o| o.pos.within(u.pos, r)).count(), u)).max_by_key(|(n, u)| (*n, std::cmp::Reverse(u.id)))?;
-        if n >= 3 || u.max_hp >= 1_500 {
-            return Some(Order::TidePool(if wet { u.pos } else { f.pos }));
+        let group = |range: i64| {
+            farm.iter()
+                .filter(|u| u.pos.within(f.pos, range))
+                .map(|u| (farm.iter().filter(|o| o.pos.within(u.pos, r)).count(), u))
+                .max_by_key(|(n, u)| (*n, u.max_hp >= 1_000, std::cmp::Reverse(u.id)))
+        };
+        if self.ready(0, f.tick) {
+            if let Some((n, u)) = group(d::TIDE_POOL_RANGE) {
+                if n >= 3 || u.max_hp >= 1_500 {
+                    return Some(Order::TidePool(if wet { u.pos } else { f.pos }));
+                }
+            }
+        }
+        if self.ready(2, f.tick) && self.twin.is_none() {
+            // the twin rises up to its range toward the camp and fights there
+            if let Some((n, u)) = group(d::TWIN_RANGE + 60_000) {
+                if n >= 3 || u.max_hp >= 1_000 {
+                    return Some(Order::Twin(u.pos));
+                }
+            }
+        }
+        if self.ready(1, f.tick) && wet && f.hp * 100 > f.max_hp * 35 {
+            if let Some((n, u)) = group(d::DIVE_RANGE) {
+                if (n >= 2 || u.max_hp >= 1_000) && !u.pos.within(f.pos, 20_000) {
+                    return Some(Order::Dive(u.pos));
+                }
+            }
         }
         None
     }

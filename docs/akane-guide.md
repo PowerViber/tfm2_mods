@@ -17,6 +17,7 @@ Akane is an Original-family **assassin**, designed by Reihan (Nov 11): **fast an
 **Shared rules:** her skills never touch towers; cage and realm gates apply; V1 can parry the Kunai slash and the ult slash.
 
 ## Her AI (her own; the global AI is a separate project)
+- **Farming** (calm; round 177, every skill but the ult works on creeps): Kunai Flip and Crimson Edge on waves and camps, and Dismiss & Devour to heal up below 60% HP or close on a camp monster (a charge is always kept). Never the ult.
 She reads, through her frame, each enemy champion's:
 - Flash readiness (the `flash_cd` buff);
 - skill readiness (`entity.cooldown`; a native kit's data slot reads as unknown, so ready);

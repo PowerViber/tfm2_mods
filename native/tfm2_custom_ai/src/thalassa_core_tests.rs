@@ -938,3 +938,51 @@ fn bench_tick_cost() {
     }
     println!("BENCH thalassa ns/tick {} effects {}", t0.elapsed().as_nanos() / 36_000, fx);
 }
+
+// ------------------------------------------------------------------ thalassa-1.6: every skill but the ult on creeps
+
+#[test]
+fn she_farms_a_camp_and_a_wave_with_tide_pool_dive_and_the_twin_never_the_ult() {
+    let mut units = vec![];
+    // a camp monster and a wave of three, all farmable
+    let mut camp = unit(30, 1, 360_000, 300_000);
+    camp.champion = false;
+    camp.farmable = true;
+    camp.hp = 2_000;
+    camp.max_hp = 2_000;
+    units.push(camp);
+    for i in 0..3 {
+        let mut m = unit(40 + i, 1, 300_000 + i as i64 * 6_000, 360_000);
+        m.champion = false;
+        m.farmable = true;
+        m.hp = 300;
+        m.max_hp = 300;
+        units.push(m);
+    }
+    let mut f = frame(0, 300_000, 300_000, units);
+    f.manual = false;
+    let mut c = Core::default();
+    let mut used = vec![];
+    for tick in 0..1_800u64 {
+        f.tick = tick;
+        c.wet_until = tick + 10;
+        let out = c.step(&f);
+        if out.iter().any(|e| matches!(e, Effect::SpawnClone { .. })) {
+            used.push("twin");
+        }
+        if !c.last_skill.is_empty() && !used.contains(&c.last_skill) {
+            used.push(c.last_skill);
+        }
+        assert!(c.trident.is_none(), "never the ult on creeps");
+        // the creeps stay alive and put; she stays near them
+        for u in f.units.iter_mut() {
+            u.hp = u.max_hp;
+        }
+        if tick % 300 == 0 {
+            f.pos = Point::new(300_000, 300_000);
+        }
+    }
+    for k in ["tide_pool", "dive", "twin"] {
+        assert!(used.contains(&k), "{k} never used on creeps: {used:?}");
+    }
+}

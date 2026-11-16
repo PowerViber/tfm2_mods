@@ -49,7 +49,7 @@
 - **Gank into an ally:** the kick goes toward the nearest teammate.
 - **Peel:** the diver on a hurt teammate is kicked away from them (this may spend the held charge).
 - **Escape:** only after real damage, never under the tag.
-- **Farming:** S2 through the wave only. S1, S3 and the ult never go to minions.
+- **Farming** (round 177, every skill but the ult works on creeps): Rock Throw through the wave; Wall Bounce onto a camp or wave; Skyfall through it while Bounced; the Kick on a camp monster (into a wall, else toward home, never under an enemy tower); Marked Dash onto a marked monster (one dash kept). The Kick and Skyfall take a creep only when no enemy champion is there. The ult never goes to creeps.
 
 **Kick direction score:**
 - **In order:** toward a teammate, out of the enemy tower, toward home, then into a wall for the stun.

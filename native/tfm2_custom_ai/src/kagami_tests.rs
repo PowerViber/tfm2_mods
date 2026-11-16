@@ -926,3 +926,37 @@ mod glue {
         assert!(g.ccs[2].iter().any(|c| c.0.kind == CcKindV1::Stun.code()), "the foe there is stunned");
     }
 }
+
+// ------------------------------------------------------------------ kagami-2.1: a roamer who can jungle
+
+fn camp_monster(id: usize, x: i64, y: i64) -> Unit {
+    Unit { champion: false, farmable: true, hp: 2_000, max_hp: 2_000, ..champ(id, 9, x, y) }
+}
+
+#[test]
+fn she_jungles_a_camp_alone_charm_mirror_step_mend_and_clone_shots() {
+    // a far camp: Mirror Step carries her onto it
+    let mut w = ai(vec![camp_monster(30, 470_000, 500_000)]);
+    w.f.hp = 500; // hurt: Mend on herself between camps
+    let mut steps = false;
+    for _ in 0..600 {
+        w.tick(None);
+        if w.core.ai.reason.starts_with("Jungle: Mirror Step") {
+            steps = true;
+        }
+        for u in w.f.units.iter_mut() {
+            u.hp = u.max_hp;
+        }
+    }
+    assert!(steps, "Mirror Step onto the far camp");
+    assert!(w.seen(|e| matches!(e, Effect::Charm { target: ME, .. })), "Kindred Charm on herself at the camp");
+    assert!(w.seen(|e| matches!(e, Effect::Heal { target: ME, .. })), "Moonlit Mend on herself");
+    assert!(w.seen(|e| matches!(e, Effect::CloneShot { target: 30, .. })), "her clones shoot the camp");
+}
+
+#[test]
+fn she_never_jungles_with_an_enemy_champion_near() {
+    let mut w = ai(vec![camp_monster(30, 420_000, 500_000), champ(FOE, 2, 440_000, 520_000)]);
+    w.run(200);
+    assert!(!w.seen(|e| matches!(e, Effect::Charm { target: ME, .. })), "{}", w.core.ai.reason);
+}

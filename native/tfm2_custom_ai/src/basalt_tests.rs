@@ -19,6 +19,7 @@ fn champ(id: usize, team: usize, x: i64, y: i64) -> Unit {
         tower: false,
         visible: true,
         targetable: true,
+        farmable: false,
     }
 }
 fn minion(id: usize, x: i64, y: i64) -> Unit {
@@ -119,6 +120,12 @@ impl World {
             self.tick(None);
         }
     }
+    /// wait out his cast recovery
+    fn ready(&mut self) {
+        while self.core.recovering(&self.f) {
+            self.tick(None);
+        }
+    }
     fn unit(&mut self, id: usize) -> &mut Unit {
         self.f.units.iter_mut().find(|u| u.id == id).unwrap()
     }
@@ -216,11 +223,11 @@ fn jump_double_jump_and_a_third_only_off_his_wall() {
     w.tick(Some(Order::Jump(Point::new(400_000, 300_000))));
     assert_eq!(w.core.jumps, d::JUMP_CHARGES - 1);
     assert!(w.core.airborne(&w.f));
-    w.run(5);
+    w.ready();
     w.tick(Some(Order::Jump(Point::new(300_000, 300_000))));
     assert!(w.core.rejection.is_empty(), "the double jump is free");
     assert_eq!(w.core.jumps, d::JUMP_CHARGES - 1);
-    w.run(5);
+    w.ready();
     w.tick(Some(Order::Jump(Point::new(300_000, 200_000))));
     assert_eq!(w.core.rejection, "jump", "no third jump without a wall to kick");
     // a wall to kick off: allowed, long, and the double jump is back
@@ -240,7 +247,7 @@ fn jump_double_jump_and_a_third_only_off_his_wall() {
     assert!((from.dist(to) - d::JUMP_KICK_JUMP as f64).abs() < 3_000.0, "{}", from.dist(to));
     assert!(w.core.air.unwrap().double_left);
     assert!(w.core.kicked.contains(&id));
-    w.run(3);
+    w.ready();
     w.f.pos = Point::new(from.x, from.y + 5_000); // back beside the same wall
     w.tick(Some(Order::Jump(Point::new(from.x, 100_000))));
     assert!(w.core.air.unwrap().double_left == false || !w.core.kicked.iter().filter(|k| **k == id).count() > 1, "each wall once per chain");
@@ -267,7 +274,7 @@ fn the_slingshot_flies_faster_from_farther_and_lands_past_the_wall() {
     let mut w = World::new(vec![], &[(20, 15)]);
     let wall = Frame::cell_point(cell(20, 15), Point::new(400_000, 500_000));
     let near = Point::new(wall.x - 20_000, wall.y);
-    let far = Point::new(wall.x - 110_000, wall.y);
+    let far = Point::new(wall.x - 75_000, wall.y);
     w.f.pos = near;
     let (land_n, ticks_n, speed_n) = w.core.sling(&w.f, wall);
     w.f.pos = far;
@@ -305,12 +312,12 @@ fn air_dash_keeps_him_airborne_and_anything_can_follow() {
     // a terrain cell in reach for the follow-up throw
     let mut w = World::new(vec![champ(FOE, 2, 400_000, 300_000), champ(11, 2, 405_000, 300_000)], &[(14, 12)]);
     w.tick(Some(Order::Jump(Point::new(400_000, 450_000))));
-    w.run(10);
+    w.ready();
     let before = w.core.air.unwrap().until;
     w.tick(Some(Order::S1(Point::new(400_000, 300_000))));
     let a = w.core.air.unwrap();
     assert!(a.until > before && !a.spent, "still airborne, chain open");
-    w.run(4);
+    w.ready();
     // an air skill after it
     w.tick(Some(Order::S2(Point::new(400_000, 300_000))));
     assert!(w.core.rejection.is_empty(), "{}", w.core.rejection);
@@ -339,13 +346,13 @@ fn hurl_throws_onto_a_point_and_slab_drop_knocks_up_an_area() {
     // no wall in reach: a chunk ripped off terrain
     let mut w = World::new(vec![champ(FOE, 2, 400_000, 420_000), champ(11, 2, 405_000, 420_000)], &[(14, 16)]);
     w.tick(Some(Order::Jump(Point::new(400_000, 470_000))));
-    w.run(3);
+    w.ready();
     w.tick(Some(Order::S2(Point::new(400_000, 420_000))));
     assert!(w.core.rejection.is_empty());
+    assert!(w.core.air.unwrap().spent, "an air skill closes the chain");
     w.run(d::SLAB_FLIGHT_TICKS as u64 + 1);
     assert!(w.seen(|e| matches!(e, Effect::KnockUp { target: FOE, ticks } if *ticks == d::SLAB_KNOCK_TICKS as u64)));
     assert!(w.seen(|e| matches!(e, Effect::KnockUp { target: 11, .. })));
-    assert!(w.core.air.unwrap().spent, "an air skill closes the chain");
 }
 
 #[test]
@@ -375,7 +382,7 @@ fn crushing_clap_raises_a_v_snaps_it_shut_crushes_inside_and_fuses_into_one_wall
 fn whip_swing_turns_360_plus_x_toward_a_teammate_and_slams_into_a_wall_there() {
     let mut w = World::new(vec![champ(FOE, 2, 400_000, 470_000), champ(ALLY, 1, 550_000, 500_000)], &[]);
     w.tick(Some(Order::Jump(Point::new(400_000, 490_000))));
-    w.run(2);
+    w.ready();
     let center = w.f.pos;
     w.tick(Some(Order::S3(Point::new(400_000, 470_000))));
     let s = w.core.swing.expect("snared");
@@ -394,7 +401,7 @@ fn whip_swing_turns_360_plus_x_toward_a_teammate_and_slams_into_a_wall_there() {
 fn whip_swing_with_no_teammate_sends_them_away_from_their_team() {
     let mut w = World::new(vec![champ(FOE, 2, 400_000, 470_000), champ(11, 2, 400_000, 300_000), champ(12, 2, 420_000, 300_000)], &[]);
     w.tick(Some(Order::Jump(Point::new(400_000, 490_000))));
-    w.run(2);
+    w.ready();
     let center = w.f.pos;
     w.tick(Some(Order::S3(Point::new(400_000, 470_000))));
     let s = w.core.swing.unwrap();
@@ -434,7 +441,7 @@ fn meteor_punch_hangs_in_the_air_then_rains_burning_meteors_that_slow_and_knock_
     let aim = Point::new(400_000, 250_000);
     let mut w = World::new(vec![champ(FOE, 2, aim.x, aim.y), champ(11, 2, aim.x + 40_000, aim.y)], &[]);
     w.tick(Some(Order::Jump(Point::new(400_000, 450_000))));
-    w.run(3);
+    w.ready();
     w.tick(Some(Order::Ult(aim)));
     assert!(w.core.charging.is_some_and(|c| c.0), "the air version");
     w.run(d::ULT_CHARGE_TICKS as u64 - 2);
@@ -469,9 +476,9 @@ fn the_ai_throws_the_boulder_at_a_far_teamfight_and_never_charges_with_an_enemy_
 fn each_pair_shares_a_cooldown_ground_or_air() {
     let mut w = World::new(vec![champ(FOE, 2, 400_000, 440_000)], &[]);
     w.tick(Some(Order::S3(Point::new(400_000, 440_000))));
-    w.run(20);
+    w.ready();
     w.tick(Some(Order::Jump(Point::new(400_000, 450_000))));
-    w.run(2);
+    w.ready();
     w.tick(Some(Order::S3(Point::new(400_000, 440_000))));
     assert_eq!(w.core.rejection, "s3", "Whip Swing waits for Crushing Clap's cooldown");
 }
@@ -497,7 +504,7 @@ fn the_ai_jumps_in_then_whip_swings_a_target_out_of_reach() {
     w.unit(FOE).hp = 400;
     w.core.punches = 0;
     w.core.s2_at = u64::MAX / 2;
-    w.run(30);
+    w.run(80);
     assert!(w.seen(|e| matches!(e, Effect::Air { .. })), "{}", w.core.reason);
     assert!(w.core.swing.is_some() || w.stunned(FOE), "{}", w.core.reason);
 }
@@ -523,8 +530,9 @@ fn the_ai_never_dives_a_one_versus_four() {
 }
 
 #[test]
-fn the_ai_farms_a_wave_with_hurl_only() {
-    let mut w = ai(vec![minion(30, 400_000, 400_000), minion(31, 405_000, 400_000), minion(32, 400_000, 405_000)], &[]);
+fn the_ai_hurls_a_wave_out_of_clap_reach() {
+    let farm = |m: Unit| Unit { farmable: true, ..m };
+    let mut w = ai(vec![farm(minion(30, 400_000, 370_000)), farm(minion(31, 405_000, 370_000)), farm(minion(32, 400_000, 375_000))], &[]);
     w.core.walls.push(StoneWall {
         id: 9,
         a: Point::new(380_000, 520_000),
@@ -535,7 +543,7 @@ fn the_ai_farms_a_wave_with_hurl_only() {
         slide: None,
     });
     w.tick(None);
-    assert_eq!(w.core.reason, "Farm");
+    assert_eq!(w.core.reason, "Farm: Hurl");
     assert!(w.core.s3_at == 0 && w.core.ult_at == 0);
 }
 
@@ -663,7 +671,144 @@ mod glue {
         b.core.walls.push(crate::basalt_core::StoneWall{id:1,a:at,b:at,integrity:3,born:1,out_since:None,slide:None});
         b.core.charging=Some((false,Point::new(x as i64+200000,y as i64),181));
         for t in 1..=12 {host.borrow_mut().tick=t;with_sim(&host,|sim|b.on_update(sim,t as u64,0,0));}
-        let h=host.borrow();assert!(h.view_effects.iter().any(|c|c.0=="bs_square"&&c.2.x==at.x as u64&&c.2.y==at.y as u64));assert!(h.view_effects.iter().any(|c|c.0=="bs_boulder"));assert!(h.view_effects.iter().all(|c|c.3<=7));assert!(h.damage.is_empty()&&h.moves.is_empty());let count=h.view_effects.len();drop(h);
+        let h=host.borrow();assert!(h.view_effects.iter().any(|c|c.0=="bs_square"&&c.2.x==at.x as u64&&c.2.y==at.y as u64));assert!(h.view_effects.iter().any(|c|c.0=="bs_boulder"));assert!(h.view_effects.iter().all(|c|c.3<=2*crate::basalt_art_data::WALL_PERIOD as u64+1));assert!(h.damage.is_empty()&&h.moves.is_empty());let count=h.view_effects.len();drop(h);
         b.core.walls.clear();b.core.charging=None;host.borrow_mut().units[0].hp=0;host.borrow_mut().tick=13;with_sim(&host,|sim|b.on_update(sim,13,0,0));assert_eq!(host.borrow().view_effects.len(),count);
     }
+}
+
+// ------------------------------------------------------------------ basalt-1.4: the pace nerf
+
+#[test]
+fn a_skill_during_his_cast_recovery_is_rejected_and_the_ai_waits_it_out() {
+    let mut w = World::new(vec![champ(FOE, 2, 400_000, 440_000)], &[]);
+    w.tick(Some(Order::S1(Point::new(400_000, 440_000))));
+    assert!(w.core.rejection.is_empty());
+    w.tick(Some(Order::S3(Point::new(400_000, 440_000))));
+    assert_eq!(w.core.rejection, "recover", "no skill on the next tick");
+    w.run(d::RECOVER_RECOVER_TICKS as u64);
+    w.tick(Some(Order::S3(Point::new(400_000, 440_000))));
+    assert!(w.core.rejection.is_empty(), "after 0.5 s it goes");
+    // in the air the pause is shorter, but still there
+    let mut w = World::new(vec![], &[]);
+    w.tick(Some(Order::Jump(Point::new(400_000, 300_000))));
+    let at = w.f.tick;
+    w.tick(Some(Order::Jump(Point::new(300_000, 300_000))));
+    assert_eq!(w.core.rejection, "recover");
+    w.ready();
+    assert_eq!(w.f.tick - at + 1, d::RECOVER_AIR_RECOVER_TICKS as u64);
+}
+
+#[test]
+fn a_full_air_chain_takes_over_a_second_and_covers_far_less_ground() {
+    let mut w = World::new(vec![champ(FOE, 2, 400_000, 300_000), champ(11, 2, 405_000, 300_000)], &[(14, 12)]);
+    let start = (w.f.tick, w.f.pos);
+    for o in [Order::Jump(Point::new(400_000, 0)), Order::Jump(Point::new(400_000, 0)), Order::S1(Point::new(400_000, 0)), Order::S2(Point::new(400_000, 300_000))] {
+        w.ready();
+        w.tick(Some(o));
+        assert!(w.core.rejection.is_empty(), "{}", w.core.rejection);
+    }
+    assert!(w.f.tick - start.0 >= 60, "jump, double jump, Air Dash, Slab Drop: at least a second ({} ticks)", w.f.tick - start.0);
+    w.run(120);
+    let went = start.1.dist(w.f.pos);
+    assert!(went <= (d::JUMP_RANGE + d::JUMP_DOUBLE_RANGE + d::AIR_DASH_RANGE) as f64 + 5_000.0, "{went}");
+}
+
+#[test]
+fn every_move_keeps_a_readable_speed() {
+    // per tick: jump, double jump, wall kick, Air Dash, punch slide and the slingshot all at most about 2x his walk
+    let walk = 1_050.0;
+    let per = |range: i64, ticks: i64| range as f64 / ticks as f64;
+    assert!(per(d::JUMP_RANGE, d::JUMP_AIR_TICKS) <= 1.3 * walk);
+    assert!(per(d::JUMP_KICK_JUMP, d::JUMP_AIR_TICKS * d::JUMP_KICK_JUMP / d::JUMP_RANGE) <= 1.3 * walk);
+    assert!(per(d::AIR_DASH_RANGE, d::AIR_DASH_TICKS) <= 1.5 * walk);
+    assert!(per(d::PUNCH_SLIDE, d::PUNCH_SLIDE_TICKS) <= 1.6 * walk);
+    assert!(d::PULL_SPEED_CAP as f64 <= 2.0 * walk);
+    // the slingshot: 1,400 from 20,000 away, the 2,000 cap from 80,000, and at most 20,000 past the wall
+    let mut w = World::new(vec![], &[(20, 15)]);
+    let wall = Frame::cell_point(cell(20, 15), Point::new(400_000, 500_000));
+    w.f.pos = Point::new(wall.x - 20_000, wall.y);
+    assert_eq!(w.core.sling(&w.f, wall).2, 1_400);
+    w.f.pos = Point::new(wall.x - 79_000, wall.y);
+    let (land, _, speed) = w.core.sling(&w.f, wall);
+    assert_eq!(speed, 1_990);
+    assert!(land.x - wall.x <= d::PULL_OVERSHOOT_MAX + 1_000, "{}", land.x - wall.x);
+    w.f.pos = Point::new(wall.x - 79_000, wall.y);
+    w.tick(Some(Order::Pull(wall)));
+    assert!(w.core.airborne(&w.f), "a wall within 80,000: whipped");
+    let mut w = World::new(vec![], &[(20, 15)]);
+    w.f.pos = Point::new(wall.x - 95_000, wall.y);
+    w.tick(Some(Order::Pull(wall)));
+    assert_eq!(w.core.rejection, "pull", "beyond 80,000: out of reach");
+}
+
+// ------------------------------------------------------------------ basalt-1.4: every skill but the ult on creeps
+
+fn creep(id: usize, x: i64, y: i64, hp: i64) -> Unit {
+    Unit { champion: false, hp, max_hp: hp, farmable: true, ..champ(id, 9, x, y) }
+}
+
+/// A calm farming run beside a jungle camp and a wave: the orders his AI picks (ground and air), in order.
+fn farm_run(units: Vec<Unit>, terrain: &[(i64, i64)], ticks: u64) -> (World, Vec<String>) {
+    let mut w = ai(units, terrain);
+    let mut seen = vec![];
+    for _ in 0..ticks {
+        w.tick(None);
+        if w.core.reason.starts_with("Farm") && seen.last() != Some(&w.core.reason) {
+            seen.push(w.core.reason.clone());
+        }
+        // keep the creeps alive and where they stand
+        for u in w.f.units.iter_mut() {
+            u.hp = u.max_hp;
+        }
+        w.glides.clear();
+    }
+    (w, seen)
+}
+
+#[test]
+fn he_farms_a_camp_and_a_wave_with_all_six_non_ult_skills_and_never_the_ult() {
+    let camp = vec![creep(30, 400_000, 440_000, 2_000), creep(31, 415_000, 445_000, 900), creep(32, 385_000, 445_000, 900)];
+    let wave = vec![creep(40, 470_000, 520_000, 300), creep(41, 480_000, 525_000, 300), creep(42, 475_000, 515_000, 300)];
+    let (w, seen) = farm_run(camp.into_iter().chain(wave).collect(), &[(14, 16)], 3_000);
+    for skill in ["Farm: Crushing Clap", "Farm: Raise & Punch", "Farm: Hurl", "Farm: Whip Swing", "Farm: Slab Drop"] {
+        assert!(seen.iter().any(|s| s == skill), "{skill} never used on creeps: {seen:?}");
+    }
+    assert!(w.core.ult_at == 0 && w.core.boulders.is_empty() && w.core.charging.is_none(), "never the ult on creeps");
+    assert!(w.seen(|e| matches!(e, Effect::Stun { target: 30, .. })), "the camp monster was clapped or slammed");
+}
+
+#[test]
+fn air_dash_carries_him_onto_a_camp_out_of_whip_reach() {
+    let mut w = ai(vec![creep(30, 400_000, 420_000, 2_000)], &[]);
+    w.tick(Some(Order::Jump(Point::new(400_000, 600_000))));
+    w.f.manual = false;
+    w.ready();
+    w.core.s3_at = u64::MAX / 2;
+    w.core.s2_at = u64::MAX / 2;
+    w.tick(None);
+    assert_eq!(w.core.reason, "Farm: Air Dash");
+}
+
+#[test]
+fn creeps_wait_while_an_enemy_champion_is_near_and_unfarmable_units_are_left_alone() {
+    let (_, seen) = farm_run(vec![creep(30, 400_000, 440_000, 2_000), creep(31, 415_000, 445_000, 900), champ(FOE, 2, 400_000, 600_000)], &[], 200);
+    assert!(seen.is_empty(), "a champion in his engage range: no farming ({seen:?})");
+    let mut lone = creep(30, 400_000, 440_000, 2_000);
+    lone.farmable = false;
+    let (_, seen) = farm_run(vec![lone], &[], 200);
+    assert!(seen.is_empty(), "not farmable (the shared farming rules said no): {seen:?}");
+}
+
+#[test]
+fn whip_swing_takes_a_creep_only_when_no_champion_is_in_reach() {
+    let mut w = World::new(vec![creep(30, 400_000, 470_000, 2_000), champ(FOE, 2, 430_000, 480_000)], &[]);
+    w.tick(Some(Order::Jump(Point::new(400_000, 490_000))));
+    w.ready();
+    w.tick(Some(Order::S3(Point::new(400_000, 470_000))));
+    assert_eq!(w.core.swing.unwrap().target, FOE, "the champion first");
+    let mut w = World::new(vec![creep(30, 400_000, 470_000, 2_000)], &[]);
+    w.tick(Some(Order::Jump(Point::new(400_000, 490_000))));
+    w.ready();
+    w.tick(Some(Order::S3(Point::new(400_000, 470_000))));
+    assert_eq!(w.core.swing.unwrap().target, 30, "a camp monster swung");
 }

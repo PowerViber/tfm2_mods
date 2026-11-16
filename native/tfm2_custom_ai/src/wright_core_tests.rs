@@ -671,3 +671,28 @@ fn bench_tick_cost() {
     for _ in 0..36_000u64 { log.clear(); run(&mut c, &mut f, 1, &mut log); }
     println!("BENCH wright ns/tick {} planes {}", t0.elapsed().as_nanos() / 36_000, f.planes.len());
 }
+
+// ------------------------------------------------------------------ the creeps rule: every skill but the ult on creeps
+
+#[test]
+fn he_farms_a_camp_with_fighters_and_the_carpet_bomber_never_the_carrier() {
+    let mut camp = unit(20, 9, 330_000, 300_000);
+    camp.champion = false;
+    camp.farmable = true;
+    camp.max_hp = 2_000;
+    camp.hp = 2_000;
+    let mut f = frame(0, 300_000, 300_000, vec![camp]);
+    f.manual = false;
+    let mut core = Core::default();
+    let mut used = vec![];
+    for tick in 0..1_200u64 {
+        f.tick = tick;
+        core.step(&f);
+        if !core.last_skill.is_empty() && !used.contains(&core.last_skill) {
+            used.push(core.last_skill);
+        }
+        f.units[0].hp = 2_000;
+    }
+    assert!(used.contains(&"fighters") && used.contains(&"bomber"), "{used:?}");
+    assert!(!used.contains(&"carrier") && !used.contains(&"repair"), "no ult, and Repair stays for allies: {used:?}");
+}

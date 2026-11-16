@@ -195,6 +195,7 @@ impl Kagami {
         let clones = Self::find_clones(sim, owner, &known, search);
         let snapshot = crate::champions_shared(sim);
         let realms = crate::realm::realms(sim);
+        let farming = crate::farming::Context::new(sim, owner);
         let mut units = vec![];
         for e in (0..sim.entity_count()).filter_map(|i| sim.entity_at(i)) {
             if e.id() == owner || !e.is_alive() || clones.iter().any(|c| c.id == e.id()) {
@@ -219,6 +220,13 @@ impl Kagami {
                 visible,
                 targetable: e.is_targetable() && reach,
                 sealed: buffs.iter().any(|b| b.name() == SEALED),
+                farmable: farming.calm()
+                    && e_team != team
+                    && e.is_targetable()
+                    && reach
+                    && visible
+                    && !e.is_champion()
+                    && farming.eligible_known(e.id(), e_team, kind, p, kind.is_none() && e.is_minion(), &buffs),
             });
         }
         const HOME: [(i64, i64); 2] = [(96_000, 864_000), (864_000, 96_000)];
