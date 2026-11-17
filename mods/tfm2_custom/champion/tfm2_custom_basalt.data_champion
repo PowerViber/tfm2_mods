@@ -105,7 +105,8 @@
   "passive": {
     "passive_ref": "tfm2_custom_ai:basalt",
     "params": {
-      "art_fx_v1": 1
+      "art_fx_v1": 1,
+      "art_timing_v2": 1
     }
   },
   "passive_ult": {
@@ -2087,6 +2088,2718 @@
       "name": "bs_boulder_impact",
       "anim": "asset/tfm2_custom/vfx/basalt",
       "tag": "boulder_impact",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_block_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "block_t2",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_block_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "block_t3",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_block_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "block_t6",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_square_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "square_t2",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_square_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "square_t3",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_square_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "square_t6",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_rise_t12",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "rise_t12",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_rise_t18",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "rise_t18",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_break_t12",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "break_t12",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_break_t18",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "break_t18",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_dust_t12",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "dust_t12",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_dust_t18",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "dust_t18",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_slam_t12",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "slam_t12",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_slam_t18",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "slam_t18",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_wall_slam_t12",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "wall_slam_t12",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_wall_slam_t18",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "wall_slam_t18",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_leap_t12",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "leap_t12",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_leap_t18",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "leap_t18",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_land_t12",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "land_t12",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_land_t18",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "land_t18",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_dash_t12",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "dash_t12",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_dash_t18",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "dash_t18",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_rock_t12",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "rock_t12",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_rock_t18",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "rock_t18",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_boulder_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "boulder_t2",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_boulder_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "boulder_t3",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_meteor_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "meteor_t2",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_meteor_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "meteor_t3",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_meteor_impact_t12",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "meteor_impact_t12",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_meteor_impact_t18",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "meteor_impact_t18",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_link_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_link_t6",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_punch_impact_t12",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "punch_impact_t12",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_punch_impact_t18",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "punch_impact_t18",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_hurl_impact_t12",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "hurl_impact_t12",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_hurl_impact_t18",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "hurl_impact_t18",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_impact_t12",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_impact_t12",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_impact_t18",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_impact_t18",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_0_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_0_t2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_0_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_0_t3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_1_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_1_t2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_1_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_1_t3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_2_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_2_t2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_2_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_2_t3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_3_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_3_t2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_3_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_3_t3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_4_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_4_t2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_4_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_4_t3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_5_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_5_t2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_5_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_5_t3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_6_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_6_t2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_6_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_6_t3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_7_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_7_t2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_7_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_7_t3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_8_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_8_t2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_8_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_8_t3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_9_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_9_t2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_9_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_9_t3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_10_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_10_t2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_10_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_10_t3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_11_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_11_t2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_11_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_11_t3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_12_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_12_t2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_12_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_12_t3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_13_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_13_t2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_13_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_13_t3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_14_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_14_t2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_14_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_14_t3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_15_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_15_t2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_15_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_15_t3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_16_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_16_t2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_16_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_16_t3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_17_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_17_t2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_17_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_17_t3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_18_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_18_t2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_18_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_18_t3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_19_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_19_t2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_19_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_19_t3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_20_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_20_t2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_20_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_20_t3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_21_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_21_t2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_21_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_21_t3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_22_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_22_t2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_22_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_22_t3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_23_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_23_t2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_23_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_23_t3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_24_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_24_t2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_24_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_24_t3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_25_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_25_t2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_25_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_25_t3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_26_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_26_t2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_26_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_26_t3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_27_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_27_t2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_27_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_27_t3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_28_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_28_t2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_28_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_28_t3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_29_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_29_t2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_29_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_29_t3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_30_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_30_t2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_30_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_30_t3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_31_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_31_t2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_31_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_31_t3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_32_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_32_t2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_32_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_32_t3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_33_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_33_t2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_33_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_33_t3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_34_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_34_t2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_34_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_34_t3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_35_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_35_t2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_35_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_35_t3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_36_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_36_t2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_36_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_36_t3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_37_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_37_t2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_37_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_37_t3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_38_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_38_t2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_38_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_38_t3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_39_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_39_t2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_39_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_39_t3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_40_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_40_t2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_40_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_40_t3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_41_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_41_t2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_41_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_41_t3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_42_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_42_t2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_42_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_42_t3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_43_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_43_t2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_43_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_43_t3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_44_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_44_t2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_44_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_44_t3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_45_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_45_t2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_45_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_45_t3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_46_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_46_t2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_46_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_46_t3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_47_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_47_t2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_47_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_47_t3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_48_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_48_t2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_48_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_48_t3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_49_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_49_t2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_49_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_49_t3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_50_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_50_t2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_50_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_50_t3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_51_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_51_t2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_51_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_51_t3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_52_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_52_t2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_52_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_52_t3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_53_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_53_t2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_53_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_53_t3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_54_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_54_t2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_54_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_54_t3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_55_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_55_t2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_55_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_55_t3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_56_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_56_t2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_56_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_56_t3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_57_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_57_t2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_57_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_57_t3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_58_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_58_t2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_58_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_58_t3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_59_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_59_t2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_59_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_59_t3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_60_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_60_t2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_60_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_60_t3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_61_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_61_t2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_61_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_61_t3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_62_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_62_t2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_62_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_62_t3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_63_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_63_t2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_clap_cone_63_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "clap_cone_63_t3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_8000_0_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_8000_0_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_8000_1_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_8000_1_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_8000_2_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_8000_2_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_8000_3_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_8000_3_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_8000_4_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_8000_4_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_8000_5_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_8000_5_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_8000_6_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_8000_6_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_8000_7_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_8000_7_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_8000_8_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_8000_8_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_8000_9_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_8000_9_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_8000_10_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_8000_10_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_8000_11_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_8000_11_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_8000_12_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_8000_12_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_8000_13_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_8000_13_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_8000_14_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_8000_14_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_8000_15_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_8000_15_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_8000_16_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_8000_16_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_8000_17_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_8000_17_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_8000_18_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_8000_18_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_8000_19_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_8000_19_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_8000_20_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_8000_20_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_8000_21_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_8000_21_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_8000_22_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_8000_22_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_8000_23_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_8000_23_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_8000_24_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_8000_24_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_8000_25_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_8000_25_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_8000_26_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_8000_26_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_8000_27_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_8000_27_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_8000_28_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_8000_28_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_8000_29_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_8000_29_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_8000_30_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_8000_30_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_8000_31_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_8000_31_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_16000_0_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_16000_0_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_16000_1_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_16000_1_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_16000_2_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_16000_2_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_16000_3_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_16000_3_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_16000_4_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_16000_4_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_16000_5_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_16000_5_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_16000_6_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_16000_6_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_16000_7_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_16000_7_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_16000_8_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_16000_8_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_16000_9_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_16000_9_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_16000_10_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_16000_10_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_16000_11_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_16000_11_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_16000_12_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_16000_12_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_16000_13_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_16000_13_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_16000_14_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_16000_14_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_16000_15_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_16000_15_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_16000_16_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_16000_16_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_16000_17_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_16000_17_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_16000_18_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_16000_18_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_16000_19_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_16000_19_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_16000_20_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_16000_20_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_16000_21_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_16000_21_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_16000_22_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_16000_22_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_16000_23_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_16000_23_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_16000_24_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_16000_24_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_16000_25_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_16000_25_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_16000_26_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_16000_26_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_16000_27_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_16000_27_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_16000_28_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_16000_28_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_16000_29_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_16000_29_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_16000_30_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_16000_30_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_16000_31_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_16000_31_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_32000_0_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_32000_0_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_32000_1_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_32000_1_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_32000_2_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_32000_2_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_32000_3_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_32000_3_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_32000_4_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_32000_4_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_32000_5_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_32000_5_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_32000_6_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_32000_6_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_32000_7_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_32000_7_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_32000_8_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_32000_8_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_32000_9_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_32000_9_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_32000_10_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_32000_10_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_32000_11_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_32000_11_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_32000_12_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_32000_12_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_32000_13_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_32000_13_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_32000_14_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_32000_14_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_32000_15_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_32000_15_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_32000_16_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_32000_16_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_32000_17_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_32000_17_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_32000_18_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_32000_18_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_32000_19_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_32000_19_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_32000_20_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_32000_20_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_32000_21_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_32000_21_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_32000_22_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_32000_22_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_32000_23_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_32000_23_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_32000_24_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_32000_24_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_32000_25_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_32000_25_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_32000_26_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_32000_26_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_32000_27_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_32000_27_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_32000_28_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_32000_28_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_32000_29_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_32000_29_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_32000_30_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_32000_30_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_32000_31_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_32000_31_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_64000_0_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_64000_0_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_64000_1_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_64000_1_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_64000_2_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_64000_2_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_64000_3_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_64000_3_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_64000_4_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_64000_4_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_64000_5_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_64000_5_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_64000_6_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_64000_6_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_64000_7_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_64000_7_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_64000_8_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_64000_8_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_64000_9_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_64000_9_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_64000_10_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_64000_10_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_64000_11_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_64000_11_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_64000_12_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_64000_12_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_64000_13_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_64000_13_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_64000_14_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_64000_14_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_64000_15_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_64000_15_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_64000_16_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_64000_16_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_64000_17_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_64000_17_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_64000_18_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_64000_18_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_64000_19_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_64000_19_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_64000_20_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_64000_20_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_64000_21_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_64000_21_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_64000_22_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_64000_22_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_64000_23_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_64000_23_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_64000_24_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_64000_24_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_64000_25_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_64000_25_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_64000_26_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_64000_26_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_64000_27_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_64000_27_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_64000_28_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_64000_28_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_64000_29_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_64000_29_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_64000_30_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_64000_30_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_64000_31_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_64000_31_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_96000_0_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_96000_0_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_96000_1_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_96000_1_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_96000_2_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_96000_2_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_96000_3_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_96000_3_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_96000_4_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_96000_4_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_96000_5_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_96000_5_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_96000_6_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_96000_6_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_96000_7_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_96000_7_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_96000_8_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_96000_8_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_96000_9_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_96000_9_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_96000_10_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_96000_10_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_96000_11_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_96000_11_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_96000_12_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_96000_12_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_96000_13_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_96000_13_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_96000_14_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_96000_14_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_96000_15_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_96000_15_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_96000_16_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_96000_16_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_96000_17_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_96000_17_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_96000_18_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_96000_18_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_96000_19_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_96000_19_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_96000_20_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_96000_20_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_96000_21_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_96000_21_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_96000_22_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_96000_22_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_96000_23_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_96000_23_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_96000_24_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_96000_24_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_96000_25_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_96000_25_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_96000_26_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_96000_26_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_96000_27_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_96000_27_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_96000_28_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_96000_28_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_96000_29_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_96000_29_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_96000_30_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_96000_30_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_whip_96000_31_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "whip_96000_31_t6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_boulder_warning_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "boulder_warning_t2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_boulder_warning_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "boulder_warning_t3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_boulder_warning_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "boulder_warning_t6",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_meteor_area_warning_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "meteor_area_warning_t2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_meteor_area_warning_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "meteor_area_warning_t3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_meteor_area_warning_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "meteor_area_warning_t6",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_meteor_warning_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "meteor_warning_t2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_meteor_warning_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "meteor_warning_t3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_meteor_warning_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "meteor_warning_t6",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_hurl_warning_t2",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "hurl_warning_t2",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_hurl_warning_t3",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "hurl_warning_t3",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_hurl_warning_t6",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "hurl_warning_t6",
+      "z": -3,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_boulder_impact_t12",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "boulder_impact_t12",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "bs_boulder_impact_t18",
+      "anim": "asset/tfm2_custom/vfx/basalt",
+      "tag": "boulder_impact_t18",
       "z": -2,
       "is_follow": false
     }

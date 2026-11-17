@@ -1,0 +1,24 @@
+{
+  "native": {
+    "passed": 1371,
+    "ignored": 18,
+    "failed": 0,
+    "threads": 1,
+    "warnings": 4,
+    "warning_origin": "unchanged native_bridge test helpers",
+    "earlier_parallel_run": "existing Levi flight test failed; no Levi code changed"
+  },
+  "lab": {
+    "passed": 13,
+    "failed": 0
+  },
+  "manager_unit": {
+    "passed": 15,
+    "failed": 0
+  },
+  "browser_review_checks": 13,
+  "browser_continuity": "browser-continuity.json",
+  "native_wasm_scenarios": 36,
+  "native_wasm_ticks": 10800,
+  "live_acceptance": "pending; see native-attempt.json"
+}

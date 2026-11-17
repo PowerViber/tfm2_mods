@@ -1,0 +1,12 @@
+{
+  "scope": "Disposable fixture comparison only. No real game installation, process changes or career migration. Source manager.cfg untouched.",
+  "exit_code": 0,
+  "files_compared": 900,
+  "body_integrated": true,
+  "effects_integrated": true,
+  "source_mods_unchanged": true,
+  "isolated_appdata": true,
+  "packaged_dll_sha256": "0df4c9c17b268dbfc894b8894db01a6fd418862df5938ee4835fd1716ba724ad",
+  "dll_packaging": "Native 0.10.112; independently reproduced; see package.json",
+  "live_game": "pending"
+}

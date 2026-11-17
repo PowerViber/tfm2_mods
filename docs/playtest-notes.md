@@ -4047,3 +4047,10 @@ Outlined body/effects approved and integrated. All thirteen athlete values affec
   - is Basalt now too slow, or still too slippery;
   - do champions clear camps and waves with their skills, and Kagami jungle on her own;
   - does anyone burn skills on creeps when a fight is about to start.
+
+
+## Basalt native effect continuity   2026-11-17
+
+Native 0.10.112 / custom 0.2.115, art basalt-art-6, gameplay remains basalt-1.4. Persistent art previously lasted one tick despite 3/6-tick renewals. Duration-matched aliases now reuse approved atlas pixels, match expiry to renewal and clip known flight endings. One-shot impacts play once; the Lab stops holding expired frames. New definitions opt into the timed bindings; old career definitions retain visible legacy aliases and need a separate backed-up migration for the fix.
+
+1,371 native tests (18 ignored, four inherited warnings), 13 Lab tests, 15 Manager tests, 36 native/WASM scenarios and browser continuity checks pass. Two Windows builds match. Actual-game visual acceptance remains pending after Computer Use stopped before a disposable match. No installed game or real career changed. Full evidence: docs/basalt-flicker/README.md.

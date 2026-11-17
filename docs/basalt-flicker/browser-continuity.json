@@ -1,0 +1,11 @@
+{
+  "steady_wall_subframes": 840,
+  "one_shot_sequences": 5,
+  "maximum_effect_instances": 3,
+  "boulder_visible_ticks": 85,
+  "boulder_landings": 1,
+  "expiry": "exclusive",
+  "old_one_tick_gap_is_no_longer_hidden": true,
+  "errors": [],
+  "scope": "Packaged art and shared WASM in browser; actual game rendering is separate."
+}

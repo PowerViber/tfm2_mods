@@ -4,6 +4,7 @@
 const world=await new GameWorld().ready,painter=await new BasaltPainter().ready,$=id=>document.getElementById(id);
 while(!wasm)await new Promise(r=>setTimeout(r,25));clearInterval(window.basaltLegacyTimer);
 const clock=new KratosClock(),held=new Set(),effects=[];let lastVisuals={events:[],leases:[]},scene,walkGoal=null,pose='idle',poseUntil=0,poseStart=0,walkClock=0,deathAt=null,left=false,lastPos=null,movedAt=-100,lastWallKey='',cam={x:480000,y:480000,s:.0018};
+let presentationTick=0;
 const panel=document.createElement('div');panel.innerHTML='<p style="color:#ffc887">Approved body and effects; shared native/Lab presentation. Real map and stock actors; host movement, attacks, armour and visibility are simulated.</p><label>Situation <select id="scenario"></select></label><button id="loadScene">Load</button><p id="sceneText"></p><label><input id="follow" type="checkbox" checked> Follow / game-size view</label><label><input id="wallGrid" type="checkbox"> Collision grid</label><label><input id="showArt" type="checkbox" checked> Candidate presentation</label><label><input id="hostModel" type="checkbox" checked> Opponents / waves</label><p>Focus arena. Arrow keys / right-click: move. Space: Jump · F: Whip Pull · Q/W/E: S1/S2/S3 · R: ultimate/recast.</p><button id="singleStep">Step once</button><button id="incomingStun">Incoming stun</button><details><summary>13 athlete values</summary><div id="athleteStats"></div></details>';
 $('side').insertBefore(panel,$('state'));$('side').style.width='430px';
 for(const [value,label]of Object.entries(GameScenario.choices))$('scenario').add(new Option(label,value));$('scenario').value='gank';
@@ -14,7 +15,7 @@ const baseMove=world.move.bind(world);world.move=(u,to,speed)=>{if(glides.has(u.
 reset=function(){
  wasm.exports.basalt_reset();effects.length=0;lastVisuals={events:[],leases:[]};glides.clear();held.clear();logLines=[];state={};walkGoal=null;pose='idle';poseStart=0;walkClock=0;deathAt=null;lastPos=null;lastWallKey='';world.routes.clear();
  scene=new GameScenario(world,$('scenario').value,8);const setup=scene.setup(),stats=scene.stats({stat:R.stat,growth:R.growth});
- tick=setup.clock;me={id:1,team:0,pos:setup.pos,hp:Math.floor(stats.hp*(1+R.modPower[2]/100)),max_hp:Math.floor(stats.hp*(1+R.modPower[2]/100)),attack:Math.floor(stats.attack*(1+R.modPower[0]/100)),stats:{...stats,defence:Math.floor(stats.defence*(1+R.modPower[3]/100)),magic_resistance:Math.floor(stats.magic_resistance*(1+R.modPower[4]/100))},radius:world.data.settings.champion_radius,champion:true,stun:0,air:0,shields:[]};
+ tick=setup.clock;presentationTick=tick;me={id:1,team:0,pos:setup.pos,hp:Math.floor(stats.hp*(1+R.modPower[2]/100)),max_hp:Math.floor(stats.hp*(1+R.modPower[2]/100)),attack:Math.floor(stats.attack*(1+R.modPower[0]/100)),stats:{...stats,defence:Math.floor(stats.defence*(1+R.modPower[3]/100)),magic_resistance:Math.floor(stats.magic_resistance*(1+R.modPower[4]/100))},radius:world.data.settings.champion_radius,champion:true,stun:0,air:0,shields:[]};
  units=setup.units.map(u=>({...u,stun:0,up:0,slow:0}));lastPos={...me.pos};movedAt=-100;terrain.splice(0,terrain.length,...world.walls);$('sceneText').textContent=setup.description;scene.refreshVisibility(me,units);
  world.loadSprites(units.map(u=>u.sprite)).catch(fail);pending=null;draw();
 };
@@ -22,6 +23,9 @@ function fail(e){play=false;log('Reference error: '+e.message);$('sceneText').te
 function presentOrder(order){if(!order)return;left=order.aim.x<me.pos.x;pose=order.kind==='s1'?(tick<me.air?'ult_punch':'raise'):order.kind==='s2'?'throw':order.kind==='s3'?(tick<me.air?'swing':'snare'):order.kind==='ult'?(state.recast?'snare':tick<me.air?'air':'charge'):'jump';poseStart=tick;poseUntil=tick+24;}
 step=function(){
  if(!scene)return;
+ presentationTick=tick;
+ // Match the host's exclusive packed-animation expiry, before accepting renewals.
+ for(let i=effects.length-1;i>=0;i--)if(tick>=effects[i].end)effects.splice(i,1);
  for(const[id,gl]of glides){const u=byId(id);if(!u){glides.delete(id);continue;}const k=Math.min(1,(tick-gl.t0)/gl.n);u.pos={x:gl.a.x+(gl.b.x-gl.a.x)*k,y:gl.a.y+(gl.b.y-gl.a.y)*k};u.left=gl.b.x<gl.a.x;if(k>=1)glides.delete(id);}
  if(!aiOn&&tick>=me.stun&&!state.charging&&!glides.has(1)){
   const dx=Number(held.has('ArrowRight'))-Number(held.has('ArrowLeft')),dy=Number(held.has('ArrowDown'))-Number(held.has('ArrowUp'));let goal=walkGoal;
@@ -47,7 +51,7 @@ step=function(){
   else if(e.type==='steer'&&aiOn&&!glides.has(1)&&!state.charging){const to=e.to,d=Math.hypot(to.x-me.pos.x,to.y-me.pos.y);if(d>0){const k=Math.min(1,1050*6/d),target=world.sweep(me.pos,{x:me.pos.x+(to.x-me.pos.x)*k,y:me.pos.y+(to.y-me.pos.y)*k},me.radius);glides.set(1,{a:{...me.pos},b:target,t0:tick,n:6});}}
   else if(e.type==='log')log(e.text);
  }
- lastVisuals=out.presentation||{events:[],leases:[]};for(const cue of [...lastVisuals.events,...lastVisuals.leases])if(effects.length<128)effects.push({name:cue.name,at:cue.at,start:tick,end:tick+cue.ticks});
+ lastVisuals=out.presentation||{events:[],leases:[]};for(const cue of [...lastVisuals.events,...lastVisuals.leases]){const duration=painter.fxTicks(cue.name);if(duration!==cue.ticks)throw new Error('Effect lifetime mismatch: '+cue.name);if(effects.length<128)effects.push({name:cue.name,at:cue.at,start:tick,end:tick+duration});}
  if(me.hp<=0)effects.length=0;
  if(previous.charging&&!state.charging){pose=previous.charging[0]?'ult_punch':'throw';poseStart=tick;poseUntil=tick+20;}
  const wallKey=JSON.stringify((state.walls||[]).map(w=>[w.id,w.a]));if(wallKey!==lastWallKey){world.routes.clear();lastWallKey=wallKey;}
@@ -61,7 +65,7 @@ draw=function(){
  if($('wallGrid').checked){c.strokeStyle='#f2cf8e88';world.walls.forEach((w,i)=>{if(w){const p=PP({x:i%30*32000,y:Math.floor(i/30)*32000});c.strokeRect(p.x,p.y,W(32000),W(32000));}});}
  for(const w of state.walls||[]){const p=PP(w.a);if($('wallGrid').checked||!art){c.strokeStyle='#ffbc6e';c.strokeRect(p.x-W(R.wall.size/2),p.y-W(R.wall.size/2),W(R.wall.size),W(R.wall.size));}c.fillStyle='#fff3d9';c.fillText('◆'.repeat(w.integrity),p.x-12,p.y+W(25000));}
  for(const u of units){if(!u.visible)continue;world.drawUnit(c,u,tick,PP,W);if(u.hp>0){const p=PP(u.pos);c.fillStyle='#171e24';c.fillRect(p.x-16,p.y-28*z,32,4);c.fillStyle=u.team===0?'#81d6ba':u.team===9?'#e6bb6a':'#ef786b';c.fillRect(p.x-16,p.y-28*z,32*u.hp/u.max_hp,4);}}
- if(art)for(const e of [...effects].sort((a,b)=>(BASALT_FX.layers[a.name.replace(/^bs_/,'')]||0)-(BASALT_FX.layers[b.name.replace(/^bs_/,'')]||0)))painter.fx(c,e.name,PP(e.at),z,0,1,tick-e.start);
+ if(art)for(const e of [...effects].sort((a,b)=>(BASALT_FX.layers[a.name.replace(/^bs_/,'')]||0)-(BASALT_FX.layers[b.name.replace(/^bs_/,'')]||0)))painter.fx(c,e.name,PP(e.at),z,0,1,presentationTick-e.start);
  for(const b of state.boulders||[]){const aim=PP(b[1]);c.fillStyle='#fff4d9';c.fillText(((b[2]-tick)/60).toFixed(1)+'s',aim.x-10,aim.y);}
  const moving=tick<=movedAt+2;
  let body=me.hp<=0?'dead':state.charging?(state.charging[0]?'air':'charge'):tick<poseUntil?pose:tick<me.air?'air':moving?'run':'idle';
