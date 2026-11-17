@@ -1,0 +1,19 @@
+{
+  "native": "0.10.112",
+  "champion_pack": "0.2.115",
+  "rules": "basalt-1.4",
+  "art_revision": "basalt-art-6",
+  "baseline": "79484f81d90aabe9ca86542a521e747fb7935b7b",
+  "source_date_epoch": "1794851286",
+  "source_sha256": "6faa89ba698b567b1ceac4ef217210b20fbc646db5393345231af1cc01a92dd9",
+  "toolchain": "rustc 1.98.1 (48a229cea 2026-09-01)",
+  "built_dll_sha256": "0df4c9c17b268dbfc894b8894db01a6fd418862df5938ee4835fd1716ba724ad",
+  "reproduced_dll_sha256": "0df4c9c17b268dbfc894b8894db01a6fd418862df5938ee4835fd1716ba724ad",
+  "packaged_dll_sha256": "0df4c9c17b268dbfc894b8894db01a6fd418862df5938ee4835fd1716ba724ad",
+  "wasm_sha256": "e9d7348470ecff4419a98322f4bfb9f48b7c90dd631a7960ec38de1a33697426",
+  "effects_fanim_sha256": "390be47cc175124ed51227988cb3bc4e6de395dec3e8b26d6203f9c85a37af9e",
+  "effects_png_sha256": "1a3e9551e0f326ee7c3f2b2fcba8b51fe96251a1a210ca1d3b2f558f6b83ece1",
+  "installed": false,
+  "career_migration": false,
+  "live_acceptance": "separate disposable-game evidence"
+}

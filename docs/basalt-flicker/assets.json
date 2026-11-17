@@ -1,0 +1,27 @@
+{
+  "baseline": "79484f81d90aabe9ca86542a521e747fb7935b7b",
+  "art_revision": "basalt-art-6",
+  "rules_revision": "basalt-1.4",
+  "packed_animations": 586,
+  "original_animation_aliases_unchanged": 247,
+  "duration_aliases_share_original_rectangles": true,
+  "rules_core_body_and_effect_pixels_unchanged": true,
+  "reproducible": true,
+  "expiry": "exclusive",
+  "max_lease_ticks": 6,
+  "old_wall_visibility_ticks_per_6_tick_interval": 1,
+  "new_wall_visibility_ticks_per_6_tick_interval": 6,
+  "old_boulder_visibility_ticks_per_3_tick_interval": 1,
+  "new_boulder_visibility_ticks_per_3_tick_interval": 3,
+  "decoded_art_bytes": 25165824,
+  "hashes": {
+    "docs/basalt-art-review/effects.png": "1a3e9551e0f326ee7c3f2b2fcba8b51fe96251a1a210ca1d3b2f558f6b83ece1",
+    "docs/basalt-art-review/effects.fanim": "390be47cc175124ed51227988cb3bc4e6de395dec3e8b26d6203f9c85a37af9e",
+    "docs/basalt-art-review/effects-presentation.json": "39a096c982e0b333bfe10cfb6e4f5c84e52493220aa3637796777858e5d89d4c",
+    "editor/basalt-effects.js": "350c617e431ce509c6692e58fad3244e5b10a48782ac9958ab7f7c155c3d4bfb",
+    "native/tfm2_custom_ai/src/basalt_art_data.rs": "375b9f0574d78fd3b2031aae46344a2a12791ba81092ed7d2441010d7d2e0e85",
+    "mods/tfm2_custom/vfx/basalt#sheet.png": "1a3e9551e0f326ee7c3f2b2fcba8b51fe96251a1a210ca1d3b2f558f6b83ece1",
+    "mods/tfm2_custom/vfx/basalt#anim.fanim": "390be47cc175124ed51227988cb3bc4e6de395dec3e8b26d6203f9c85a37af9e"
+  },
+  "native_renderer_acceptance": "separate disposable-game check required"
+}
