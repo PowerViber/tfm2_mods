@@ -8,7 +8,7 @@
 const ALLOWED: &[(&str, usize, &str)] = &[
     ("batch2.rs", 5, "domain seal snap, DIO time-stop blinks, DIO's vanish-dash, Stark's leap (teleports with fx)"),
     ("coder.rs", 1, "blink function (a teleport)"),
-    ("contender.rs", 1, "Slip under banish (unseen)"),
+    ("contender.rs", 1, "the Shadow Projection swap and the Shadow Flurry's reappearance (teleports by design)"),
     ("contender_arena.rs", 2, "Main Event ring transfer and exact returns (teleports)"),
     ("flash.rs", 1, "Flash (a blink)"),
     ("frieren.rs", 1, "Stark summon placement"),

@@ -1,25 +1,126 @@
-"""Generate the playtest champion and editor preset from the canonical boxing rules."""
+"""Generate Contender's Rust tables, champion data, tooltips, editor data and roster entry from rules/contender.json.
+
+Contender 2.0, the Shadow Boxer (round 178). Change numbers in the rules file and rerun; never edit the outputs by hand.
+`--check` only verifies.
+"""
 from pathlib import Path
-import json, copy
-ROOT=Path(__file__).resolve().parents[1]
-rules=json.loads((ROOT/'rules/contender.json').read_text())
-champ=copy.deepcopy(json.loads((ROOT/'mods/tfm2_custom/champion/tfm2_custom_magnus.data_champion').read_text()))
-id=rules['id'];champ.update(id=id,category=rules['category'],tags=rules['tags'],sprite='asset/tfm2_custom/champions/'+id,anim_prefix='')
-for key in ['stat','growth']:
-    champ[key]={k:0 for k in champ[key]};champ[key].update(rules[key])
-champ['attack'].update(action_name='attack',duration=18,cooltime=rules['basic']['cooldownTicks'],start_timing=9,range=rules['basic']['range'],effect={'type':'Native','effect_ref':'tfm2_custom_ai:contender_basic'})
-for slot in ['skill','skill2','ult']:champ[slot]['description']='#asset/base/text/champion?description.'+id+'.'+slot
-champ['passive']={'passive_ref':'tfm2_custom_ai:contender','params':{}}
-champ['passive_ult']={'passive_ref':'tfm2_custom_ai:contender_ultimate','params':{}}
-champ['view_projectiles']=[];champ['view_effects']=[];champ['view_buffs']=[]
-for tag in ['ring','impact','counter','guard_arc','return_red','return_blue']+['warning'+str(i) for i in range(8)]:
-    champ['view_effects'].append(dict(type='Animation',name='ct_'+tag,anim='asset/tfm2_custom/vfx/contender',tag=tag,z=-2 if tag=='ring' else 5,is_follow=False))
-for i in range(11):champ['view_buffs'].append(dict(type='Animated',name='ct_stamina'+str(i),anim='asset/tfm2_custom/vfx/contender',tag='stamina'+str(i),z=6))
-text={'name':'Contender','skill':'Combination: dashes up to 14000 at the target, then two warned physical punches, 20 + 55% Attack then 30 + 75% Attack; 22 stamina, 4 s shared cooldown. Body Shot: lunges up to 10000, then 60 + 100% Attack, -15% attack speed for 1.5 s; 28 stamina on the same cooldown. Uppercut: dashes up to 12000, then 55 + 85% Attack and 0.4 s airborne, 26 stamina, 8 s cooldown. Conditioning: 100 stamina, recovering 6/s or 12/s after 3 s without champion damage. Mod Power: +30% Attack, +5% HP, +10% armour/MR and attack speed. No mastery.',
-'skill2':'Slip: travel up to 16000 over 0.2 s, avoiding targeting, damage and new control during the window; existing debuffs continue. Costs 20 stamina. Guard: 100 + 35% Attack shielding for 1.25 s, 40% damage reduction and half movement for 0.45 s; costs 24 stamina. Shared 6 s cooldown. The first confirmed champion impact during Guard readies a 2 s attacker-bound Counterpunch: next basic adds 25 + 35% Attack in its primary packet.',
-'ult':'PLAYTEST: Main Event spends 40 stamina and starts a 75 s cooldown. After a 0.65 s warning, transfer Contender and one enemy within 65000 into a separate 160000-square off-map ring for 8 s; return survivors to their exact pre-transfer positions. Ordinary cooldowns recover 4/3 as fast inside. No healing or reset. Native off-map navigation, global-effect isolation, camera/replay, summons and full Slip avoidance still require actual-game acceptance; this is not a certified isolated realm.'}
-(ROOT/'mods/tfm2_custom/champion'/f'{id}.data_champion').write_text(json.dumps(champ,indent=2)+'\n')
-p=ROOT/'mods/tfm2_custom/text/champion.i18n';loc=json.loads(p.read_text(encoding='utf8'));loc['en']['description'][id]=text;p.write_text(json.dumps(loc,ensure_ascii=False,indent=2)+'\n',encoding='utf8')
-(ROOT/'editor/boxing-preset.js').write_text('window.BOXING_PRESET='+json.dumps(champ,separators=(',',':'))+';\nwindow.BOXING_TEXT='+json.dumps(text,separators=(',',':'))+';\n')
-p=ROOT/'rules/champions.json';r=json.loads(p.read_text(encoding='utf8'));r['champions']=[c for c in r['champions'] if c['id']!=id];r['champions'].append(dict(id=id,name='Contender (playtest)',family='original',role='Melee',native=True,basicAttack=dict(name='Jab / Cross',kind='melee',range=23000),skills=[dict(slot='skill',name='Combination / Body Shot / Uppercut',kinds=['Aoe','Cc'],intents=['Clear','Poke','Objective'],summary=text['skill']),dict(slot='skill2',name='Slip / Guard',kinds=['Dash','Shield'],intents=['Escape','Protect'],summary=text['skill2']),dict(slot='ult',name='Main Event (unverified host)',kinds=['Cc'],intents=['Engage','Protect'],summary=text['ult'])]));p.write_text(json.dumps(r,ensure_ascii=False,indent=1)+'\n',encoding='utf8')
-print('Contender data, localisation and editor preset generated')
+import copy, json, re, sys
+
+ROOT = Path(__file__).resolve().parents[1]
+rules = json.loads((ROOT / 'rules/contender.json').read_text())
+ID = rules['id']
+GROUPS = ['basic', 'charges', 'ultCut', 'pact', 'rhythm', 'projection', 'cyclone', 'slam', 'ult', 'ai']
+
+
+def snake(s):
+    return re.sub(r'(?<!^)(?=[A-Z])', '_', s).upper()
+
+
+lines = ['//! Generated by tools/generate-contender.py from rules/contender.json. Do not edit by hand.', '#![allow(dead_code)]', '',
+         'pub const RULES_REVISION: &str = ' + json.dumps(rules['revision']) + ';',
+         f'pub const MOD_POWER: [i32; 7] = {rules["modPower"]};']
+for group in GROUPS:
+    for k, v in rules[group].items():
+        lines.append(f'pub const {snake(group)}_{snake(k)}: i64 = {v};')
+lines.append(f'pub const FX_TOKENS: usize = {rules["fxTokens"]};')
+rust = '\n'.join(lines) + '\n'
+
+b, ch, uc, pa, rh, pr, cy, sl, ul, _ = (rules[k] for k in GROUPS)
+sec = lambda n: f'{n / 60:g} s'
+text = {
+    'name': rules['name'],
+    'skill': (f"Shadows (passive): up to {ch['max']} shadow charges, one every {sec(ch['rechargeTicks'])} (each basic attack takes "
+              f"{sec(ch['basicCutTicks'])} off). For {sec(ch['recastWindowTicks'])} after any skill, casting it again spends a charge and his shadow "
+              f"recasts it, stronger. Every hit of his, on anything, takes {sec(uc['perHitTicks'])} off his ultimate's cooldown. "
+              f"Shadow Pact (passive): every punch and skill hits again {sec(pa['delayTicks'])} later for {pa['pct']}%, with its crowd control at "
+              f"{pa['ccPct']}% (at most {sec(pa['ccCapTicks'])} more per target every {sec(pa['ccWindowTicks'])}); recast hits echo twice. "
+              f"Shadow Rhythm (passive): each hit stacks on its target (up to {rh['maxStacks']}, {sec(rh['stackTicks'])}); the most-stacked enemy "
+              f"gives him +{rh['attackSpeedPctPerStack']}% attack speed, +{rh['attackPermillePerStack'] / 10:g}% Attack and "
+              f"+{rh['moveSpeedPermillePerStack'] / 10:g}% move speed per stack and takes +{rh['vulnerabilityPermillePerStack'] / 10:g}% damage "
+              f"from him per stack. A max-stacked creep carries {rh['carryStacks']} stacks onto the next champion he hits; a stacked kill keeps the "
+              f"buffs {sec(rh['lingerTicks'])} longer. "
+              f"S1 Shadow Projection ({sec(pr['cooldownTicks'])}): his body holds still and can't be hurt while his shadow is launched up to "
+              f"{pr['range']} and fights as him for {sec(pr['ticks'])} (his S2 and S3 come from it, its punches echo twice). {pr['relayPct']}% of "
+              f"the damage the shadow takes reaches him; if it falls he is back with {pr['relayPct']}% of his max HP lost. Recast: his body swaps "
+              f"to the shadow and the shadow's cross knocks the nearest enemy {pr['crossKnock']} back ({pr['crossBase']} + {pr['crossAdRatio']}% "
+              f"Attack)."),
+    'skill2': (f"Shadow Cyclone ({sec(cy['cooldownTicks'])}): a shadow clone goes to a spot within {cy['range']} and cleaves the circle around "
+               f"it ({cy['radius']}): {cy['hits']} hits of {cy['base']} + {cy['adRatio']}% Attack and a {cy['slowPct']}% slow; it can't be hit. "
+               f"Cast from his projected shadow, it makes his ultimate's punches echo for {sec(cy['primeTicks'])}. Recast: he goes there himself, "
+               f"invulnerable, and cleaves {cy['recastHits']} hits of {cy['recastBase']} + {cy['recastAdRatio']}% Attack, the last one knocking "
+               f"up for {sec(cy['recastKnockTicks'])}. "
+               f"Slam & Uppercut ({sec(sl['cooldownTicks'])}): he grabs an enemy within {sl['grab']} and slams it into the ground "
+               f"({sl['base']} + {sl['adRatio']}% Attack, stunned {sec(sl['stunTicks'])}; {sl['ringPct']}% to others within "
+               f"{sl['ringRadius']}). Recast: an uppercut, {sl['uppercutBase']} + {sl['uppercutAdRatio']}% Attack and {sec(sl['knockTicks'])} "
+               f"airborne; from his projected shadow it launches the target up to {sl['launch']} toward his body."),
+    'ult': (f"Shadow Flurry ({sec(ul['cooldownTicks'])}): he melts into the ground, untargetable and unhurt for {sec(ul['ticks'])}, and his "
+            f"shadow charges refill. His shadows strike the enemy nearest him (within {ul['startRange']}), then chain {ul['punches']} punches, "
+            f"slow at first and faster at the end, each onto an enemy within {ul['chainRange']} of the last one hit ({ul['base']} + "
+            f"{ul['adRatio']}% Attack). Every second the last enemy hit is knocked up. With nothing left in reach the flurry ends early. He "
+            f"reappears beside the last enemy hit, and his next basic within {sec(ul['haymakerTicks'])} is a haymaker "
+            f"(+{ul['haymakerBase']} + {ul['haymakerAdRatio']}% Attack, a {sec(ul['haymakerStunTicks'])} stun). His skills never hit towers."),
+}
+
+champ = copy.deepcopy(json.loads((ROOT / 'tools/native-champion-template.json').read_text()))
+champ.update(id=ID, category=rules['category'], tags=rules['tags'], sprite='asset/tfm2_custom/champions/' + ID, anim_prefix='')
+for key in ['stat', 'growth']:
+    champ[key] = {k: 0 for k in champ[key]}
+    champ[key].update(rules[key])
+champ['attack'].update(duration=b['duration'], cooltime=b['cooldownTicks'], start_timing=b['startTiming'], range=b['range'],
+                       effect={'type': 'Attack', 'damage': 0, 'attack_ratio': 100})
+for slot in ['skill', 'skill2', 'ult']:
+    champ[slot]['description'] = '#asset/base/text/champion?description.' + ID + '.' + slot
+champ['passive'] = {'passive_ref': 'tfm2_custom_ai:contender', 'params': {}}
+champ['passive_ult'] = {'passive_ref': 'tfm2_custom_ai:ult_learned', 'params': {}}
+# his shadow effects arrive with Codex's art (`docs/contender-shadow-art-handoff.md`); until then every name he plays is
+# bound to existing effects so the shadow, its cleaves, slams and the flurry are visible in a playtest
+PLACEHOLDER = {'shadow': ('kagami', 'clone_in'), 'launch': ('kicker', 'dash'), 'swap': ('kagami', 'swap'), 'cross': ('kicker', 'kick'),
+               'cleave': ('grimhald', 'slash'), 'slam': ('grimhald', 'slam'), 'uppercut': ('kicker', 'drop_in'),
+               'echo': ('kagami', 'shard_hit'), 'vanish': ('grimhald', 'ghost'), 'appear': ('grimhald', 'ghost_end'),
+               'flurry': ('akane', 'dash_slash'), 'haymaker': ('kicker', 'wall_slam')}
+champ['view_effects'] = [dict(type='Animation', name='ct_' + e, anim='asset/tfm2_custom/vfx/' + sheet, tag=tag, z=-2 if e == 'vanish' else 5,
+                              is_follow=False) for e, (sheet, tag) in PLACEHOLDER.items()]
+champ['view_buffs'] = []
+champ['view_projectiles'] = []
+
+data = json.dumps(champ, indent=2) + '\n'
+
+roster = dict(id=ID, name=rules['name'], family='original', role='Fighter', native=True,
+              basicAttack=dict(name='Jab / Cross', kind='melee', range=b['range']),
+              skills=[dict(slot='skill', name='Shadows / Shadow Pact / Shadow Rhythm / Shadow Projection', kinds=['Dash', 'Cc'],
+                           intents=['Engage', 'Escape'], summary=text['skill']),
+                      dict(slot='skill2', name='Shadow Cyclone / Slam & Uppercut', kinds=['Aoe', 'Cc'],
+                           intents=['Engage', 'Clear'], summary=text['skill2']),
+                      dict(slot='ult', name='Shadow Flurry', kinds=['Aoe', 'Cc'], intents=['Engage'], summary=text['ult'])])
+
+outputs = {
+    ROOT / 'editor/contender-data.js': 'window.CONTENDER_RULES = ' + json.dumps(rules, separators=(',', ':')) + ';\n',
+    ROOT / 'native/tfm2_custom_ai/src/contender_shadow_data.rs': rust,
+    ROOT / 'mods/tfm2_custom/champion' / f'{ID}.data_champion': data,
+}
+check = '--check' in sys.argv
+stale = [str(p) for p, s in outputs.items() if not p.exists() or p.read_text() != s]
+i18n = ROOT / 'mods/tfm2_custom/text/champion.i18n'
+loc = json.loads(i18n.read_text(encoding='utf8'))
+roster_p = ROOT / 'rules/champions.json'
+r = json.loads(roster_p.read_text(encoding='utf8'))
+if loc['en']['description'].get(ID) != text:
+    stale.append(str(i18n))
+if next((c for c in r['champions'] if c['id'] == ID), None) != roster:
+    stale.append(str(roster_p))
+if check:
+    if stale:
+        sys.exit('stale: ' + ', '.join(stale))
+    print('Contender outputs are current')
+    sys.exit(0)
+for p_, s in outputs.items():
+    p_.write_text(s)
+loc['en']['description'][ID] = text
+i18n.write_text(json.dumps(loc, ensure_ascii=False, indent=2) + '\n', encoding='utf8')
+existing = [c['id'] for c in r['champions']]
+if ID in existing:
+    r['champions'] = [roster if c['id'] == ID else c for c in r['champions']]
+else:
+    r['champions'].append(roster)
+roster_p.write_text(json.dumps(r, ensure_ascii=False, indent=1) + '\n', encoding='utf8')
+print('Contender data, tooltips, editor data and roster entry generated')

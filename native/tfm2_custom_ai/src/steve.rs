@@ -1005,11 +1005,11 @@ impl StablePlayerAi for WallAi {
         }
         // Akane's own AI walks her (disengage, Soul Orbs, Dismiss): a short `akn_go:x:y` buff from her bridge
         // Kicker's AI walks him the same way (`kk_go:x:y`), and Kagami's her (`kg_go:x:y`)
-        if cname.as_deref().is_some_and(|n| n.ends_with("_akane") || n.ends_with("_kicker") || n.ends_with("_kagami") || n.ends_with("_basalt")) {
+        if cname.as_deref().is_some_and(|n| n.ends_with("_akane") || n.ends_with("_kicker") || n.ends_with("_kagami") || n.ends_with("_basalt") || n.ends_with("_contender")) {
             let pid = ctx.player_id();
             let go = ctx.sim().and_then(|sim| {
                 let me = sim.get_player(pid).and_then(|p| p.champion())?;
-                (0..me.buff_count()).filter_map(|i| me.buff_at(i)).find_map(|b| crate::akane::steer_of(b.name()).or_else(|| crate::kicker::steer_of(b.name())).or_else(|| crate::kagami::steer_of(b.name())).or_else(|| crate::basalt::steer_of(b.name())))
+                (0..me.buff_count()).filter_map(|i| me.buff_at(i)).find_map(|b| crate::akane::steer_of(b.name()).or_else(|| crate::kicker::steer_of(b.name())).or_else(|| crate::kagami::steer_of(b.name())).or_else(|| crate::basalt::steer_of(b.name())).or_else(|| crate::contender::steer_of(b.name())))
             });
             // round 166: only a walk is rewritten; an attack or cast the engine wanted always passes through
             let steered = crate::akane::steer_input(go, base);

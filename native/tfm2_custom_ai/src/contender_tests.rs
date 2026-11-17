@@ -813,11 +813,3 @@ fn a_farmable_camp_in_dash_reach_gets_punched() {
     let t = c.cast.as_ref().expect("he works the camp").technique;
     assert!(matches!(t, Technique::Combination | Technique::BodyShot | Technique::Uppercut), "{t:?}");
 }
-#[test]
-fn the_bridge_never_sends_a_cc_for_a_pose_without_a_cast() {
-    let source = include_str!("contender.rs");
-    let pose = &source[source.find("Effect::Pose { name } =>").unwrap()..];
-    let pose = &pose[..pose.find("sim.apply_cc").unwrap()];
-    let compact: String = pose.split_whitespace().collect();
-    assert!(compact.contains("else{continue;}"), "basic-attack poses skip the Animation CC");
-}

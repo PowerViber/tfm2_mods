@@ -439,10 +439,10 @@ pub static CHAMPIONS: [ChampionDef; 88] = [
         SkillDef { slot: Slot::Skill2, name: "Blast Pack", kinds: 1 | 16 | 512, intents: 2 | 4 | 8 },
         SkillDef { slot: Slot::Ult, name: "Showstopper", kinds: 4 | 16, intents: 2 | 32 | 16 },
     ] },
-    ChampionDef { id: "tfm2_custom_contender", name: "Contender (playtest)", family: 13, role: "Melee", native: true, basic: BasicAttack { name: "Jab / Cross", range: 23000, reach: Range::Melee }, skills: &[
-        SkillDef { slot: Slot::Skill, name: "Combination / Body Shot / Uppercut", kinds: 16 | 512, intents: 1 | 32 | 16 },
-        SkillDef { slot: Slot::Skill2, name: "Slip / Guard", kinds: 1 | 256, intents: 4 | 8 },
-        SkillDef { slot: Slot::Ult, name: "Main Event (unverified host)", kinds: 512, intents: 2 | 8 },
+    ChampionDef { id: "tfm2_custom_contender", name: "Contender", family: 13, role: "Fighter", native: true, basic: BasicAttack { name: "Jab / Cross", range: 23000, reach: Range::Melee }, skills: &[
+        SkillDef { slot: Slot::Skill, name: "Shadows / Shadow Pact / Shadow Rhythm / Shadow Projection", kinds: 1 | 512, intents: 2 | 4 },
+        SkillDef { slot: Slot::Skill2, name: "Shadow Cyclone / Slam & Uppercut", kinds: 16 | 512, intents: 2 | 1 },
+        SkillDef { slot: Slot::Ult, name: "Shadow Flurry", kinds: 16 | 512, intents: 2 },
     ] },
     ChampionDef { id: "tfm2_custom_rally", name: "Rally", family: 13, role: "Melee", native: true, basic: BasicAttack { name: "Palm / Volley", range: 55000, reach: Range::Ranged }, skills: &[
         SkillDef { slot: Slot::Skill, name: "Receive / Run-up → Spike", kinds: 256 | 1024 | 1 | 4 | 16, intents: 8 | 1 | 32 | 2 | 16 },

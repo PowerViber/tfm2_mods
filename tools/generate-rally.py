@@ -4,7 +4,7 @@ from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
 p=argparse.ArgumentParser();p.add_argument('--check',action='store_true');p.add_argument('--integrate',action='store_true');p.add_argument('--register',action='store_true');args=p.parse_args()
 r=json.loads((ROOT/'rules/rally.json').read_text(encoding='utf8'))
-c=r['constants'];id=r['id'];champ=copy.deepcopy(json.loads((ROOT/'mods/tfm2_custom/champion/tfm2_custom_contender.data_champion').read_text(encoding='utf8')))
+c=r['constants'];id=r['id'];champ=copy.deepcopy(json.loads((ROOT/'tools/native-champion-template.json').read_text(encoding='utf8')))
 champ.update(id=id,category=r['category'],tags=r['tags'],sprite='asset/tfm2_custom/champions/'+id,anim_prefix='')
 for key in ['stat','growth']:
  champ[key]={k:0 for k in champ[key]};champ[key].update({('magic_resistance'if k=='resistance'else k):v for k,v in r[key].items()})

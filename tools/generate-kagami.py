@@ -50,7 +50,7 @@ text = {
             f"Kindred Charm's buff, a shield of {ul['shieldPctMaxHp']}% max HP, +{ul['defencePct']}% Defence and crowd-control immunity for {sec(ul['reviveTicks'])}; enemies within {ul['reviveStunRadius']} are stunned for {sec(ul['reviveStunTicks'])}."),
 }
 
-champ = copy.deepcopy(json.loads((ROOT / 'mods/tfm2_custom/champion/tfm2_custom_contender.data_champion').read_text()))
+champ = copy.deepcopy(json.loads((ROOT / 'tools/native-champion-template.json').read_text()))
 # placeholder body until Codex's art: Thalassa's sheet (an original ranged caster) and her bolt
 sprite = 'asset/tfm2_custom/champions/' + ID
 if not (ROOT / f'mods/tfm2_custom/champions/{ID}#sheet.png').exists():

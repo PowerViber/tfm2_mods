@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Contender Lab</title>
+<style>
+body{margin:0;background:#12161f;color:#e7e3f0;font:14px system-ui;display:flex;gap:16px;padding:16px}aside{width:330px;flex-shrink:0}h1{font-size:22px;margin:0}p{line-height:1.4;color:#bcc5d4}button{font:inherit;background:#28324a;color:#eef;border:1px solid #687089;padding:6px;border-radius:5px;cursor:pointer;margin:3px}label{display:block;margin:7px 0}.row{display:flex;flex-wrap:wrap;gap:4px}canvas{width:min(900px,calc(100vw - 395px));height:auto;aspect-ratio:1;align-self:flex-start;background:#1b2531;outline:2px solid #4a5a70}canvas:focus{outline-color:#b9a2ef}pre{white-space:pre-wrap;font-size:12px;max-height:300px;overflow:auto}small{color:#9fb0c6}.pips{font-size:20px;letter-spacing:3px;color:#a993ff}
+</style></head><body><aside>
+<h1>Contender Lab <small id="revision"></small></h1>
+<p>The Shadow Boxer on a training floor: dummies, a jungle camp and a wave. The skills, echoes, stacks and AI are the game's own Rust core (wasm); movement and enemy hits are a simple browser model, not proof of native behaviour. The real-map Lab needs the extracted game reference (Codex).</p>
+<div class="pips" id="pips"></div>
+<div class="row"><button id="reset">Reset</button><button id="play">Play / pause</button><button id="step">Step</button></div>
+<label><input type="checkbox" id="ai"> Athlete AI decides</label>
+<label><input type="checkbox" id="fight" checked> Dummies hit back (tests the shadow's relay)</label>
+<div class="row"><button data-key="q">Q Projection</button><button data-key="e">E Cyclone</button><button data-key="c">C Slam</button><button data-key="r">R Flurry</button><button data-key="f">F End projection</button></div>
+<p>Click to aim. WASD walks him (or steers the projected shadow). Space throws basic attacks at the nearest enemy. Press a skill again within 3 s (S1: while projected) to recast it with a shadow charge.</p>
+<pre id="state">Loading the shared core…</pre><pre id="log"></pre>
+</aside><canvas id="arena" width="900" height="900" tabindex="0" aria-label="Contender arena"></canvas>
+<script src="contender-data.js"></script><script src="contender-lab.js"></script>
+</body></html>

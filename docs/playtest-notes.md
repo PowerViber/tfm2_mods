@@ -4047,3 +4047,20 @@ Outlined body/effects approved and integrated. All thirteen athlete values affec
   - is Basalt now too slow, or still too slippery;
   - do champions clear camps and waves with their skills, and Kagami jungle on her own;
   - does anyone burn skills on creeps when a fight is about to start.
+
+## Nov 17: round 178 (native 0.10.112, tfm2_custom 0.2.115), `contender-2.0`: Contender, the Shadow Boxer
+- **What Reihan asked:** a literal shadow boxer, with the whole old kit removed.
+- **The kit:**
+  - **Passives:** 5 shadow charges that recast any skill stronger; echoes 1 s later (Shadow Pact); stacks that buff him and make the target vulnerable (Shadow Rhythm).
+  - **S1 Projection:** his shadow fights as him and relays 70% of its damage to him; the recast swaps him in.
+  - **S2 Cyclone:** a clone cleave; the recast is him cleaving, invulnerable.
+  - **S3 Slam & Uppercut.**
+  - **Ult Shadow Flurry:** 5 s unseen, 36 accelerating punches.
+- **Art:** placeholder shadow effects (Kagami, Kicker, Grimhald and Akane effects) until Codex's shadow art.
+- **Install:** merge, pull, then Mod Manager → Install.
+- **Watch for:**
+  - does the projected shadow read, move and get hit;
+  - does the 70% relay feel fair;
+  - do the recasts feel strong enough;
+  - does the ult come back too fast (every hit takes 1 s off);
+  - does the flurry's reappearance land in walls.

@@ -246,6 +246,7 @@ for(const f of ['gojo-v2.html','gojo-v2-lab.js','gojo-v2-data.js','gojo-v2.wasm'
 for(const f of ['native-tactics-presets.js','steve-presentation.js','steve-legacy.png','steve-legacy.fanim','steve-eyes.png','steve-eyes.fanim','gojo-v3.html','gojo-v3-lab.js','gojo-v3-data.js','gojo-v3.wasm','athlete.html','athlete-lab.js'])STATIC['/'+f]=f;
 // Raze uses the same checkout assets under both the repository and editor server.
 for(const f of ['raze.html','raze.css','raze-lab.js','raze-data.js','raze-preset.js','raze.wasm'])STATIC['/'+f]=f;
+for(const f of ['contender.html','contender-lab.js','contender-data.js','contender.wasm'])STATIC['/'+f]=f;
 for(const f of ['boxing.html','boxing-lab.js','boxing-preset.js','boxing.wasm'])STATIC['/'+f]=f;
 for(const f of ['rally.html','rally-review.html','rally.css','rally-lab.js','rally-data.js','rally-preset.js','rally.wasm'])STATIC['/'+f]=f;
 STATIC['/rules/rally.json']='../rules/rally.json';
@@ -300,7 +301,7 @@ for(const suffix of ['#sheet.png','#anim.fanim']){
   STATIC['/docs/rally-results/'+rallyRevision+'/packed-preview/vfx/'+encodeURIComponent(file)]='../docs/rally-results/'+rallyRevision+'/packed-preview/vfx/'+file;
 }
 STATIC['/docs/'+rallyRevision+'-changes.md']='../docs/'+rallyRevision+'-changes.md';
-STATIC['/rules/contender.json']='../rules/contender.json';
+STATIC['/rules/contender.json']='../rules/contender.json';STATIC['/rules/contender-1-legacy.json']='../rules/contender-1-legacy.json';
 for(const f of ['body-poses.png','body-actual-size.png','body-animations.gif','ring-proposal.png','ring-actual-size.png'])STATIC['/docs/contender-art-review/'+f]='../docs/contender-art-review/'+f;
 for(const suffix of ['#sheet.png','#anim.fanim'])STATIC['/mods/tfm2_custom/champions/'+encodeURIComponent('tfm2_custom_contender'+suffix)]='../mods/tfm2_custom/champions/tfm2_custom_contender'+suffix;
 for(const [url,file]of Object.entries(STATIC))STATIC['/editor'+url]=file;

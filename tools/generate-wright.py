@@ -51,7 +51,7 @@ text = {
             f"explosions deal {ca['bomberDamagePct']}% damage (same warning); repair kits are {ca['kitPct']}% as strong."),
 }
 
-champ = copy.deepcopy(json.loads((ROOT / 'mods/tfm2_custom/champion/tfm2_custom_contender.data_champion').read_text()))
+champ = copy.deepcopy(json.loads((ROOT / 'tools/native-champion-template.json').read_text()))
 champ.update(id=ID, category=rules['category'], tags=rules['tags'], sprite='asset/tfm2_custom/champions/' + ID, anim_prefix='')
 for key in ['stat', 'growth']:
     champ[key] = {k: 0 for k in champ[key]}

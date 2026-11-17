@@ -96,12 +96,17 @@ mod grimhald_presentation;
 #[cfg(test)] mod grimhald_tests;
 #[allow(dead_code)] mod rally_core;
 #[cfg(test)] mod rally_tests;
-mod contender_arena;
+/// the retired Main Event ring (round 178: no ring is opened any more; the realm code still shares its types)
+#[allow(dead_code)] mod contender_arena;
 mod realm;
 /// Contender realms: observe-only engine hooks for the analysed build, off unless realm_trace.flag exists
 pub(crate) mod native_bridge;
 #[allow(dead_code)] mod contender_core;
 #[cfg(test)] mod contender_tests;
+/// Contender 2.0, the Shadow Boxer (round 178): his deterministic core and its generated numbers
+#[allow(dead_code)] mod contender_shadow_core;
+#[allow(dead_code)] mod contender_shadow_data;
+#[cfg(test)] mod contender_shadow_tests;
 #[allow(dead_code)] mod raze_core;
 #[allow(dead_code)] mod raze_data;
 #[cfg(test)] mod raze_tests;
@@ -473,7 +478,7 @@ pub(crate) fn set_snapshot_cache_for_test(on: bool) {
 /// A view effect at a point / on a unit (named `<champion id>_<tag>` in the data's view_effects).
 /// Round 91: the native version, written in the game log and the champions' logs (gundam_log.txt / isliid_log.txt) so a
 /// game shows which build ran.
-pub(crate) const VERSION: &str = "0.10.111";
+pub(crate) const VERSION: &str = "0.10.112";
 
 static LOGGED: std::sync::Mutex<Option<std::collections::HashSet<String>>> = std::sync::Mutex::new(None);
 

@@ -15,7 +15,7 @@
     "defence": 24,
     "magic_resistance": 22,
     "move_speed": 1050,
-    "hp_regen": 0,
+    "hp_regen": 3,
     "stack": 0,
     "crit_chance": 0
   },
@@ -43,8 +43,9 @@
     "casting_target": "Enemy",
     "attack_type": "BaseAttack",
     "effect": {
-      "type": "Native",
-      "effect_ref": "tfm2_custom_ai:contender_basic"
+      "type": "Attack",
+      "damage": 0,
+      "attack_ratio": 100
     }
   },
   "skill": {
@@ -106,198 +107,104 @@
     "params": {}
   },
   "passive_ult": {
-    "passive_ref": "tfm2_custom_ai:contender_ultimate",
+    "passive_ref": "tfm2_custom_ai:ult_learned",
     "params": {}
   },
-  "view_buffs": [
-    {
-      "type": "Animated",
-      "name": "ct_stamina0",
-      "anim": "asset/tfm2_custom/vfx/contender",
-      "tag": "stamina0",
-      "z": 6
-    },
-    {
-      "type": "Animated",
-      "name": "ct_stamina1",
-      "anim": "asset/tfm2_custom/vfx/contender",
-      "tag": "stamina1",
-      "z": 6
-    },
-    {
-      "type": "Animated",
-      "name": "ct_stamina2",
-      "anim": "asset/tfm2_custom/vfx/contender",
-      "tag": "stamina2",
-      "z": 6
-    },
-    {
-      "type": "Animated",
-      "name": "ct_stamina3",
-      "anim": "asset/tfm2_custom/vfx/contender",
-      "tag": "stamina3",
-      "z": 6
-    },
-    {
-      "type": "Animated",
-      "name": "ct_stamina4",
-      "anim": "asset/tfm2_custom/vfx/contender",
-      "tag": "stamina4",
-      "z": 6
-    },
-    {
-      "type": "Animated",
-      "name": "ct_stamina5",
-      "anim": "asset/tfm2_custom/vfx/contender",
-      "tag": "stamina5",
-      "z": 6
-    },
-    {
-      "type": "Animated",
-      "name": "ct_stamina6",
-      "anim": "asset/tfm2_custom/vfx/contender",
-      "tag": "stamina6",
-      "z": 6
-    },
-    {
-      "type": "Animated",
-      "name": "ct_stamina7",
-      "anim": "asset/tfm2_custom/vfx/contender",
-      "tag": "stamina7",
-      "z": 6
-    },
-    {
-      "type": "Animated",
-      "name": "ct_stamina8",
-      "anim": "asset/tfm2_custom/vfx/contender",
-      "tag": "stamina8",
-      "z": 6
-    },
-    {
-      "type": "Animated",
-      "name": "ct_stamina9",
-      "anim": "asset/tfm2_custom/vfx/contender",
-      "tag": "stamina9",
-      "z": 6
-    },
-    {
-      "type": "Animated",
-      "name": "ct_stamina10",
-      "anim": "asset/tfm2_custom/vfx/contender",
-      "tag": "stamina10",
-      "z": 6
-    }
-  ],
+  "view_buffs": [],
   "view_effects": [
     {
       "type": "Animation",
-      "name": "ct_ring",
-      "anim": "asset/tfm2_custom/vfx/contender",
-      "tag": "ring",
+      "name": "ct_shadow",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "clone_in",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_launch",
+      "anim": "asset/tfm2_custom/vfx/kicker",
+      "tag": "dash",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_swap",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "swap",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_cross",
+      "anim": "asset/tfm2_custom/vfx/kicker",
+      "tag": "kick",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_cleave",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "slash",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_slam",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "slam",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_uppercut",
+      "anim": "asset/tfm2_custom/vfx/kicker",
+      "tag": "drop_in",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_echo",
+      "anim": "asset/tfm2_custom/vfx/kagami",
+      "tag": "shard_hit",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_vanish",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "ghost",
       "z": -2,
       "is_follow": false
     },
     {
       "type": "Animation",
-      "name": "ct_impact",
-      "anim": "asset/tfm2_custom/vfx/contender",
-      "tag": "impact",
+      "name": "ct_appear",
+      "anim": "asset/tfm2_custom/vfx/grimhald",
+      "tag": "ghost_end",
       "z": 5,
       "is_follow": false
     },
     {
       "type": "Animation",
-      "name": "ct_counter",
-      "anim": "asset/tfm2_custom/vfx/contender",
-      "tag": "counter",
+      "name": "ct_flurry",
+      "anim": "asset/tfm2_custom/vfx/akane",
+      "tag": "dash_slash",
       "z": 5,
       "is_follow": false
     },
     {
       "type": "Animation",
-      "name": "ct_guard_arc",
-      "anim": "asset/tfm2_custom/vfx/contender",
-      "tag": "guard_arc",
-      "z": 5,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "ct_return_red",
-      "anim": "asset/tfm2_custom/vfx/contender",
-      "tag": "return_red",
-      "z": 5,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "ct_return_blue",
-      "anim": "asset/tfm2_custom/vfx/contender",
-      "tag": "return_blue",
-      "z": 5,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "ct_warning0",
-      "anim": "asset/tfm2_custom/vfx/contender",
-      "tag": "warning0",
-      "z": 5,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "ct_warning1",
-      "anim": "asset/tfm2_custom/vfx/contender",
-      "tag": "warning1",
-      "z": 5,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "ct_warning2",
-      "anim": "asset/tfm2_custom/vfx/contender",
-      "tag": "warning2",
-      "z": 5,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "ct_warning3",
-      "anim": "asset/tfm2_custom/vfx/contender",
-      "tag": "warning3",
-      "z": 5,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "ct_warning4",
-      "anim": "asset/tfm2_custom/vfx/contender",
-      "tag": "warning4",
-      "z": 5,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "ct_warning5",
-      "anim": "asset/tfm2_custom/vfx/contender",
-      "tag": "warning5",
-      "z": 5,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "ct_warning6",
-      "anim": "asset/tfm2_custom/vfx/contender",
-      "tag": "warning6",
-      "z": 5,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "ct_warning7",
-      "anim": "asset/tfm2_custom/vfx/contender",
-      "tag": "warning7",
+      "name": "ct_haymaker",
+      "anim": "asset/tfm2_custom/vfx/kicker",
+      "tag": "wall_slam",
       "z": 5,
       "is_follow": false
     }
