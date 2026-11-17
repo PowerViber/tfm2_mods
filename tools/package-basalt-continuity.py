@@ -8,7 +8,7 @@ BASE='79484f81d90aabe9ca86542a521e747fb7935b7b'
 def run(args,env=None):
     p=subprocess.run(['rtk','proxy',*args],cwd=ROOT,env=env,capture_output=True,text=True,encoding='utf8',errors='replace')
     if p.returncode:raise RuntimeError(p.stdout+p.stderr)
-    return p.stdout.strip()
+    return (p.stdout+p.stderr).strip()
 def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
 def sources():
     paths=sorted((ROOT/'native/tfm2_custom_ai/src').rglob('*.rs'))+sorted((ROOT/'native/mod-api-stable/src').rglob('*.rs'))
