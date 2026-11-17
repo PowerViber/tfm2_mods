@@ -1,0 +1,16 @@
+Compiling proc-macro2 v1.0.107
+   Compiling quote v1.0.47
+   Compiling unicode-ident v1.0.27
+   Compiling serde_core v1.0.229
+   Compiling zmij v1.0.23
+   Compiling serde v1.0.229
+   Compiling serde_json v1.0.154
+   Compiling memchr v2.8.3
+   Compiling lazy_static v1.5.1
+   Compiling itoa v1.0.18
+   Compiling mod-api-stable v0.1.0 (C:\Users\arian\.codex\worktrees\contender-shadow-art\tfm2_mods\native\mod-api-stable)
+   Compiling iced-x86 v1.21.0
+   Compiling syn v3.0.9
+   Compiling serde_derive v1.0.229
+   Compiling tfm2_custom_ai v0.1.0 (C:\Users\arian\.codex\worktrees\contender-shadow-art\tfm2_mods\native\tfm2_custom_ai)
+    Finished `release` profile [optimized] target(s) in 1m 28s

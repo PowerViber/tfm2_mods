@@ -1,5 +1,9 @@
 """Verify generated playtest data/art and repeatable extraction without invoking imagegen."""
 from pathlib import Path
+import runpy,sys
+if (Path(__file__).resolve().parents[1]/'docs/contender-shadow-review/presentation.json').exists():
+    runpy.run_path(str(Path(__file__).with_name('verify-contender-shadow-art.py')),run_name='__main__')
+    sys.exit(0)
 import json,hashlib,subprocess
 from PIL import Image
 ROOT=Path(__file__).resolve().parents[1];OUT=ROOT/'docs/contender-results'
