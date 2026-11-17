@@ -70,7 +70,7 @@ champ['attack'].update(duration=b['duration'], cooltime=b['cooldownTicks'], star
                        effect={'type': 'Attack', 'damage': 0, 'attack_ratio': 100})
 for slot in ['skill', 'skill2', 'ult']:
     champ[slot]['description'] = '#asset/base/text/champion?description.' + ID + '.' + slot
-champ['passive'] = {'passive_ref': 'tfm2_custom_ai:contender', 'params': {}}
+champ['passive'] = {'passive_ref': 'tfm2_custom_ai:contender', 'params': {'shadow_art_v1': 1}}
 champ['passive_ult'] = {'passive_ref': 'tfm2_custom_ai:ult_learned', 'params': {}}
 # his shadow effects arrive with Codex's art (`docs/contender-shadow-art-handoff.md`); until then every name he plays is
 # bound to existing effects so the shadow, its cleaves, slams and the flurry are visible in a playtest
@@ -82,6 +82,11 @@ champ['view_effects'] = [dict(type='Animation', name='ct_' + e, anim='asset/tfm2
                               is_follow=False) for e, (sheet, tag) in PLACEHOLDER.items()]
 champ['view_buffs'] = []
 champ['view_projectiles'] = []
+art = json.loads((ROOT/'docs/contender-shadow-review/presentation.json').read_text())
+champ['view_effects'] = [dict(type='Animation', name=e['name'], anim='asset/tfm2_custom/vfx/contender_shadow',
+                            tag=e['tag'], z=e['z'], is_follow=e['follow']) for e in art['bindings']]
+champ['view_buffs'] = [dict(type='Animated', name=f'ct_charges:{i}', anim='asset/tfm2_custom/vfx/contender_shadow',
+                          tag=f'charges{i}', z=6) for i in range(6)]
 
 data = json.dumps(champ, indent=2) + '\n'
 

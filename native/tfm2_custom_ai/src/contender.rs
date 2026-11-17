@@ -115,6 +115,10 @@ pub struct Contender {
     /// the projected shadow's carrier unit
     pub shadow: Option<usize>,
     shadow_drawn: u64,
+    shadow_art: bool,
+    shadow_last: Option<Point>,
+    shadow_punch_until: u64,
+    cyclone_drawn: Option<(Point, u64)>,
     /// enemies his basic attacks landed on since the last frame
     basic_hits: Vec<usize>,
     in_skill: bool,
@@ -245,7 +249,12 @@ impl Contender {
         sim.apply_cc(id, &named(CcKindV1::Animation, ticks, "ct_shadow_hidden"));
         sim.add_buff(id, &crate::timed(&format!("{SHADOW_TAG}:{owner}"), ticks as usize));
         self.shadow = Some(id);
-        self.shadow_drawn = 0;
+        self.shadow_drawn = (sim.tick() as u64).saturating_sub(10);
+        self.shadow_last = None;
+        if self.shadow_art {
+            crate::fx_unit(sim, "ct_body_idle0", owner, id, 10);
+            self.shadow_drawn = sim.tick() as u64;
+        }
     }
 
     pub(crate) fn apply(&mut self, sim: &mut StableSim, owner: usize, effects: Vec<Effect>) {
@@ -345,24 +354,60 @@ impl Contender {
                     sim.add_buff(owner, &crate::timed(&format!("{GO_PREFIX}{}:{}", to.x, to.y), 6));
                 }
                 Effect::Fx { name, at, ticks } => {
+                    if name == "ct_cross" && ticks == 10 && self.shadow.is_some() {
+                        self.shadow_punch_until = tick + ticks;
+                    }
                     if name == "ct_shadow" {
                         // a cleave spot: other AIs read it as danger
                         remove_prefix(sim, owner, ZONE_PREFIX);
                         let until = tick + ticks;
                         sim.add_buff(owner, &crate::timed(&format!("{ZONE_PREFIX}{}:{}:{}:{until}", at.x, at.y, d::CYCLONE_RADIUS), ticks as usize));
                     }
-                    if self.fx_ok(tick) {
-                        crate::fx_point(sim, &name, owner, at.x, at.y, ticks);
+                    if !(self.shadow_art && name == "ct_shadow") && self.fx_ok(tick) {
+                        let visual = if self.shadow_art {
+                            let left = sim.get_entity(owner).is_some_and(|e| (e.pos().0 as i64) > at.x);
+                            format!("{name}_t{ticks}{}", if left { "_l" } else { "" })
+                        } else { name };
+                        crate::fx_point(sim, &visual, owner, at.x, at.y, ticks);
                     }
                 }
                 Effect::Log { .. } => {}
+            }
+        }
+        // S2's clone exists only while the normal cleave is active. Short adjoining
+        // leases avoid replaying a long clone animation over the recast's real body.
+        if self.shadow_art {
+            if let Some(c) = self.core.cleaves.iter().find(|c| !c.recast) {
+                let at = c.at;
+                if self.cyclone_drawn.is_none_or(|(p, due)| p != at || tick >= due) {
+                    let left = sim.get_entity(owner).is_some_and(|e| (e.pos().0 as i64) > at.x);
+                    let name = format!("ct_body_punch{}{}", (tick / 10) % 2, if left { "_l" } else { "" });
+                    crate::fx_point(sim, &name, owner, at.x, at.y, 10);
+                    self.cyclone_drawn = Some((at, tick + 10));
+                }
+            } else {
+                self.cyclone_drawn = None;
             }
         }
         // the projected shadow's body: drawn where its carrier stands
         if let Some(id) = self.shadow {
             if tick >= self.shadow_drawn + 10 {
                 if let Some((x, y)) = sim.get_entity(id).filter(|e| e.is_alive()).map(|e| e.pos()) {
-                    crate::fx_point(sim, "ct_shadow", owner, x as i64, y as i64, 12);
+                    let at = Point::new(x as i64, y as i64);
+                    if self.shadow_art {
+                        let previous = self.shadow_last.unwrap_or(at);
+                        let moving = at.dist(previous) > 1000.0;
+                        let left = if moving { at.x < previous.x } else {
+                            sim.get_entity(owner).is_some_and(|e| (e.pos().0 as i64) > at.x)
+                        };
+                        let punching = tick < self.shadow_punch_until;
+                        let name = format!("ct_body_{}{}{}", if punching { "punch" } else if moving { "run" } else { "idle" },
+                            if punching { (tick / 10) % 2 } else if moving { (tick / 8) % 6 } else { 0 }, if left { "_l" } else { "" });
+                        crate::fx_unit(sim, &name, owner, id, 10);
+                    } else {
+                        crate::fx_point(sim, "ct_shadow", owner, x as i64, y as i64, 12);
+                    }
+                    self.shadow_last = Some(at);
                     self.shadow_drawn = tick;
                 }
             }
@@ -371,6 +416,10 @@ impl Contender {
 }
 
 impl StablePassive for Contender {
+    fn configure(&mut self, params: &str) {
+        self.shadow_art = serde_json::from_str::<serde_json::Value>(params).ok()
+            .and_then(|v| v.get("shadow_art_v1").and_then(|n| n.as_i64())) == Some(1);
+    }
     fn clone_box(&self) -> Box<dyn StablePassive> {
         Box::new(self.clone())
     }
@@ -383,6 +432,8 @@ impl StablePassive for Contender {
         remove_prefix(sim, id, ZONE_PREFIX);
         self.basic_hits.clear();
         self.in_skill = false;
+        self.shadow_last = None;
+        self.cyclone_drawn = None;
     }
     /// His Jab / Cross: never across a cage or a ring; Shadow Rhythm's vulnerability; the hit goes to the core.
     fn on_attack(&mut self, sim: &mut StableSim, _: usize, id: usize, target: usize, damage: &mut usize) {

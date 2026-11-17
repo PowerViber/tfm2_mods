@@ -449,6 +449,36 @@ mod glue {
     }
 
     #[test]
+    fn shadow_art_preserves_core_damage_movement_and_control_on_the_host() {
+        let _guard = crate::walls::TEST_LOCK.lock();
+        let (x, y) = open_spot(120_000);
+        let simulate = |art: bool| {
+            let host = Host::new(vec![champ(0, (x, y), "tfm2_custom_contender"), champ(1, (x + 70_000, y), "fighter")]);
+            host.borrow_mut().record_view_effects = true;
+            let mut c = Contender::default();
+            c.configure(if art { r#"{"shadow_art_v1":1}"# } else { "{}" });
+            with_sim(&host, |sim| c.on_spawn(sim, 0, 0));
+            let mut trace = Vec::new();
+            for tick in 100..400 {
+                run(&host, &mut c, tick, 1);
+                let h = host.borrow();
+                trace.push(serde_json::json!({"core":c.core,"damage":h.damage,"moves":h.moves,
+                    "units":h.units.iter().map(|u|(u.pos,u.hp,u.targetable)).collect::<Vec<_>>(),
+                    "cc":h.ccs.iter().map(|cs|cs.iter().map(|(c,t)|(c.name().to_owned(),c.kind,*t)).collect::<Vec<_>>()).collect::<Vec<_>>(),
+                    "buffs":h.buffs.iter().map(|bs|bs.iter().map(|b|b.name().to_owned()).collect::<Vec<_>>()).collect::<Vec<_>>() }));
+            }
+            if art {
+                let h = host.borrow();
+                assert!(h.view_effects.iter().any(|(n,_,target,t)|n.starts_with("ct_body_") && target.target_id>1 && *t==10),
+                    "Projection leases follow the actual targetable carrier for exactly ten ticks");
+                assert!(!h.view_effects.iter().any(|(n,_,_,_)| n=="ct_shadow"), "No ambiguous long clone animation");
+            }
+            trace
+        };
+        assert_eq!(simulate(false), simulate(true));
+    }
+
+    #[test]
     fn the_projection_spawns_a_shadow_carrier_holds_his_body_and_relays_its_damage() {
         let _guard = crate::walls::TEST_LOCK.lock();
         let (x, y) = open_spot(120_000);
