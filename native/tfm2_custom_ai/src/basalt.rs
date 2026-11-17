@@ -72,6 +72,8 @@ pub(crate) fn wall_name(a: Point, b: Point, t0: u64, tend: u64) -> String {
 pub struct Basalt {
     pub core: Core,
     art: bool,
+    // Old career-embedded definitions have only the original effect bindings.
+    timed_art: bool,
     presenter: crate::basalt_presentation::Presenter,
     profile: Option<crate::athlete_ai_core::Profile>,
     terrain: Option<(u64, Vec<bool>)>,
@@ -321,7 +323,9 @@ impl Basalt {
 
 impl StablePassive for Basalt {
     fn configure(&mut self, text: &str) {
-        self.art=serde_json::from_str::<serde_json::Value>(text).ok().and_then(|v|v.get("art_fx_v1").and_then(|n|n.as_u64())).is_some_and(|n|n==1);
+        let params=serde_json::from_str::<serde_json::Value>(text).unwrap_or_default();
+        self.art=params.get("art_fx_v1").and_then(|n|n.as_u64())==Some(1);
+        self.timed_art=params.get("art_timing_v2").and_then(|n|n.as_u64())==Some(1);
     }
     fn clone_box(&self) -> Box<dyn StablePassive> {
         Box::new(self.clone())
@@ -366,7 +370,10 @@ impl StablePassive for Basalt {
         self.apply(sim, id, effects);
         self.sync_walls(sim, id);
         for cue in visuals.events.into_iter().chain(visuals.leases) {
-            crate::fx_point(sim,&cue.name,id,cue.at.x,cue.at.y,cue.ticks);
+            // Preserve a visible legacy fallback instead of calling names that
+            // do not exist in an older career's embedded champion definition.
+            let name=if self.timed_art {cue.name.as_str()} else {cue.name.rsplit_once("_t").filter(|(_,n)|n.parse::<u64>().is_ok()).map_or(cue.name.as_str(),|(base,_)|base)};
+            crate::fx_point(sim,name,id,cue.at.x,cue.at.y,cue.ticks);
         }
     }
 }

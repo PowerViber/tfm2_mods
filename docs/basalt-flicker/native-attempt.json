@@ -1,0 +1,15 @@
+{
+  "scope": "Disposable game with process-local filesystem isolation only. No gameplay hooks.",
+  "staged_native": "0.10.112",
+  "staged_dll_sha256": "8e54fecfc9f47a68aa156c08cc7af2d5a4360d4bb931566363c6d711c37e0beb",
+  "staged_candidate": "Before final legacy-binding fallback",
+  "observed": "Native main menu and Mods screen reached; code mod initially disabled. Reihan reported enabling it.",
+  "actual_match_observed": false,
+  "frame_by_frame_native_acceptance": "pending",
+  "reason": "Computer Use stopped by the user with physical Escape before post-approval inspection. No further computer inputs were issued.",
+  "owned_process_closed_before_isolation_detach": true,
+  "real_profile_files_checked": 47,
+  "real_profile_unchanged": true,
+  "installed_game_changed": false,
+  "career_migration": false
+}

@@ -1,0 +1,14 @@
+
+==============================  TFM2 Mod Manager  ==============================
+ repo: C:\Users\arian\.codex\worktrees\basalt-effect-continuity\tfm2_mods\backups\basalt-art-manager-zkqd_3kz\repo [codex/basalt-effect-continuity] 79484f8 Merge pull request #89 from PowerViber/claude/pensive-johnson-ol9ckt
+ game: C:\Users\arian\.codex\worktrees\basalt-effect-continuity\tfm2_mods\backups\basalt-art-manager-zkqd_3kz\game
+ installed: native 0.10.112  champions 0.2.115
+ log: C:\Users\arian\.codex\worktrees\basalt-effect-continuity\tfm2_mods\backups\basalt-art-manager-zkqd_3kz\repo\logs\manager-20261117_073048.txt
+================================================================================
+Game folder: C:\Users\arian\.codex\worktrees\basalt-effect-continuity\tfm2_mods\backups\basalt-art-manager-zkqd_3kz\game
+  native (tfm2_custom_ai): repo 0.10.112  game 0.10.112
+  champions (tfm2_custom): repo 0.2.115  game 0.2.115
+  787 champion files compared, 0 differ, 0 missing; native DLL identical
+
+  UP TO DATE: the game has exactly the repo's mods.
+Log saved: C:\Users\arian\.codex\worktrees\basalt-effect-continuity\tfm2_mods\backups\basalt-art-manager-zkqd_3kz\repo\logs\manager-20261117_073048.txt

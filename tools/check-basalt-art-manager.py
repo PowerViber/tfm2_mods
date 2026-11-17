@@ -1,7 +1,7 @@
 """Mod Manager --check in an entirely disposable repo/game pair; never installs."""
 from pathlib import Path
 import hashlib,json,os,shutil,subprocess,tempfile
-ROOT=Path(__file__).resolve().parents[1];OUT=ROOT/'docs/basalt-art-review'
+ROOT=Path(__file__).resolve().parents[1];OUT=ROOT/os.environ.get('BASALT_RESULTS','docs/basalt-art-review')
 backups=ROOT/'backups';backups.mkdir(exist_ok=True)
 fixture=Path(tempfile.mkdtemp(prefix='basalt-art-manager-',dir=backups)).resolve()
 assert fixture.is_relative_to(backups.resolve())
@@ -15,5 +15,5 @@ r=subprocess.run(['rtk','proxy',str(repo/'TFM2 Mod Manager.exe'),'--check','--ye
 text=r.stdout+r.stderr;(OUT/'mod-manager.txt').write_text(text,encoding='utf-8')
 after={str(p.relative_to(ROOT/'mods')):hashlib.sha256(p.read_bytes()).hexdigest() for p in (ROOT/'mods').rglob('*') if p.is_file()}
 assert before==after,'Source mods changed'
-report={'scope':'Disposable fixture comparison only. No real game installation, process changes or career migration. Source manager.cfg untouched.','exit_code':r.returncode,'files_compared':len(before),'body_integrated':True,'effects_integrated':True,'source_mods_unchanged':True,'isolated_appdata':True,'packaged_dll_sha256':before[str(Path('tfm2_custom_ai/tfm2_custom_ai.dll'))],'dll_packaging':'Native 0.10.110 reproduced independently and packaged; see package.json','live_game':'pending'}
+report={'scope':'Disposable fixture comparison only. No real game installation, process changes or career migration. Source manager.cfg untouched.','exit_code':r.returncode,'files_compared':len(before),'body_integrated':True,'effects_integrated':True,'source_mods_unchanged':True,'isolated_appdata':True,'packaged_dll_sha256':before[str(Path('tfm2_custom_ai/tfm2_custom_ai.dll'))],'dll_packaging':'Native '+json.loads((ROOT/'mods/tfm2_custom_ai/mod.mod_info').read_text())['version']+'; independently reproduced; see package.json','live_game':'pending'}
 (OUT/'mod-manager.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report,indent=2));assert r.returncode==0 and 'NOT UP TO DATE:' not in text,text

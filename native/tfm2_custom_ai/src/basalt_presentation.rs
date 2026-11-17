@@ -57,7 +57,7 @@ fn lifted(p: Point, height: i64) -> Point {
     Point::new(p.x, p.y - height)
 }
 type Lease = (String, Cue, u64);
-/// Emission priority (basalt-1.4, the flicker fix): standing walls first, then the ult's rock, meteors and their
+/// Emission priority: standing walls first, then the ult's rock, meteors and their
 /// warnings, then everything else. Walls and ult cues never wait behind the per-tick cap.
 fn priority(key: &str) -> u8 {
     if key.starts_with("wall:") {
@@ -78,10 +78,17 @@ fn add(out: &mut Vec<Lease>, key: String, name: String, at: Point, period: u64) 
             Cue {
                 name,
                 at,
-                ticks: period + 1,
+                ticks: period,
             },
             period,
         ));
+    }
+}
+/// Clip predictable endings exactly; an interruption can leave at most one short lease.
+fn add_until(out: &mut Vec<Lease>, key: String, name: String, at: Point, period: u64, remaining: u64) {
+    let ticks = a::lease_ticks(period.min(remaining));
+    if ticks > 0 {
+        add(out, key, name, at, ticks);
     }
 }
 fn strip(out: &mut Vec<Lease>, key: &str, from: Point, to: Point) {
@@ -177,7 +184,7 @@ impl Presenter {
                 };
                 if self.event_ok(f.tick) {
                     result.events.push(Cue {
-                        name: tag.into(),
+                        name: a::timed_name(tag, (*ticks).min(24)),
                         at: if tag == "bs_punch_impact" {
                             Point::new(f.pos.x + 55000, f.pos.y - a::AIR_LIFT)
                         } else {
@@ -266,20 +273,21 @@ impl Presenter {
             return result;
         }
         let mut list = Vec::with_capacity(32);
-        if let Some((air, aim, _)) = core.charging {
+        if let Some((air, aim, until)) = core.charging {
             let offset = if air {
                 Point::new(f.pos.x + 55000, f.pos.y - a::AIR_LIFT)
             } else {
                 lifted(f.pos, a::GROUND_LIFT)
             };
-            add(
+            add_until(
                 &mut list,
                 "charge".into(),
                 "bs_boulder".into(),
                 offset,
                 a::DYNAMIC_PERIOD as u64,
+                until.saturating_sub(f.tick),
             );
-            add(
+            add_until(
                 &mut list,
                 "charge_warn".into(),
                 if air {
@@ -290,6 +298,7 @@ impl Presenter {
                 .into(),
                 f.nearest_ground(aim),
                 a::WHIP_PERIOD as u64,
+                until.saturating_sub(f.tick),
             );
         }
         for s in &self.shots {
@@ -302,24 +311,26 @@ impl Presenter {
             let key = format!("shot:{}:{}:{}", s.to.x, s.to.y, s.end);
             if s.air {
                 for i in 0..3 {
-                    add(
+                    add_until(
                         &mut list,
                         format!("{key}:{i}"),
                         "bs_meteor".into(),
                         Point::new(p.x + (i - 1) * 9000, p.y + (i % 2) * 7000),
                         a::DYNAMIC_PERIOD as u64,
+                        s.end.saturating_sub(f.tick),
                     );
                 }
             } else {
-                add(
+                add_until(
                     &mut list,
                     key.clone(),
                     "bs_boulder".into(),
                     p,
                     a::DYNAMIC_PERIOD as u64,
+                    s.end.saturating_sub(f.tick),
                 );
             }
-            add(
+            add_until(
                 &mut list,
                 format!("{key}:warn"),
                 if s.air {
@@ -330,6 +341,7 @@ impl Presenter {
                 .into(),
                 landing,
                 a::WHIP_PERIOD as u64,
+                s.end.saturating_sub(f.tick),
             );
         }
         for t in &self.tossed {
@@ -339,36 +351,40 @@ impl Presenter {
                 lerp(t.from, t.to, k),
                 (32000.0 * (std::f64::consts::PI * k).sin()) as i64,
             );
-            add(
+            add_until(
                 &mut list,
                 format!("toss:{}", t.end),
                 "bs_square".into(),
                 p,
                 a::DYNAMIC_PERIOD as u64,
+                t.end.saturating_sub(f.tick),
             );
-            add(
+            add_until(
                 &mut list,
                 format!("toss_warn:{}", t.end),
                 "bs_hurl_warning".into(),
                 t.to,
                 a::WHIP_PERIOD as u64,
+                t.end.saturating_sub(f.tick),
             );
         }
         for &(p, end) in &core.meteors {
             let key = format!("meteor:{}:{}:{end}", p.x, p.y);
-            add(
+            add_until(
                 &mut list,
                 key.clone(),
                 "bs_meteor".into(),
                 lifted(p, end.saturating_sub(f.tick) as i64 * 3000),
                 a::DYNAMIC_PERIOD as u64,
+                end.saturating_sub(f.tick),
             );
-            add(
+            add_until(
                 &mut list,
                 key + ":warn",
                 "bs_meteor_warning".into(),
                 p,
                 a::WHIP_PERIOD as u64,
+                end.saturating_sub(f.tick),
             );
         }
         let hand = |target: Point| {
@@ -395,12 +411,13 @@ impl Presenter {
             );
             let h = heading(c.apex, end, a::CONE_HEADINGS);
             let (dx, dy) = a::CONE_OFFSETS[h];
-            add(
+            add_until(
                 &mut list,
                 format!("cone:{}", c.start),
                 format!("bs_clap_cone_{h}"),
                 Point::new(c.apex.x + dx, c.apex.y + dy),
                 a::DYNAMIC_PERIOD as u64,
+                (c.start + d::CLAP_CLOSE_TICKS as u64).saturating_sub(f.tick),
             );
             for id in [c.left, c.right] {
                 if let Some(w) = core.walls.iter().find(|w| w.id == id) {
@@ -443,11 +460,10 @@ impl Presenter {
                 continue;
             }
             if self.due.get(&key).copied().unwrap_or(0) <= f.tick {
-                // a cue that stays put lives two periods, so one late renewal never leaves a gap; a moving one keeps
-                // period + 1 so no doubled image trails behind it
-                if top && period != a::DYNAMIC_PERIOD as u64 {
-                    cue.ticks = 2 * period + 1;
-                }
+                // A view effect expires at its packed animation's end, NOT at
+                // play_view_effect(time). Match that duration to the next renewal:
+                // no invisible gaps and no overlapping alpha/old-position copies.
+                cue.name = a::timed_name(&cue.name, cue.ticks);
                 self.due.insert(key, f.tick + period);
                 result.leases.push(cue);
                 if !top {
@@ -462,6 +478,24 @@ impl Presenter {
 #[cfg(test)]
 mod tests {
     use super::*;
+    fn base(name: &str) -> &str {
+        name.rsplit_once("_t").filter(|(_, t)| t.parse::<u64>().is_ok()).map_or(name, |(n, _)| n)
+    }
+    /// Read the SHIPPED frame durations independently of the generated lifetime table.
+    fn packed_ticks(cue: &Cue) -> u64 {
+        static ANIMS: std::sync::OnceLock<BTreeMap<String, u64>> = std::sync::OnceLock::new();
+        let anims = ANIMS.get_or_init(|| {
+            let data: serde_json::Value = serde_json::from_str(include_str!("../../../mods/tfm2_custom/vfx/basalt#anim.fanim")).unwrap();
+            data["anims"].as_object().unwrap().iter().map(|(name, anim)| {
+                let ticks = anim["frames"].as_array().unwrap().iter().map(|f| f["duration"].as_f64().unwrap() * 60.0).sum::<f64>().round() as u64;
+                (format!("bs_{name}"), ticks)
+            }).collect()
+        });
+        let ticks = *anims.get(&cue.name).unwrap_or_else(|| panic!("Unbound {}", cue.name));
+        assert_eq!(Some(ticks), a::effect_ticks(&cue.name));
+        assert_eq!(ticks, cue.ticks, "SDK time does not stretch {}", cue.name);
+        ticks
+    }
     fn frame(tick: u64) -> Frame {
         serde_json::from_value(serde_json::json!({"tick":tick,"owner":1,"team":0,"alive":true,"pos":{"x":300000,"y":300000},"hp":2000,"max_hp":2000,"attack":100,"ult_unlocked":true,"units":[],"profile":vec![50;13],"manual":true})).unwrap()
     }
@@ -475,7 +509,7 @@ mod tests {
         assert!(v
             .leases
             .iter()
-            .any(|x| x.name == "bs_boulder" && x.at == Point::new(300000, 245000)));
+            .any(|x| base(&x.name) == "bs_boulder" && x.at == Point::new(300000, 245000)));
         assert_eq!(serde_json::to_string(&c).unwrap(), before);
         c.charging = None;
         c.boulders.push((false, Point::new(600000, 300000), 221));
@@ -484,7 +518,7 @@ mod tests {
         assert!(v
             .leases
             .iter()
-            .any(|x| x.name == "bs_boulder" && x.at.x == 450000));
+            .any(|x| base(&x.name) == "bs_boulder" && x.at.x == 450000));
         c.boulders.clear();
         let v = p.step(
             &c,
@@ -495,8 +529,8 @@ mod tests {
                 ticks: 36,
             }],
         );
-        assert!(v.events.iter().any(|x| x.name == "bs_boulder_impact"));
-        assert!(!v.leases.iter().any(|x| x.name == "bs_boulder"));
+        assert!(v.events.iter().any(|x| base(&x.name) == "bs_boulder_impact"));
+        assert!(!v.leases.iter().any(|x| base(&x.name) == "bs_boulder"));
     }
     #[test]
     fn death_spawn_and_independent_owners_do_not_reconstruct_old_flights() {
@@ -565,9 +599,9 @@ mod tests {
         }
         for t in 1..100 {
             let v = p.step(&c, &frame(t), &[]);
-            assert!(v.leases.iter().filter(|c| c.name != "bs_square").count() <= a::MAX_EMISSIONS as usize);
+            assert!(v.leases.iter().filter(|c| base(&c.name) != "bs_square").count() <= a::MAX_EMISSIONS as usize);
             assert!(v.leases.len() <= a::MAX_EMISSIONS as usize + PRIORITY_CUES);
-            assert!(v.leases.iter().all(|c| c.ticks <= 2 * a::WALL_PERIOD as u64 + 1));
+            assert!(v.leases.iter().all(|c| packed_ticks(c) <= a::WALL_PERIOD as u64));
             assert!(p.due.len() <= a::MAX_CUES as usize + PRIORITY_CUES);
         }
     }
@@ -577,7 +611,7 @@ mod tests {
         for c in &v.leases {
             if let Some(k) = key(c) {
                 let e = cover.entry(k).or_insert(0);
-                *e = (*e).max(t + c.ticks - 1);
+                *e = (*e).max(t + packed_ticks(c) - 1);
             }
         }
     }
@@ -604,7 +638,7 @@ mod tests {
         let mut cover = BTreeMap::new();
         for t in 1..=600u64 {
             let v = p.step(&c, &frame(t), &[]);
-            coverage(&mut cover, &v, t, |x| (x.name == "bs_square").then(|| format!("{:?}", x.at)));
+            coverage(&mut cover, &v, t, |x| (base(&x.name) == "bs_square").then(|| format!("{:?}", x.at)));
             if t > 1 {
                 assert_eq!(cover.len(), 5, "every wall drawn");
                 for (k, until) in &cover {
@@ -623,7 +657,7 @@ mod tests {
         for t in 1..=600u64 {
             let v = p.step(&c, &frame(t), &[]);
             coverage(&mut cover, &v, t, |x| {
-                (x.name.starts_with("bs_meteor") || x.name.starts_with("bs_boulder") || x.name == "bs_square").then(|| format!("{}:{:?}", x.name, x.at))
+                (x.name.starts_with("bs_meteor") || x.name.starts_with("bs_boulder") || base(&x.name) == "bs_square").then(|| format!("{}:{:?}", base(&x.name), x.at))
             });
             if t > 1 {
                 // the falling meteors move each renewal, so check by name class: something of each kind covers every tick
@@ -632,6 +666,73 @@ mod tests {
                 }
                 let warnings = cover.iter().filter(|(k, u)| k.starts_with("bs_meteor_warning:") && **u >= t).count();
                 assert_eq!(warnings, 6, "every meteor warning drawn at tick {t}");
+            }
+        }
+    }
+
+    #[test]
+    fn packed_leases_have_exactly_one_copy_on_every_frame_even_at_fractional_ticks() {
+        let mut p = Presenter::default();
+        let mut c = busy_core(true);
+        c.charging = Some((true, Point::new(500000, 450000), 1000));
+        let mut active: Vec<(Cue, u64)> = vec![];
+        for tick in 1..=600 {
+            active.retain(|(cue, born)| tick < born + packed_ticks(cue));
+            let v = p.step(&c, &frame(tick), &[]);
+            for cue in v.leases { packed_ticks(&cue); active.push((cue, tick)); }
+            for fraction in [0.0, 0.25, 0.5, 0.999] {
+                let visible: Vec<_> = active.iter().filter(|(cue, born)| (tick as f64 + fraction) < (*born + packed_ticks(cue)) as f64).collect();
+                for wall in &c.walls {
+                    assert_eq!(visible.iter().filter(|(cue, _)| base(&cue.name) == "bs_square" && cue.at == wall.mid()).count(), 1, "wall gap or doubled alpha at {tick}+{fraction}");
+                }
+                assert_eq!(visible.iter().filter(|(cue, _)| base(&cue.name) == "bs_boulder").count(), 1);
+                assert_eq!(visible.iter().filter(|(cue, _)| base(&cue.name) == "bs_meteor").count(), 6, "stale moving meteor copies at {tick}");
+            }
+        }
+    }
+
+    #[test]
+    fn charge_and_flight_clip_to_the_exact_end_without_a_landing_tail() {
+        for end in 30..=36 {
+            let mut p = Presenter::default();
+            let mut c = Core::default();
+            let to = Point::new(600000, 300000);
+            let mut active: Vec<(Cue, u64)> = vec![];
+            for tick in 1..=end+7 {
+                active.retain(|(cue, born)| tick < born + packed_ticks(cue));
+                c.charging = (tick < 8).then_some((false, to, 8));
+                c.boulders = if (8..end).contains(&tick) { vec![(false, to, end)] } else { vec![] };
+                let v = p.step(&c, &frame(tick), &[]);
+                for cue in v.leases { active.push((cue, tick)); }
+                assert_eq!(active.iter().filter(|(cue, _)| base(&cue.name) == "bs_boulder").count(), usize::from(tick < end), "rock discontinuity at {tick}, end {end}");
+                assert_eq!(active.iter().filter(|(cue, _)| base(&cue.name) == "bs_boulder_warning").count(), usize::from(tick < end));
+            }
+        }
+    }
+
+    #[test]
+    fn one_shot_events_use_every_existing_drawing_once_with_their_real_lifetime() {
+        let mut p = Presenter::default();
+        let core = Core::default();
+        for (i, name) in ["bs_slam", "bs_break", "bs_land", "bs_wall_slam", "bs_dash"].iter().enumerate() {
+            let tick = 1 + i as u64 * 60;
+            let v = p.step(&core, &frame(tick), &[Effect::Fx { name: (*name).into(), at: frame(tick).pos, ticks: 18 }]);
+            assert_eq!(v.events.len(), 1);
+            assert_eq!(packed_ticks(&v.events[0]), 18);
+            for t in tick+1..tick+30 { assert!(p.step(&core, &frame(t), &[]).events.is_empty()); }
+        }
+    }
+
+    #[test]
+    fn tossed_squares_cover_every_landing_remainder_without_unbound_short_aliases() {
+        for end in 30..=36 {
+            let mut p=Presenter::default();let mut c=Core::default();
+            let mut active:Vec<(Cue,u64)>=vec![];
+            for tick in 1..=end+6 {
+                active.retain(|(cue,born)|tick < born+packed_ticks(cue));
+                c.flying=if tick<end {vec![Flying{kind:crate::basalt_core::Throw::Hurl,to:Point::new(600000,300000),dir:(1.0,0.0),land_at:end,integrity:3}]} else {vec![]};
+                for cue in p.step(&c,&frame(tick),&[]).leases {packed_ticks(&cue);active.push((cue,tick));}
+                assert_eq!(active.iter().filter(|(cue,_)|base(&cue.name)=="bs_square").count(),usize::from(tick<end));
             }
         }
     }
