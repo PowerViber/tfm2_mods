@@ -82,7 +82,7 @@ if (ROOT / 'mods/tfm2_custom/vfx/basalt#sheet.png').exists():
     art=json.loads((ROOT/'docs/basalt-art-review/effects-presentation.json').read_text())
     assert art['approved']
     champ['view_effects'] = [dict(type='Animation', name='bs_' + e, anim=VFX, tag=e, z=art['layers'][e], is_follow=False) for e in art['animations']]
-    champ['passive']['params']={'art_fx_v1':1}
+    champ['passive']['params']={'art_fx_v1':1,'art_timing_v2':1}
 else:
     champ['view_effects'] = [dict(type='Animation', name='bs_' + e, anim='asset/tfm2_custom/vfx/' + sheet, tag=tag, z=-2 if e in ('land', 'dust') else 5,
                                   is_follow=False) for e, (sheet, tag) in PLACEHOLDER.items()]
