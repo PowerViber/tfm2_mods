@@ -1,6 +1,6 @@
 # Contender 2.0: shadow art handoff (for Codex)
 
-Contender keeps his approved boxer body. His new kit (`docs/contender-guide.md`) needs **shadow** art. Until it arrives, every name he plays is bound to an existing effect (`tools/generate-contender.py`, `PLACEHOLDER`).
+**Completed 18 November 2026:** Reihan superseded the retained ring-boxer appearance and approved a new hooded shadow-boxer body plus separate violet/ivory effects. See [the completed artwork, reproduction and verification record](contender-shadow-review/README.md). Both bodies and effects now use their own approved packed assets; installation and native visual acceptance remain separate. The table below is the historical placeholder handoff.
 
 | Effect name | Used for | Placeholder |
 |---|---|---|

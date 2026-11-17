@@ -52,6 +52,6 @@ Category **Melee**, tags AD / Melee / CC. Basic attack **Jab / Cross** (23,000).
   - **Basic attacks:** `on_attack` reports them to the core with the vulnerability.
   - **Cleave circles:** published as `ctw:` danger zones.
 - **Tests:** `contender_shadow_tests.rs` (core, AI and glue).
-- **Lab:** `native/contender_shadow_lab` builds `editor/contender.wasm`. `editor/contender.html` is a training floor (dummies, a camp, a wave); the real-map Lab needs the extracted game reference.
+- **Lab:** `native/contender_shadow_lab` builds `editor/contender.wasm`. `editor/contender.html` now uses the extracted real map and stock actors, with lane/gank/objective situations, fixed 60 Hz playback and approved Shadow Boxer artwork. Host movement, mitigation, visibility and stock combat are simulated. See [artwork and Lab verification](contender-shadow-review/README.md).
 - **Retired, not deleted:** `contender_core.rs` and `contender_arena.rs` stay because the realm code shares their types (they now read `rules/contender-1-legacy.json`). No ring is opened any more.
 - **Template:** the other champions' generators now read a frozen template, `tools/native-champion-template.json`, instead of Contender's data file.
