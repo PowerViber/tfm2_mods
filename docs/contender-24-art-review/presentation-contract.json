@@ -1,0 +1,992 @@
+{
+  "approval_required": true,
+  "candidate_asset": "asset/tfm2_custom/vfx/contender_rhythm",
+  "break_effect": {
+    "name": "ct_break_t18",
+    "tag": "break_t18",
+    "ticks": 18,
+    "follow": false
+  },
+  "full_rhythm": {
+    "name": "ct_rhythm_full_<phase>",
+    "tag": "full_rhythm_t480",
+    "ticks": 480,
+    "follow": true,
+    "phase_tags": [
+      "full_rhythm_p0",
+      "full_rhythm_p1",
+      "full_rhythm_p2",
+      "full_rhythm_p3"
+    ],
+    "note": "Start once on Break, not on each Rhythm refresh; stable phase variants are provided."
+  },
+  "enemy": [
+    {
+      "name": "ct_rhythm_p0:1",
+      "tag": "enemy_1"
+    },
+    {
+      "name": "ct_rhythm_p0:2",
+      "tag": "enemy_2"
+    },
+    {
+      "name": "ct_rhythm_p0:3",
+      "tag": "enemy_3"
+    },
+    {
+      "name": "ct_rhythm_p0:4",
+      "tag": "enemy_4"
+    },
+    {
+      "name": "ct_rhythm_p0:5",
+      "tag": "enemy_5"
+    },
+    {
+      "name": "ct_rhythm_p0:6",
+      "tag": "enemy_6"
+    },
+    {
+      "name": "ct_rhythm_p0:7",
+      "tag": "enemy_7"
+    },
+    {
+      "name": "ct_rhythm_p0:8",
+      "tag": "enemy_8"
+    },
+    {
+      "name": "ct_rhythm_p0:9",
+      "tag": "enemy_9"
+    },
+    {
+      "name": "ct_rhythm_p0:10",
+      "tag": "enemy_10"
+    },
+    {
+      "name": "ct_rhythm_p0:11",
+      "tag": "enemy_11"
+    },
+    {
+      "name": "ct_rhythm_p0:12",
+      "tag": "enemy_12"
+    },
+    {
+      "name": "ct_rhythm_p0:13",
+      "tag": "enemy_13"
+    },
+    {
+      "name": "ct_rhythm_p0:14",
+      "tag": "enemy_14"
+    },
+    {
+      "name": "ct_rhythm_p0:15",
+      "tag": "enemy_15"
+    },
+    {
+      "name": "ct_rhythm_p0:16",
+      "tag": "enemy_16"
+    },
+    {
+      "name": "ct_rhythm_p0:17",
+      "tag": "enemy_17"
+    },
+    {
+      "name": "ct_rhythm_p0:18",
+      "tag": "enemy_18"
+    },
+    {
+      "name": "ct_rhythm_p0:19",
+      "tag": "enemy_19"
+    },
+    {
+      "name": "ct_rhythm_p0:20",
+      "tag": "enemy_20"
+    },
+    {
+      "name": "ct_rhythm_p1:1",
+      "tag": "enemy_1"
+    },
+    {
+      "name": "ct_rhythm_p1:2",
+      "tag": "enemy_2"
+    },
+    {
+      "name": "ct_rhythm_p1:3",
+      "tag": "enemy_3"
+    },
+    {
+      "name": "ct_rhythm_p1:4",
+      "tag": "enemy_4"
+    },
+    {
+      "name": "ct_rhythm_p1:5",
+      "tag": "enemy_5"
+    },
+    {
+      "name": "ct_rhythm_p1:6",
+      "tag": "enemy_6"
+    },
+    {
+      "name": "ct_rhythm_p1:7",
+      "tag": "enemy_7"
+    },
+    {
+      "name": "ct_rhythm_p1:8",
+      "tag": "enemy_8"
+    },
+    {
+      "name": "ct_rhythm_p1:9",
+      "tag": "enemy_9"
+    },
+    {
+      "name": "ct_rhythm_p1:10",
+      "tag": "enemy_10"
+    },
+    {
+      "name": "ct_rhythm_p1:11",
+      "tag": "enemy_11"
+    },
+    {
+      "name": "ct_rhythm_p1:12",
+      "tag": "enemy_12"
+    },
+    {
+      "name": "ct_rhythm_p1:13",
+      "tag": "enemy_13"
+    },
+    {
+      "name": "ct_rhythm_p1:14",
+      "tag": "enemy_14"
+    },
+    {
+      "name": "ct_rhythm_p1:15",
+      "tag": "enemy_15"
+    },
+    {
+      "name": "ct_rhythm_p1:16",
+      "tag": "enemy_16"
+    },
+    {
+      "name": "ct_rhythm_p1:17",
+      "tag": "enemy_17"
+    },
+    {
+      "name": "ct_rhythm_p1:18",
+      "tag": "enemy_18"
+    },
+    {
+      "name": "ct_rhythm_p1:19",
+      "tag": "enemy_19"
+    },
+    {
+      "name": "ct_rhythm_p1:20",
+      "tag": "enemy_20"
+    },
+    {
+      "name": "ct_rhythm_p2:1",
+      "tag": "enemy_1"
+    },
+    {
+      "name": "ct_rhythm_p2:2",
+      "tag": "enemy_2"
+    },
+    {
+      "name": "ct_rhythm_p2:3",
+      "tag": "enemy_3"
+    },
+    {
+      "name": "ct_rhythm_p2:4",
+      "tag": "enemy_4"
+    },
+    {
+      "name": "ct_rhythm_p2:5",
+      "tag": "enemy_5"
+    },
+    {
+      "name": "ct_rhythm_p2:6",
+      "tag": "enemy_6"
+    },
+    {
+      "name": "ct_rhythm_p2:7",
+      "tag": "enemy_7"
+    },
+    {
+      "name": "ct_rhythm_p2:8",
+      "tag": "enemy_8"
+    },
+    {
+      "name": "ct_rhythm_p2:9",
+      "tag": "enemy_9"
+    },
+    {
+      "name": "ct_rhythm_p2:10",
+      "tag": "enemy_10"
+    },
+    {
+      "name": "ct_rhythm_p2:11",
+      "tag": "enemy_11"
+    },
+    {
+      "name": "ct_rhythm_p2:12",
+      "tag": "enemy_12"
+    },
+    {
+      "name": "ct_rhythm_p2:13",
+      "tag": "enemy_13"
+    },
+    {
+      "name": "ct_rhythm_p2:14",
+      "tag": "enemy_14"
+    },
+    {
+      "name": "ct_rhythm_p2:15",
+      "tag": "enemy_15"
+    },
+    {
+      "name": "ct_rhythm_p2:16",
+      "tag": "enemy_16"
+    },
+    {
+      "name": "ct_rhythm_p2:17",
+      "tag": "enemy_17"
+    },
+    {
+      "name": "ct_rhythm_p2:18",
+      "tag": "enemy_18"
+    },
+    {
+      "name": "ct_rhythm_p2:19",
+      "tag": "enemy_19"
+    },
+    {
+      "name": "ct_rhythm_p2:20",
+      "tag": "enemy_20"
+    },
+    {
+      "name": "ct_rhythm_p3:1",
+      "tag": "enemy_1"
+    },
+    {
+      "name": "ct_rhythm_p3:2",
+      "tag": "enemy_2"
+    },
+    {
+      "name": "ct_rhythm_p3:3",
+      "tag": "enemy_3"
+    },
+    {
+      "name": "ct_rhythm_p3:4",
+      "tag": "enemy_4"
+    },
+    {
+      "name": "ct_rhythm_p3:5",
+      "tag": "enemy_5"
+    },
+    {
+      "name": "ct_rhythm_p3:6",
+      "tag": "enemy_6"
+    },
+    {
+      "name": "ct_rhythm_p3:7",
+      "tag": "enemy_7"
+    },
+    {
+      "name": "ct_rhythm_p3:8",
+      "tag": "enemy_8"
+    },
+    {
+      "name": "ct_rhythm_p3:9",
+      "tag": "enemy_9"
+    },
+    {
+      "name": "ct_rhythm_p3:10",
+      "tag": "enemy_10"
+    },
+    {
+      "name": "ct_rhythm_p3:11",
+      "tag": "enemy_11"
+    },
+    {
+      "name": "ct_rhythm_p3:12",
+      "tag": "enemy_12"
+    },
+    {
+      "name": "ct_rhythm_p3:13",
+      "tag": "enemy_13"
+    },
+    {
+      "name": "ct_rhythm_p3:14",
+      "tag": "enemy_14"
+    },
+    {
+      "name": "ct_rhythm_p3:15",
+      "tag": "enemy_15"
+    },
+    {
+      "name": "ct_rhythm_p3:16",
+      "tag": "enemy_16"
+    },
+    {
+      "name": "ct_rhythm_p3:17",
+      "tag": "enemy_17"
+    },
+    {
+      "name": "ct_rhythm_p3:18",
+      "tag": "enemy_18"
+    },
+    {
+      "name": "ct_rhythm_p3:19",
+      "tag": "enemy_19"
+    },
+    {
+      "name": "ct_rhythm_p3:20",
+      "tag": "enemy_20"
+    },
+    {
+      "name": "ct_rhythm_p4:1",
+      "tag": "enemy_1"
+    },
+    {
+      "name": "ct_rhythm_p4:2",
+      "tag": "enemy_2"
+    },
+    {
+      "name": "ct_rhythm_p4:3",
+      "tag": "enemy_3"
+    },
+    {
+      "name": "ct_rhythm_p4:4",
+      "tag": "enemy_4"
+    },
+    {
+      "name": "ct_rhythm_p4:5",
+      "tag": "enemy_5"
+    },
+    {
+      "name": "ct_rhythm_p4:6",
+      "tag": "enemy_6"
+    },
+    {
+      "name": "ct_rhythm_p4:7",
+      "tag": "enemy_7"
+    },
+    {
+      "name": "ct_rhythm_p4:8",
+      "tag": "enemy_8"
+    },
+    {
+      "name": "ct_rhythm_p4:9",
+      "tag": "enemy_9"
+    },
+    {
+      "name": "ct_rhythm_p4:10",
+      "tag": "enemy_10"
+    },
+    {
+      "name": "ct_rhythm_p4:11",
+      "tag": "enemy_11"
+    },
+    {
+      "name": "ct_rhythm_p4:12",
+      "tag": "enemy_12"
+    },
+    {
+      "name": "ct_rhythm_p4:13",
+      "tag": "enemy_13"
+    },
+    {
+      "name": "ct_rhythm_p4:14",
+      "tag": "enemy_14"
+    },
+    {
+      "name": "ct_rhythm_p4:15",
+      "tag": "enemy_15"
+    },
+    {
+      "name": "ct_rhythm_p4:16",
+      "tag": "enemy_16"
+    },
+    {
+      "name": "ct_rhythm_p4:17",
+      "tag": "enemy_17"
+    },
+    {
+      "name": "ct_rhythm_p4:18",
+      "tag": "enemy_18"
+    },
+    {
+      "name": "ct_rhythm_p4:19",
+      "tag": "enemy_19"
+    },
+    {
+      "name": "ct_rhythm_p4:20",
+      "tag": "enemy_20"
+    },
+    {
+      "name": "ct_rhythm_p5:1",
+      "tag": "enemy_1"
+    },
+    {
+      "name": "ct_rhythm_p5:2",
+      "tag": "enemy_2"
+    },
+    {
+      "name": "ct_rhythm_p5:3",
+      "tag": "enemy_3"
+    },
+    {
+      "name": "ct_rhythm_p5:4",
+      "tag": "enemy_4"
+    },
+    {
+      "name": "ct_rhythm_p5:5",
+      "tag": "enemy_5"
+    },
+    {
+      "name": "ct_rhythm_p5:6",
+      "tag": "enemy_6"
+    },
+    {
+      "name": "ct_rhythm_p5:7",
+      "tag": "enemy_7"
+    },
+    {
+      "name": "ct_rhythm_p5:8",
+      "tag": "enemy_8"
+    },
+    {
+      "name": "ct_rhythm_p5:9",
+      "tag": "enemy_9"
+    },
+    {
+      "name": "ct_rhythm_p5:10",
+      "tag": "enemy_10"
+    },
+    {
+      "name": "ct_rhythm_p5:11",
+      "tag": "enemy_11"
+    },
+    {
+      "name": "ct_rhythm_p5:12",
+      "tag": "enemy_12"
+    },
+    {
+      "name": "ct_rhythm_p5:13",
+      "tag": "enemy_13"
+    },
+    {
+      "name": "ct_rhythm_p5:14",
+      "tag": "enemy_14"
+    },
+    {
+      "name": "ct_rhythm_p5:15",
+      "tag": "enemy_15"
+    },
+    {
+      "name": "ct_rhythm_p5:16",
+      "tag": "enemy_16"
+    },
+    {
+      "name": "ct_rhythm_p5:17",
+      "tag": "enemy_17"
+    },
+    {
+      "name": "ct_rhythm_p5:18",
+      "tag": "enemy_18"
+    },
+    {
+      "name": "ct_rhythm_p5:19",
+      "tag": "enemy_19"
+    },
+    {
+      "name": "ct_rhythm_p5:20",
+      "tag": "enemy_20"
+    },
+    {
+      "name": "ct_rhythm_p6:1",
+      "tag": "enemy_1"
+    },
+    {
+      "name": "ct_rhythm_p6:2",
+      "tag": "enemy_2"
+    },
+    {
+      "name": "ct_rhythm_p6:3",
+      "tag": "enemy_3"
+    },
+    {
+      "name": "ct_rhythm_p6:4",
+      "tag": "enemy_4"
+    },
+    {
+      "name": "ct_rhythm_p6:5",
+      "tag": "enemy_5"
+    },
+    {
+      "name": "ct_rhythm_p6:6",
+      "tag": "enemy_6"
+    },
+    {
+      "name": "ct_rhythm_p6:7",
+      "tag": "enemy_7"
+    },
+    {
+      "name": "ct_rhythm_p6:8",
+      "tag": "enemy_8"
+    },
+    {
+      "name": "ct_rhythm_p6:9",
+      "tag": "enemy_9"
+    },
+    {
+      "name": "ct_rhythm_p6:10",
+      "tag": "enemy_10"
+    },
+    {
+      "name": "ct_rhythm_p6:11",
+      "tag": "enemy_11"
+    },
+    {
+      "name": "ct_rhythm_p6:12",
+      "tag": "enemy_12"
+    },
+    {
+      "name": "ct_rhythm_p6:13",
+      "tag": "enemy_13"
+    },
+    {
+      "name": "ct_rhythm_p6:14",
+      "tag": "enemy_14"
+    },
+    {
+      "name": "ct_rhythm_p6:15",
+      "tag": "enemy_15"
+    },
+    {
+      "name": "ct_rhythm_p6:16",
+      "tag": "enemy_16"
+    },
+    {
+      "name": "ct_rhythm_p6:17",
+      "tag": "enemy_17"
+    },
+    {
+      "name": "ct_rhythm_p6:18",
+      "tag": "enemy_18"
+    },
+    {
+      "name": "ct_rhythm_p6:19",
+      "tag": "enemy_19"
+    },
+    {
+      "name": "ct_rhythm_p6:20",
+      "tag": "enemy_20"
+    },
+    {
+      "name": "ct_rhythm_p7:1",
+      "tag": "enemy_1"
+    },
+    {
+      "name": "ct_rhythm_p7:2",
+      "tag": "enemy_2"
+    },
+    {
+      "name": "ct_rhythm_p7:3",
+      "tag": "enemy_3"
+    },
+    {
+      "name": "ct_rhythm_p7:4",
+      "tag": "enemy_4"
+    },
+    {
+      "name": "ct_rhythm_p7:5",
+      "tag": "enemy_5"
+    },
+    {
+      "name": "ct_rhythm_p7:6",
+      "tag": "enemy_6"
+    },
+    {
+      "name": "ct_rhythm_p7:7",
+      "tag": "enemy_7"
+    },
+    {
+      "name": "ct_rhythm_p7:8",
+      "tag": "enemy_8"
+    },
+    {
+      "name": "ct_rhythm_p7:9",
+      "tag": "enemy_9"
+    },
+    {
+      "name": "ct_rhythm_p7:10",
+      "tag": "enemy_10"
+    },
+    {
+      "name": "ct_rhythm_p7:11",
+      "tag": "enemy_11"
+    },
+    {
+      "name": "ct_rhythm_p7:12",
+      "tag": "enemy_12"
+    },
+    {
+      "name": "ct_rhythm_p7:13",
+      "tag": "enemy_13"
+    },
+    {
+      "name": "ct_rhythm_p7:14",
+      "tag": "enemy_14"
+    },
+    {
+      "name": "ct_rhythm_p7:15",
+      "tag": "enemy_15"
+    },
+    {
+      "name": "ct_rhythm_p7:16",
+      "tag": "enemy_16"
+    },
+    {
+      "name": "ct_rhythm_p7:17",
+      "tag": "enemy_17"
+    },
+    {
+      "name": "ct_rhythm_p7:18",
+      "tag": "enemy_18"
+    },
+    {
+      "name": "ct_rhythm_p7:19",
+      "tag": "enemy_19"
+    },
+    {
+      "name": "ct_rhythm_p7:20",
+      "tag": "enemy_20"
+    },
+    {
+      "name": "ct_rhythm_p8:1",
+      "tag": "enemy_1"
+    },
+    {
+      "name": "ct_rhythm_p8:2",
+      "tag": "enemy_2"
+    },
+    {
+      "name": "ct_rhythm_p8:3",
+      "tag": "enemy_3"
+    },
+    {
+      "name": "ct_rhythm_p8:4",
+      "tag": "enemy_4"
+    },
+    {
+      "name": "ct_rhythm_p8:5",
+      "tag": "enemy_5"
+    },
+    {
+      "name": "ct_rhythm_p8:6",
+      "tag": "enemy_6"
+    },
+    {
+      "name": "ct_rhythm_p8:7",
+      "tag": "enemy_7"
+    },
+    {
+      "name": "ct_rhythm_p8:8",
+      "tag": "enemy_8"
+    },
+    {
+      "name": "ct_rhythm_p8:9",
+      "tag": "enemy_9"
+    },
+    {
+      "name": "ct_rhythm_p8:10",
+      "tag": "enemy_10"
+    },
+    {
+      "name": "ct_rhythm_p8:11",
+      "tag": "enemy_11"
+    },
+    {
+      "name": "ct_rhythm_p8:12",
+      "tag": "enemy_12"
+    },
+    {
+      "name": "ct_rhythm_p8:13",
+      "tag": "enemy_13"
+    },
+    {
+      "name": "ct_rhythm_p8:14",
+      "tag": "enemy_14"
+    },
+    {
+      "name": "ct_rhythm_p8:15",
+      "tag": "enemy_15"
+    },
+    {
+      "name": "ct_rhythm_p8:16",
+      "tag": "enemy_16"
+    },
+    {
+      "name": "ct_rhythm_p8:17",
+      "tag": "enemy_17"
+    },
+    {
+      "name": "ct_rhythm_p8:18",
+      "tag": "enemy_18"
+    },
+    {
+      "name": "ct_rhythm_p8:19",
+      "tag": "enemy_19"
+    },
+    {
+      "name": "ct_rhythm_p8:20",
+      "tag": "enemy_20"
+    },
+    {
+      "name": "ct_rhythm_p9:1",
+      "tag": "enemy_1"
+    },
+    {
+      "name": "ct_rhythm_p9:2",
+      "tag": "enemy_2"
+    },
+    {
+      "name": "ct_rhythm_p9:3",
+      "tag": "enemy_3"
+    },
+    {
+      "name": "ct_rhythm_p9:4",
+      "tag": "enemy_4"
+    },
+    {
+      "name": "ct_rhythm_p9:5",
+      "tag": "enemy_5"
+    },
+    {
+      "name": "ct_rhythm_p9:6",
+      "tag": "enemy_6"
+    },
+    {
+      "name": "ct_rhythm_p9:7",
+      "tag": "enemy_7"
+    },
+    {
+      "name": "ct_rhythm_p9:8",
+      "tag": "enemy_8"
+    },
+    {
+      "name": "ct_rhythm_p9:9",
+      "tag": "enemy_9"
+    },
+    {
+      "name": "ct_rhythm_p9:10",
+      "tag": "enemy_10"
+    },
+    {
+      "name": "ct_rhythm_p9:11",
+      "tag": "enemy_11"
+    },
+    {
+      "name": "ct_rhythm_p9:12",
+      "tag": "enemy_12"
+    },
+    {
+      "name": "ct_rhythm_p9:13",
+      "tag": "enemy_13"
+    },
+    {
+      "name": "ct_rhythm_p9:14",
+      "tag": "enemy_14"
+    },
+    {
+      "name": "ct_rhythm_p9:15",
+      "tag": "enemy_15"
+    },
+    {
+      "name": "ct_rhythm_p9:16",
+      "tag": "enemy_16"
+    },
+    {
+      "name": "ct_rhythm_p9:17",
+      "tag": "enemy_17"
+    },
+    {
+      "name": "ct_rhythm_p9:18",
+      "tag": "enemy_18"
+    },
+    {
+      "name": "ct_rhythm_p9:19",
+      "tag": "enemy_19"
+    },
+    {
+      "name": "ct_rhythm_p9:20",
+      "tag": "enemy_20"
+    }
+  ],
+  "bank": [
+    {
+      "name": "ct_bank:0",
+      "tag": "bank_0"
+    },
+    {
+      "name": "ct_bank:1",
+      "tag": "bank_1"
+    },
+    {
+      "name": "ct_bank:2",
+      "tag": "bank_2"
+    },
+    {
+      "name": "ct_bank:3",
+      "tag": "bank_3"
+    },
+    {
+      "name": "ct_bank:4",
+      "tag": "bank_4"
+    },
+    {
+      "name": "ct_bank:5",
+      "tag": "bank_5"
+    },
+    {
+      "name": "ct_bank:6",
+      "tag": "bank_6"
+    },
+    {
+      "name": "ct_bank:7",
+      "tag": "bank_7"
+    },
+    {
+      "name": "ct_bank:8",
+      "tag": "bank_8"
+    },
+    {
+      "name": "ct_bank:9",
+      "tag": "bank_9"
+    },
+    {
+      "name": "ct_bank:10",
+      "tag": "bank_10"
+    },
+    {
+      "name": "ct_bank:11",
+      "tag": "bank_11"
+    },
+    {
+      "name": "ct_bank:12",
+      "tag": "bank_12"
+    },
+    {
+      "name": "ct_bank:13",
+      "tag": "bank_13"
+    },
+    {
+      "name": "ct_bank:14",
+      "tag": "bank_14"
+    },
+    {
+      "name": "ct_bank:15",
+      "tag": "bank_15"
+    },
+    {
+      "name": "ct_bank:16",
+      "tag": "bank_16"
+    },
+    {
+      "name": "ct_bank:17",
+      "tag": "bank_17"
+    },
+    {
+      "name": "ct_bank:18",
+      "tag": "bank_18"
+    },
+    {
+      "name": "ct_bank:19",
+      "tag": "bank_19"
+    },
+    {
+      "name": "ct_bank:20",
+      "tag": "bank_20"
+    },
+    {
+      "name": "ct_bank:21",
+      "tag": "bank_21"
+    },
+    {
+      "name": "ct_bank:22",
+      "tag": "bank_22"
+    },
+    {
+      "name": "ct_bank:23",
+      "tag": "bank_23"
+    },
+    {
+      "name": "ct_bank:24",
+      "tag": "bank_24"
+    },
+    {
+      "name": "ct_bank:25",
+      "tag": "bank_25"
+    },
+    {
+      "name": "ct_bank:26",
+      "tag": "bank_26"
+    },
+    {
+      "name": "ct_bank:27",
+      "tag": "bank_27"
+    },
+    {
+      "name": "ct_bank:28",
+      "tag": "bank_28"
+    },
+    {
+      "name": "ct_bank:29",
+      "tag": "bank_29"
+    },
+    {
+      "name": "ct_bank:30",
+      "tag": "bank_30"
+    },
+    {
+      "name": "ct_bank:31",
+      "tag": "bank_31"
+    },
+    {
+      "name": "ct_bank:32",
+      "tag": "bank_32"
+    },
+    {
+      "name": "ct_bank:33",
+      "tag": "bank_33"
+    },
+    {
+      "name": "ct_bank:34",
+      "tag": "bank_34"
+    },
+    {
+      "name": "ct_bank:35",
+      "tag": "bank_35"
+    },
+    {
+      "name": "ct_bank:36",
+      "tag": "bank_36"
+    },
+    {
+      "name": "ct_bank:37",
+      "tag": "bank_37"
+    },
+    {
+      "name": "ct_bank:38",
+      "tag": "bank_38"
+    },
+    {
+      "name": "ct_bank:39",
+      "tag": "bank_39"
+    },
+    {
+      "name": "ct_bank:40",
+      "tag": "bank_40"
+    }
+  ],
+  "ownership_note": "Track leases per owner/simulation. Do not remove another Contender owner's target markers; do not infer Break from aggregate HP changes."
+}

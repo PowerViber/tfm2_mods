@@ -131,3 +131,5 @@ assert manifest['decoded_bytes']<=32*1024*1024
 print(json.dumps({'body':sheet.size,'fx':fxsheet.size,'decoded_bytes':manifest['decoded_bytes'],'animations':len(fxanims)}))
 if (ROOT/'docs/contender-merge-review/approvals.json').exists():
     subprocess.run(['rtk','proxy',sys.executable,str(ROOT/'tools/build-contender-merge-art.py')],check=True,cwd=ROOT)
+if (ROOT/'docs/contender-24-art-review/approvals.json').exists():
+    subprocess.run(['rtk','proxy',sys.executable,str(ROOT/'tools/prepare-contender-24-review.py')],check=True,cwd=ROOT)

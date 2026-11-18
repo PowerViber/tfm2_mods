@@ -107,7 +107,8 @@
     "params": {
       "shadow_art_v1": 1,
       "shadow_directions_v1": 1,
-      "shadow_merge_art_v1": 1
+      "shadow_merge_art_v1": 1,
+      "shadow_rhythm_art_v1": 1
     }
   },
   "passive_ult": {
@@ -492,6 +493,1721 @@
       "anim": "asset/tfm2_custom/champions/tfm2_custom_contender_merge",
       "tag": "tile23_l",
       "z": 4
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_full_0",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "full_rhythm_p0",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_full_1",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "full_rhythm_p1",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_full_2",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "full_rhythm_p2",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_full_3",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "full_rhythm_p3",
+      "z": -1
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p0:1",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_1",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p0:2",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_2",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p0:3",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_3",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p0:4",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_4",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p0:5",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_5",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p0:6",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_6",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p0:7",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_7",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p0:8",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_8",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p0:9",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_9",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p0:10",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_10",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p0:11",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_11",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p0:12",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_12",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p0:13",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_13",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p0:14",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_14",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p0:15",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_15",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p0:16",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_16",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p0:17",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_17",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p0:18",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_18",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p0:19",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_19",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p0:20",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_20",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p1:1",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_1",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p1:2",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_2",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p1:3",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_3",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p1:4",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_4",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p1:5",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_5",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p1:6",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_6",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p1:7",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_7",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p1:8",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_8",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p1:9",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_9",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p1:10",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_10",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p1:11",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_11",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p1:12",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_12",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p1:13",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_13",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p1:14",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_14",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p1:15",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_15",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p1:16",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_16",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p1:17",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_17",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p1:18",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_18",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p1:19",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_19",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p1:20",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_20",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p2:1",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_1",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p2:2",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_2",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p2:3",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_3",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p2:4",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_4",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p2:5",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_5",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p2:6",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_6",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p2:7",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_7",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p2:8",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_8",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p2:9",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_9",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p2:10",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_10",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p2:11",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_11",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p2:12",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_12",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p2:13",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_13",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p2:14",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_14",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p2:15",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_15",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p2:16",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_16",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p2:17",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_17",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p2:18",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_18",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p2:19",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_19",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p2:20",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_20",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p3:1",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_1",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p3:2",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_2",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p3:3",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_3",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p3:4",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_4",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p3:5",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_5",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p3:6",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_6",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p3:7",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_7",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p3:8",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_8",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p3:9",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_9",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p3:10",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_10",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p3:11",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_11",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p3:12",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_12",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p3:13",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_13",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p3:14",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_14",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p3:15",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_15",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p3:16",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_16",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p3:17",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_17",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p3:18",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_18",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p3:19",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_19",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p3:20",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_20",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p4:1",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_1",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p4:2",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_2",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p4:3",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_3",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p4:4",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_4",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p4:5",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_5",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p4:6",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_6",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p4:7",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_7",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p4:8",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_8",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p4:9",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_9",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p4:10",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_10",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p4:11",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_11",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p4:12",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_12",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p4:13",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_13",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p4:14",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_14",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p4:15",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_15",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p4:16",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_16",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p4:17",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_17",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p4:18",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_18",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p4:19",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_19",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p4:20",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_20",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p5:1",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_1",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p5:2",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_2",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p5:3",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_3",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p5:4",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_4",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p5:5",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_5",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p5:6",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_6",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p5:7",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_7",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p5:8",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_8",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p5:9",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_9",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p5:10",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_10",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p5:11",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_11",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p5:12",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_12",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p5:13",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_13",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p5:14",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_14",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p5:15",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_15",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p5:16",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_16",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p5:17",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_17",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p5:18",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_18",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p5:19",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_19",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p5:20",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_20",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p6:1",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_1",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p6:2",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_2",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p6:3",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_3",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p6:4",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_4",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p6:5",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_5",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p6:6",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_6",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p6:7",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_7",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p6:8",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_8",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p6:9",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_9",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p6:10",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_10",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p6:11",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_11",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p6:12",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_12",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p6:13",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_13",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p6:14",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_14",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p6:15",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_15",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p6:16",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_16",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p6:17",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_17",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p6:18",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_18",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p6:19",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_19",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p6:20",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_20",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p7:1",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_1",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p7:2",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_2",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p7:3",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_3",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p7:4",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_4",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p7:5",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_5",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p7:6",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_6",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p7:7",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_7",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p7:8",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_8",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p7:9",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_9",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p7:10",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_10",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p7:11",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_11",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p7:12",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_12",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p7:13",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_13",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p7:14",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_14",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p7:15",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_15",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p7:16",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_16",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p7:17",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_17",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p7:18",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_18",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p7:19",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_19",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p7:20",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_20",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p8:1",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_1",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p8:2",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_2",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p8:3",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_3",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p8:4",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_4",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p8:5",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_5",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p8:6",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_6",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p8:7",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_7",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p8:8",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_8",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p8:9",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_9",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p8:10",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_10",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p8:11",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_11",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p8:12",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_12",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p8:13",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_13",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p8:14",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_14",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p8:15",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_15",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p8:16",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_16",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p8:17",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_17",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p8:18",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_18",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p8:19",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_19",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p8:20",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_20",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p9:1",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_1",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p9:2",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_2",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p9:3",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_3",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p9:4",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_4",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p9:5",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_5",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p9:6",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_6",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p9:7",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_7",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p9:8",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_8",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p9:9",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_9",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p9:10",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_10",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p9:11",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_11",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p9:12",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_12",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p9:13",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_13",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p9:14",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_14",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p9:15",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_15",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p9:16",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_16",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p9:17",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_17",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p9:18",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_18",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p9:19",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_19",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_rhythm_p9:20",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "enemy_20",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_bank:0",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "bank_0",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_bank:1",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "bank_1",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_bank:2",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "bank_2",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_bank:3",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "bank_3",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_bank:4",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "bank_4",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_bank:5",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "bank_5",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_bank:6",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "bank_6",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_bank:7",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "bank_7",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_bank:8",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "bank_8",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_bank:9",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "bank_9",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_bank:10",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "bank_10",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_bank:11",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "bank_11",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_bank:12",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "bank_12",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_bank:13",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "bank_13",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_bank:14",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "bank_14",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_bank:15",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "bank_15",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_bank:16",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "bank_16",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_bank:17",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "bank_17",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_bank:18",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "bank_18",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_bank:19",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "bank_19",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_bank:20",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "bank_20",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_bank:21",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "bank_21",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_bank:22",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "bank_22",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_bank:23",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "bank_23",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_bank:24",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "bank_24",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_bank:25",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "bank_25",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_bank:26",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "bank_26",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_bank:27",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "bank_27",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_bank:28",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "bank_28",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_bank:29",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "bank_29",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_bank:30",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "bank_30",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_bank:31",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "bank_31",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_bank:32",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "bank_32",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_bank:33",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "bank_33",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_bank:34",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "bank_34",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_bank:35",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "bank_35",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_bank:36",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "bank_36",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_bank:37",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "bank_37",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_bank:38",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "bank_38",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_bank:39",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "bank_39",
+      "z": 7
+    },
+    {
+      "type": "Animated",
+      "name": "ct_bank:40",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "bank_40",
+      "z": 7
     }
   ],
   "view_effects": [
@@ -1085,6 +2801,38 @@
       "anim": "asset/tfm2_custom/vfx/contender_shadow",
       "tag": "flurry_d7_t8",
       "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_break_t18",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "break_t18",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_break_t18_l",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "break_t18_l",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_ring25_t6",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "ring25_t6",
+      "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_ring35_t6",
+      "anim": "asset/tfm2_custom/vfx/contender_rhythm",
+      "tag": "ring35_t6",
+      "z": -1,
       "is_follow": false
     }
   ],

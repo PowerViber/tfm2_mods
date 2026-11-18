@@ -57,10 +57,10 @@ manifest['merge'] = dict(file='../mods/tfm2_custom/champions/tfm2_custom_contend
 manifest['merge_bindings'] = [dict(name=f'ct_mb_{i}'+('_l' if left else ''),tag=f'tile{i}'+('_l' if left else ''),z=4)
                                for i in range(24) for left in [False,True]]
 manifest['merge_source_hashes'] = {p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in [OUT/'merge-source-v1.png',source]}
-manifest['revision']='contender-shadow-art-3'
+manifest['revision']='contender-shadow-art-4' if 'rhythm' in manifest else 'contender-shadow-art-3'
 manifest['rules']=json.loads((ROOT/'rules/contender.json').read_text())['revision']
 manifest['decoded_bytes']=sum(Image.open(ROOT/manifest[k]['file'].removeprefix('../')).width*
-                               Image.open(ROOT/manifest[k]['file'].removeprefix('../')).height*4 for k in ['body','effects','merge'])
+                               Image.open(ROOT/manifest[k]['file'].removeprefix('../')).height*4 for k in ['body','effects','merge','rhythm'] if k in manifest)
 assert manifest['decoded_bytes'] <= 32*1024*1024
 manifest_path.write_text(json.dumps(manifest,indent=2)+'\n')
 (ROOT/'editor/contender-presentation.js').write_text('window.CONTENDER_PRESENTATION='+json.dumps(manifest,separators=(',',':'))+';\n')
@@ -69,7 +69,8 @@ rust+='pub fn sequence(pose: &str) -> &\'static [(usize, u64)] {\n    match pose
 for pose,frames in clock.items():
     rust+=f'        "{pose}" => &['+','.join(f'({f["tile"]},{f["milli_ticks"]})' for f in frames)+'],\n'
 rust+='        _ => &[(0, 12000)],\n    }\n}\n'
-(ROOT/'native/tfm2_custom_ai/src/contender_merge_data.rs').write_text(rust)
+rust_path=ROOT/'native/tfm2_custom_ai/src/contender_merge_data.rs'
+if not rust_path.exists() or rust_path.read_text()!=rust:rust_path.write_text(rust)
 (OUT/'presentation.json').write_text(json.dumps(dict(approved=True,source_hashes=manifest['merge_source_hashes'],
                          atlas=[960,256],decoded_total_bytes=manifest['decoded_bytes'],clock=clock,
                          generation_deterministic=False,packing_deterministic=True),indent=2)+'\n')
