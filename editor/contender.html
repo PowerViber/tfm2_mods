@@ -2,11 +2,12 @@
 <html lang="en"><head><meta charset="utf-8"><title>Contender Lab</title>
 <style>
 body{margin:0;background:#12161f;color:#e7e3f0;font:14px system-ui;display:flex;gap:16px;padding:16px}aside{width:330px;flex-shrink:0}h1{font-size:22px;margin:0}p{line-height:1.4;color:#bcc5d4}button{font:inherit;background:#28324a;color:#eef;border:1px solid #687089;padding:6px;border-radius:5px;cursor:pointer;margin:3px}label{display:block;margin:7px 0}.row{display:flex;flex-wrap:wrap;gap:4px}canvas{width:min(900px,calc(100vw - 395px));height:auto;aspect-ratio:1;align-self:flex-start;background:#1b2531;outline:2px solid #4a5a70}canvas:focus{outline-color:#b9a2ef}pre{white-space:pre-wrap;font-size:12px;max-height:300px;overflow:auto}small{color:#9fb0c6}.pips{font-size:20px;letter-spacing:3px;color:#a993ff}
+body{display:grid;grid-template-columns:270px minmax(360px,1fr) 300px;gap:14px;padding:14px}aside{width:auto;max-height:calc(100vh - 28px);overflow:auto;position:sticky;top:14px}canvas{width:100%;max-width:900px;justify-self:center}#damagePanel{background:#1b2334;padding:12px;border:1px solid #655578;border-radius:8px;box-sizing:border-box}h1 small{display:block;font-size:12px;margin-top:4px}h2{font-size:18px;margin:0 0 10px}h3{font-size:14px;margin:0 0 5px}select,input{font:inherit;background:#202a3e;color:#eee;border:1px solid #798398;border-radius:3px;padding:4px;max-width:100%;box-sizing:border-box}input[type=number]{width:70px}#targetType{width:100%}.targetRow{margin-top:12px;padding:10px 8px;border:1px solid #564969;border-radius:6px;background:#141c2b}.targetRow.selected{border-color:#c8a8ff}.damageTotal{font-size:20px;color:#d6bcff}.targetRow label{display:inline-block;margin:4px 6px 4px 0;font-size:12px}.targetRow small{display:block}.targetRow button{font-size:12px;padding:4px}.summary{color:#c5b3e2;margin:8px 0}.testNote{font-size:12px}.error{color:#ffb4be}#targetList{margin-top:8px}@media(max-width:1300px){body{grid-template-columns:220px minmax(320px,1fr) 270px}}@media(max-width:950px){body{grid-template-columns:minmax(320px,1fr) 260px}body>aside:first-child{grid-column:1/-1;grid-row:2;position:static;max-height:none}canvas{grid-column:1;grid-row:1}#damagePanel{grid-column:2;grid-row:1}}@media(max-width:680px){body{display:flex;flex-direction:column}aside{position:static;max-height:none;width:100%}canvas{order:-1}}
 </style></head><body><aside>
 <h1>Contender Lab <small id="revision"></small></h1>
 <p>Approved Shadow Boxer artwork on the extracted game map, with stock champions, minions, camps and towers. Skills and AI use the native Rust core; movement, attacks, mitigation and visibility are simulated host behaviour, not actual-game acceptance.</p>
 <p><a href="contender-shadow-review.html" style="color:#c6a7ff">Animation and effects review</a></p>
-<label>Situation <select id="scenario"></select> <button id="loadScene">Load</button></label><p id="description"></p>
+<label>Mode / situation <select id="scenario"></select> <button id="loadScene">Load</button></label><p id="description"></p>
 <label><input id="follow" type="checkbox" checked> Follow Contender</label>
 <label><input id="showArt" type="checkbox" checked> Show approved artwork</label>
 <label><input id="ranges" type="checkbox"> Show S1/S2/S3 reach</label>
@@ -24,5 +25,16 @@ body{margin:0;background:#12161f;color:#e7e3f0;font:14px system-ui;display:flex;
 <button id="saveRecording">Export last 1,200 frames</button><label>Inspect recording <input id="recording" type="file" accept=".json"></label><small id="recordingStatus"></small>
 <label>Recorded frame <input id="recordedFrame" type="range" min="0" max="0" value="0"></label><pre id="recordedDetail"></pre>
 </aside><canvas id="arena" width="900" height="900" tabindex="0" aria-label="Contender arena"></canvas>
-<script src="contender-data.js"></script><script src="game-world.js"></script><script src="lab-scenarios.js"></script><script src="kratos-clock.js"></script><script src="contender-presentation.js"></script><script src="contender-painter.js"></script><script src="contender-shadow-lab.js"></script>
+<aside id="damagePanel" aria-label="1vX target setup and damage counters">
+<h2>1vX damage test</h2><div class="summary" id="targetSummary">Loading targets…</div>
+<label>Find a target <input id="targetSearch" type="search" placeholder="Champion, minion, camp…"></label>
+<label>Target type <select id="targetType"></select></label>
+<div class="row"><label>Add count <input id="targetCount" type="number" min="1" max="64" value="1"></label><label>Level <input id="targetLevel" type="number" min="1" max="30" value="8"></label></div>
+<label><input id="spawnUnlimited" type="checkbox" checked> Spawn with unlimited HP</label>
+<div class="row"><button id="addTargets">Add at aim</button><button id="clearTargets">Remove all targets</button><button id="resetDamage">Reset counters</button></div>
+<details><summary>How the test works</summary><p class="testNote">Click the map to choose a spawn point. Mixed types are supported; maximum 64 added targets / 128 total units. Unlimited HP keeps taking measurable damage with a finite max HP—it is not invulnerability.</p>
+<p class="testNote">Opponent attacks, stats and mitigation are a Lab host model. Custom targets use shipped base bodies and Mod Power; their abilities, item passives and mastery are not simulated. Summon templates have editable test stats.</p></details>
+<p id="targetError" class="error" role="status"></p><div id="targetList"></div>
+</aside>
+<script src="contender-data.js"></script><script src="game-world.js"></script><script src="lab-scenarios.js"></script><script src="lab-damage.js"></script><script src="lab-targets.js"></script><script src="lab-target-panel.js"></script><script src="kratos-clock.js"></script><script src="contender-presentation.js"></script><script src="contender-painter.js"></script><script src="contender-shadow-lab.js"></script>
 </body></html>

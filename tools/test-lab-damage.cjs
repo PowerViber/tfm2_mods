@@ -1,0 +1,11 @@
+const assert=require('assert'),fs=require('fs'),vm=require('vm'),{LabDamageLedger}=require('../editor/lab-damage.js');
+const box={window:{}};vm.runInNewContext(fs.readFileSync('editor/lab-scenarios.js','utf8'),box);const scene=new box.window.GameScenario(null,'test'),ledger=new LabDamageLedger();ledger.attach(scene);const source={id:1};
+const unit=(id,hp,unlimited=false)=>({id,team:1,hp,max_hp:hp,stats:{defence:100},champion:true,shields:[],unlimitedHP:unlimited});
+const a=unit(10,500,true),b=unit(11,100);a.shields=[{amount:50,until:1000}];
+assert.equal(scene.damage(source,a,400,1),150);assert.equal(a.hp,500);assert.equal(a.max_hp,500);assert.equal(a.shields[0].amount,0);assert.deepEqual(ledger.row(10,1),{raw:400,hp:150,shield:50,hits:1,first:1,last:1,total:200,dps:200});
+assert.equal(scene.damage(source,a,10000,2),5000);assert.equal(a.hp,500);assert.equal(scene.metrics.kills,0);assert(!a.deadAt);assert.equal(ledger.row(10,2).hp,5150);
+assert.equal(scene.damage(source,b,1000,3),100);assert.equal(b.hp,0);assert.equal(scene.metrics.kills,1);assert.equal(ledger.row(11,3).total,100);
+scene.damage(source,b,1000,4);assert.equal(ledger.row(11,4).hits,1,'Dead targets do not manufacture damage receipts');
+scene.damage({id:2},a,200,5);assert.equal(ledger.row(10,5).hits,2,'Other actors do not count as Contender damage');
+ledger.reset(10);assert.equal(ledger.row(10,6).total,0);assert.equal(ledger.row(11,6).total,100);ledger.reset();assert.equal(ledger.rows.size,0);
+assert.equal(Number.isFinite(a.hp)&&Number.isFinite(a.max_hp),true);assert.equal(a.hp<=a.max_hp,true);console.log('Damage ledger: mitigation, shields, unlimited overkill, finite death, attribution and resets passed');
