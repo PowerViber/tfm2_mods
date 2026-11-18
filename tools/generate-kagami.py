@@ -49,6 +49,7 @@ text = {
             f"who'd drop under {ul['triggerPct']}% HP is sealed for {sec(ul['sealTicks'])} (untargetable, unseen, unable to act), then revives at full HP with "
             f"Kindred Charm's buff, a shield of {ul['shieldPctMaxHp']}% max HP, +{ul['defencePct']}% Defence and crowd-control immunity for {sec(ul['reviveTicks'])}; enemies within {ul['reviveStunRadius']} are stunned for {sec(ul['reviveStunTicks'])}."),
 }
+text['skill'] += ' Level unlocks: S2 at level 2, S3 at level 3, the ult at level 5.'  # round 180 (tools: unlocks.rs)
 
 champ = copy.deepcopy(json.loads((ROOT / 'tools/native-champion-template.json').read_text()))
 # placeholder body until Codex's art: Thalassa's sheet (an original ranged caster) and her bolt

@@ -1,6 +1,9 @@
 //! Kicker Lab transport: the game's exact core (`kicker_core.rs`) behind a JSON step for the editor page.
 //! The page models the host (positions, glides, the real map's walls, simple enemies, deaths); the rules and his AI
 //! all come from the core.
+#[path = "../../tfm2_custom_ai/src/unlocks.rs"]
+#[allow(dead_code)]
+pub mod unlocks;
 #[path = "../../tfm2_custom_ai/src/kicker_core.rs"]
 pub mod kicker_core;
 #[path = "../../tfm2_custom_ai/src/kicker_data.rs"]

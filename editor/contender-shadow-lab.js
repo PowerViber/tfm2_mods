@@ -1,3 +1,4 @@
+const labLevel=()=>{let e=document.getElementById('labLevel');if(!e){const l=document.createElement('label');l.title='Champion level: S2 unlocks at 2, S3 at 3, the ult at 5';l.innerHTML=' Level <input id="labLevel" type="number" min="1" max="18" value="18" style="width:46px"> ';const host=document.getElementById('ultLearned')?.closest('label')||document.querySelector('.row,.controls,header,h1')||document.body;host.after?host.after(l):document.body.prepend(l);e=document.getElementById('labLevel');}return Math.max(0,Math.min(18,+e.value||0));};
 /* Shared Rust skills and AI. Extracted map/assets; explicitly simulated host. */
 (async()=>{'use strict';
 const $=id=>document.getElementById(id),R=CONTENDER_RULES,canvas=$('arena'),ctx=canvas.getContext('2d');
@@ -35,7 +36,7 @@ async function addTargets(type,count=1,level=8,unlimited=false){
 }
 function removeTarget(u){units=units.filter(e=>e.id!==u.id);glides.delete(u.id);ledger.reset(u.id);if(selectedTarget===u.id)selectedTarget=null;saveTargets();panel?.rebuild();draw();}
 function clearTargets(){if(loading)return;units=units.filter(u=>u.team===0);ledger.reset();selectedTarget=null;saveTargets();panel?.rebuild();draw();}
-function frame(order){return {tick,owner:1,team:0,alive:me.hp>0,pos:round(me.pos),hp:Math.max(0,Math.round(me.hp)),max_hp:me.max_hp,attack:Math.floor(me.attack*(1+((flags.rhythm?.attack_permille)||0)/1000)),stunned:tick<(me.stunUntil||0),ult_unlocked:$('ultLearned').checked,
+function frame(order){return {tick,owner:1,team:0,alive:me.hp>0,pos:round(me.pos),hp:Math.max(0,Math.round(me.hp)),max_hp:me.max_hp,attack:Math.floor(me.attack*(1+((flags.rhythm?.attack_permille)||0)/1000)),stunned:tick<(me.stunUntil||0),ult_unlocked:$('ultLearned').checked,level:labLevel(),
  home:{x:96000,y:864000},units:units.filter(u=>u.hp>0).map(u=>({id:u.id,team:u.team,pos:round(u.pos),hp:Math.round(u.hp),max_hp:u.max_hp,radius:u.radius,champion:u.champion,tower:u.tower,visible:u.visible,targetable:u.targetable!==false,farmable:u.farmable&&u.team!==0&&(scene.kind==='camp'||!units.some(e=>e.team===1&&e.champion&&e.hp>0&&e.visible&&dist(e.pos,me.pos)<80000))})),
  terrain:world.walls,profile:[...document.querySelectorAll('[data-stat]')].map(i=>Math.max(0,Math.min(100,+i.value||0))),manual:!$('ai').checked,order:$('ai').checked?null:order,basic_hits:hits.splice(0),incoming:incoming.slice(0,16).map(h=>round(h.pos))};}
 function glide(id,to,ticks){const u=actor(id);if(u)glides.set(id,{from:{...u.pos},to:{...to},start:tick,ticks:Math.max(1,ticks)});}

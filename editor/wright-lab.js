@@ -1,3 +1,4 @@
+const labLevel=()=>{let e=document.getElementById('labLevel');if(!e){const l=document.createElement('label');l.title='Champion level: S2 unlocks at 2, S3 at 3, the ult at 5';l.innerHTML=' Level <input id="labLevel" type="number" min="1" max="18" value="18" style="width:46px"> ';const host=document.getElementById('ultLearned')?.closest('label')||document.querySelector('.row,.controls,header,h1')||document.body;host.after?host.after(l):document.body.prepend(l);e=document.getElementById('labLevel');}return Math.max(0,Math.min(18,+e.value||0));};
 // Wright Lab: the game's exact core (wright.wasm) with a small host model around it:
 // positions, engine glides, the plane carrier units, simple enemies, an ally and a camp.
 (async () => {
@@ -32,7 +33,7 @@
   function frame() {
     const profile = [...$('stats').querySelectorAll('input')].map(i => Math.max(0, Math.min(100, +i.value || 0)));
     return {version: 1, rules_revision: R.revision, frame: {
-      tick, owner: 1, team: 0, alive: me.hp > 0, pos: rp(me.pos), hp: Math.round(me.hp), max_hp: me.max_hp, ap: 100, stunned: false, ult_unlocked: true,
+      tick, owner: 1, team: 0, alive: me.hp > 0, pos: rp(me.pos), hp: Math.round(me.hp), max_hp: me.max_hp, ap: 100, stunned: false, ult_unlocked: true,level:labLevel(),
       units: units.filter(u => u.hp > 0).map(u => ({id: u.id, team: u.team, pos: rp(u.pos), hp: Math.round(u.hp), max_hp: u.max_hp, radius: u.radius,
         champion: u.champion, tower: false, visible: true, targetable: true, farmable: u.farmable && calm()})),
       terrain: terrain(), profile,

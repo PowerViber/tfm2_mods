@@ -188,7 +188,8 @@ impl Thalassa {
         if echo.is_none() {
             self.echo = None;
         }
-        let ult_unlocked = me.as_ref().is_some_and(|e| (0..e.buff_count()).filter_map(|i| e.buff_at(i)).any(|b| b.name() == crate::ULT_LEARNED));
+        let level = sim.get_entity(owner).map_or(0, |e| e.level() as i64);
+        let ult_unlocked = crate::unlocks::ult_unlocked(level, me.as_ref().is_some_and(|e| (0..e.buff_count()).filter_map(|i| e.buff_at(i)).any(|b| b.name() == crate::ULT_LEARNED)));
         Frame {
             tick,
             owner,
@@ -201,6 +202,7 @@ impl Thalassa {
             shield,
             stunned,
             ult_unlocked,
+            level,
             units,
             terrain: self.terrain(tick),
             profile: values,

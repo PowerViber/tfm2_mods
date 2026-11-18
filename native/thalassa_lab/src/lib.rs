@@ -1,5 +1,8 @@
 //! Thalassa Lab transport: the game's exact core (`thalassa_core.rs`) behind a JSON step for the editor page.
 //! The page models the host (positions, glides, the clone unit); the rules all come from the core.
+#[path = "../../tfm2_custom_ai/src/unlocks.rs"]
+#[allow(dead_code)]
+pub mod unlocks;
 #[path = "../../tfm2_custom_ai/src/thalassa_core.rs"]
 pub mod thalassa_core;
 #[path = "../../tfm2_custom_ai/src/thalassa_data.rs"]

@@ -100,6 +100,18 @@ pub fn recipe_of(dots: &[u8]) -> Option<usize> {
     SPELLS.iter().position(|s| s.recipe == dots)
 }
 
+/// Round 180 level unlocks (Reihan: S1 at 1, S2 at 2, S3 at 3, the ult at 5). Every Scribble spell is cast through
+/// Invoke, so his spells unlock by size instead: 1-2 dot spells at level 1, 3 dots at 2, 4 dots at 3, 5-6 dots at 5.
+pub fn tier_open(level: i64, dots: usize) -> bool {
+    let slot = match dots {
+        0..=2 => 0,
+        3 => 1,
+        4 => 2,
+        _ => 3,
+    };
+    if slot == 3 { crate::unlocks::ult_unlocked(level, true) } else { crate::unlocks::skill_unlocked(level, slot) }
+}
+
 pub fn tier(i: usize) -> usize {
     SPELLS[i].recipe.len()
 }
@@ -1020,6 +1032,8 @@ struct Rec {
 #[derive(Clone, Default)]
 pub struct Scribble {
     started: bool,
+    /// round 180 level unlocks: his champion level (0 unknown: everything open)
+    level: i64,
     rng: u64,
     athlete: Option<usize>,
     rank: Option<usize>,
@@ -1327,7 +1341,7 @@ impl Scribble {
     /// Round 72: every rank can go for every spell (their slips decide whether it comes out); only the cooldown
     /// matters here.
     fn usable(&self, s: usize, c: &Ctx) -> bool {
-        (!c.farming || matches!(s,0..=4|10|14|15|18|19)) && !self.tier_locked(s, c)
+        (!c.farming || matches!(s,0..=4|10|14|15|18|19)) && !self.tier_locked(s, c) && tier_open(self.level, tier(s))
     }
 
     /// What they would prepare as an opener: only recipes they can build reliably.
@@ -1426,7 +1440,7 @@ impl Scribble {
         let me = c.me;
         let tick = c.tick;
         let sp_ = match spell {
-            Some(s) if self.ready[s] <= tick => s,
+            Some(s) if self.ready[s] <= tick && tier_open(self.level, tier(s)) => s,
             _ => {
                 // no such recipe (or it is still on cooldown): a puff of smoke
                 self.fizzles += 1;
@@ -1991,6 +2005,7 @@ impl StablePassive for Scribble {
     }
     fn on_update(&mut self, sim: &mut StableSim<'_>, _seed: u64, player: usize, entity: usize) {
         let tick = sim.tick();
+        self.level = sim.get_entity(entity).map_or(0, |e| e.level() as i64);
         if !self.started {
             self.started = true;
             self.rng = sim.seed() ^ (entity as u64).wrapping_mul(0x9E37_79B9_7F4A_7C15) ^ 0x5C21_BB1E;
@@ -2117,7 +2132,7 @@ impl StablePassive for Scribble {
                 self.start_invoke(sim, &me, matched, self.goal_score, tick);
                 return;
             }
-            if self.ready[g] > tick { return; }
+            if self.ready[g] > tick || !tier_open(self.level, tier(g)) { return; }
             match eval(g, &c, &self.hist, dead_ally) {
                 Some(p) if p.value >= 40.0 => {
                     // experienced players wait for a slow spell's target to be locked down (up to their patience)

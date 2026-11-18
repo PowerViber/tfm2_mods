@@ -52,6 +52,7 @@ text = {
             f"he doesn't: he's sent back to the tag with full HP. If the time runs out, he's sent back to the tag with the HP he had when he cast it. "
             f"His skills never hit towers."),
 }
+text['skill'] += ' Level unlocks: S2 at level 2, S3 at level 3, the ult at level 5.'  # round 180 (tools: unlocks.rs)
 
 champ = copy.deepcopy(json.loads((ROOT / 'tools/native-champion-template.json').read_text()))
 # placeholder body until Codex's art: Contender's sheet (original boxer), so the game never skips him

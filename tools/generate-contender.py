@@ -64,6 +64,7 @@ text = {
             f"reappears beside the last enemy hit, and his next basic within {sec(ul['haymakerTicks'])} is a haymaker "
             f"(+{ul['haymakerBase']} + {ul['haymakerAdRatio']}% Attack, a {sec(ul['haymakerStunTicks'])} stun). His skills never hit towers."),
 }
+text['skill'] += ' Level unlocks: S2 at level 2, S3 at level 3, the ult at level 5.'  # round 180 (tools: unlocks.rs)
 
 champ = copy.deepcopy(json.loads((ROOT / 'tools/native-champion-template.json').read_text()))
 champ.update(id=ID, category=rules['category'], tags=rules['tags'], sprite='asset/tfm2_custom/champions/' + ID, anim_prefix='')

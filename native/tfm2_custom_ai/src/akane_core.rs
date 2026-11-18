@@ -185,6 +185,9 @@ pub struct Frame {
     pub armor: i64,
     pub stunned: bool,
     pub ult_unlocked: bool,
+    /// champion level (0: unknown, everything unlocked); S2 at 2, S3 at 3, the ult at 5 (`unlocks.rs`)
+    #[serde(default)]
+    pub level: i64,
     #[serde(default)]
     pub flash_ready: bool,
     /// her side's base (where she runs home to)
@@ -474,6 +477,9 @@ impl Core {
 
     pub fn step(&mut self, f: &Frame) -> Vec<Effect> {
         let mut out = vec![];
+        // level unlocks (round 180): a locked skill stays "on cooldown" until its level
+        crate::unlocks::hold(&mut self.ready[KUNAI], f.tick, f.level, 1);
+        crate::unlocks::hold(&mut self.ready[EDGE], f.tick, f.level, 2);
         if !f.alive {
             self.kunai_flights.clear();
             return out;

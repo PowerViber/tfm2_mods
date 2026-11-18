@@ -166,7 +166,8 @@ impl Kicker {
                 parry: champion && buffs.iter().any(|b| b.name() == "v1_guard") && !buffs.iter().any(|b| b.name() == "v1_parry_cd"),
             });
         }
-        let ult_unlocked = has_buff(owner, crate::ULT_LEARNED);
+        let level = sim.get_entity(owner).map_or(0, |e| e.level() as i64);
+        let ult_unlocked = crate::unlocks::ult_unlocked(level, has_buff(owner, crate::ULT_LEARNED));
         let home = HOME.get(team).copied().unwrap_or(HOME[0]);
         Frame {
             tick,
@@ -179,6 +180,7 @@ impl Kicker {
             attack,
             stunned: hard_cc(sim, owner, true),
             ult_unlocked,
+            level,
             flash_ready: !has_buff(owner, "flash_cd"),
             home: Point::new(home.0, home.1),
             units,

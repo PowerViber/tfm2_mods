@@ -6,6 +6,8 @@
 pub mod contender_shadow_core;
 #[path = "../../tfm2_custom_ai/src/contender_shadow_data.rs"]
 pub mod contender_shadow_data;
+#[path = "../../tfm2_custom_ai/src/unlocks.rs"]
+pub mod unlocks;
 use contender_shadow_core::*;
 use serde::Deserialize;
 use serde_json::json;

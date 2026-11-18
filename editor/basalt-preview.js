@@ -1,3 +1,4 @@
+const labLevel=()=>{let e=document.getElementById('labLevel');if(!e){const l=document.createElement('label');l.title='Champion level: S2 unlocks at 2, S3 at 3, the ult at 5';l.innerHTML=' Level <input id="labLevel" type="number" min="1" max="18" value="18" style="width:46px"> ';const host=document.getElementById('ultLearned')?.closest('label')||document.querySelector('.row,.controls,header,h1')||document.body;host.after?host.after(l):document.body.prepend(l);e=document.getElementById('labLevel');}return Math.max(0,Math.min(18,+e.value||0));};
 // Candidate artwork on the extracted battlefield. Skills remain in the existing WASM core.
 // Movement, opponents, mitigation and visibility below are a labelled host model.
 (async()=>{try{
@@ -34,7 +35,7 @@ step=function(){
  }
  if($('hostModel').checked){scene.refreshVisibility(me,units);scene.advance(tick,me,units,{hit:()=>{},hitOwner:h=>{if(tick<me.air)return;const source=units.find(u=>u.id===h.from)||{id:h.from};scene.damage(source,me,h.amount,tick);}});}
  const order=pending;pending=null;
- const frame={tick,owner:1,team:0,alive:me.hp>0,pos:P(me.pos),hp:Math.round(me.hp),max_hp:me.max_hp,attack:me.attack,stunned:tick<me.stun,ult_unlocked:true,home:{x:96000,y:864000},terrain,other_walls:[],units:units.filter(u=>u.hp>0).map(u=>({id:u.id,team:u.team,pos:u.visible?P(u.pos):{x:0,y:0},hp:Math.round(u.hp),max_hp:u.max_hp,attack:u.stats.attack,champion:u.champion,tower:u.tower,visible:u.visible,targetable:true})),profile:[...document.querySelectorAll('#athleteStats input')].map(i=>Math.max(0,Math.min(100,Number(i.value)||0))),manual:!aiOn,order};
+ const frame={tick,owner:1,team:0,alive:me.hp>0,pos:P(me.pos),hp:Math.round(me.hp),max_hp:me.max_hp,attack:me.attack,stunned:tick<me.stun,ult_unlocked:true,level:labLevel(),home:{x:96000,y:864000},terrain,other_walls:[],units:units.filter(u=>u.hp>0).map(u=>({id:u.id,team:u.team,pos:u.visible?P(u.pos):{x:0,y:0},hp:Math.round(u.hp),max_hp:u.max_hp,attack:u.stats.attack,champion:u.champion,tower:u.tower,visible:u.visible,targetable:true})),profile:[...document.querySelectorAll('#athleteStats input')].map(i=>Math.max(0,Math.min(100,Number(i.value)||0))),manual:!aiOn,order};
  const bytes=new TextEncoder().encode(JSON.stringify({version:1,rules_revision:R.revision,frame})),ptr=wasm.exports.basalt_input(bytes.length);new Uint8Array(wasm.exports.memory.buffer,ptr,bytes.length).set(bytes);
  const result=wasm.exports.basalt_step(bytes.length),out=JSON.parse(new TextDecoder().decode(new Uint8Array(wasm.exports.memory.buffer,result,wasm.exports.basalt_output_len())));if(out.error)throw new Error(out.error);
  if(order&&me.hp>0&&!state.charging&&!out.rejection)presentOrder(order);const previous=state;state=out.state;

@@ -157,6 +157,9 @@ pub struct Frame {
     #[serde(default)]
     pub stunned: bool,
     pub ult_unlocked: bool,
+    /// champion level (0: unknown, everything unlocked); S2 at 2, S3 at 3, the ult at 5 (`unlocks.rs`)
+    #[serde(default)]
+    pub level: i64,
     #[serde(default)]
     pub home: Point,
     pub units: Vec<Unit>,
@@ -536,6 +539,9 @@ impl Core {
 
     pub fn step(&mut self, f: &Frame) -> Vec<Effect> {
         let mut out = vec![];
+        // level unlocks (round 180): a locked skill stays "on cooldown" until its level
+        crate::unlocks::hold(&mut self.s2_at, f.tick, f.level, 1);
+        crate::unlocks::hold(&mut self.s3_at, f.tick, f.level, 2);
         self.rejection.clear();
         if !f.alive {
             self.respawn(f.tick);

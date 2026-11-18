@@ -164,6 +164,9 @@ pub struct Frame {
     pub attack: i64,
     pub stunned: bool,
     pub ult_unlocked: bool,
+    /// champion level (0: unknown, everything unlocked); S2 at 2, S3 at 3, the ult at 5 (`unlocks.rs`)
+    #[serde(default)]
+    pub level: i64,
     #[serde(default)]
     pub flash_ready: bool,
     #[serde(default)]
@@ -524,6 +527,17 @@ impl Core {
 
     pub fn step(&mut self, f: &Frame) -> Vec<Effect> {
         let mut out = vec![];
+        // level unlocks (round 180): a locked skill stays "on cooldown" until its level
+        crate::unlocks::hold(&mut self.rock_ready, f.tick, f.level, 1);
+        // S3 runs on kick charges: none while locked, both at once when it unlocks
+        const KICKS_LOCKED: u64 = u64::MAX / 4;
+        if !crate::unlocks::skill_unlocked(f.level, 2) {
+            self.kicks = 0;
+            self.kick_next = KICKS_LOCKED;
+        } else if self.kick_next == KICKS_LOCKED {
+            self.kicks = d::KICK_CHARGES;
+            self.kick_next = f.tick + t(d::KICK_RECHARGE_TICKS);
+        }
         self.rejection.clear();
         if !f.alive {
             if self.roof {

@@ -1,3 +1,4 @@
+const labLevel=()=>{let e=document.getElementById('labLevel');if(!e){const l=document.createElement('label');l.title='Champion level: S2 unlocks at 2, S3 at 3, the ult at 5';l.innerHTML=' Level <input id="labLevel" type="number" min="1" max="18" value="18" style="width:46px"> ';const host=document.getElementById('ultLearned')?.closest('label')||document.querySelector('.row,.controls,header,h1')||document.body;host.after?host.after(l):document.body.prepend(l);e=document.getElementById('labLevel');}return Math.max(0,Math.min(18,+e.value||0));};
 // Unchanged Akane Rust/WASM core, installed map, and explicitly modeled host.
 (async()=>{
  const $=id=>document.getElementById(id),R=AKANE_RULES,canvas=$('arena'),ctx=canvas.getContext('2d');
@@ -38,7 +39,7 @@
  function log(s){logLines.push(`[${tick}] ${s}`);if(logLines.length>200)logLines.shift();$('log').textContent=logLines.slice(-50).join('\n');}
  function frame(){
   if(scene)scene.refreshVisibility(me,units);const calm=!units.some(u=>u.team===1&&u.champion&&alive(u)&&visible(u)&&dist(u.pos,me.pos)<R.ai.calmRange),tanked=tw=>units.some(u=>u.team===0&&alive(u)&&dist(u.pos,tw.pos)<=R.ai.towerRange);
-  return{version:1,rules_revision:R.revision,frame:{tick,owner:1,team:0,alive:me.hp>0,pos:rp(me.pos),hp:Math.round(me.hp),max_hp:me.max_hp,attack:me.attack,armor:me.stats.defence,stunned:tick<me.stunUntil,ult_unlocked:$('ultUnlocked').checked,flash_ready:false,home:{x:96000,y:864000},
+  return{version:1,rules_revision:R.revision,frame:{tick,owner:1,team:0,alive:me.hp>0,pos:rp(me.pos),hp:Math.round(me.hp),max_hp:me.max_hp,attack:me.attack,armor:me.stats.defence,stunned:tick<me.stunUntil,ult_unlocked:$('ultUnlocked').checked,level:labLevel(),flash_ready:false,home:{x:96000,y:864000},
    units:units.filter(alive).map(u=>{const v=visible(u);return{id:u.id,team:u.team,pos:v?rp(u.pos):{x:0,y:0},hp:v?Math.round(u.hp):0,max_hp:u.max_hp,shield:v?(u.shields||[]).filter(s=>tick<s.until).reduce((s,b)=>s+b.amount,0):0,radius:u.radius,armor:u.stats?.defence??25,attack:u.stats?.attack??90,champion:u.champion,tower:u.tower,visible:v,targetable:true,farmable:u.farmable&&calm&&(!scene||u.kind==='minion'||u.kind==='objective'||$('role').value==='jungle'),stunned:tick<u.stunUntil,velocity:v?rp(u.vel||{x:0,y:0}):{x:0,y:0},flash_ready:v&&u.champion&&$('enemyFlash').checked,skill_ready:v&&u.champion&&$('enemySkills').checked,can:u.champion?capabilities(u):0,cc_immune:false,reduce:0,parry:false,tanked:u.tower?tanked(u):false};}),
    terrain:WALLS,bushes:[],profile:[...$('stats').querySelectorAll('input')].map(i=>Math.max(0,Math.min(100,+i.value||0))),basic_hits:basicHits.splice(0),takedowns:takedowns.splice(0),manual:!$('auto').checked,order:queue.shift()||null}};
  }

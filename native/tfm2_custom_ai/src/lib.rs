@@ -42,6 +42,7 @@ mod valorant;
 mod valorant_guns;
 mod raze;
 mod contender;
+pub(crate) mod unlocks;
 mod contender_merge;
 mod contender_rhythm;
 mod contender_merge_data;
@@ -110,6 +111,7 @@ pub(crate) mod native_bridge;
 #[allow(dead_code)] mod contender_shadow_core;
 #[allow(dead_code)] mod contender_shadow_data;
 #[cfg(test)] mod contender_shadow_tests;
+#[cfg(test)] mod unlock_tests;
 #[allow(dead_code)] mod raze_core;
 #[allow(dead_code)] mod raze_data;
 #[cfg(test)] mod raze_tests;
@@ -481,7 +483,7 @@ pub(crate) fn set_snapshot_cache_for_test(on: bool) {
 /// A view effect at a point / on a unit (named `<champion id>_<tag>` in the data's view_effects).
 /// Round 91: the native version, written in the game log and the champions' logs (gundam_log.txt / isliid_log.txt) so a
 /// game shows which build ran.
-pub(crate) const VERSION: &str = "0.10.114";
+pub(crate) const VERSION: &str = "0.10.115";
 
 static LOGGED: std::sync::Mutex<Option<std::collections::HashSet<String>>> = std::sync::Mutex::new(None);
 

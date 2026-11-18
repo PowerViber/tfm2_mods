@@ -249,7 +249,8 @@ impl Akane {
                 self.takedown_at = None;
             }
         }
-        let ult_unlocked = me.as_ref().is_some_and(|e| (0..e.buff_count()).filter_map(|i| e.buff_at(i)).any(|b| b.name() == crate::ULT_LEARNED));
+        let level = sim.get_entity(owner).map_or(0, |e| e.level() as i64);
+        let ult_unlocked = crate::unlocks::ult_unlocked(level, me.as_ref().is_some_and(|e| (0..e.buff_count()).filter_map(|i| e.buff_at(i)).any(|b| b.name() == crate::ULT_LEARNED)));
         let (terrain, bushes) = self.grids(tick);
         let home = HOME.get(team).copied().unwrap_or(HOME[0]);
         Frame {
@@ -264,6 +265,7 @@ impl Akane {
             armor,
             stunned: hard_cc(sim, owner, true),
             ult_unlocked,
+            level,
             flash_ready: !has_buff(owner, "flash_cd"),
             home: Point::new(home.0, home.1),
             units,
