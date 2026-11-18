@@ -1,6 +1,6 @@
 const {chromium}=require(require.resolve('playwright',{paths:[process.cwd(),require('os').homedir()+'/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules']}));
-const fs=require('fs'),assert=require('assert'),base='http://127.0.0.1:7309',out='docs/contender-shadow-review';
-(async()=>{const browser=await chromium.launch({channel:'msedge',headless:true}),page=await browser.newPage({viewport:{width:1450,height:1080}}),errors=[],checks=[];page.on('pageerror',e=>errors.push(e.message));try{
+const fs=require('fs'),assert=require('assert'),base='http://127.0.0.1:7309',out='docs/contender-1vx-review';
+(async()=>{fs.mkdirSync(out,{recursive:true});const browser=await chromium.launch({channel:'msedge',headless:true}),page=await browser.newPage({viewport:{width:1450,height:1080}}),errors=[],checks=[];page.on('pageerror',e=>errors.push(e.message));try{
  for(const p of ['/editor/contender.html','/contender.html','/editor/contender-shadow-review.html','/contender-shadow-review.html','/editor/game-reference/world.json','/mods/tfm2_custom/champions/tfm2_custom_contender%23sheet.png','/mods/tfm2_custom/vfx/contender_shadow%23sheet.png'])assert((await page.request.get(base+p)).ok(),p);checks.push('Both editor routes and actual packed assets return HTTP 200');
  await page.goto(base+'/editor/contender.html');await page.waitForFunction(()=>window.contenderLab?.me);console.log('Lab loaded');
  await page.uncheck('#fight');
