@@ -29,7 +29,7 @@ Every 2.3 effect reuses a packaged cue at a packaged length, so nothing is unbou
 |---|---|
 | `ct_swap_t18` | A dodge: the shadow left where he stood |
 | `ct_launch_t18` | Shadow Merge starting |
-| `ct_body_idle0` | His shadow body drawn on him while merged (every 10 ticks); `ct_shadow` without the art |
+| `ct_mb_<tile>` / `_l` | Approved opaque Merge body slots, selected by the native pose clock; old embedded definitions keep their prior fallback |
 | `ct_cross_t18` | The step-out's cross |
 | `ct_cleave_t14` / `_t12` | Cyclone clone / the aimed self-cleave (now a 35,000 circle) |
 | `ct_echo_t12` | Shadow Pact echoes, Tether latching, each tether copy, and a flash on each tethered enemy every 12 ticks |
@@ -37,4 +37,9 @@ Every 2.3 effect reuses a packaged cue at a packaged length, so nothing is unbou
 | `ct_haymaker_t18` | A Shadow Break (and the haymaker) |
 | `ct_slam_t20` | No longer used |
 
-**Wanted when there's time:** a tether line or latched shadow on enemies, a dodge after-image, a Break burst, and pips for the bank. The bridge publishes `ct_bank:<0..20>` and `ct_merge` buffs with no view binding yet; `ct_charges:<n>` stays at 0..5 (merged dodges above 5 show as 5).
+**Wanted when there's time:** a tether line or latched shadow on enemies, a dodge after-image, a Break burst, and pips for the bank. The bridge publishes `ct_bank:<0..20>` (no dedicated native bank artwork yet), and Merge now uses the approved `ct_mb_` body bindings; `ct_charges:<n>` stays at 0..5 (merged dodges above 5 show as 5).
+
+
+## Approved fused Merge completion (18 November 2026)
+
+Reihan approved the fused charcoal/violet form. The full 24-drawing animation extension, mirrored atlas, native pose-driven artwork buffs and default Lab integration are complete in this PR. Normal body/effect pixels and combat rules are unchanged. See `docs/contender-merge-integration-review/README.md` for hashes, timings, current 2.3 checks and pending actual-game alignment. Older embedded definitions use their existing fallback until a separately backed-up migration.

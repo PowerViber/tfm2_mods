@@ -1,0 +1,21 @@
+{
+  "eight_distinct_directions": true,
+  "unclipped": true,
+  "ticks_per_punch": 8,
+  "legacy_effect_pixels_and_frames_unchanged": true,
+  "base_body_unchanged": true,
+  "atlas": [
+    1024,
+    1086
+  ],
+  "contact_hashes": [
+    "b9d1d07c787c078b28e940c9b75e1a3218a685f8629099ce41549cd1b57256a6",
+    "3fe95ebfd58fb74ebbeaba36546156eb6abf74c3094c8f25056087818523bba8",
+    "a10fbd89e19b218ef1d48e5eacfcf43254e56d4e0ce04dfa048714cf29177df4",
+    "5db0bac2286123ceba81c0aabdfc8f723d3cd8152151ba0e1234b4b72ac6edeb",
+    "4ad340006506451ca9c836c7972ed13e3adbce84c3dbc621ea5f6b63de73968a",
+    "2aa8deb6b23ad8f73b556028c5d0776b9257b61e0e0cccc24bda79628762e765",
+    "5eff31306f050cf9ed549be67533e8facef673a5ae33eec36475dc2998568473",
+    "cb2445841b33fdaa00bd1c8345b305c23f90990bc48eab337f8c891b3bb4ffb4"
+  ]
+}

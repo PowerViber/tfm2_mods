@@ -1,0 +1,261 @@
+{
+  "rules": "contender-2.3",
+  "development": 24,
+  "holdout": 12,
+  "totalFrames": 5400,
+  "results": [
+    {
+      "split": "development",
+      "scene": "laning",
+      "profile": 20,
+      "frames": 150,
+      "complete_state_and_effects_equal": true
+    },
+    {
+      "split": "development",
+      "scene": "gank",
+      "profile": 20,
+      "frames": 150,
+      "complete_state_and_effects_equal": true
+    },
+    {
+      "split": "development",
+      "scene": "countergank",
+      "profile": 20,
+      "frames": 150,
+      "complete_state_and_effects_equal": true
+    },
+    {
+      "split": "development",
+      "scene": "camp",
+      "profile": 20,
+      "frames": 150,
+      "complete_state_and_effects_equal": true
+    },
+    {
+      "split": "development",
+      "scene": "morgard",
+      "profile": 20,
+      "frames": 150,
+      "complete_state_and_effects_equal": true
+    },
+    {
+      "split": "development",
+      "scene": "serpen",
+      "profile": 20,
+      "frames": 150,
+      "complete_state_and_effects_equal": true
+    },
+    {
+      "split": "development",
+      "scene": "defend",
+      "profile": 20,
+      "frames": 150,
+      "complete_state_and_effects_equal": true
+    },
+    {
+      "split": "development",
+      "scene": "dive",
+      "profile": 20,
+      "frames": 150,
+      "complete_state_and_effects_equal": true
+    },
+    {
+      "split": "development",
+      "scene": "laning",
+      "profile": 50,
+      "frames": 150,
+      "complete_state_and_effects_equal": true
+    },
+    {
+      "split": "development",
+      "scene": "gank",
+      "profile": 50,
+      "frames": 150,
+      "complete_state_and_effects_equal": true
+    },
+    {
+      "split": "development",
+      "scene": "countergank",
+      "profile": 50,
+      "frames": 150,
+      "complete_state_and_effects_equal": true
+    },
+    {
+      "split": "development",
+      "scene": "camp",
+      "profile": 50,
+      "frames": 150,
+      "complete_state_and_effects_equal": true
+    },
+    {
+      "split": "development",
+      "scene": "morgard",
+      "profile": 50,
+      "frames": 150,
+      "complete_state_and_effects_equal": true
+    },
+    {
+      "split": "development",
+      "scene": "serpen",
+      "profile": 50,
+      "frames": 150,
+      "complete_state_and_effects_equal": true
+    },
+    {
+      "split": "development",
+      "scene": "defend",
+      "profile": 50,
+      "frames": 150,
+      "complete_state_and_effects_equal": true
+    },
+    {
+      "split": "development",
+      "scene": "dive",
+      "profile": 50,
+      "frames": 150,
+      "complete_state_and_effects_equal": true
+    },
+    {
+      "split": "development",
+      "scene": "laning",
+      "profile": 80,
+      "frames": 150,
+      "complete_state_and_effects_equal": true
+    },
+    {
+      "split": "development",
+      "scene": "gank",
+      "profile": 80,
+      "frames": 150,
+      "complete_state_and_effects_equal": true
+    },
+    {
+      "split": "development",
+      "scene": "countergank",
+      "profile": 80,
+      "frames": 150,
+      "complete_state_and_effects_equal": true
+    },
+    {
+      "split": "development",
+      "scene": "camp",
+      "profile": 80,
+      "frames": 150,
+      "complete_state_and_effects_equal": true
+    },
+    {
+      "split": "development",
+      "scene": "morgard",
+      "profile": 80,
+      "frames": 150,
+      "complete_state_and_effects_equal": true
+    },
+    {
+      "split": "development",
+      "scene": "serpen",
+      "profile": 80,
+      "frames": 150,
+      "complete_state_and_effects_equal": true
+    },
+    {
+      "split": "development",
+      "scene": "defend",
+      "profile": 80,
+      "frames": 150,
+      "complete_state_and_effects_equal": true
+    },
+    {
+      "split": "development",
+      "scene": "dive",
+      "profile": 80,
+      "frames": 150,
+      "complete_state_and_effects_equal": true
+    },
+    {
+      "split": "holdout",
+      "scene": "laning",
+      "profile": 20,
+      "frames": 150,
+      "complete_state_and_effects_equal": true
+    },
+    {
+      "split": "holdout",
+      "scene": "gank",
+      "profile": 20,
+      "frames": 150,
+      "complete_state_and_effects_equal": true
+    },
+    {
+      "split": "holdout",
+      "scene": "countergank",
+      "profile": 20,
+      "frames": 150,
+      "complete_state_and_effects_equal": true
+    },
+    {
+      "split": "holdout",
+      "scene": "camp",
+      "profile": 20,
+      "frames": 150,
+      "complete_state_and_effects_equal": true
+    },
+    {
+      "split": "holdout",
+      "scene": "morgard",
+      "profile": 20,
+      "frames": 150,
+      "complete_state_and_effects_equal": true
+    },
+    {
+      "split": "holdout",
+      "scene": "serpen",
+      "profile": 20,
+      "frames": 150,
+      "complete_state_and_effects_equal": true
+    },
+    {
+      "split": "holdout",
+      "scene": "defend",
+      "profile": 20,
+      "frames": 150,
+      "complete_state_and_effects_equal": true
+    },
+    {
+      "split": "holdout",
+      "scene": "dive",
+      "profile": 20,
+      "frames": 150,
+      "complete_state_and_effects_equal": true
+    },
+    {
+      "split": "holdout",
+      "scene": "laning",
+      "profile": 50,
+      "frames": 150,
+      "complete_state_and_effects_equal": true
+    },
+    {
+      "split": "holdout",
+      "scene": "gank",
+      "profile": 50,
+      "frames": 150,
+      "complete_state_and_effects_equal": true
+    },
+    {
+      "split": "holdout",
+      "scene": "countergank",
+      "profile": 50,
+      "frames": 150,
+      "complete_state_and_effects_equal": true
+    },
+    {
+      "split": "holdout",
+      "scene": "camp",
+      "profile": 50,
+      "frames": 150,
+      "complete_state_and_effects_equal": true
+    }
+  ],
+  "scope": "Native/WASM deterministic core parity in Lab host fixtures; not actual-game acceptance"
+}

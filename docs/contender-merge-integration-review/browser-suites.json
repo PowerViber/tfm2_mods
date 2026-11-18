@@ -1,0 +1,22 @@
+{
+  "test-contender-1vx": {
+    "exit_code": 0,
+    "tail": " map and target panel accessible without horizontal clipping\"\n  ],\n  \"catalog\": {\n    \"count\": 101,\n    \"counts\": {\n      \"champion\": 88,\n      \"minion\": 2,\n      \"camp\": 4,\n      \"objective\": 2,\n      \"tower\": 1,\n      \"nexus\": 1,\n      \"dummy\": 1,\n      \"summon\": 2\n    },\n    \"custom\": 28\n  },\n  \"aoe\": [\n    {\n      \"id\": 1003,\n      \"hp\": 1940,\n      \"max\": 1940,\n      \"counter\": {\n        \"raw\": 287,\n        \"hp\": 133,\n        \"shield\": 0,\n        \"hits\": 8,\n        \"first\": 28812,\n        \"last\": 28908,\n        \"total\": 133,\n        \"dps\": 61.38461538461539\n      }\n    },\n    {\n      \"id\": 1004,\n      \"hp\": 1940,\n      \"max\": 1940,\n      \"counter\": {\n        \"raw\": 287,\n        \"hp\": 133,\n        \"shield\": 0,\n        \"hits\": 8,\n        \"first\": 28812,\n        \"last\": 28908,\n        \"total\": 133,\n        \"dps\": 61.38461538461539\n      }\n    },\n    {\n      \"id\": 1005,\n      \"hp\": 1940,\n      \"max\": 1940,\n      \"counter\": {\n        \"raw\": 287,\n        \"hp\": 133,\n        \"shield\": 0,\n        \"hits\": 8,\n        \"first\": 28812,\n        \"last\": 28908,\n        \"total\": 133,\n        \"dps\": 61.38461538461539\n      }\n    }\n  ],\n  \"flurry\": {\n    \"echo\": true,\n    \"echoes\": 44,\n    \"total\": 2858\n  },\n  \"errors\": [],\n  \"scope\": \"Lab host tests; native-game acceptance remains separate\"\n}\n"
+  },
+  "test-contender-shadow-art": {
+    "exit_code": 0,
+    "tail": "Lab loaded\n{\n  \"checks\": [\n    \"Both editor routes and actual packed assets return HTTP 200\",\n    \"Registered real map, stock champions/minions/camps/towers, thirteen athlete values\",\n    \"Complete combat traces equal with presentation on/off and manual profiles 20/80\",\n    \"Exactly 300 ticks over five seconds at 30/60/120/144/240 Hz; paused clock does not advance\",\n    \"Actual focused Q input reaches the shared WASM core\",\n    \"Focus loss clears held movement\",\n    \"Objective situation uses extracted map coordinates\",\n    \"Effect renderer stops at packaged duration without indefinite final-frame holding\"\n  ],\n  \"initial\": {\n    \"map\": 900,\n    \"actors\": 4,\n    \"stocks\": true,\n    \"stats\": 13\n  },\n  \"traces\": {\n    \"art\": true,\n    \"manual\": true\n  },\n  \"clock\": [\n    {\n      \"hz\": 30,\n      \"n\": 300\n    },\n    {\n      \"hz\": 60,\n      \"n\": 300\n    },\n    {\n      \"hz\": 120,\n      \"n\": 300\n    },\n    {\n      \"hz\": 144,\n      \"n\": 300\n    },\n    {\n      \"hz\": 240,\n      \"n\": 300\n    }\n  ],\n  \"errors\": [],\n  \"actualGameAcceptance\": \"pending; browser host is simulated\"\n}\n"
+  },
+  "test-contender-flurry": {
+    "exit_code": 0,
+    "tail": "{\"revision\":\"contender-2.3\",\"punches\":36,\"directions\":8,\"alternates\":true,\"creepSwitch\":true,\"soloFallback\":true,\"decoded\":6414336,\"errors\":[]}\n"
+  },
+  "test-contender-shadow-parity": {
+    "exit_code": 0,
+    "tail": "36 scenarios / 5,400 frames: complete native/WASM state and effects equal\n"
+  },
+  "test-contender-merge": {
+    "exit_code": 0,
+    "tail": "{\n  \"rules\": \"contender-2.3\",\n  \"checks\": [\n    \"Every packaged pose/frame in both facings; exact original frame counts, durations and anchors\",\n    \"Merge draws one fused whole body at the owner; no ordinary body or offset idle clone\",\n    \"Free step-out recast clears the form and restores the normal body\",\n    \"Exact Merge expiry clears the body without a stale following lease\",\n    \"Death removes Merge and leaves one normal death animation\",\n    \"Flurry vanish never reveals the merged body\",\n    \"420-tick complete combat records and actor state equal with presentation enabled/disabled\"\n  ],\n  \"poses\": [\n    \"idle\",\n    \"run\",\n    \"attack\",\n    \"jab\",\n    \"cross\",\n    \"projection\",\n    \"cyclone\",\n    \"slam\",\n    \"uppercut\",\n    \"flurry\",\n    \"hit\",\n    \"dead\",\n    \"combination\",\n    \"bodyShot\",\n    \"slip\",\n    \"guard\",\n    \"mainEvent\",\n    \"skill1\",\n    \"skill2\",\n    \"ult\"\n  ],\n  \"traces_equal\": true,\n  \"decoded\": 6414336,\n  \"errors\": [],\n  \"scope\": \"Packaged-art and Lab host observations; native renderer acceptance remains pending.\"\n}\n"
+  }
+}

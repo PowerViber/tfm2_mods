@@ -1,8 +1,8 @@
 """Directional variants reuse approved pixels; validate bounds/lifetimes and legacy art."""
 from pathlib import Path
 from PIL import Image
-import io,json,hashlib,subprocess
-ROOT=Path(__file__).resolve().parents[1];OUT=ROOT/'docs/contender-flurry-review';OUT.mkdir(exist_ok=True)
+import io,json,hashlib,subprocess,os
+ROOT=Path(__file__).resolve().parents[1];OUT=ROOT/os.environ.get('CONTENDER_RESULTS','docs/contender-flurry-review');OUT.mkdir(exist_ok=True)
 BASE='e8e99baef3d753dec9012d80fbd94be9793db5ea'
 def original(path):return subprocess.check_output(['rtk','proxy','git','show',BASE+':'+path],cwd=ROOT)
 png='mods/tfm2_custom/vfx/contender_shadow#sheet.png';meta='mods/tfm2_custom/vfx/contender_shadow#anim.fanim'
