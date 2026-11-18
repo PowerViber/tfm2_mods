@@ -1,5 +1,8 @@
 //! Basalt Lab transport: the game's exact core (`basalt_core.rs`) behind a JSON step for the editor page.
 //! The page models the host (positions, glides, his walls, simple enemies); the rules and his AI come from the core.
+#[path = "../../tfm2_custom_ai/src/unlocks.rs"]
+#[allow(dead_code)]
+pub mod unlocks;
 #[path = "../../tfm2_custom_ai/src/basalt_core.rs"]
 pub mod basalt_core;
 #[path = "../../tfm2_custom_ai/src/basalt_data.rs"]

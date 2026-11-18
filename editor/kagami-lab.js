@@ -1,3 +1,4 @@
+const labLevel=()=>{let e=document.getElementById('labLevel');if(!e){const l=document.createElement('label');l.title='Champion level: S2 unlocks at 2, S3 at 3, the ult at 5';l.innerHTML=' Level <input id="labLevel" type="number" min="1" max="18" value="18" style="width:46px"> ';const host=document.getElementById('ultLearned')?.closest('label')||document.querySelector('.row,.controls,header,h1')||document.body;host.after?host.after(l):document.body.prepend(l);e=document.getElementById('labLevel');}return Math.max(0,Math.min(18,+e.value||0));};
 /* Shared Rust skills; explicitly simulated browser host. */
 (async()=>{
 'use strict';
@@ -50,7 +51,7 @@ function apply(e){
  }
 }
 function frame(){
- return {tick,owner:1,team:0,alive:me.hp>0,pos:round(me.pos),hp:Math.round(me.hp),max_hp:me.max_hp,attack:Math.round(me.stats.attack),stunned:tick<(me.stunUntil||0),ult_unlocked:$('ultimate').checked,home:{x:96000,y:864000},
+ return {tick,owner:1,team:0,alive:me.hp>0,pos:round(me.pos),hp:Math.round(me.hp),max_hp:me.max_hp,attack:Math.round(me.stats.attack),stunned:tick<(me.stunUntil||0),ult_unlocked:$('ultimate').checked,level:labLevel(),home:{x:96000,y:864000},
  clones:clones.filter(c=>c&&c.hp>0).map(c=>({slot:c.slot,id:c.id,pos:round(c.pos),hp:Math.round(c.hp),max_hp:c.max_hp})),
  units:units.filter(u=>!u.reflection&&u.hp>0).map(u=>({id:u.id,team:u.team,pos:u.visible===false&&u.team!==0?{x:0,y:0}:round(u.pos),hp:Math.round(u.hp),max_hp:u.max_hp,attack:Math.round(u.stats.attack||0),champion:u.champion,tower:u.tower,visible:u.visible!==false,targetable:tick>=(u.sealUntil||0),sealed:tick<(u.sealUntil||0)})),
  profile:[...$('stats').querySelectorAll('input')].map(e=>Math.max(0,Math.min(100,Math.round(+e.value||0)))),manual:!$('ai').checked,order:pending,terrain:world.walls,hazards:[]};

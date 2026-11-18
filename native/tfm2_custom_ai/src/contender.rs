@@ -202,6 +202,7 @@ impl Contender {
             attack,
             stunned: hard_cc(sim, owner),
             ult_unlocked: sim.get_entity(owner).is_some_and(|e| (0..e.buff_count()).filter_map(|i| e.buff_at(i)).any(|b| b.name() == crate::ULT_LEARNED)),
+            level: sim.get_entity(owner).map_or(0, |e| e.level() as i64),
             home: Point::new(home.0, home.1),
             units,
             terrain: self.grid(tick),

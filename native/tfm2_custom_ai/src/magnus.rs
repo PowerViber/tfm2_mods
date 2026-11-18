@@ -718,7 +718,7 @@ impl StablePassive for Magnus {
                             piece_hp: &hp,
                             controlled,
                             automatic: false,
-                            ult_unlocked: has(sim, entity, "mg_ult_learned"),
+                            ult_unlocked: crate::unlocks::ult_unlocked(sim.get_entity(entity).map_or(0, |e| e.level() as i64), has(sim, entity, "mg_ult_learned")),
                             action: None,
                         },
                     )
@@ -745,9 +745,13 @@ impl StablePassive for Magnus {
             piece_hp: &hp,
             controlled,
             automatic: self.probe == 0,
-            ult_unlocked: has(sim, entity, "mg_ult_learned"),
+            ult_unlocked: crate::unlocks::ult_unlocked(sim.get_entity(entity).map_or(0, |e| e.level() as i64), has(sim, entity, "mg_ult_learned")),
             action,
         };
+        // level unlocks (round 180): S2, Develop a Piece, waits for level 2
+        if !crate::unlocks::skill_unlocked(sim.get_entity(entity).map_or(0, |e| e.level() as i64), 1) {
+            core.develop_at = core.develop_at.max(tick + 1);
+        }
         let before = core.clone();
         let commands = core.step(&input);
         match self.stage_spawns(sim, &core, &commands, me.team) {

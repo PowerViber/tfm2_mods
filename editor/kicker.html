@@ -40,6 +40,8 @@
 <canvas id="map" width="720" height="720"></canvas>
 <script src="game-world.js"></script><script src="lab-scenarios.js"></script><script src="kratos-clock.js"></script><script src="kicker-art.js"></script><script src="kicker-renderer.js"></script><script src="kicker-data.js"></script>
 <script>
+const labLevel=()=>{let e=document.getElementById('labLevel');if(!e){const l=document.createElement('label');l.title='Champion level: S2 unlocks at 2, S3 at 3, the ult at 5';l.innerHTML=' Level <input id="labLevel" type="number" min="1" max="18" value="18" style="width:46px"> ';const host=document.getElementById('ultLearned')?.closest('label')||document.querySelector('.row,.controls,header,h1')||document.body;host.after?host.after(l):document.body.prepend(l);e=document.getElementById('labLevel');}return Math.max(0,Math.min(18,+e.value||0));};
+
 const R = window.KICKER_RULES, CELL = 32000, N = 30, MAP = 960000, S = 720 / MAP;
 const $ = id => document.getElementById(id);
 let wasm, mem, tick, me, units, walls, aim, running = false, glides, nextId, pending = null;
@@ -83,7 +85,7 @@ function step() {
   glides = glides.filter(g => tick < g.start + g.ticks);
   const frame = {
     tick, owner: 1, team: 0, alive: me.hp > 0, pos: {x:Math.round(me.pos.x),y:Math.round(me.pos.y)}, hp: me.hp, max_hp: me.max_hp, attack: me.attack || 150, stunned: !!window.kickerHost?.stunned(),
-    ult_unlocked: true, flash_ready: $('flash').checked, home: { x: 96000, y: 864000 }, units: units.filter(u=>u.hp>0).map(u=>({id:u.id,team:u.team,pos:{x:Math.round(u.pos.x),y:Math.round(u.pos.y)},hp:Math.round(u.hp),max_hp:u.max_hp,radius:u.radius,attack:Math.round(u.stats?.attack||0),champion:u.champion,tower:u.tower,visible:u.visible!==false,targetable:true,farmable:!!u.farmable,stunned:tick<(u.stunUntil||0),parry:false})), terrain: walls,
+    ult_unlocked: true,level:labLevel(), flash_ready: $('flash').checked, home: { x: 96000, y: 864000 }, units: units.filter(u=>u.hp>0).map(u=>({id:u.id,team:u.team,pos:{x:Math.round(u.pos.x),y:Math.round(u.pos.y)},hp:Math.round(u.hp),max_hp:u.max_hp,radius:u.radius,attack:Math.round(u.stats?.attack||0),champion:u.champion,tower:u.tower,visible:u.visible!==false,targetable:true,farmable:!!u.farmable,stunned:tick<(u.stunUntil||0),parry:false})), terrain: walls,
     profile: [...document.querySelectorAll("#athleteStats input")].map(e=>Math.max(0,Math.min(100,+e.value||0))), basic_hits: window.kickerHost?.takeBasicHits() || [], manual: !$('ai').checked, order: $('ai').checked ? null : pending,
   };
   pending = null;

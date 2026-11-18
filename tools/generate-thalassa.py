@@ -45,6 +45,7 @@ text = {
             f"lands (from water it flies faster and the pool is a whirlpool) and a clone of her there for {sec(u['echoTicks'])} ({u['echoHpPct']}% of her HP) that fights on its own "
             f"with harp bolts, Tide Pool and Dive at {u['echoDamagePct']}% damage."),
 }
+text['skill'] += ' Level unlocks: S2 at level 2, S3 at level 3, the ult at level 5.'  # round 180 (tools: unlocks.rs)
 
 champ = copy.deepcopy(json.loads((ROOT / 'tools/native-champion-template.json').read_text()))
 champ.update(id=ID, category=rules['category'], tags=rules['tags'], sprite='asset/tfm2_custom/champions/' + ID, anim_prefix='')

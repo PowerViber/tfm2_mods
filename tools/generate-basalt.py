@@ -56,6 +56,7 @@ text = {
             f"{ul['meteorSlowPct']}% and burns for {sec(ul['burnTicks'])}. Recast within {sec(ul['recastTicks'])} of the landing: his whip catches the rock and "
             f"slingshots him to where it landed. His skills never hit towers."),
 }
+text['skill'] += ' Level unlocks: S2 at level 2, S3 at level 3, the ult at level 5.'  # round 180 (tools: unlocks.rs)
 
 champ = copy.deepcopy(json.loads((ROOT / 'tools/native-champion-template.json').read_text()))
 # placeholder body until Codex's art: Grimhald's sheet (an original melee bruiser)

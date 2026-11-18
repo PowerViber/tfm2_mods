@@ -54,6 +54,7 @@ text = {
             f"{sec(fe['recastTicks'])}, while the wolf is close enough: Kratos leaps into it (up to {fe['dashMax']}) and redirects it in the aimed direction for {fe['returnDistance']} at {fe['returnSpeed'] / fe['speed']:g}x its charge speed ({fe['returnBase']} + "
             f"{fe['returnAdRatio']}% Attack, knock-up {sec(fe['knockUpTicks'])}). His skills and Fenrir never hit towers."),
 }
+text['skill'] += ' Level unlocks: S2 at level 2, S3 at level 3, the ult at level 5.'  # round 180 (tools: unlocks.rs)
 
 champ = copy.deepcopy(json.loads((ROOT / 'tools/native-champion-template.json').read_text()))
 # his own body sheet (Codex's art); like Wright, the game skips him until it exists

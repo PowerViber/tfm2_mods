@@ -51,6 +51,7 @@ text = {
             f"In the cage the axe stays planted at the centre and he fights unarmed: +{a['damagePct']}% damage, +{a['attackSpeedPct']}% attack speed, {a['lifestealPct']}% lifesteal and {a['damageReductionPct']}% damage reduction; each punch knocks back {a['punchKnockback']}. "
             f"Enemies inside lose {au['armourShredPct']}% armour and magic resistance and are slowed {au['slowPct']}%. Each kill while unarmed adds {sec(a['killBonusTicks'])} to the buff and the axe's aura (the cage falls on time)."),
 }
+text['skill'] += ' Level unlocks: S2 at level 2, S3 at level 3, the ult at level 5.'  # round 180 (tools: unlocks.rs)
 
 # ---- champion data (Contender's never() shell)
 champ = copy.deepcopy(json.loads((ROOT / 'tools/native-champion-template.json').read_text()))

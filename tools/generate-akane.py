@@ -49,6 +49,7 @@ text = {
             f"{ni['adRatio']}% Attack; the slash sets off a lesser crimson explosion ({ni['burstPct']}% of Crimson Edge's burst, with the crimson bleed) "
             f"that fears everyone it hits for {sec(ni['fearTicks'])}. Her skills never hit towers."),
 }
+text['skill'] += ' Level unlocks: S2 at level 2, S3 at level 3, the ult at level 5.'  # round 180 (tools: unlocks.rs)
 
 champ = copy.deepcopy(json.loads((ROOT / 'tools/native-champion-template.json').read_text()))
 # her own body sheet (Codex's art); like Wright and Kratos, the game skips her until it exists

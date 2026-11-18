@@ -132,6 +132,9 @@ pub struct Frame {
     pub stunned: bool,
     #[serde(default)]
     pub ult_unlocked: bool,
+    /// his champion level (0: unknown, everything unlocked); S2 at 2, S3 at 3, the ult at 5 (`unlocks.rs`)
+    #[serde(default)]
+    pub level: i64,
     #[serde(default)]
     pub home: Point,
     pub units: Vec<Unit>,
@@ -428,10 +431,10 @@ impl Core {
         self.flurry.is_some()
     }
     pub fn ult_ready(&self, f: &Frame) -> bool {
-        f.ult_unlocked && self.bank >= d::ULT_BANK_MAX && self.flurry.is_none()
+crate::unlocks::ult_unlocked(f.level, f.ult_unlocked) && self.bank >= d::ULT_BANK_MAX && self.flurry.is_none()
     }
     pub fn ready(&self, slot: usize, f: &Frame) -> bool {
-        f.tick >= self.cd[slot]
+        f.tick >= self.cd[slot] && crate::unlocks::skill_unlocked(f.level, slot)
     }
     /// a free recast is open for this slot
     pub fn recast_open(&self, slot: usize, f: &Frame) -> bool {
@@ -720,6 +723,9 @@ impl Core {
                     }
                     return self.step_out(f, aim, out);
                 }
+                if !crate::unlocks::skill_unlocked(f.level, 0) {
+                    return self.reject(&crate::unlocks::locked_reason(0));
+                }
                 if !self.ready(0, f) {
                     return self.reject("s1");
                 }
@@ -729,6 +735,9 @@ impl Core {
                 if self.recast_open(1, f) {
                     return self.cyclone_recast(f, aim, out);
                 }
+                if !crate::unlocks::skill_unlocked(f.level, 1) {
+                    return self.reject(&crate::unlocks::locked_reason(1));
+                }
                 if !self.ready(1, f) {
                     return self.reject("s2");
                 }
@@ -737,6 +746,9 @@ impl Core {
             Order::S3 { .. } => {
                 if self.recast_open(2, f) && !self.tethers.is_empty() {
                     return self.yank(f, out);
+                }
+                if !crate::unlocks::skill_unlocked(f.level, 2) {
+                    return self.reject(&crate::unlocks::locked_reason(2));
                 }
                 if !self.ready(2, f) {
                     return self.reject("s3");

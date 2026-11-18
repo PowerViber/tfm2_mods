@@ -1,5 +1,8 @@
 //! Wright Lab transport: the game's exact core (`wright_core.rs`) behind a JSON step for the editor page.
 //! The page models the host (positions, glides, the plane carriers); the rules all come from the core.
+#[path = "../../tfm2_custom_ai/src/unlocks.rs"]
+#[allow(dead_code)]
+pub mod unlocks;
 #[path = "../../tfm2_custom_ai/src/wright_core.rs"]
 pub mod wright_core;
 #[path = "../../tfm2_custom_ai/src/wright_data.rs"]

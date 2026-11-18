@@ -449,15 +449,30 @@ pub static CHAMPIONS: [ChampionDef; 88] = [
         SkillDef { slot: Slot::Skill2, name: "Self / Teammate Set", kinds: 1024, intents: 8 | 2 },
         SkillDef { slot: Slot::Ult, name: "Serve / Impossible Spike", kinds: 1024 | 4 | 16 | 512, intents: 2 | 16 },
     ] },
+    ChampionDef { id: "tfm2_custom_kicker", name: "Kicker", family: 13, role: "Fighter", native: true, basic: BasicAttack { name: "Kick", range: 22000, reach: Range::Melee }, skills: &[
+        SkillDef { slot: Slot::Skill, name: "Wall Runner / Wall Bounce / Marked Dash", kinds: 1 | 512 | 256, intents: 2 | 4 },
+        SkillDef { slot: Slot::Skill2, name: "Rock Throw / Homecoming Kick / Skyfall Kick", kinds: 4 | 1 | 512, intents: 2 | 1 | 8 },
+        SkillDef { slot: Slot::Ult, name: "Second Wind", kinds: 1024, intents: 2 },
+    ] },
+    ChampionDef { id: "tfm2_custom_kagami", name: "Kagami", family: 13, role: "Support", native: true, basic: BasicAttack { name: "Mirror Shard", range: 55000, reach: Range::Ranged }, skills: &[
+        SkillDef { slot: Slot::Skill, name: "Reflection / Clone Save / Guardian Angel / Mirror Step", kinds: 64 | 2 | 512 | 256, intents: 8 | 4 | 2 },
+        SkillDef { slot: Slot::Skill2, name: "Kindred Charm", kinds: 1024, intents: 8 | 2 },
+        SkillDef { slot: Slot::Ult, name: "Moonlit Mend / Last Reflection", kinds: 128 | 256 | 1024, intents: 8 },
+    ] },
+    ChampionDef { id: "tfm2_custom_basalt", name: "Basalt", family: 13, role: "Fighter", native: true, basic: BasicAttack { name: "Stone Whip", range: 33000, reach: Range::Melee }, skills: &[
+        SkillDef { slot: Slot::Skill, name: "Bedrock / Jump / Whip Pull / Raise & Punch / Air Dash", kinds: 1 | 512 | 16, intents: 2 | 4 },
+        SkillDef { slot: Slot::Skill2, name: "Hurl / Slab Drop / Crushing Clap / Whip Swing", kinds: 4 | 512 | 16, intents: 2 | 1 },
+        SkillDef { slot: Slot::Ult, name: "Boulder Throw / Meteor Punch", kinds: 4 | 16 | 512, intents: 2 },
+    ] },
+    ChampionDef { id: "tfm2_custom_akane", name: "Akane", family: 13, role: "Assassin", native: true, basic: BasicAttack { name: "Katana", range: 22000, reach: Range::Melee }, skills: &[
+        SkillDef { slot: Slot::Skill, name: "Soul Harvest / Dismiss & Devour", kinds: 128 | 1024, intents: 4 | 8 },
+        SkillDef { slot: Slot::Skill2, name: "Kunai Flip / Crimson Edge", kinds: 1 | 4 | 16 | 512, intents: 2 | 4 | 1 },
+        SkillDef { slot: Slot::Ult, name: "Crimson Night", kinds: 1024 | 1, intents: 2 | 64 },
+    ] },
     ChampionDef { id: "tfm2_custom_grimhald", name: "Grimhald", family: 13, role: "Melee", native: true, basic: BasicAttack { name: "Axe swing", range: 24000, reach: Range::Melee }, skills: &[
         SkillDef { slot: Slot::Skill, name: "Iron Ghost", kinds: 2 | 1024, intents: 4 | 2 },
         SkillDef { slot: Slot::Skill2, name: "Stone Bulwark / Skull Bash", kinds: 8 | 1 | 512, intents: 1 | 2 | 8 | 16 },
         SkillDef { slot: Slot::Ult, name: "Warden's Verdict", kinds: 4 | 512 | 1, intents: 2 },
-    ] },
-    ChampionDef { id: "tfm2_custom_kratos", name: "Kratos", family: 14, role: "Melee", native: true, basic: BasicAttack { name: "Leviathan Axe / Blades of Chaos", range: 22000, reach: Range::Melee }, skills: &[
-        SkillDef { slot: Slot::Skill, name: "Frost & Flame / Heimdall's Sight", kinds: 1024 | 512, intents: 2 | 8 },
-        SkillDef { slot: Slot::Skill2, name: "Leviathan Rampage / Spartan Guard / Chain Dash", kinds: 1 | 16 | 8 | 256 | 512, intents: 2 | 4 | 8 | 1 },
-        SkillDef { slot: Slot::Ult, name: "Fenrir's Charge", kinds: 8 | 1 | 512, intents: 2 },
     ] },
     ChampionDef { id: "tfm2_custom_thalassa", name: "Thalassa", family: 13, role: "Magician", native: true, basic: BasicAttack { name: "Harp bolt", range: 55000, reach: Range::Ranged }, skills: &[
         SkillDef { slot: Slot::Skill, name: "Tide Pool", kinds: 32 | 16 | 512, intents: 1 | 2 | 16 },
@@ -469,24 +484,9 @@ pub static CHAMPIONS: [ChampionDef; 88] = [
         SkillDef { slot: Slot::Skill2, name: "Carpet Bomber / Repair Wing", kinds: 16 | 32 | 128 | 256, intents: 2 | 8 | 1 },
         SkillDef { slot: Slot::Ult, name: "Sky Carrier", kinds: 64 | 16 | 512, intents: 2 | 16 },
     ] },
-    ChampionDef { id: "tfm2_custom_kicker", name: "Kicker", family: 13, role: "Fighter", native: true, basic: BasicAttack { name: "Kick", range: 22000, reach: Range::Melee }, skills: &[
-        SkillDef { slot: Slot::Skill, name: "Wall Runner / Wall Bounce / Marked Dash", kinds: 1 | 512 | 256, intents: 2 | 4 },
-        SkillDef { slot: Slot::Skill2, name: "Rock Throw / Homecoming Kick / Skyfall Kick", kinds: 4 | 1 | 512, intents: 2 | 1 | 8 },
-        SkillDef { slot: Slot::Ult, name: "Second Wind", kinds: 1024, intents: 2 },
-    ] },
-    ChampionDef { id: "tfm2_custom_akane", name: "Akane", family: 13, role: "Assassin", native: true, basic: BasicAttack { name: "Katana", range: 22000, reach: Range::Melee }, skills: &[
-        SkillDef { slot: Slot::Skill, name: "Soul Harvest / Dismiss & Devour", kinds: 128 | 1024, intents: 4 | 8 },
-        SkillDef { slot: Slot::Skill2, name: "Kunai Flip / Crimson Edge", kinds: 1 | 4 | 16 | 512, intents: 2 | 4 | 1 },
-        SkillDef { slot: Slot::Ult, name: "Crimson Night", kinds: 1024 | 1, intents: 2 | 64 },
-    ] },
-    ChampionDef { id: "tfm2_custom_kagami", name: "Kagami", family: 13, role: "Support", native: true, basic: BasicAttack { name: "Mirror Shard", range: 55000, reach: Range::Ranged }, skills: &[
-        SkillDef { slot: Slot::Skill, name: "Reflection / Clone Save / Guardian Angel / Mirror Step", kinds: 64 | 2 | 512 | 256, intents: 8 | 4 | 2 },
-        SkillDef { slot: Slot::Skill2, name: "Kindred Charm", kinds: 1024, intents: 8 | 2 },
-        SkillDef { slot: Slot::Ult, name: "Moonlit Mend / Last Reflection", kinds: 128 | 256 | 1024, intents: 8 },
-    ] },
-    ChampionDef { id: "tfm2_custom_basalt", name: "Basalt", family: 13, role: "Fighter", native: true, basic: BasicAttack { name: "Stone Whip", range: 33000, reach: Range::Melee }, skills: &[
-        SkillDef { slot: Slot::Skill, name: "Bedrock / Jump / Whip Pull / Raise & Punch / Air Dash", kinds: 1 | 512 | 16, intents: 2 | 4 },
-        SkillDef { slot: Slot::Skill2, name: "Hurl / Slab Drop / Crushing Clap / Whip Swing", kinds: 4 | 512 | 16, intents: 2 | 1 },
-        SkillDef { slot: Slot::Ult, name: "Boulder Throw / Meteor Punch", kinds: 4 | 16 | 512, intents: 2 },
+    ChampionDef { id: "tfm2_custom_kratos", name: "Kratos", family: 14, role: "Melee", native: true, basic: BasicAttack { name: "Leviathan Axe / Blades of Chaos", range: 22000, reach: Range::Melee }, skills: &[
+        SkillDef { slot: Slot::Skill, name: "Frost & Flame / Heimdall's Sight", kinds: 1024 | 512, intents: 2 | 8 },
+        SkillDef { slot: Slot::Skill2, name: "Leviathan Rampage / Spartan Guard / Chain Dash", kinds: 1 | 16 | 8 | 256 | 512, intents: 2 | 4 | 8 | 1 },
+        SkillDef { slot: Slot::Ult, name: "Fenrir's Charge", kinds: 8 | 1 | 512, intents: 2 },
     ] },
 ];

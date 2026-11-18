@@ -1,4 +1,7 @@
 //! Transport around the game's exact core. Host guidance is explicitly a Lab model.
+#[path = "../../tfm2_custom_ai/src/unlocks.rs"]
+#[allow(dead_code)]
+pub mod unlocks;
 #[path="../../tfm2_custom_ai/src/grimhald_core.rs"]
 pub mod grimhald_core;
 #[path="../../tfm2_custom_ai/src/grimhald_data.rs"]

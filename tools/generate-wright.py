@@ -50,6 +50,7 @@ text = {
             f"and recharge in {ca['cooldownPct']}% of the time; his jets rearm in {ca['rearmPct']}% of the time with +{ca['bonusAmmo']} strike; Carpet Bomber's "
             f"explosions deal {ca['bomberDamagePct']}% damage (same warning); repair kits are {ca['kitPct']}% as strong."),
 }
+text['skill'] += ' Level unlocks: S2 at level 2, S3 at level 3, the ult at level 5.'  # round 180 (tools: unlocks.rs)
 
 champ = copy.deepcopy(json.loads((ROOT / 'tools/native-champion-template.json').read_text()))
 champ.update(id=ID, category=rules['category'], tags=rules['tags'], sprite='asset/tfm2_custom/champions/' + ID, anim_prefix='')

@@ -26,6 +26,7 @@ fn frame(tick: u64, units: Vec<Unit>) -> Frame {
         attack: 100,
         stunned: false,
         ult_unlocked: true,
+        level: 0,
         units,
         terrain: vec![],
         profile: [50; 13],

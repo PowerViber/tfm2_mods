@@ -1,5 +1,8 @@
 //! Kagami Lab transport: the game's exact core (`kagami_core.rs`) behind a JSON step for the editor page.
 //! The page models the host (positions, glides, swaps, seals, hits); the rules and her AI all come from the core.
+#[path = "../../tfm2_custom_ai/src/unlocks.rs"]
+#[allow(dead_code)]
+pub mod unlocks;
 #[path = "../../tfm2_custom_ai/src/kagami_core.rs"]
 pub mod kagami_core;
 #[path = "../../tfm2_custom_ai/src/kagami_ai.rs"]

@@ -1,3 +1,4 @@
+const labLevel=()=>{let e=document.getElementById('labLevel');if(!e){const l=document.createElement('label');l.title='Champion level: S2 unlocks at 2, S3 at 3, the ult at 5';l.innerHTML=' Level <input id="labLevel" type="number" min="1" max="18" value="18" style="width:46px"> ';const host=document.getElementById('ultLearned')?.closest('label')||document.querySelector('.row,.controls,header,h1')||document.body;host.after?host.after(l):document.body.prepend(l);e=document.getElementById('labLevel');}return Math.max(0,Math.min(18,+e.value||0));};
 // Kratos's unchanged WASM core on the installed game's registered map layers
 // and exported collision/object coordinates. Stock actors use extracted art and
 // settings; their host combat, navigation and vision are explicitly modelled.
@@ -77,7 +78,7 @@
     const profile = [...$('stats').querySelectorAll('input')].map(i => Math.max(0, Math.min(100, +i.value || 0)));
     const out = {version: 1, rules_revision: R.revision, hits_on_me: pendingHits.map(h => [h.from, h.champion??true]), frame: {
       tick, owner: 1, team: 0, alive: me.hp > 0, pos: rp(me.pos), hp: Math.round(me.hp), max_hp: me.max_hp, attack: me.stats?.attack??100,
-      stunned: tick < me.stunUntil, ult_unlocked: true,
+      stunned: tick < me.stunUntil, ult_unlocked: true,level:labLevel(),
       units: units.filter(u => u.hp > 0).map(u => ({id: u.id, team: u.team, pos: visible(u)?rp(u.pos):{x:0,y:0}, hp: visible(u)?Math.round(u.hp):0, max_hp: u.max_hp, radius: u.radius,
         champion: u.champion, tower: u.tower, visible: visible(u), targetable: true, farmable: u.farmable && calm&&(!scene||u.kind==='minion'||u.kind==='objective'||$('role').value==='jungle'), stunned: tick < u.stunUntil})),
       terrain: WALLS, profile, basic_hits: basicHits.splice(0), manual: !$('auto').checked, order: queue.shift() || null}};

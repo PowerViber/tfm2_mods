@@ -1,3 +1,4 @@
+const labLevel=()=>{let e=document.getElementById('labLevel');if(!e){const l=document.createElement('label');l.title='Champion level: S2 unlocks at 2, S3 at 3, the ult at 5';l.innerHTML=' Level <input id="labLevel" type="number" min="1" max="18" value="18" style="width:46px"> ';const host=document.getElementById('ultLearned')?.closest('label')||document.querySelector('.row,.controls,header,h1')||document.body;host.after?host.after(l):document.body.prepend(l);e=document.getElementById('labLevel');}return Math.max(0,Math.min(18,+e.value||0));};
 // Thalassa Lab: the game's own core (thalassa.wasm, built from native/thalassa_lab) drives her kit; this page models the
 // host: positions, engine glides, the clone unit, simple enemies and an ally.
 (async () => {
@@ -37,7 +38,7 @@
   const rp = p => ({x: Math.round(p.x), y: Math.round(p.y)});
   function frame() {
     return {version: 1, rules_revision: REV, frame: {
-      tick, owner: 1, team: 0, alive: me.hp > 0, pos: rp(me.pos), hp: Math.round(me.hp), max_hp: me.max_hp, shield: myShield(), ap: 100, stunned: tick < me.stunUntil, ult_unlocked: true,
+      tick, owner: 1, team: 0, alive: me.hp > 0, pos: rp(me.pos), hp: Math.round(me.hp), max_hp: me.max_hp, shield: myShield(), ap: 100, stunned: tick < me.stunUntil, ult_unlocked: true,level:labLevel(),
       units: units.map(u => ({id: u.id, team: u.team, pos: rp(u.pos), hp: Math.round(u.hp), max_hp: u.max_hp, radius: u.radius, champion: u.champion, tower: u.tower, visible: u.visible, targetable: u.targetable, farmable: u.farmable, stunned: tick < u.stunUntil, velocity: rp(u.velocity)})), terrain: terrain(),
       profile: [...document.querySelectorAll('.stat input')].map(i => Number(i.value)),
       clone: clone ? {id: 99, pos: rp(clone.pos), hp: clone.hp} : null, echo: echo ? {id: 98, pos: rp(echo.pos), hp: Math.round(echo.hp)} : null, basic_hits: basicHits.splice(0),

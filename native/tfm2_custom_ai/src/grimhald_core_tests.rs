@@ -36,6 +36,7 @@ fn frame(tick: u64, x: i64, y: i64, units: Vec<Unit>) -> Frame {
         move_speed: 1000,
         hard_cc_ticks: 0,
         ult_unlocked: true,
+        level: 0,
         units,
         terrain: vec![false; 900],
         walls: vec![],

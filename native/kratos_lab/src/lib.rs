@@ -1,5 +1,8 @@
 //! Kratos Lab transport: the game's exact core (`kratos_core.rs`) behind a JSON step for the editor page.
 //! The page models the host (positions, glides, the real map's walls, simple enemies); the rules all come from the core.
+#[path = "../../tfm2_custom_ai/src/unlocks.rs"]
+#[allow(dead_code)]
+pub mod unlocks;
 #[path = "../../tfm2_custom_ai/src/kratos_core.rs"]
 pub mod kratos_core;
 #[path = "../../tfm2_custom_ai/src/kratos_data.rs"]

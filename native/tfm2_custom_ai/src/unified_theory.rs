@@ -358,7 +358,17 @@ impl StablePassive for UnifiedTheory {
             }
         }
         let fighters = self.fighters(sim, &all, &m);
-        let unlocked = m.has("ut_ult_learned") || sim.get_entity(entity).and_then(|e| e.cooldown(mod_api_stable::SkillSlotV1::Ult)).is_some_and(|c| c.unlocked);
+        let level = sim.get_entity(entity).map_or(0, |e| e.level() as i64);
+        let unlocked = crate::unlocks::ult_unlocked(level, m.has("ut_ult_learned") || sim.get_entity(entity).and_then(|e| e.cooldown(mod_api_stable::SkillSlotV1::Ult)).is_some_and(|c| c.unlocked));
+        // level unlocks (round 180): Newton's six skills are S1 (level 1), Curie's S2 (level 2), Einstein's S3 (level 3)
+        if let Some(core) = &mut self.core {
+            for skill in 0..crate::unified_core::N {
+                let slot = skill / 6;
+                if !crate::unlocks::skill_unlocked(level, slot) {
+                    core.cooldown[skill] = core.cooldown[skill].max(tick + 1);
+                }
+            }
+        }
         let wall = |x: i64, y: i64| crate::walls::wall_at(x, y);
         self.profile.finish("snapshot",snapshot_at);let core_at=self.profile.start();
         let cmds = match &mut self.core {

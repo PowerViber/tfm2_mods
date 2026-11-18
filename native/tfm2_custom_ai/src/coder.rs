@@ -1436,6 +1436,8 @@ impl Coder {
     /// it, any.
     fn activate_ai(&mut self, sim: &mut StableSim<'_>, all: &[Champ], m: &Champ, tick: usize) {
         if self.ai_on(tick) || tick < self.ai.next || self.rank.is_none() || !tick.is_multiple_of(30) { return; }
+        // round 180 level unlocks: the ult (the AI copilot) waits for level 5
+        if !crate::unlocks::ult_unlocked(self.me.and_then(|e| sim.get_entity(e)).map_or(0, |e| e.level() as i64), true) { return; }
         let near = all.iter().any(|c| c.team != m.team && d2(c.x, c.y, m.x, m.y) <= sq(120_000));
         if !near { return; }
         let smart = self.rng.chance(self.t(&IQ, IQ_TOP), 100);
