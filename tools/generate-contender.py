@@ -1,6 +1,6 @@
 """Generate Contender's Rust tables, champion data, tooltips, editor data and roster entry from rules/contender.json.
 
-Contender 2.4, the elusive Shadow Boxer (round 178). Change numbers in the rules file and rerun; never edit the outputs by hand.
+Contender 2.5, the elusive Shadow Boxer (round 178). Change numbers in the rules file and rerun; never edit the outputs by hand.
 `--check` only verifies.
 """
 from pathlib import Path
@@ -34,9 +34,10 @@ text = {
               f"aside and the hit is undone (at most one dodge every {sec(ch['dodgeGapTicks'])}). His skills never cost dodges; each can be recast "
               f"once, free, within {sec(ch['recastWindowTicks'])}. "
               f"Shadow Pact (passive): every punch and skill hits again {sec(pa['delayTicks'])} later for {pa['pct']}%, with its crowd control at "
-              f"{pa['ccPct']}% (at most {sec(pa['ccCapTicks'])} more per target every {sec(pa['ccWindowTicks'])}); recast hits echo twice. "
-              f"Shadow Rhythm (passive): each hit stacks on its target (up to {rh['maxStacks']}, {sec(rh['stackTicks'])}); the most-stacked enemy "
-              f"gives him +{rh['attackSpeedPermillePerStack'] / 10:g}% attack speed, +{rh['attackPermillePerStack'] / 10:g}% Attack and "
+              f"{pa['ccPct']}% (at most {sec(pa['ccCapTicks'])} more per target every {sec(pa['ccWindowTicks'])}); recast hits echo twice. Echoes never add Rhythm stacks. "
+              f"Shadow Rhythm (passive): each hit of his (not an echo) stacks on its target (up to {rh['maxStacks']}, {sec(rh['stackTicks'])}); the most-stacked enemy "
+              f"gives him +{rh['attackSpeedPermillePerStack'] / 10:g}% attack speed"
+              + (f", +{rh['attackPermillePerStack'] / 10:g}% Attack" if rh['attackPermillePerStack'] else '') + f" and "
               f"+{rh['moveSpeedPermillePerStack'] / 10:g}% move speed per stack, and takes +{rh['vulnerabilityPermillePerStack'] / 10:g}% damage "
               f"from him per stack. At {rh['maxStacks']} stacks his next hit is a Shadow Break: {rh['breakPermilleMaxHp'] / 10:g}% of its max HP + "
               f"{rh['breakAdRatio']}% Attack, and its stacks reset to 0, but his Rhythm buffs stay at full for {sec(rh['breakBuffTicks'])}. A max-stacked creep carries {rh['carryStacks']} stacks "
