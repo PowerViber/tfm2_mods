@@ -69,10 +69,14 @@ function stepWorld(order){
 }
 function drawRhythmStacks(){
  const stacks=new Map((state.stacks||[]).filter(s=>s.count>0&&tick<s.until).map(s=>[s.id,s.count]));
- ctx.save();ctx.font='bold 10px monospace';ctx.textAlign='center';ctx.textBaseline='middle';
+ const icon=painter.data.effects.anims.uppercut.frames[0].data;
+ ctx.save();ctx.font='bold 9px monospace';ctx.textAlign='center';ctx.textBaseline='middle';
  for(const u of units){const count=stacks.get(u.id);if(!count||u.team===me.team||u.hp<=0||!u.visible)continue;
-  const p=P(u.pos),label=`${count}/${R.rhythm.maxStacks}`,width=34,y=p.y-W(35000)-19;
-  ctx.fillStyle='#20132f';ctx.fillRect(p.x-width/2,y-9,width,18);ctx.strokeStyle=count===R.rhythm.maxStacks?'#ffe0a0':'#b88aef';ctx.strokeRect(p.x-width/2,y-9,width,18);ctx.fillStyle=count===R.rhythm.maxStacks?'#ffe0a0':'#ead9ff';ctx.fillText(label,p.x,y);
+  const p=P(u.pos),y=p.y-W(35000)-21,colour=count===R.rhythm.maxStacks?'#ffe0a0':'#b88aef';
+  ctx.fillStyle='#20132f';ctx.fillRect(p.x-11,y-11,22,22);ctx.strokeStyle=colour;ctx.strokeRect(p.x-11,y-11,22,22);
+  // Reuse the approved clenched fist, cropping out the uppercut's travel trail.
+  ctx.drawImage(painter.images.effects,icon.x+10,icon.y,26,26,p.x-10,y-10,20,20);
+  ctx.fillStyle='#20132f';ctx.fillRect(p.x+1,y+2,14,11);ctx.fillStyle=colour;ctx.fillText(String(count),p.x+8,y+7);
  }
  ctx.restore();
 }
