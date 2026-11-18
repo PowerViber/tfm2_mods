@@ -4071,3 +4071,4 @@ Native 0.10.112 / custom 0.2.115, art basalt-art-6, gameplay remains basalt-1.4.
   - do the recasts feel strong enough;
   - does the ult come back too fast (every hit takes 1 s off);
   - does the flurry's reappearance land in walls.
+- **contender-2.1 (Reihan):** the ult's echoes now come from casting it while projected (it starts at the shadow), not from Cyclone. Watch whether project-then-ult reads clearly and isn't too strong.

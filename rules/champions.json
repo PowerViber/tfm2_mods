@@ -4995,7 +4995,7 @@
       "Engage",
       "Clear"
      ],
-     "summary": "Shadow Cyclone (8 s): a shadow clone goes to a spot within 60000 and cleaves the circle around it (25000): 4 hits of 25 + 30% Attack and a 20% slow; it can't be hit. Cast from his projected shadow, it makes his ultimate's punches echo for 8 s. Recast: he goes there himself, invulnerable, and cleaves 7 hits of 30 + 35% Attack, the last one knocking up for 0.4 s. Slam & Uppercut (10 s): he grabs an enemy within 20000 and slams it into the ground (80 + 100% Attack, stunned 0.75 s; 50% to others within 15000). Recast: an uppercut, 90 + 110% Attack and 1 s airborne; from his projected shadow it launches the target up to 60000 toward his body."
+     "summary": "Shadow Cyclone (8 s): a shadow clone goes to a spot within 60000 and cleaves the circle around it (25000): 4 hits of 25 + 30% Attack and a 20% slow; it can't be hit. Recast: he goes there himself, invulnerable, and cleaves 7 hits of 30 + 35% Attack, the last one knocking up for 0.4 s. Slam & Uppercut (10 s): he grabs an enemy within 20000 and slams it into the ground (80 + 100% Attack, stunned 0.75 s; 50% to others within 15000). Recast: an uppercut, 90 + 110% Attack and 1 s airborne; from his projected shadow it launches the target up to 60000 toward his body."
     },
     {
      "slot": "ult",
@@ -5007,7 +5007,7 @@
      "intents": [
       "Engage"
      ],
-     "summary": "Shadow Flurry (120 s): he melts into the ground, untargetable and unhurt for 5 s, and his shadow charges refill. His shadows strike the enemy nearest him (within 50000), then chain 36 punches, slow at first and faster at the end, each onto an enemy within 30000 of the last one hit (12 + 16% Attack). Every second the last enemy hit is knocked up. With nothing left in reach the flurry ends early. He reappears beside the last enemy hit, and his next basic within 2 s is a haymaker (+60 + 80% Attack, a 0.5 s stun). His skills never hit towers."
+     "summary": "Shadow Flurry (120 s): he melts into the ground, untargetable and unhurt for 5 s, and his shadow charges refill. His shadows strike the enemy nearest him, or his projected shadow (within 50000), then chain 36 punches, slow at first and faster at the end, each onto an enemy within 30000 of the last one hit (12 + 16% Attack). Cast while his shadow is projected, every punch echoes. Every second the last enemy hit is knocked up. With nothing left in reach the flurry ends early. He reappears beside the last enemy hit, and his next basic within 2 s is a haymaker (+60 + 80% Attack, a 0.5 s stun). His skills never hit towers."
     }
    ]
   },

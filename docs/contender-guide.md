@@ -1,4 +1,4 @@
-# Contender, the Shadow Boxer (`contender-2.0`)
+# Contender, the Shadow Boxer (`contender-2.1`)
 
 Reihan's rework (round 178): Contender is a literal **shadow boxer**. His shadow steps off him and fights, and his shadow charges let the shadow recast any skill, stronger. The old kit is retired: Combination / Body Shot / Uppercut, Slip / Guard, stamina and the Main Event ring.
 
@@ -13,7 +13,7 @@ Category **Melee**, tags AD / Melee / CC. Basic attack **Jab / Cross** (23,000).
   - **The echo:** every punch and skill hits again **1 s later** for **40%**, carrying its crowd control at half length.
   - **Double echoes:** recast hits echo **twice**, and so does every hit while he's projected.
   - **Cap:** echoes add at most **1.5 s** of crowd control per target every 6 s.
-  - **The ult's punches:** they echo only when primed (S2 cast from the projected shadow).
+  - **The ult's punches:** they echo only when the ult is **cast while his shadow is projected** (`contender-2.1`, Reihan).
 - **Shadow Rhythm (stacks):**
   - **Stacks:** every hit stacks on its target (**10** max, **4 s**).
   - **Buffs:** the most-stacked enemy gives him, per stack, **+3% attack speed, +2% Attack and +1.5% move speed**.
@@ -25,18 +25,18 @@ Category **Melee**, tags AD / Melee / CC. Basic attack **Jab / Cross** (23,000).
 | Slot | Cast | Recast (1 shadow charge) |
 |---|---|---|
 | S1 **Shadow Projection** (12 s) | His body holds still and can't be hurt, and his shadow is launched up to **100,000**. For **5 s** it fights as him: it boxes, and S2 and S3 come from it. **70%** of the damage it takes reaches him; if it falls, that's 70% of his max HP. | His body **swaps** to the shadow, and the shadow's **cross** (from where he stood) knocks the nearest enemy back 20,000. |
-| S2 **Shadow Cyclone** (8 s) | A shadow clone cleaves a **25,000** circle at a spot within **60,000**: 4 hits and a slow. It can't be hit. Cast from the projection, it **primes the ult's echoes** for 8 s. | **He goes there** and cleaves **7 hits**, invulnerable; the last hit knocks up. |
+| S2 **Shadow Cyclone** (8 s) | A shadow clone cleaves a **25,000** circle at a spot within **60,000**: 4 hits and a slow. It can't be hit. | **He goes there** and cleaves **7 hits**, invulnerable; the last hit knocks up. |
 | S3 **Slam & Uppercut** (10 s) | He grabs an enemy within 20,000 and **slams** it: a stun, plus an impact ring. | An **uppercut** knock-up. From the projection it **launches the target toward his body**. |
-| Ult **Shadow Flurry** (120 s; not recastable) | He's **unseen and unhurt for 5 s**, and his charges refill. **36 punches** start slow and speed up, each chained to an enemy within 30,000 of the last one hit (creeps too). Every second the last enemy hit is knocked up. The flurry ends early when nothing is in reach, and he reappears beside the last enemy hit with a **haymaker** ready (his next basic within 2 s). | — |
+| Ult **Shadow Flurry** (120 s; not recastable) | He's **unseen and unhurt for 5 s**, and his charges refill. **Cast while projected**, it starts at his shadow and **every punch echoes** (the projection ends as he vanishes). **36 punches** start slow and speed up, each chained to an enemy within 30,000 of the last one hit (creeps too). Every second the last enemy hit is knocked up. The flurry ends early when nothing is in reach, and he reappears beside the last enemy hit with a **haymaker** ready (his next basic within 2 s). | — |
 
-**The engage:** S1 projects the shadow onto the target. S2 from the shadow cleaves while untouchable, builds stacks and primes the ult. Then either:
+**The engage:** S1 projects the shadow onto the target. S2 from the shadow cleaves while untouchable and builds stacks. Then either:
 - **Pick:** S3 slams, and the recast uppercuts the target back to his body; or
-- **Commit:** the S1 recast swaps him in, then the ult.
+- **Commit:** the ult **while still projected**, for the echoing flurry; or the S1 recast to swap him in.
 
 ## AI (his own, Kicker's flat list)
 1. **Recasts:** the uppercut on a slammed champion. The projection swap when the target is low or his team is there; the projection lapses early when the shadow is losing. The self-cleave on a champion in the circle.
 2. **Fight (not outnumbered, not under a tower unless the target is low):**
-   - the ult on 2+ champions, a low one, or when primed;
+   - the ult on 2+ champions, a low one, or any champion by his projected shadow (for the echoes);
    - S1 onto a target 40,000–120,000 away;
    - S2 in reach, then S3 in grab range.
    - Otherwise it walks (or steers the shadow) to the target.

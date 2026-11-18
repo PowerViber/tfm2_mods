@@ -46,7 +46,7 @@ text = {
               f"Attack)."),
     'skill2': (f"Shadow Cyclone ({sec(cy['cooldownTicks'])}): a shadow clone goes to a spot within {cy['range']} and cleaves the circle around "
                f"it ({cy['radius']}): {cy['hits']} hits of {cy['base']} + {cy['adRatio']}% Attack and a {cy['slowPct']}% slow; it can't be hit. "
-               f"Cast from his projected shadow, it makes his ultimate's punches echo for {sec(cy['primeTicks'])}. Recast: he goes there himself, "
+               f"Recast: he goes there himself, "
                f"invulnerable, and cleaves {cy['recastHits']} hits of {cy['recastBase']} + {cy['recastAdRatio']}% Attack, the last one knocking "
                f"up for {sec(cy['recastKnockTicks'])}. "
                f"Slam & Uppercut ({sec(sl['cooldownTicks'])}): he grabs an enemy within {sl['grab']} and slams it into the ground "
@@ -54,9 +54,9 @@ text = {
                f"{sl['ringRadius']}). Recast: an uppercut, {sl['uppercutBase']} + {sl['uppercutAdRatio']}% Attack and {sec(sl['knockTicks'])} "
                f"airborne; from his projected shadow it launches the target up to {sl['launch']} toward his body."),
     'ult': (f"Shadow Flurry ({sec(ul['cooldownTicks'])}): he melts into the ground, untargetable and unhurt for {sec(ul['ticks'])}, and his "
-            f"shadow charges refill. His shadows strike the enemy nearest him (within {ul['startRange']}), then chain {ul['punches']} punches, "
+            f"shadow charges refill. His shadows strike the enemy nearest him, or his projected shadow (within {ul['startRange']}), then chain {ul['punches']} punches, "
             f"slow at first and faster at the end, each onto an enemy within {ul['chainRange']} of the last one hit ({ul['base']} + "
-            f"{ul['adRatio']}% Attack). Every second the last enemy hit is knocked up. With nothing left in reach the flurry ends early. He "
+            f"{ul['adRatio']}% Attack). Cast while his shadow is projected, every punch echoes. Every second the last enemy hit is knocked up. With nothing left in reach the flurry ends early. He "
             f"reappears beside the last enemy hit, and his next basic within {sec(ul['haymakerTicks'])} is a haymaker "
             f"(+{ul['haymakerBase']} + {ul['haymakerAdRatio']}% Attack, a {sec(ul['haymakerStunTicks'])} stun). His skills never hit towers."),
 }

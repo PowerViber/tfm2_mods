@@ -286,12 +286,31 @@ fn s2_and_s3_come_from_the_projected_shadow_and_the_uppercut_launches_toward_his
     w.tick(Some(Order::S3 { aim: Point::new(485_000, 500_000) }));
     let to = w.log.iter().rev().find_map(|(_, e)| if let Effect::Knock { target: FOE, to, .. } = e { Some(*to) } else { None }).expect("launched");
     assert!(to.x < 485_000 && to.x >= 400_000 + 12_000 - 1, "toward his body, not past it: {to:?}");
-    // S2 from the shadow primes the ult
+    // contender-2.1: S2 from the shadow primes nothing (the projection itself makes the flurry echo)
     let mut w = World::new(vec![champ(FOE, 2, 485_000, 500_000)]);
     w.tick(Some(Order::S1 { aim: Point::new(480_000, 500_000) }));
     w.run(20);
     w.tick(Some(Order::S2 { aim: Point::new(485_000, 500_000) }));
-    assert!(w.core.primed_until > w.f.tick);
+    assert!(w.core.flurry.is_none());
+}
+
+#[test]
+fn a_flurry_cast_while_projected_echoes_every_punch_and_starts_at_the_shadow() {
+    // the target is far from his body but by the shadow
+    let mut w = World::new(vec![champ(FOE, 2, 490_000, 500_000)]);
+    w.unit(FOE).hp = 1_000_000;
+    w.unit(FOE).max_hp = 1_000_000;
+    w.tick(Some(Order::S1 { aim: Point::new(480_000, 500_000) }));
+    w.run(20);
+    w.tick(Some(Order::Ult));
+    assert!(w.core.flurry.is_some_and(|fl| fl.echo), "cast while projected: an echoing flurry ({})", w.core.rejection);
+    assert!(!w.core.projecting(), "the projection ends as he vanishes");
+    w.run(d::ULT_TICKS as u64 + d::PACT_DELAY_TICKS as u64 + 2);
+    let punches = w.count(|e| matches!(e, Effect::Fx { name, .. } if name == "ct_flurry"));
+    let echoes = w.count(|e| matches!(e, Effect::Fx { name, .. } if name == "ct_echo"));
+    assert!(echoes >= punches, "every punch echoes: {punches} punches, {echoes} echoes");
+    let back = w.log.iter().rev().find_map(|(_, e)| if let Effect::Teleport { to } = e { Some(*to) } else { None }).expect("he reappears");
+    assert!(back.within(Point::new(490_000, 500_000), 15_000), "by the last enemy hit, at the shadow's fight: {back:?}");
 }
 
 // ------------------------------------------------------------------ S2 Shadow Cyclone
@@ -353,7 +372,7 @@ fn the_flurry_vanishes_him_chains_36_accelerating_punches_and_brings_him_back_by
 }
 
 #[test]
-fn the_flurry_ends_early_when_nothing_is_left_in_reach_and_echoes_only_when_primed() {
+fn the_flurry_ends_early_when_nothing_is_left_in_reach_and_echoes_only_when_projected() {
     let mut w = World::new(vec![champ(FOE, 2, 430_000, 500_000)]);
     w.unit(FOE).hp = 1_000_000;
     w.unit(FOE).max_hp = 1_000_000;
@@ -363,7 +382,7 @@ fn the_flurry_ends_early_when_nothing_is_left_in_reach_and_echoes_only_when_prim
     w.run(30);
     assert!(!w.core.flurrying(), "nothing within 30,000 of the last hit: over");
     assert!(w.count(|e| matches!(e, Effect::Fx { name, .. } if name == "ct_flurry")) < d::ULT_PUNCHES as usize);
-    assert!(!w.seen(|e| matches!(e, Effect::Fx { name, .. } if name == "ct_echo")), "not primed: no echoes");
+    assert!(!w.seen(|e| matches!(e, Effect::Fx { name, .. } if name == "ct_echo")), "not projected: no echoes");
 }
 
 // ------------------------------------------------------------------ AI
@@ -428,6 +447,23 @@ fn the_ai_uses_the_flurry_on_a_group() {
     w.tick(None);
     assert_eq!(w.core.reason, "Shadow Flurry");
     assert!(w.core.flurrying());
+}
+
+#[test]
+fn the_ai_flurries_from_the_projection_on_a_lone_healthy_target() {
+    // one healthy champion: on foot that's no reason to flurry, but projected beside it, it is
+    let mut w2 = ai(vec![champ(FOE, 2, 480_000, 500_000)]);
+    w2.core.cd = [u64::MAX / 2; 3];
+    w2.tick(None);
+    assert_ne!(w2.core.reason, "Shadow Flurry", "on foot, a lone healthy target: no flurry");
+    let mut w3 = World::new(vec![champ(FOE, 2, 480_000, 500_000)]);
+    w3.tick(Some(Order::S1 { aim: Point::new(475_000, 500_000) }));
+    w3.run(20);
+    w3.f.manual = false;
+    w3.core.cd = [u64::MAX / 2; 3];
+    w3.tick(None);
+    assert_eq!(w3.core.reason, "Shadow Flurry");
+    assert!(w3.core.flurry.is_some_and(|fl| fl.echo));
 }
 
 // ------------------------------------------------------------------ the bridge on the glue mock host

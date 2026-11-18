@@ -80,7 +80,7 @@ function draw(){
  const a=P(aim);ctx.strokeStyle='#fff';ctx.beginPath();ctx.moveTo(a.x-6,a.y);ctx.lineTo(a.x+6,a.y);ctx.moveTo(a.x,a.y-6);ctx.lineTo(a.x,a.y+6);ctx.stroke();
  $('pips').textContent='◆'.repeat(state.charges??5)+'◇'.repeat(R.charges.max-(state.charges??5));
  const ult=Math.max(0,((state.ult_at||0)-tick)/60);
- $('state').textContent=`HP ${Math.round(me.hp)}/${me.max_hp}  ult ${ult.toFixed(1)} s\nS1 ${(Math.max(0,(state.cd?.[0]||0)-tick)/60).toFixed(1)} s  S2 ${(Math.max(0,(state.cd?.[1]||0)-tick)/60).toFixed(1)} s  S3 ${(Math.max(0,(state.cd?.[2]||0)-tick)/60).toFixed(1)} s\nprojected: ${!!state.proj}  flurry: ${!!state.flurry}  primed: ${tick<(state.primed_until||0)}\nrhythm stacks (focus): ${state.focus?state.focus[1]:0}\nAI: ${state.reason||'-'}`;
+ $('state').textContent=`HP ${Math.round(me.hp)}/${me.max_hp}  ult ${ult.toFixed(1)} s\nS1 ${(Math.max(0,(state.cd?.[0]||0)-tick)/60).toFixed(1)} s  S2 ${(Math.max(0,(state.cd?.[1]||0)-tick)/60).toFixed(1)} s  S3 ${(Math.max(0,(state.cd?.[2]||0)-tick)/60).toFixed(1)} s\nprojected: ${!!state.proj}  flurry: ${!!state.flurry}  echoing flurry: ${!!state.flurry?.echo}\nrhythm stacks (focus): ${state.focus?state.focus[1]:0}\nAI: ${state.reason||'-'}`;
 }
 const orderFor=k=>({q:{kind:'s1',aim:round(aim)},e:{kind:'s2',aim:round(aim)},c:{kind:'s3',aim:round(aim)},r:{kind:'ult'},f:{kind:'end'}})[k];
 let queued=null;

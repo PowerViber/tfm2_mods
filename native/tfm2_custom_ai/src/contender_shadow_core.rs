@@ -6,7 +6,7 @@
 //!      of his, on anything, takes 1 s off the ult's cooldown.
 //!   P2 Shadow Pact: every punch and skill hits again 1 s later for 40%, its crowd control halved (at most 1.5 s more per
 //!      target every 6 s). Recast hits, and every hit while projected, echo twice. The ult's punches echo only when
-//!      primed (S2 cast from the projected shadow).
+//!      it is cast while his shadow is projected (`contender-2.1`, Reihan).
 //!   P3 Shadow Rhythm: each hit stacks on its target (10 max, 4 s). The most-stacked enemy gives him attack speed,
 //!      Attack and move speed per stack and takes more damage from him per stack. A max-stacked creep carries 4 stacks
 //!      onto the next champion he hits; a stacked kill keeps the buffs 5 s longer.
@@ -328,6 +328,9 @@ pub struct Flurry {
     pub last: Option<(usize, Point)>,
     pub knock_next: u64,
     pub vanished_at: Point,
+    /// cast while his shadow was projected: every punch echoes
+    #[serde(default)]
+    pub echo: bool,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
@@ -351,7 +354,6 @@ pub struct Core {
     pub cleaves: Vec<Cleave>,
     pub cyclone_spot: Option<Point>,
     pub slammed: Option<usize>,
-    pub primed_until: u64,
     pub flurry: Option<Flurry>,
     pub haymaker_until: u64,
     pub echoes: Vec<Echo>,
@@ -380,7 +382,6 @@ impl Default for Core {
             cleaves: vec![],
             cyclone_spot: None,
             slammed: None,
-            primed_until: 0,
             flurry: None,
             haymaker_until: 0,
             echoes: vec![],
@@ -527,7 +528,7 @@ impl Core {
         self.ult_at = self.ult_at.saturating_sub(t(d::ULT_CUT_PER_HIT_TICKS));
         let echoes = match src {
             Src::Echo => 0,
-            Src::Flurry => i64::from(f.tick < self.primed_until),
+            Src::Flurry => i64::from(self.flurry.is_some_and(|fl| fl.echo)),
             Src::Recast => 2,
             _ if self.proj.is_some() => 2,
             _ => 1,
@@ -799,9 +800,6 @@ impl Core {
         self.cd[1] = f.tick + t(d::CYCLONE_COOLDOWN_TICKS);
         self.window[1] = f.tick + t(d::CHARGES_RECAST_WINDOW_TICKS);
         self.cyclone_spot = Some(spot);
-        if self.proj.is_some() {
-            self.primed_until = f.tick + t(d::CYCLONE_PRIME_TICKS);
-        }
         self.cleaves.push(Cleave {
             at: spot,
             next: f.tick + t(d::CYCLONE_EVERY_TICKS),
@@ -906,16 +904,20 @@ impl Core {
     // -------------------------------------------------------------- Ult Shadow Flurry
 
     fn vanish(&mut self, f: &Frame, out: &mut Vec<Effect>) {
-        let Some(first) = Self::targets_near(f, f.pos, d::ULT_START_RANGE).first().cloned() else {
+        // projected, the flurry starts where his shadow is fighting
+        let from = self.origin(f);
+        let Some(first) = Self::targets_near(f, from, d::ULT_START_RANGE).first().cloned() else {
             return self.reject("ult: nothing in reach");
         };
-        if self.proj.is_some() {
+        // cast from the projection: the shadow's echoes ride the whole flurry (the projection itself ends here)
+        let echo = self.proj.is_some();
+        if echo {
             self.end_projection(f, out);
         }
         self.ult_at = f.tick + t(d::ULT_COOLDOWN_TICKS);
         self.charges = d::CHARGES_MAX;
         self.charge_at = 0;
-        self.flurry = Some(Flurry { start: f.tick, next: f.tick + 6, done: 0, first: first.id, last: None, knock_next: f.tick + t(d::ULT_KNOCK_EVERY_TICKS), vanished_at: f.pos });
+        self.flurry = Some(Flurry { start: f.tick, next: f.tick + 6, done: 0, first: first.id, last: None, knock_next: f.tick + t(d::ULT_KNOCK_EVERY_TICKS), vanished_at: from, echo });
         out.push(Effect::Vanish { ticks: 3 });
         out.push(Effect::Fx { name: "ct_vanish".into(), at: f.pos, ticks: 24 });
     }
@@ -1041,9 +1043,9 @@ impl Core {
         // the fight
         if let Some(u) = self.pick(f) {
             let dist = u.pos.dist(o) as i64;
-            if self.ult_ready(f) && u.pos.within(f.pos, d::ULT_START_RANGE) {
+            if self.ult_ready(f) && u.pos.within(o, d::ULT_START_RANGE) {
                 let group = f.enemy_champions().filter(|v| v.pos.within(u.pos, d::ULT_CHAIN_RANGE)).count();
-                if group >= 2 || Self::hurt_pct(&u) < d::AI_COMMIT_HP_PCT || f.tick < self.primed_until {
+                if group >= 2 || Self::hurt_pct(&u) < d::AI_COMMIT_HP_PCT || self.proj.is_some_and(|p| u.pos.within(p.pos, d::ULT_CHAIN_RANGE)) {
                     self.reason = "Shadow Flurry".into();
                     return Some(Order::Ult);
                 }
@@ -1089,7 +1091,7 @@ impl Core {
                     self.reason = "Farm: project onto the camp".into();
                     return Some(Order::S1 { aim: m.pos });
                 }
-                if self.ult_ready(f) && m.max_hp >= 2 * d::AI_FARM_BIG_HP && m.pos.within(f.pos, d::ULT_START_RANGE) {
+                if self.ult_ready(f) && m.max_hp >= 2 * d::AI_FARM_BIG_HP && m.pos.within(o, d::ULT_START_RANGE) {
                     self.reason = "Farm: Shadow Flurry on a big camp".into();
                     return Some(Order::Ult);
                 }

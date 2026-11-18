@@ -18,6 +18,14 @@
   - **Old careers:** they keep their round-176 data. Its `contender_basic` and `contender_ultimate` refs still resolve, as a plain basic and the shared ult marker.
 - **The champion template:** the other generators read `tools/native-champion-template.json` (a frozen copy of the old data shell) instead of Contender's data file. All their outputs are unchanged (`--check`).
 
+## `contender-2.1`: the ult's echoes come from the projection (Reihan)
+"the ult echo is triggered when contender is in projection mode, not on cyclone".
+- **Old rule:** Shadow Cyclone cast from the projected shadow primed the ult for 8 s.
+- **New rule:** the flurry echoes every punch when it's **cast while his shadow is projected**. It then starts at the shadow (the target nearest it), and the projection ends as he vanishes. Cast on foot, there are no echoes.
+- **Cyclone:** it primes nothing now (`cyclone.primeTicks` is removed).
+- **The AI:** it also casts the ult on a lone champion by the projected shadow, for the echoes.
+- **Tests:** three new or changed: the projected flurry echoes every punch and starts at the shadow, S2 no longer primes, and the AI flurries from the projection.
+
 ## Merged with main
 - **Codex's Basalt continuity fix:** PR #90 (Basalt effect continuity) merged into `main` first and took 0.10.112 / 0.2.115, so this round moved to 0.10.113 / 0.2.116.
 - **The DLL:** rebuilt from the merged source, so it carries both #90's fix and this rework.
