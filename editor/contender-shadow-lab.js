@@ -50,7 +50,7 @@ function apply(e){const u=actor(e.target);switch(e.kind){
  case 'move_shadow':if(shadow)glide(99,e.to,e.ticks);break;case 'despawn_shadow':shadow=null;glides.delete(99);break;
  case 'self_damage':me.hp=Math.max(0,me.hp-e.amount);if(!me.hp)me.deadAt=tick;log('Shadow relay '+e.amount);break;
  case 'rhythm':flags.rhythm=e;flags.rhythmUntil=tick+e.ticks;break;case 'charges':flags.charges=e.count;break;case 'steer':flags.walk=e.to;break;
- case 'fx':{if(e.name==='ct_shadow')break;const tag=e.name.replace('ct_','')+'_t'+e.ticks+(me.pos.x>e.at.x?'_l':'');if(!painter.data.effects.anims[tag])throw Error('Unbound cue '+tag);fx.push({tag,at:{...e.at},start:tick,until:tick+e.ticks});break;}
+ case 'fx':{if(e.name==='ct_shadow')break;const tag=e.name==='ct_flurry'&&e.heading!==undefined?`flurry_d${e.heading%8}_t${e.ticks}`:e.name.replace('ct_','')+'_t'+e.ticks+(me.pos.x>e.at.x?'_l':'');if(!painter.data.effects.anims[tag])throw Error('Unbound cue '+tag);fx.push({tag,at:{...e.at},start:tick,until:tick+e.ticks});break;}
 }}
 function stepWorld(order){
  scene.refreshVisibility(me,units);if(tick>=flags.rhythmUntil)flags.rhythm=null;

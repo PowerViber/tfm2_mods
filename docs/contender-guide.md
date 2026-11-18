@@ -1,8 +1,8 @@
-# Contender, the Shadow Boxer (`contender-2.1`)
+# Contender, the Shadow Boxer (`contender-2.2`)
 
 Reihan's rework (round 178): Contender is a literal **shadow boxer**. His shadow steps off him and fights, and his shadow charges let the shadow recast any skill, stronger. The old kit is retired: Combination / Body Shot / Uppercut, Slip / Guard, stamina and the Main Event ring.
 
-Category **Melee**, tags AD / Melee / CC. Basic attack **Jab / Cross** (23,000). Every number lives in `rules/contender.json`. `tools/generate-contender.py` writes the Rust table, the champion data, the tooltips, the editor data and the roster entry (`--check` only verifies). The body art is unchanged; the shadow effects are placeholders until Codex's art (`docs/contender-shadow-art-handoff.md`).
+Category **Melee**, tags AD / Melee / CC. Basic attack **Jab / Cross** (23,000). Every number lives in `rules/contender.json`. `tools/generate-contender.py` writes the Rust table, the champion data, the tooltips, the editor data and the roster entry (`--check` only verifies). The approved hooded shadow-boxer body and effects are integrated; see `docs/contender-shadow-review/README.md`.
 
 ## Passives
 - **Shadows (charges and recasts):**
@@ -27,7 +27,7 @@ Category **Melee**, tags AD / Melee / CC. Basic attack **Jab / Cross** (23,000).
 | S1 **Shadow Projection** (12 s) | His body holds still and can't be hurt, and his shadow is launched up to **100,000**. For **5 s** it fights as him: it boxes, and S2 and S3 come from it. **70%** of the damage it takes reaches him; if it falls, that's 70% of his max HP. | His body **swaps** to the shadow, and the shadow's **cross** (from where he stood) knocks the nearest enemy back 20,000. |
 | S2 **Shadow Cyclone** (8 s) | A shadow clone cleaves a **25,000** circle at a spot within **60,000**: 4 hits and a slow. It can't be hit. | **He goes there** and cleaves **7 hits**, invulnerable; the last hit knocks up. |
 | S3 **Slam & Uppercut** (10 s) | He grabs an enemy within 20,000 and **slams** it: a stun, plus an impact ring. | An **uppercut** knock-up. From the projection it **launches the target toward his body**. |
-| Ult **Shadow Flurry** (120 s; not recastable) | He's **unseen and unhurt for 5 s**, and his charges refill. **Cast while projected**, it starts at his shadow and **every punch echoes** (the projection ends as he vanishes). **36 punches** start slow and speed up, each chained to an enemy within 30,000 of the last one hit (creeps too). Every second the last enemy hit is knocked up. The flurry ends early when nothing is in reach, and he reappears beside the last enemy hit with a **haymaker** ready (his next basic within 2 s). | — |
+| Ult **Shadow Flurry** (120 s; not recastable) | He's **unseen and unhurt for 5 s**, and his charges refill. **Cast while projected**, it starts at his shadow and **every punch echoes** (the projection ends as he vanishes). **36 punches** start slow and speed up, each chained to an enemy within 30,000 of the last one hit (creeps and summons too). **Each punch prefers a different eligible enemy**; it repeats the last victim only when no alternative is in reach. Every second the last enemy hit is knocked up. The flurry ends early when nothing is in reach, and he reappears beside the last enemy hit with a **haymaker** ready (his next basic within 2 s). | — |
 
 **The engage:** S1 projects the shadow onto the target. S2 from the shadow cleaves while untouchable and builds stacks. Then either:
 - **Pick:** S3 slams, and the recast uppercuts the target back to his body; or

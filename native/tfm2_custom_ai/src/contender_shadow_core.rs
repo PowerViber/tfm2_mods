@@ -247,7 +247,14 @@ pub enum Effect {
     Charges { count: i64 },
     /// a purposeful walk the shared input AI turns into a move order
     Steer { to: Point },
-    Fx { name: String, at: Point, ticks: u64 },
+    Fx {
+        name: String,
+        at: Point,
+        ticks: u64,
+        /// Optional presentation heading: clockwise eighth-turns from east.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        heading: Option<u8>,
+    },
     Log { text: String },
 }
 
@@ -588,7 +595,7 @@ impl Core {
         for e in due {
             if let Some(u) = f.unit(e.target).filter(|u| f.skill_target(u)).cloned() {
                 self.hit(f, &u, e.amount, e.cc, Src::Echo, true, out);
-                out.push(Effect::Fx { name: "ct_echo".into(), at: u.pos, ticks: 12 });
+                out.push(Effect::Fx { name: "ct_echo".into(), at: u.pos, ticks: 12, heading: None });
             }
         }
     }
@@ -605,7 +612,7 @@ impl Core {
             self.haymaker_until = 0;
             let amount = pct(d::ULT_HAYMAKER_BASE, d::ULT_HAYMAKER_AD_RATIO, f.attack);
             self.hit(f, u, amount, Some(Cc::Stun(t(d::ULT_HAYMAKER_STUN_TICKS))), Src::Skill, true, out);
-            out.push(Effect::Fx { name: "ct_haymaker".into(), at: u.pos, ticks: 18 });
+            out.push(Effect::Fx { name: "ct_haymaker".into(), at: u.pos, ticks: 18, heading: None });
         }
     }
     fn charge_cut(&mut self) {
@@ -720,7 +727,7 @@ impl Core {
         let launch = ((f.pos.dist(to) as i64 / d::PROJECTION_LAUNCH_SPEED.max(1)) as u64).max(1);
         out.push(Effect::MoveShadow { to, ticks: launch });
         out.push(Effect::Hold { ticks: 3 });
-        out.push(Effect::Fx { name: "ct_launch".into(), at: f.pos, ticks: 18 });
+        out.push(Effect::Fx { name: "ct_launch".into(), at: f.pos, ticks: 18, heading: None });
         self.proj = Some(Projection { until: f.tick + ticks, pos: to, shadow_hp: f.max_hp, spawned: false, next_basic: f.tick + launch });
     }
 
@@ -741,7 +748,7 @@ impl Core {
             None if p.spawned => {
                 // it fell: the rest of its HP comes through the relay
                 out.push(Effect::SelfDamage { amount: p.shadow_hp.max(0) * d::PROJECTION_RELAY_PCT / 100 });
-                out.push(Effect::Fx { name: "ct_appear".into(), at: f.pos, ticks: 18 });
+                out.push(Effect::Fx { name: "ct_appear".into(), at: f.pos, ticks: 18, heading: None });
                 self.proj = None;
                 return;
             }
@@ -756,7 +763,7 @@ impl Core {
                 self.proj = Some(p);
                 self.hit(f, &u, f.attack, None, Src::Basic, true, out);
                 self.charge_cut();
-                out.push(Effect::Fx { name: "ct_cross".into(), at: u.pos, ticks: 10 });
+                out.push(Effect::Fx { name: "ct_cross".into(), at: u.pos, ticks: 10, heading: None });
                 return;
             }
         }
@@ -769,7 +776,7 @@ impl Core {
     fn end_projection(&mut self, f: &Frame, out: &mut Vec<Effect>) {
         if let Some(p) = self.proj.take() {
             out.push(Effect::DespawnShadow);
-            out.push(Effect::Fx { name: "ct_appear".into(), at: p.pos, ticks: 12 });
+            out.push(Effect::Fx { name: "ct_appear".into(), at: p.pos, ticks: 12, heading: None });
             let _ = f;
         }
     }
@@ -781,14 +788,14 @@ impl Core {
         out.push(Effect::DespawnShadow);
         out.push(Effect::Invulnerable { ticks: 15 });
         out.push(Effect::Teleport { to });
-        out.push(Effect::Fx { name: "ct_swap".into(), at: to, ticks: 18 });
-        out.push(Effect::Fx { name: "ct_swap".into(), at: f.pos, ticks: 18 });
+        out.push(Effect::Fx { name: "ct_swap".into(), at: to, ticks: 18, heading: None });
+        out.push(Effect::Fx { name: "ct_swap".into(), at: f.pos, ticks: 18, heading: None });
         if let Some(u) = Self::targets_near(f, f.pos, d::PROJECTION_CROSS_RADIUS).first().cloned() {
             let dir = unit_dir(f.pos, u.pos);
             let knock = f.clear_path(u.pos, u.pos.along(dir, d::PROJECTION_CROSS_KNOCK));
             self.hit(f, &u, pct(d::PROJECTION_CROSS_BASE, d::PROJECTION_CROSS_AD_RATIO, f.attack), None, Src::Recast, true, out);
             out.push(Effect::Knock { target: u.id, to: knock, ticks: t(d::PROJECTION_CROSS_KNOCK_TICKS) });
-            out.push(Effect::Fx { name: "ct_cross".into(), at: u.pos, ticks: 18 });
+            out.push(Effect::Fx { name: "ct_cross".into(), at: u.pos, ticks: 18, heading: None });
         }
     }
 
@@ -809,7 +816,7 @@ impl Core {
             ratio: d::CYCLONE_AD_RATIO,
             recast: false,
         });
-        out.push(Effect::Fx { name: "ct_shadow".into(), at: spot, ticks: t(d::CYCLONE_HITS * d::CYCLONE_EVERY_TICKS) + 6 });
+        out.push(Effect::Fx { name: "ct_shadow".into(), at: spot, ticks: t(d::CYCLONE_HITS * d::CYCLONE_EVERY_TICKS) + 6, heading: None });
     }
 
     fn cyclone_recast(&mut self, f: &Frame, out: &mut Vec<Effect>) {
@@ -843,7 +850,7 @@ impl Core {
             c.left -= 1;
             c.next = f.tick + c.every;
             let last = c.left == 0;
-            out.push(Effect::Fx { name: "ct_cleave".into(), at: c.at, ticks: c.every + 2 });
+            out.push(Effect::Fx { name: "ct_cleave".into(), at: c.at, ticks: c.every + 2, heading: None });
             for u in Self::targets_near(f, c.at, d::CYCLONE_RADIUS) {
                 let cc = if c.recast {
                     last.then_some(Cc::KnockUp(t(d::CYCLONE_RECAST_KNOCK_TICKS)))
@@ -874,7 +881,7 @@ impl Core {
         self.window[2] = f.tick + t(d::CHARGES_RECAST_WINDOW_TICKS);
         self.slammed = Some(u.id);
         self.hit(f, &u, pct(d::SLAM_BASE, d::SLAM_AD_RATIO, f.attack), Some(Cc::Stun(t(d::SLAM_STUN_TICKS))), Src::Skill, true, out);
-        out.push(Effect::Fx { name: "ct_slam".into(), at: u.pos, ticks: 20 });
+        out.push(Effect::Fx { name: "ct_slam".into(), at: u.pos, ticks: 20, heading: None });
         let ring = pct(d::SLAM_BASE, d::SLAM_AD_RATIO, f.attack) * d::SLAM_RING_PCT / 100;
         for v in Self::targets_near(f, u.pos, d::SLAM_RING_RADIUS).into_iter().filter(|v| v.id != u.id) {
             self.hit(f, &v, ring, None, Src::Skill, true, out);
@@ -889,7 +896,7 @@ impl Core {
             return self.reject("s3 recast: target gone");
         };
         self.hit(f, &u, pct(d::SLAM_UPPERCUT_BASE, d::SLAM_UPPERCUT_AD_RATIO, f.attack), Some(Cc::KnockUp(t(d::SLAM_KNOCK_TICKS))), Src::Recast, true, out);
-        out.push(Effect::Fx { name: "ct_uppercut".into(), at: u.pos, ticks: 20 });
+        out.push(Effect::Fx { name: "ct_uppercut".into(), at: u.pos, ticks: 20, heading: None });
         if self.proj.is_some() {
             // launched toward his rooted body, landing just short of it, never through terrain
             let gap = u.pos.dist(f.pos) as i64;
@@ -919,7 +926,12 @@ impl Core {
         self.charge_at = 0;
         self.flurry = Some(Flurry { start: f.tick, next: f.tick + 6, done: 0, first: first.id, last: None, knock_next: f.tick + t(d::ULT_KNOCK_EVERY_TICKS), vanished_at: from, echo });
         out.push(Effect::Vanish { ticks: 3 });
-        out.push(Effect::Fx { name: "ct_vanish".into(), at: f.pos, ticks: 24 });
+        out.push(Effect::Fx { name: "ct_vanish".into(), at: f.pos, ticks: 24, heading: None });
+    }
+
+    /// Read-only visual sequence: covers every direction without combat RNG.
+    pub fn flurry_heading(owner: usize, punch: i64) -> u8 {
+        ((owner % 8 + 3 * punch.rem_euclid(8) as usize) % 8) as u8
     }
 
     /// the gap before punch `k` (0-based): slow at first, fast at the end
@@ -936,7 +948,13 @@ impl Core {
         while !over && f.tick >= fl.next && fl.done < d::ULT_PUNCHES {
             let pick = match fl.last {
                 None => f.unit(fl.first).filter(|u| f.skill_target(u)).cloned(),
-                Some((_, at)) => Self::targets_near(f, at, d::ULT_CHAIN_RANGE).into_iter().next(),
+                Some((last, at)) => {
+                    let nearby = Self::targets_near(f, at, d::ULT_CHAIN_RANGE);
+                    // The last victim is usually distance zero. Prefer another
+                    // eligible enemy before applying the existing deterministic
+                    // champion/distance/id ordering; retain the solo-target fallback.
+                    nearby.iter().find(|u| u.id != last).or_else(|| nearby.first()).cloned()
+                }
             };
             let Some(u) = pick else {
                 over = true;
@@ -945,7 +963,7 @@ impl Core {
             self.flurry = Some(fl);
             self.hit(f, &u, pct(d::ULT_BASE, d::ULT_AD_RATIO, f.attack), None, Src::Flurry, true, out);
             fl = self.flurry.unwrap_or(fl);
-            out.push(Effect::Fx { name: "ct_flurry".into(), at: u.pos, ticks: 8 });
+            out.push(Effect::Fx { name: "ct_flurry".into(), at: u.pos, ticks: 8, heading: Some(Self::flurry_heading(f.owner, fl.done)) });
             fl.last = Some((u.id, u.pos));
             fl.next += Self::flurry_gap(fl.done);
             fl.done += 1;
@@ -964,7 +982,7 @@ impl Core {
             if let Some(p) = back {
                 let to = f.nearest_ground(p.toward(fl.vanished_at, 10_000));
                 out.push(Effect::Teleport { to });
-                out.push(Effect::Fx { name: "ct_appear".into(), at: to, ticks: 18 });
+                out.push(Effect::Fx { name: "ct_appear".into(), at: to, ticks: 18, heading: None });
             }
             self.haymaker_until = f.tick + t(d::ULT_HAYMAKER_TICKS);
             return;

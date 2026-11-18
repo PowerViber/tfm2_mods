@@ -116,6 +116,7 @@ pub struct Contender {
     pub shadow: Option<usize>,
     shadow_drawn: u64,
     shadow_art: bool,
+    shadow_directions: bool,
     shadow_last: Option<Point>,
     shadow_punch_until: u64,
     cyclone_drawn: Option<(Point, u64)>,
@@ -353,7 +354,7 @@ impl Contender {
                     remove_prefix(sim, owner, GO_PREFIX);
                     sim.add_buff(owner, &crate::timed(&format!("{GO_PREFIX}{}:{}", to.x, to.y), 6));
                 }
-                Effect::Fx { name, at, ticks } => {
+                Effect::Fx { name, at, ticks, heading } => {
                     if name == "ct_cross" && ticks == 10 && self.shadow.is_some() {
                         self.shadow_punch_until = tick + ticks;
                     }
@@ -364,7 +365,9 @@ impl Contender {
                         sim.add_buff(owner, &crate::timed(&format!("{ZONE_PREFIX}{}:{}:{}:{until}", at.x, at.y, d::CYCLONE_RADIUS), ticks as usize));
                     }
                     if !(self.shadow_art && name == "ct_shadow") && self.fx_ok(tick) {
-                        let visual = if self.shadow_art {
+                        let visual = if self.shadow_art && self.shadow_directions && name == "ct_flurry" && heading.is_some() {
+                            format!("ct_flurry_d{}_t{ticks}", heading.unwrap_or(0) % 8)
+                        } else if self.shadow_art {
                             let left = sim.get_entity(owner).is_some_and(|e| (e.pos().0 as i64) > at.x);
                             format!("{name}_t{ticks}{}", if left { "_l" } else { "" })
                         } else { name };
@@ -419,6 +422,8 @@ impl StablePassive for Contender {
     fn configure(&mut self, params: &str) {
         self.shadow_art = serde_json::from_str::<serde_json::Value>(params).ok()
             .and_then(|v| v.get("shadow_art_v1").and_then(|n| n.as_i64())) == Some(1);
+        self.shadow_directions = serde_json::from_str::<serde_json::Value>(params).ok()
+            .and_then(|v| v.get("shadow_directions_v1").and_then(|n| n.as_i64())) == Some(1);
     }
     fn clone_box(&self) -> Box<dyn StablePassive> {
         Box::new(self.clone())

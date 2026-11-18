@@ -56,7 +56,8 @@ text = {
     'ult': (f"Shadow Flurry ({sec(ul['cooldownTicks'])}): he melts into the ground, untargetable and unhurt for {sec(ul['ticks'])}, and his "
             f"shadow charges refill. His shadows strike the enemy nearest him, or his projected shadow (within {ul['startRange']}), then chain {ul['punches']} punches, "
             f"slow at first and faster at the end, each onto an enemy within {ul['chainRange']} of the last one hit ({ul['base']} + "
-            f"{ul['adRatio']}% Attack). Cast while his shadow is projected, every punch echoes. Every second the last enemy hit is knocked up. With nothing left in reach the flurry ends early. He "
+            f"{ul['adRatio']}% Attack). Each punch prefers a different eligible enemy; it repeats the last target only when no alternative is in reach. "
+            f"Cast while his shadow is projected, every punch echoes. Every second the last enemy hit is knocked up. With nothing left in reach the flurry ends early. He "
             f"reappears beside the last enemy hit, and his next basic within {sec(ul['haymakerTicks'])} is a haymaker "
             f"(+{ul['haymakerBase']} + {ul['haymakerAdRatio']}% Attack, a {sec(ul['haymakerStunTicks'])} stun). His skills never hit towers."),
 }
@@ -70,7 +71,7 @@ champ['attack'].update(duration=b['duration'], cooltime=b['cooldownTicks'], star
                        effect={'type': 'Attack', 'damage': 0, 'attack_ratio': 100})
 for slot in ['skill', 'skill2', 'ult']:
     champ[slot]['description'] = '#asset/base/text/champion?description.' + ID + '.' + slot
-champ['passive'] = {'passive_ref': 'tfm2_custom_ai:contender', 'params': {'shadow_art_v1': 1}}
+champ['passive'] = {'passive_ref': 'tfm2_custom_ai:contender', 'params': {'shadow_art_v1': 1, 'shadow_directions_v1': 1}}
 champ['passive_ult'] = {'passive_ref': 'tfm2_custom_ai:ult_learned', 'params': {}}
 # his shadow effects arrive with Codex's art (`docs/contender-shadow-art-handoff.md`); until then every name he plays is
 # bound to existing effects so the shadow, its cleaves, slams and the flurry are visible in a playtest

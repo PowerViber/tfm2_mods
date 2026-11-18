@@ -5007,7 +5007,7 @@
      "intents": [
       "Engage"
      ],
-     "summary": "Shadow Flurry (120 s): he melts into the ground, untargetable and unhurt for 5 s, and his shadow charges refill. His shadows strike the enemy nearest him, or his projected shadow (within 50000), then chain 36 punches, slow at first and faster at the end, each onto an enemy within 30000 of the last one hit (12 + 16% Attack). Cast while his shadow is projected, every punch echoes. Every second the last enemy hit is knocked up. With nothing left in reach the flurry ends early. He reappears beside the last enemy hit, and his next basic within 2 s is a haymaker (+60 + 80% Attack, a 0.5 s stun). His skills never hit towers."
+     "summary": "Shadow Flurry (120 s): he melts into the ground, untargetable and unhurt for 5 s, and his shadow charges refill. His shadows strike the enemy nearest him, or his projected shadow (within 50000), then chain 36 punches, slow at first and faster at the end, each onto an enemy within 30000 of the last one hit (12 + 16% Attack). Each punch prefers a different eligible enemy; it repeats the last target only when no alternative is in reach. Cast while his shadow is projected, every punch echoes. Every second the last enemy hit is knocked up. With nothing left in reach the flurry ends early. He reappears beside the last enemy hit, and his next basic within 2 s is a haymaker (+60 + 80% Attack, a 0.5 s stun). His skills never hit towers."
     }
    ]
   },

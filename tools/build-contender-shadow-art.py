@@ -59,11 +59,11 @@ effects=spec['effects'] if 'effects' in spec else spec['frames']
 parts={}
 for key,r in effects.items():
     parts[key]=concept.crop((r['x'],r['y'],r['x']+r['w'],r['y']+r['h']))
-fxsheet=Image.new('RGBA',(1024,1024));fxanims={};bindings=[];x=y=rowh=0
+fxsheet=Image.new('RGBA',(1024,2048));fxanims={};bindings=[];x=y=rowh=0
 def put(im):
     global x,y,rowh
     if x+im.width>1024:x=0;y+=rowh;rowh=0
-    assert y+im.height<=1024
+    assert y+im.height<=2048
     r=dict(x=x,y=y,w=im.width,h=im.height);fxsheet.alpha_composite(im,(x,y));x+=im.width;rowh=max(rowh,im.height);return r
 def pack(name,ims,ticks,z=5,follow=False):
     fxanims[name]={'frames':[dict(duration=ticks/60/len(ims),data=put(im)) for im in ims]}
@@ -107,10 +107,20 @@ for count in range(6):
     # Approved five-pip strip; reveal a proportional number of pips.
     marks.alpha_composite(p.crop((0,0,round(p.width*count/5),p.height)),(5,0))
     pack(f'charges{count}',[marks],60,6,True)
+# The approved fist travels into the contact point from eight directions. Its
+# contact landmark stays at the same world point; no full-body sprite is rotated.
+for heading in range(8):
+    seq=[]
+    for travel,alpha in [(-12,.65),(-6,1),(0,1),(0,.25)]:
+        frame=Image.new('RGBA',(128,128));fist=parts['flurry'].copy()
+        fist.putalpha(fist.getchannel('A').point(lambda a:round(a*alpha)))
+        frame.alpha_composite(fist,(64-48+travel,64-15))
+        seq.append(frame.rotate(-heading*45,resample=N))
+    pack(f'flurry_d{heading}_t8',seq,8,5)
 fxsheet=fxsheet.crop((0,0,1024,y+rowh))
 fxbase=ROOT/'mods/tfm2_custom/vfx/contender_shadow'
 fxsheet.save(str(fxbase)+'#sheet.png');Path(str(fxbase)+'#anim.fanim').write_text(json.dumps({'anims':fxanims},separators=(',',':'))+'\n')
-manifest={'revision':'contender-shadow-art-1','rules':'contender-2.0','canvas':[CW,CH],'foot_anchor':list(FOOT),
+manifest={'revision':'contender-shadow-art-2','rules':'contender-2.2','flurry_headings':8,'canvas':[CW,CH],'foot_anchor':list(FOOT),
  'body':{'file':'../mods/tfm2_custom/champions/tfm2_custom_contender#sheet.png','anims':anims},
  'effects':{'file':'../mods/tfm2_custom/vfx/contender_shadow#sheet.png','anims':fxanims},'bindings':bindings,
  'source_hashes':{p.name:sha(p) for p in [DOC/'body-source-v1.png',DOC/'body-animation-source-v1.png',DOC/'effects-source-v1.png']},

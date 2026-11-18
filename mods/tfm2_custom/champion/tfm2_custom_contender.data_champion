@@ -105,7 +105,8 @@
   "passive": {
     "passive_ref": "tfm2_custom_ai:contender",
     "params": {
-      "shadow_art_v1": 1
+      "shadow_art_v1": 1,
+      "shadow_directions_v1": 1
     }
   },
   "passive_ult": {
@@ -684,6 +685,70 @@
       "tag": "charges5",
       "z": 6,
       "is_follow": true
+    },
+    {
+      "type": "Animation",
+      "name": "ct_flurry_d0_t8",
+      "anim": "asset/tfm2_custom/vfx/contender_shadow",
+      "tag": "flurry_d0_t8",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_flurry_d1_t8",
+      "anim": "asset/tfm2_custom/vfx/contender_shadow",
+      "tag": "flurry_d1_t8",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_flurry_d2_t8",
+      "anim": "asset/tfm2_custom/vfx/contender_shadow",
+      "tag": "flurry_d2_t8",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_flurry_d3_t8",
+      "anim": "asset/tfm2_custom/vfx/contender_shadow",
+      "tag": "flurry_d3_t8",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_flurry_d4_t8",
+      "anim": "asset/tfm2_custom/vfx/contender_shadow",
+      "tag": "flurry_d4_t8",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_flurry_d5_t8",
+      "anim": "asset/tfm2_custom/vfx/contender_shadow",
+      "tag": "flurry_d5_t8",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_flurry_d6_t8",
+      "anim": "asset/tfm2_custom/vfx/contender_shadow",
+      "tag": "flurry_d6_t8",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_flurry_d7_t8",
+      "anim": "asset/tfm2_custom/vfx/contender_shadow",
+      "tag": "flurry_d7_t8",
+      "z": 5,
+      "is_follow": false
     }
   ],
   "view_projectiles": []

@@ -349,6 +349,81 @@ fn the_slam_stuns_and_rings_and_never_takes_a_tower() {
 
 // ------------------------------------------------------------------ Ult Shadow Flurry
 
+fn flurry_targets(w: &World) -> Vec<usize> {
+    // Ground-cast fixtures have no echoes or unrelated attacks, so each damage
+    // packet corresponds to exactly one accepted Flurry punch.
+    w.log.iter().filter_map(|(_, e)| match e { Effect::Damage { target, .. } => Some(*target), _ => None }).collect()
+}
+
+#[test]
+fn flurry_prefers_another_champion_instead_of_repeating_the_zero_distance_victim() {
+    let mut w = World::new(vec![champ(FOE, 2, 430_000, 500_000), champ(11, 2, 450_000, 500_000)]);
+    for u in &mut w.f.units { u.hp = 100_000; u.max_hp = 100_000; }
+    w.tick(Some(Order::Ult)); w.run(d::ULT_TICKS as u64);
+    let targets = flurry_targets(&w);
+    assert_eq!(targets.len(), d::ULT_PUNCHES as usize);
+    assert!(targets.windows(2).all(|pair| pair[0] != pair[1]), "{targets:?}");
+    assert!(targets.contains(&FOE) && targets.contains(&11));
+}
+
+#[test]
+fn flurry_switches_from_a_champion_to_an_eligible_creep_or_summon() {
+    for farmable in [false, true] {
+        let mut other = creep(30, 450_000, 500_000, 100_000);
+        other.farmable = farmable; // a summon need not be a farming target
+        let mut w = World::new(vec![champ(FOE, 2, 430_000, 500_000), other]);
+        w.unit(FOE).hp = 100_000; w.unit(FOE).max_hp = 100_000;
+        w.tick(Some(Order::Ult)); w.run(d::ULT_TICKS as u64);
+        let targets = flurry_targets(&w);
+        assert_eq!(targets.len(), d::ULT_PUNCHES as usize);
+        assert_eq!(&targets[..4], &[FOE, 30, FOE, 30]);
+        assert!(targets.windows(2).all(|pair| pair[0] != pair[1]));
+    }
+}
+
+#[test]
+fn flurry_repeats_only_when_other_candidates_are_ineligible_or_out_of_chain_range() {
+    let mut hidden = champ(12, 2, 431_000, 500_000); hidden.visible = false;
+    let mut untargetable = champ(13, 2, 432_000, 500_000); untargetable.targetable = false;
+    let mut dead = champ(14, 2, 433_000, 500_000); dead.hp = 0;
+    let mut tower = champ(15, 2, 434_000, 500_000); tower.tower = true; tower.champion = false;
+    let mut w = World::new(vec![champ(FOE, 2, 430_000, 500_000), champ(ALLY, 1, 431_000, 500_000), hidden, untargetable, dead, tower, champ(16, 2, 600_000, 500_000)]);
+    w.unit(FOE).hp = 100_000; w.unit(FOE).max_hp = 100_000;
+    w.tick(Some(Order::Ult)); w.run(d::ULT_TICKS as u64);
+    let targets = flurry_targets(&w);
+    assert_eq!(targets.len(), d::ULT_PUNCHES as usize);
+    assert!(targets.iter().all(|id| *id == FOE), "{targets:?}");
+}
+
+#[test]
+fn flurry_alternative_ties_are_deterministic_under_snapshot_reordering() {
+    let mut units = vec![champ(FOE, 2, 430_000, 500_000), champ(12, 2, 450_000, 490_000), champ(11, 2, 450_000, 510_000)];
+    for u in &mut units { u.hp = 100_000; u.max_hp = 100_000; }
+    let mut a = World::new(units.clone()); units.reverse(); let mut b = World::new(units);
+    for w in [&mut a, &mut b] { w.tick(Some(Order::Ult)); w.run(d::ULT_TICKS as u64); }
+    let targets = flurry_targets(&a);
+    assert_eq!(&targets[..2], &[FOE, 11]);
+    assert_eq!(targets, flurry_targets(&b));
+    assert!(targets.windows(2).all(|pair| pair[0] != pair[1]));
+}
+
+#[test]
+fn flurry_visuals_cover_eight_directions_without_changing_punch_count_or_cadence() {
+    let mut w = World::new(vec![champ(FOE, 2, 430_000, 500_000)]);
+    w.unit(FOE).hp = 100_000; w.unit(FOE).max_hp = 100_000;
+    w.tick(Some(Order::Ult)); w.run(d::ULT_TICKS as u64);
+    let cues: Vec<_> = w.log.iter().filter_map(|(tick,e)|match e {
+        Effect::Fx { name, ticks, heading: Some(h), .. } if name=="ct_flurry" => Some((*tick,*ticks,*h)), _=>None }).collect();
+    assert_eq!(cues.len(), d::ULT_PUNCHES as usize);
+    let mut directions = std::collections::BTreeSet::new();
+    for (i, (_, life, h)) in cues.iter().enumerate() {
+        assert_eq!(*life,8); assert_eq!(*h,Core::flurry_heading(ME,i as i64)); directions.insert(*h);
+        if i>0 { assert_eq!(cues[i].0-cues[i-1].0,Core::flurry_gap(i as i64-1)); }
+    }
+    assert_eq!(directions.len(),8);
+    assert_eq!(flurry_targets(&w).len(),cues.len(),"one damage packet per punch");
+}
+
 #[test]
 fn the_flurry_vanishes_him_chains_36_accelerating_punches_and_brings_him_back_by_the_last() {
     let mut w = World::new(vec![champ(FOE, 2, 430_000, 500_000), champ(11, 2, 450_000, 500_000), creep(30, 470_000, 500_000, 90_000)]);
@@ -470,6 +545,7 @@ fn the_ai_flurries_from_the_projection_on_a_lone_healthy_target() {
 
 mod glue {
     use crate::contender::Contender;
+    use crate::contender_shadow_core::{Effect, Point};
     use crate::glue_tests::{open_spot, with_sim, Host, Unit as HostUnit};
     use mod_api_stable::{AttackTypeV1, CcKindV1, EntityKindV1 as K, StablePassive};
     use std::cell::RefCell;
@@ -485,6 +561,26 @@ mod glue {
     }
 
     #[test]
+    fn directional_flurry_cues_bind_all_eight_headings_without_damage_or_control() {
+        let _guard = crate::walls::TEST_LOCK.lock();
+        let (x,y)=open_spot(90_000);
+        for directions in [false,true] {
+            let host=Host::new(vec![champ(0,(x,y),"tfm2_custom_contender")]);
+            host.borrow_mut().tick=100;host.borrow_mut().record_view_effects=true;
+            let mut c=Contender::default();
+            c.configure(if directions {r#"{"shadow_art_v1":1,"shadow_directions_v1":1}"#} else {r#"{"shadow_art_v1":1}"#});
+            let cues=(0..8).map(|h|Effect::Fx{name:"ct_flurry".into(),at:Point::new(x as i64,y as i64),ticks:8,heading:Some(h)}).collect();
+            with_sim(&host,|sim|c.apply(sim,0,cues));
+            let h=host.borrow();assert_eq!(h.view_effects.len(),8);
+            for (i,(name,_,_,life)) in h.view_effects.iter().enumerate() {
+                assert_eq!(*life,8);
+                assert_eq!(name,&if directions {format!("ct_flurry_d{i}_t8")} else {"ct_flurry_t8".to_owned()});
+            }
+            assert!(h.damage.is_empty()&&h.moves.is_empty()&&h.ccs[0].is_empty());
+        }
+    }
+
+    #[test]
     fn shadow_art_preserves_core_damage_movement_and_control_on_the_host() {
         let _guard = crate::walls::TEST_LOCK.lock();
         let (x, y) = open_spot(120_000);
@@ -492,7 +588,7 @@ mod glue {
             let host = Host::new(vec![champ(0, (x, y), "tfm2_custom_contender"), champ(1, (x + 70_000, y), "fighter")]);
             host.borrow_mut().record_view_effects = true;
             let mut c = Contender::default();
-            c.configure(if art { r#"{"shadow_art_v1":1}"# } else { "{}" });
+            c.configure(if art { r#"{"shadow_art_v1":1,"shadow_directions_v1":1}"# } else { "{}" });
             with_sim(&host, |sim| c.on_spawn(sim, 0, 0));
             let mut trace = Vec::new();
             for tick in 100..400 {
