@@ -559,14 +559,14 @@ crate::unlocks::ult_unlocked(f.level, f.ult_unlocked) && self.bank >= d::ULT_BAN
         if src != Src::Echo {
             self.add_stacks(f, u, out);
         }
-        let flurryish = matches!(src, Src::Flurry | Src::Copy(true));
-        if !flurryish && !(src == Src::Echo && self.flurry.is_some()) {
+        // contender-2.6: only his own direct hits bank (basics, skills, recasts), never echoes, copies or the flurry
+        if matches!(src, Src::Basic | Src::Skill | Src::Recast) {
             self.bank = (self.bank + 1).min(d::ULT_BANK_MAX);
         }
         let echoes = match src {
             Src::Echo | Src::Copy(_) => 0,
             Src::Flurry => i64::from(self.flurry.is_some_and(|fl| fl.echo)),
-            Src::Recast => 2,
+            Src::Recast => 1, // contender-2.6: recasts echo once, like any hit
             _ if self.merged(f.tick) => 2,
             _ => 1,
         };
@@ -994,9 +994,7 @@ crate::unlocks::ult_unlocked(f.level, f.ult_unlocked) && self.bank >= d::ULT_BAN
                 out.push(Effect::Teleport { to });
                 out.push(Effect::Fx { name: "ct_appear".into(), at: to, ticks: 18, heading: None });
             }
-            // he comes back with his dodges full
-            self.charges = self.charges.max(d::CHARGES_MAX);
-            self.charge_at = 0;
+            // contender-2.6: his dodges no longer refill when he comes back
             self.haymaker_until = f.tick + t(d::ULT_HAYMAKER_TICKS);
             return;
         }

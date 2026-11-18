@@ -4098,3 +4098,15 @@ Native 0.10.112 / custom 0.2.115, art basalt-art-6, gameplay remains basalt-1.4.
   - Coder: his AI copilot ult waits for 5.
   - Vesper is passive only.
 - **Watch for:** do the AIs still farm and fight sensibly at levels 1-2 with fewer skills; does anything still cast a locked skill.
+
+## Nov 18: round 181 (native 0.10.116, tfm2_custom 0.2.119), `contender-2.6`: heavy Contender nerf
+- **Report:** 2.5 was "still too strong, like really really strong".
+- **Measured (AI, 1v2, 20 s):**
+  - damage 2.84x / 3.63x a plain champion's basics -> 1.78x / 1.91x (levels 3 / 9);
+  - enemy hits dodged 68% -> 32%.
+- **Changes:**
+  - **Dodges:** 3 dodges every 10 s; Merge gives +1 with no faster recharge; the ult no longer refills dodges.
+  - **Ult bank:** only his own hits bank (echoes and Tether copies don't), so the ult comes far less often.
+  - **Echoes:** 15%, and recasts echo once.
+  - **Skills:** Cyclone recast 3 hits; Tether copies 10%; skill, cross, yank, flurry and haymaker damage all lower.
+- **Watch for:** is he now too weak; how often he gets his ult (40 of his own hits).

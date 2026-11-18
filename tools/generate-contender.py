@@ -1,6 +1,6 @@
 """Generate Contender's Rust tables, champion data, tooltips, editor data and roster entry from rules/contender.json.
 
-Contender 2.5, the elusive Shadow Boxer (round 178). Change numbers in the rules file and rerun; never edit the outputs by hand.
+Contender 2.6, the elusive Shadow Boxer (round 178). Change numbers in the rules file and rerun; never edit the outputs by hand.
 `--check` only verifies.
 """
 from pathlib import Path
@@ -34,7 +34,7 @@ text = {
               f"aside and the hit is undone (at most one dodge every {sec(ch['dodgeGapTicks'])}). His skills never cost dodges; each can be recast "
               f"once, free, within {sec(ch['recastWindowTicks'])}. "
               f"Shadow Pact (passive): every punch and skill hits again {sec(pa['delayTicks'])} later for {pa['pct']}%, with its crowd control at "
-              f"{pa['ccPct']}% (at most {sec(pa['ccCapTicks'])} more per target every {sec(pa['ccWindowTicks'])}); recast hits echo twice. Echoes never add Rhythm stacks. "
+              f"{pa['ccPct']}% (at most {sec(pa['ccCapTicks'])} more per target every {sec(pa['ccWindowTicks'])}). Echoes never add Rhythm stacks. "
               f"Shadow Rhythm (passive): each hit of his (not an echo) stacks on its target (up to {rh['maxStacks']}, {sec(rh['stackTicks'])}); the most-stacked enemy "
               f"gives him +{rh['attackSpeedPermillePerStack'] / 10:g}% attack speed"
               + (f", +{rh['attackPermillePerStack'] / 10:g}% Attack" if rh['attackPermillePerStack'] else '') + f" and "
@@ -42,8 +42,8 @@ text = {
               f"from him per stack. At {rh['maxStacks']} stacks his next hit is a Shadow Break: {rh['breakPermilleMaxHp'] / 10:g}% of its max HP + "
               f"{rh['breakAdRatio']}% Attack, and its stacks reset to 0, but his Rhythm buffs stay at full for {sec(rh['breakBuffTicks'])}. A max-stacked creep carries {rh['carryStacks']} stacks "
               f"onto the next champion he hits; a stacked kill keeps the buffs {sec(rh['lingerTicks'])} longer. "
-              f"S1 Shadow Merge ({sec(me['cooldownTicks'])}): he merges with his shadow for {sec(me['ticks'])}: dodges recharge {me['rechargeMult']}x "
-              f"as fast, +{me['bonusDodges']} dodges at once, every hit echoes twice and adds {me['stacksPerHit']} stacks, +{me['moveSpeedPct']}% "
+              f"S1 Shadow Merge ({sec(me['cooldownTicks'])}): he merges with his shadow for {sec(me['ticks'])}: "
+              + (f"dodges recharge {me['rechargeMult']}x as fast, " if me['rechargeMult'] > 1 else '') + f"+{me['bonusDodges']} dodge{'s' if me['bonusDodges'] != 1 else ''} at once, every hit echoes twice and adds {me['stacksPerHit']} stacks, +{me['moveSpeedPct']}% "
               f"move speed. Recast: he steps out; the shadow's cross knocks the nearest enemy {me['crossKnock']} back ({me['crossBase']} + "
               f"{me['crossAdRatio']}% Attack) and he slips {me['slip']} away."),
     'skill2': (f"Shadow Cyclone ({sec(cy['cooldownTicks'])}): a shadow clone goes to a spot within {cy['range']} and cleaves the circle around "
