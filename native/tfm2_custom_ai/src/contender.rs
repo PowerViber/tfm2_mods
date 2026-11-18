@@ -116,6 +116,8 @@ pub struct Contender {
     tether_drawn: u64,
     shadow_art: bool,
     shadow_directions: bool,
+    merge_art: bool,
+    merge_presenter: crate::contender_merge::Presenter,
     cyclone_drawn: Option<(Point, u64)>,
     /// enemies his basic attacks landed on since the last frame
     basic_hits: Vec<usize>,
@@ -340,7 +342,7 @@ impl Contender {
             }
         }
         // Shadow Merge: his shadow drawn over him; Shadow Tether: a shadow on each tethered enemy
-        if self.core.merged(tick) && tick >= self.shadow_drawn + 10 {
+        if !self.merge_art && self.core.merged(tick) && tick >= self.shadow_drawn + 10 {
             let name = if self.shadow_art { "ct_body_idle0" } else { "ct_shadow" };
             crate::fx_unit(sim, name, owner, owner, 10);
             self.shadow_drawn = tick;
@@ -361,11 +363,15 @@ impl StablePassive for Contender {
             .and_then(|v| v.get("shadow_art_v1").and_then(|n| n.as_i64())) == Some(1);
         self.shadow_directions = serde_json::from_str::<serde_json::Value>(params).ok()
             .and_then(|v| v.get("shadow_directions_v1").and_then(|n| n.as_i64())) == Some(1);
+        self.merge_art = serde_json::from_str::<serde_json::Value>(params).ok()
+            .and_then(|v| v.get("shadow_merge_art_v1").and_then(|n| n.as_i64())) == Some(1);
     }
     fn clone_box(&self) -> Box<dyn StablePassive> {
         Box::new(self.clone())
     }
     fn on_spawn(&mut self, sim: &mut StableSim, _: usize, id: usize) {
+        self.merge_presenter.clear(sim);
+        self.merge_presenter = crate::contender_merge::Presenter::default();
         self.core.respawn();
         sim.entity_remove_buff(id, "ct_merge");
         remove_prefix(sim, id, GO_PREFIX);
@@ -377,6 +383,7 @@ impl StablePassive for Contender {
     /// A Shadow dodge: an enemy champion's hit, with a dodge ready, is healed straight back (Kratos's pattern; the hook
     /// reports damage after it lands) and the core slips him aside on its next step.
     fn on_damaged(&mut self, sim: &mut StableSim, _: usize, id: usize, attacker: usize, damage: usize) {
+        if damage > 0 && self.merge_art { self.merge_presenter.hit(sim.tick() as u64); }
         if damage == 0 {
             return;
         }
@@ -405,9 +412,17 @@ impl StablePassive for Contender {
             self.basic_hits.push(target);
         }
     }
-    fn on_update(&mut self, sim: &mut StableSim, _: u64, _: usize, id: usize) {
+    fn on_base_attack(&mut self, sim: &mut StableSim, _: u64, _: usize, _: usize) {
+        if self.merge_art { self.merge_presenter.basic(sim.tick() as u64); }
+    }
+    fn on_dead(&mut self, sim: &mut StableSim, _: usize) { self.merge_presenter.clear(sim); }
+    fn on_update(&mut self, sim: &mut StableSim, _: u64, player: usize, id: usize) {
         let f = self.frame(sim, id);
         let effects = self.core.step(&f);
+        if self.merge_art {
+            let cd = sim.get_player(player).and_then(|p| p.cooldowns()).map(|c| c.0);
+            self.merge_presenter.sync(sim, id, &f, &self.core, &effects, cd);
+        }
         self.apply(sim, id, effects);
     }
 }

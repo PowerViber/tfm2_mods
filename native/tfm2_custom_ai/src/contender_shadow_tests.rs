@@ -586,6 +586,29 @@ mod glue {
     }
 
     #[test]
+    fn fused_merge_presentation_preserves_core_and_native_combat_commands() {
+        let _guard=crate::walls::TEST_LOCK.lock();let (x,y)=open_spot(90_000);
+        let play=|enabled:bool|{
+            let host=Host::new(vec![champ(0,(x,y),"tfm2_custom_contender"),champ(1,(x+18_000,y),"fighter")]);
+            let mut c=Contender::default();
+            c.configure(if enabled {r#"{"shadow_art_v1":1,"shadow_merge_art_v1":1}"#} else {r#"{"shadow_art_v1":1}"#});
+            c.core.merge_until=460;c.core.cd=[u64::MAX/2;3];
+            for tick in 100..280 {
+                host.borrow_mut().tick=tick;
+                with_sim(&host,|sim|{
+                    if tick%20==0 {c.on_base_attack(sim,11,0,0);let mut damage=100;c.on_attack(sim,0,0,1,&mut damage);}
+                    c.on_update(sim,11,0,0);
+                });
+            }
+            let h=host.borrow();
+            (serde_json::to_value(c.core).unwrap(),h.damage.clone(),h.moves.clone(),h.heals.clone(),
+             h.units.iter().map(|u|u.hp).collect::<Vec<_>>(),
+             h.ccs.iter().map(|ccs|ccs.iter().map(|(c,end)|(c.kind,c.name().to_owned(),*end)).collect::<Vec<_>>()).collect::<Vec<_>>())
+        };
+        assert_eq!(play(false),play(true));
+    }
+
+    #[test]
     fn a_champion_hit_is_dodged_healed_back_and_he_slips_but_creeps_never_trigger_it() {
         let _guard = crate::walls::TEST_LOCK.lock();
         let (x, y) = open_spot(90_000);
