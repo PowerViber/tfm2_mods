@@ -1,7 +1,7 @@
 /* Packed frames only; effect expiry never holds the last frame. */
 window.ContenderPainter=class {
  constructor(){this.data=CONTENDER_PRESENTATION;this.loaded=false;this.ready=this.load();}
- async load(){this.images={};for(const k of ['body','effects','merge'].filter(k=>this.data[k])){const im=new Image();im.src=this.data[k].file.replaceAll('#','%23');await im.decode();this.images[k]=im;}this.loaded=true;return this;}
+  async load(){this.images={};for(const k of ['body','effects','merge','rhythm'].filter(k=>this.data[k])){const im=new Image();im.src=this.data[k].file.replaceAll('#','%23');await im.decode();this.images[k]=im;}this.loaded=true;return this;}
  duration(kind,tag){return this.data[kind].anims[tag]?.frames.reduce((s,f)=>s+f.duration*60,0)||0;}
  draw(ctx,kind,tag,at,elapsed,P,W,loop=false,opacity=1){
   const a=this.data[kind].anims[tag];if(!a||!this.loaded)return false;

@@ -49,7 +49,7 @@ function apply(e){const u=actor(e.target);switch(e.kind){
  case 'vanish':flags.vanish=tick+e.ticks;break;case 'invulnerable':flags.inv=tick+e.ticks;break;
  case 'merge':flags.merge=e.ticks>1?{until:tick+e.ticks,pct:e.move_pct}:null;flags.mergeCast=e.ticks>1?{pose:'projection',start:tick,end:tick+18}:null;break;case 'bank':flags.bank=e.count;break;
  case 'rhythm':flags.rhythm=e;flags.rhythmUntil=tick+e.ticks;break;case 'charges':flags.charges=e.count;break;case 'steer':flags.walk=e.to;break;
- case 'fx':{if(e.name==='ct_shadow')break;const tag=e.name==='ct_flurry'&&e.heading!==undefined?`flurry_d${e.heading%8}_t${e.ticks}`:e.name.replace('ct_','')+'_t'+e.ticks+(me.pos.x>e.at.x?'_l':'');if(!painter.data.effects.anims[tag])throw Error('Unbound cue '+tag);fx.push({tag,at:{...e.at},start:tick,until:tick+e.ticks});break;}
+  case 'fx':{if(e.name==='ct_shadow')break;const group=e.name==='ct_break'?'rhythm':'effects';if(e.name==='ct_break')flags.breakAt=tick;const tag=e.name==='ct_flurry'&&e.heading!==undefined?`flurry_d${e.heading%8}_t${e.ticks}`:e.name.replace('ct_','')+'_t'+e.ticks+(me.pos.x>e.at.x?'_l':'');if(!painter.data[group].anims[tag])throw Error('Unbound cue '+tag);fx.push({group,tag,at:{...e.at},start:tick,until:tick+e.ticks});break;}
 }}
 function stepWorld(order){
  scene.refreshVisibility(me,units);if(tick>=flags.rhythmUntil)flags.rhythm=null;
@@ -65,7 +65,7 @@ function stepWorld(order){
  if(free&&($('ai').checked||held.has(' '))&&tick>=nextBasic){const t=units.filter(u=>u.team!==0&&u.hp>0&&u.visible&&world.clear(me.pos,u.pos)&&dist(u.pos,me.pos)<=R.basic.range+u.radius+me.radius).sort((a,b)=>(b.champion-a.champion)||dist(a.pos,aim)-dist(b.pos,aim)||a.id-b.id)[0];if(t){me.attackStart=tick;me.attackUntil=tick+R.basic.duration;me.left=t.pos.x<me.pos.x;pendingBasic={target:t.id,at:tick+R.basic.startTiming};nextBasic=tick+Math.round(R.basic.cooldownTicks*100/(110+((flags.rhythm?.attack_speed)||0)));}}
  if($('fight').checked)scene.advance(tick,me,units,{hit:()=>{},hitOwner:e=>{if(tick<(flags.vanish||0)||tick<(flags.inv||0))return;const from=actor(e.from),b=me.hp;scene.metrics.taken+=scene.damage(from||me,me,e.amount,tick);if(b>me.hp)me.hitUntil=tick+6;if(from&&from.champion&&from.team!==me.team&&b>me.hp)incoming.push({pos:{...from.pos},amount:b-me.hp});}});
  painter.observeMerge(me,tick,flags.mergeCast);
- if(me.hp<=0){me.deadAt??=tick;fx=[];}fx=fx.filter(e=>tick<e.until);tick++;
+  if(me.hp<=0){me.deadAt??=tick;fx=[];delete flags.breakAt;}fx=fx.filter(e=>tick<e.until);tick++;
 }
 function drawRhythmStacks(){
  const stacks=new Map((state.stacks||[]).filter(s=>s.count>0&&tick<s.until).map(s=>[s.id,s.count]));
@@ -81,12 +81,15 @@ function drawRhythmStacks(){
  ctx.restore();
 }
 function draw(){if(!me)return;if($('follow').checked)view={...me.pos};ctx.clearRect(0,0,900,900);ctx.imageSmoothingEnabled=false;world.drawMap(ctx,P,W);
- for(const e of fx)if($('showArt').checked)painter.draw(ctx,'effects',e.tag,e.at,tick-e.start,P,W);
+  if($('showArt').checked&&me.hp>0&&flags.breakAt!==undefined)painter.draw(ctx,'rhythm','full_rhythm_t480',me.pos,tick-flags.breakAt,P,W);
+  for(const c of state.cleaves||[])if($('showArt').checked)painter.draw(ctx,'rhythm',`ring${c.recast?35:25}_t6`,c.at,0,P,W);
+  for(const e of fx)if($('showArt').checked)painter.draw(ctx,e.group||'effects',e.tag,e.at,tick-e.start,P,W);
  if($('showArt').checked)for(const c of state.cleaves||[])if(!c.recast)painter.draw(ctx,'effects','body_punch'+Math.floor(tick/10)%2+(me.pos.x>c.at.x?'_l':''),c.at,0,P,W);
  for(const u of units.filter(u=>u.visible||u.team===0)){targets.draw(ctx,u,tick,P,W);if(u.hp>0){const p=P(u.pos);ctx.fillStyle='#251a2f';ctx.fillRect(p.x-18,p.y-W(31000),36,3);ctx.fillStyle=u.team===0?'#85dcbb':'#f18386';ctx.fillRect(p.x-18,p.y-W(31000),36*u.hp/u.max_hp,3);if(u.team!==0){ctx.fillStyle='#eee5fb';ctx.font='11px monospace';ctx.fillText('#'+u.id+(u.unlimitedHP?' ∞':''),p.x-18,p.y-W(35000));}}}
  if($('showArt').checked)for(const[id]of state.tethers||[]){const u=actor(id);if(u&&u.hp>0)painter.draw(ctx,'effects','echo_t12',u.pos,tick%12,P,W);}
  if($('showArt').checked&&tick>=(flags.vanish||0))painter.body(ctx,me,tick,P,W,tick<(flags.merge?.until||0),flags.mergeCast);world.drawMap(ctx,P,W,true);drawRhythmStacks();
  const p=P(me.pos);ctx.fillStyle='#2b183b';ctx.fillRect(p.x-20,p.y-W(34000),40,5);ctx.fillStyle='#9be2b9';ctx.fillRect(p.x-20,p.y-W(34000),40*me.hp/me.max_hp,5);ctx.fillStyle='#c7a0ff';ctx.font='13px monospace';ctx.fillText('◆'.repeat(Math.min(7,state.charges??5))+'◇'.repeat(Math.max(0,R.charges.max-(state.charges??5))),p.x-25,p.y-W(39000));
+  if($('showArt').checked&&me.hp>0)painter.draw(ctx,'rhythm',`bank_${Math.max(0,Math.min(40,state.bank||0))}`,me.pos,0,P,W);
  if($('ranges').checked){ctx.strokeStyle='#bca1e5';for(const radius of[R.cyclone.recastRange,R.tether.radius,R.merge.crossRadius]){ctx.beginPath();ctx.arc(p.x,p.y,W(radius),0,Math.PI*2);ctx.stroke();}}
  const a=P(aim);ctx.strokeStyle='#fff';ctx.beginPath();ctx.moveTo(a.x-6,a.y);ctx.lineTo(a.x+6,a.y);ctx.moveTo(a.x,a.y-6);ctx.lineTo(a.x,a.y+6);ctx.stroke();
  $('pips').textContent='◆'.repeat(Math.min(7,state.charges??5))+'◇'.repeat(Math.max(0,R.charges.max-(state.charges??5)));$('state').textContent=`Tick ${tick} · HP ${Math.round(me.hp)}/${me.max_hp}\nS1 / S2 / S3: ${(state.cd||[0,0,0]).map(t=>(Math.max(0,t-tick)/60).toFixed(1)).join(' / ')} s\nShadow bank: ${state.bank??0}/${R.ult.bankMax}${(state.bank??0)>=R.ult.bankMax?' · ult ready':''}\nDodges ${state.charges??5} · Merged ${tick<(state.merge_until||0)} · Tethers ${(state.tethers||[]).length} · Flurry ${!!state.flurry}\nEchoing flurry ${!!state.flurry?.echo} · Rhythm ${state.focus?.[1]||0}\n${state.reason||'Manual controls bypass athlete decisions'}\nRequested ${scene.metrics.requested} · HP ${scene.metrics.hp_damage} · shields ${scene.metrics.shield_damage}\nMap: ${world.geometry.registration.matching}/900 cells · 1,000 units/pixel\nFX alive ${fx.length}`;

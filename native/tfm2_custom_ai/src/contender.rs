@@ -118,6 +118,8 @@ pub struct Contender {
     shadow_directions: bool,
     merge_art: bool,
     merge_presenter: crate::contender_merge::Presenter,
+    rhythm_art: bool,
+    rhythm_presenter: crate::contender_rhythm::Presenter,
     cyclone_drawn: Option<(Point, u64)>,
     /// enemies his basic attacks landed on since the last frame
     basic_hits: Vec<usize>,
@@ -307,6 +309,7 @@ impl Contender {
                     sim.add_buff(owner, &crate::timed(&format!("{GO_PREFIX}{}:{}", to.x, to.y), 6));
                 }
                 Effect::Fx { name, at, ticks, heading } => {
+                    let name = if name == "ct_break" && !self.rhythm_art { "ct_haymaker".into() } else { name };
                     if name == "ct_shadow" {
                         // a cleave spot: other AIs read it as danger
                         remove_prefix(sim, owner, ZONE_PREFIX);
@@ -365,6 +368,8 @@ impl StablePassive for Contender {
             .and_then(|v| v.get("shadow_directions_v1").and_then(|n| n.as_i64())) == Some(1);
         self.merge_art = serde_json::from_str::<serde_json::Value>(params).ok()
             .and_then(|v| v.get("shadow_merge_art_v1").and_then(|n| n.as_i64())) == Some(1);
+        self.rhythm_art = serde_json::from_str::<serde_json::Value>(params).ok()
+            .and_then(|v| v.get("shadow_rhythm_art_v1").and_then(|n| n.as_i64())) == Some(1);
     }
     fn clone_box(&self) -> Box<dyn StablePassive> {
         Box::new(self.clone())
@@ -372,10 +377,13 @@ impl StablePassive for Contender {
     fn on_spawn(&mut self, sim: &mut StableSim, _: usize, id: usize) {
         self.merge_presenter.clear(sim);
         self.merge_presenter = crate::contender_merge::Presenter::default();
+        self.rhythm_presenter.clear(sim);
+        self.rhythm_presenter = crate::contender_rhythm::Presenter::default();
         self.core.respawn();
         sim.entity_remove_buff(id, "ct_merge");
         remove_prefix(sim, id, GO_PREFIX);
         remove_prefix(sim, id, ZONE_PREFIX);
+        remove_prefix(sim, id, "ct_bank:");
         self.basic_hits.clear();
         self.in_skill = false;
         self.cyclone_drawn = None;
@@ -415,7 +423,11 @@ impl StablePassive for Contender {
     fn on_base_attack(&mut self, sim: &mut StableSim, _: u64, _: usize, _: usize) {
         if self.merge_art { self.merge_presenter.basic(sim.tick() as u64); }
     }
-    fn on_dead(&mut self, sim: &mut StableSim, _: usize) { self.merge_presenter.clear(sim); }
+    fn on_dead(&mut self, sim: &mut StableSim, id: usize) {
+        self.merge_presenter.clear(sim);
+        self.rhythm_presenter.clear(sim);
+        remove_prefix(sim, id, "ct_bank:");
+    }
     fn on_update(&mut self, sim: &mut StableSim, _: u64, player: usize, id: usize) {
         let f = self.frame(sim, id);
         let effects = self.core.step(&f);
@@ -423,6 +435,7 @@ impl StablePassive for Contender {
             let cd = sim.get_player(player).and_then(|p| p.cooldowns()).map(|c| c.0);
             self.merge_presenter.sync(sim, id, &f, &self.core, &effects, cd);
         }
+        if self.rhythm_art { self.rhythm_presenter.sync(sim, id, player, &f, &self.core, &effects); }
         self.apply(sim, id, effects);
     }
 }

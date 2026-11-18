@@ -618,7 +618,7 @@ impl Core {
         if self.stacks_on(u.id, f.tick) >= max {
             let burst = u.max_hp * d::RHYTHM_BREAK_PERMILLE_MAX_HP / 1_000 + d::RHYTHM_BREAK_AD_RATIO * f.attack / 100;
             out.push(Effect::Damage { target: u.id, amount: burst });
-            out.push(Effect::Fx { name: "ct_haymaker".into(), at: u.pos, ticks: 18, heading: None });
+            out.push(Effect::Fx { name: "ct_break".into(), at: u.pos, ticks: 18, heading: None });
             // the target's stacks reset to 0, but his Rhythm buffs stay at full for a while (the kill-linger path)
             self.stacks.retain(|s| s.id != u.id);
             let end = f.tick + t(d::RHYTHM_BREAK_BUFF_TICKS);

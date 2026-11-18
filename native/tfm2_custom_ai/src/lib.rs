@@ -43,6 +43,7 @@ mod valorant_guns;
 mod raze;
 mod contender;
 mod contender_merge;
+mod contender_rhythm;
 mod contender_merge_data;
 mod rally;
 mod grimhald;
