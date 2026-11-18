@@ -552,7 +552,10 @@ impl Core {
         if let Some(c) = cc {
             self.cc(f, u.id, c, src == Src::Echo, out);
         }
-        self.add_stacks(f, u, out);
+        // echoes deal damage, carry crowd control and bank, but never add Rhythm stacks (contender-2.5)
+        if src != Src::Echo {
+            self.add_stacks(f, u, out);
+        }
         let flurryish = matches!(src, Src::Flurry | Src::Copy(true));
         if !flurryish && !(src == Src::Echo && self.flurry.is_some()) {
             self.bank = (self.bank + 1).min(d::ULT_BANK_MAX);
@@ -653,7 +656,8 @@ impl Core {
     fn basic_landed(&mut self, f: &Frame, u: &Unit, out: &mut Vec<Effect>) {
         self.hit(f, u, 0, None, Src::Basic, false, out);
         // the echo of a basic is 40% of his Attack; tether copies of it are 30% of his Attack
-        if let Some(e) = self.echoes.iter_mut().rev().find(|e| e.target == u.id && e.amount == 0) {
+        // (every echo this basic queued: two while merged)
+        for e in self.echoes.iter_mut().filter(|e| e.target == u.id && e.amount == 0) {
             e.amount = f.attack * d::PACT_PCT / 100;
         }
         if !self.tethers.is_empty() {

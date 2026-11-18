@@ -4082,3 +4082,10 @@ Native 0.10.112 / custom 0.2.115, art basalt-art-6, gameplay remains basalt-1.4.
   - does a Break now feel like a payoff rather than constant damage;
   - is 40 banked too slow for the ult in lane and in fights;
   - does the 8 s full-buff window after a Break read and feel worth chasing.
+
+## Nov 18: round 179 (native 0.10.114, tfm2_custom 0.2.117), `contender-2.5`: emergency Contender nerf
+- **Report:** after 2.4, his damage was absurd even with no items.
+- **Measured:** basics alone did 2.0-2.3x a plain champion's damage; now 1.24x (1.34x merged).
+- **Changes:** Attack 76 (+8/level); echoes 20% and no longer stack Rhythm; +1% damage taken and +1% attack speed per stack (no Attack bonus); Break 4% max HP + 20% Attack, buffs held 5 s; Merge adds 1 stack per hit; Tether copies 20% (flurry 10%). Merged basics now echo twice for real (a bug had zeroed the second echo).
+- **Install:** Mod Manager -> 1 Update everything (new careers).
+- **Watch for:** is he now too weak in duels; does the ult still matter at 40 banked.

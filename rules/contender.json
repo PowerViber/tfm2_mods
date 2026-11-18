@@ -7,9 +7,9 @@
     "Melee",
     "CC"
   ],
-  "revision": "contender-2.4",
+  "revision": "contender-2.5",
   "stat": {
-    "attack": 85,
+    "attack": 76,
     "magic_power": 0,
     "hp": 1050,
     "defence": 24,
@@ -18,7 +18,7 @@
     "hp_regen": 3
   },
   "growth": {
-    "attack": 10,
+    "attack": 8,
     "magic_power": 0,
     "hp": 95,
     "defence": 4,
@@ -51,7 +51,7 @@
   },
   "pact": {
     "delayTicks": 60,
-    "pct": 40,
+    "pct": 20,
     "ccPct": 50,
     "ccCapTicks": 90,
     "ccWindowTicks": 360
@@ -59,15 +59,15 @@
   "rhythm": {
     "maxStacks": 20,
     "stackTicks": 240,
-    "attackSpeedPermillePerStack": 15,
-    "attackPermillePerStack": 10,
+    "attackSpeedPermillePerStack": 10,
+    "attackPermillePerStack": 0,
     "moveSpeedPermillePerStack": 8,
-    "vulnerabilityPermillePerStack": 20,
+    "vulnerabilityPermillePerStack": 10,
     "carryStacks": 8,
     "lingerTicks": 300,
-    "breakPermilleMaxHp": 60,
-    "breakAdRatio": 30,
-    "breakBuffTicks": 480
+    "breakPermilleMaxHp": 40,
+    "breakAdRatio": 20,
+    "breakBuffTicks": 300
   },
   "merge": {
     "cooldownTicks": 840,
@@ -75,7 +75,7 @@
     "rechargeMult": 2,
     "bonusDodges": 2,
     "dodgeGapTicks": 15,
-    "stacksPerHit": 2,
+    "stacksPerHit": 1,
     "moveSpeedPct": 15,
     "crossRadius": 30000,
     "crossKnock": 20000,
@@ -110,8 +110,8 @@
     "radius": 50000,
     "max": 5,
     "ticks": 240,
-    "copyPct": 30,
-    "flurryCopyPct": 15,
+    "copyPct": 20,
+    "flurryCopyPct": 10,
     "breakRange": 90000,
     "yank": 20000,
     "yankTicks": 18,

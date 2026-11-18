@@ -264,6 +264,65 @@ fn a_max_stacked_creep_carries_eight_stacks_onto_a_champion_and_a_kill_lingers()
     assert!(w.core.linger.is_some_and(|l| l.0 == d::RHYTHM_MAX_STACKS));
 }
 
+#[test]
+fn echoes_never_add_rhythm_stacks() {
+    let mut w = World::new(vec![champ(FOE, 2, 410_000, 500_000)]);
+    w.f.basic_hits.push(FOE);
+    w.tick(None);
+    assert_eq!(w.core.stacks_on(FOE, w.f.tick), 1);
+    w.run(d::PACT_DELAY_TICKS as u64 + 2);
+    assert!(w.seen(|e| matches!(e, Effect::Fx { name, .. } if name == "ct_echo")), "the echo landed");
+    assert_eq!(w.core.stacks_on(FOE, w.f.tick), 1, "and added no stack");
+}
+
+#[test]
+fn both_merged_echoes_of_a_basic_deal_damage() {
+    let mut w = World::new(vec![champ(FOE, 2, 410_000, 500_000)]);
+    w.tick(Some(Order::S1 { aim: Point::new(410_000, 500_000) }));
+    w.f.basic_hits.push(FOE);
+    w.tick(None);
+    let echo = w.f.attack * d::PACT_PCT / 100;
+    assert!(w.core.echoes.iter().filter(|e| e.target == FOE).all(|e| e.amount == echo));
+    assert_eq!(w.core.echoes.iter().filter(|e| e.target == FOE).count(), 2);
+}
+
+/// Reihan's emergency nerf (contender-2.5): ten seconds of basics on a 1,500 HP champion (no items, level 1) must stay
+/// near a plain champion's basic damage, merged or not.
+#[test]
+fn ten_seconds_of_basics_stay_under_1_4_times_a_plain_champion() {
+    for merged in [false, true] {
+        let mut w = World::new(vec![champ(FOE, 2, 410_000, 500_000)]);
+        w.unit(FOE).hp = 1_000_000;
+        w.unit(FOE).max_hp = 1_500;
+        let rules: serde_json::Value = serde_json::from_str(include_str!("../../../rules/contender.json")).unwrap();
+        let attack = rules["stat"]["attack"].as_i64().unwrap() * (100 + d::MOD_POWER[0] as i64) / 100;
+        w.f.attack = attack;
+        if merged {
+            w.tick(Some(Order::S1 { aim: Point::new(410_000, 500_000) }));
+        }
+        let (mut speed, mut next, mut basics, mut total) = (0i64, w.f.tick, 0i64, 0i64);
+        let start = w.f.tick;
+        while w.f.tick < start + 600 {
+            if w.f.tick >= next {
+                total += attack * (1_000 + w.core.vuln_permille(FOE, w.f.tick)) / 1_000;
+                w.f.basic_hits.push(FOE);
+                next = w.f.tick + (d::BASIC_COOLDOWN_TICKS * 100 / (100 + speed)) as u64;
+                basics += 1;
+            }
+            for e in w.tick(None) {
+                match e {
+                    Effect::Damage { target: FOE, amount } => total += amount,
+                    Effect::Rhythm { attack_speed, .. } => speed = attack_speed,
+                    _ => {}
+                }
+            }
+        }
+        let plain = (600 / d::BASIC_COOLDOWN_TICKS + 1) * attack;
+        let ratio = total as f64 / plain as f64;
+        assert!(basics > 0 && ratio > 1.0 && ratio <= 1.4, "merged {merged}: {total} vs a plain {plain} ({ratio:.2}x)");
+    }
+}
+
 // ------------------------------------------------------------------ S1 Shadow Merge
 
 #[test]
