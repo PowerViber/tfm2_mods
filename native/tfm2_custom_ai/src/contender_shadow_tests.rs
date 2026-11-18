@@ -186,13 +186,13 @@ fn every_hit_echoes_a_second_later_at_40_percent_with_half_its_crowd_control() {
 }
 
 #[test]
-fn recast_hits_echo_twice_and_echoed_crowd_control_is_capped() {
+fn recast_hits_echo_once_and_echoed_crowd_control_is_capped() {
     let mut w = World::new(vec![champ(FOE, 2, 430_000, 500_000)]);
     w.tick(Some(Order::S3 { aim: Point::new(430_000, 500_000) }));
     w.tick(Some(Order::S3 { aim: Point::new(430_000, 500_000) }));
     w.run(3 * d::PACT_DELAY_TICKS as u64);
     let ups = w.count(|e| matches!(e, Effect::KnockUp { target: FOE, .. }));
-    assert_eq!(ups, 3, "the uppercut and its two echoes");
+    assert_eq!(ups, 2, "the uppercut and one echo (contender-2.6)");
     let echoed: u64 = w.log.iter().filter(|(t, _)| *t > 2).filter_map(|(_, e)| match e { Effect::KnockUp { target: FOE, ticks } => Some(*ticks), _ => None }).sum();
     assert!(echoed <= d::PACT_CC_CAP_TICKS as u64);
 }
@@ -323,6 +323,62 @@ fn ten_seconds_of_basics_stay_under_1_4_times_a_plain_champion() {
     }
 }
 
+
+/// Reihan, after 2.5: "its still too strong, like really really strong". His own AI in a 1v2 for 20 s, the enemies
+/// basic-attacking him every 0.9 s: his total damage (basics + skills + echoes + copies + Breaks + the ult) stays near
+/// a plain champion's basic damage, and his dodges undo at most about a third of the champion hits.
+fn fight_1v2(level: i64) -> (f64, f64) {
+    let rules: serde_json::Value = serde_json::from_str(include_str!("../../../rules/contender.json")).unwrap();
+    let attack = (rules["stat"]["attack"].as_i64().unwrap() + rules["growth"]["attack"].as_i64().unwrap() * (level - 1)) * (100 + d::MOD_POWER[0] as i64) / 100;
+    let mut w = World::new(vec![champ(FOE, 2, 425_000, 500_000), champ(11, 2, 440_000, 510_000)]);
+    for u in w.f.units.iter_mut() {
+        u.hp = 1_000_000;
+        u.max_hp = 1_500;
+    }
+    w.f.manual = false;
+    w.f.level = level;
+    w.f.attack = attack;
+    w.core.bank = 0;
+    let (mut speed, mut next, mut total, mut hits, mut dodged) = (0i64, 1u64, 0i64, 0, 0);
+    let start = w.f.tick;
+    while w.f.tick < start + 1_200 {
+        if w.f.tick >= next {
+            total += attack * (1_000 + w.core.vuln_permille(FOE, w.f.tick)) / 1_000;
+            w.f.basic_hits.push(FOE);
+            next = w.f.tick + (d::BASIC_COOLDOWN_TICKS * 100 / (100 + speed)) as u64;
+        }
+        let incoming = (w.f.tick - start + 1) % 54 == 0;
+        if incoming {
+            hits += 1;
+            w.f.incoming.push(Point::new(425_000, 500_000));
+        }
+        let tick = w.f.tick;
+        for e in w.tick(None) {
+            match e {
+                Effect::Damage { amount, .. } => total += amount,
+                Effect::Rhythm { attack_speed, .. } => speed = attack_speed,
+                _ => {}
+            }
+        }
+        if incoming && w.core.last_dodge == tick {
+            dodged += 1;
+        }
+        w.f.pos = Point::new(400_000, 500_000);
+    }
+    let plain = (1_200 / d::BASIC_COOLDOWN_TICKS + 1) * attack;
+    (total as f64 / plain as f64, dodged as f64 / hits as f64)
+}
+
+#[test]
+fn in_a_1v2_his_damage_stays_under_2x_plain_basics_and_he_dodges_at_most_35_percent() {
+    for level in [3, 9] {
+        let (damage, dodges) = fight_1v2(level);
+        println!("level {level}: {damage:.2}x, {:.0}% dodged", dodges * 100.0);
+        assert!(damage <= 2.0, "level {level}: {damage:.2}x a plain champion's basics");
+        assert!(dodges <= 0.35, "level {level}: {:.0}% of champion hits dodged", dodges * 100.0);
+    }
+}
+
 // ------------------------------------------------------------------ S1 Shadow Merge
 
 #[test]
@@ -439,8 +495,9 @@ fn the_tether_recast_yanks_everyone_toward_him_and_uppercuts() {
 }
 
 #[test]
-fn flurry_punches_copy_onto_tethered_enemies_at_15_percent_and_never_bank() {
+fn flurry_punches_copy_onto_tethered_enemies_at_5_percent_and_never_bank() {
     let mut w = World::new(vec![champ(FOE, 2, 430_000, 500_000), champ(11, 2, 400_000, 540_000)]);
+    w.f.attack = 1_000; // so a 5% copy is a whole number
     for u in w.f.units.iter_mut() {
         u.hp = 1_000_000;
         u.max_hp = 1_000_000;
@@ -449,8 +506,8 @@ fn flurry_punches_copy_onto_tethered_enemies_at_15_percent_and_never_bank() {
     w.unit(11).pos = Point::new(430_000, 560_000); // tethered, but out of the flurry's chain reach
     w.tick(Some(Order::Ult));
     w.run(60);
-    let copy = pct(d::ULT_BASE, d::ULT_AD_RATIO, 100) * d::TETHER_FLURRY_COPY_PCT / 100;
-    assert!(w.seen(|e| matches!(e, Effect::Damage { target: 11, amount } if *amount == copy)), "a 15% copy");
+    let copy = pct(d::ULT_BASE, d::ULT_AD_RATIO, 1_000) * d::TETHER_FLURRY_COPY_PCT / 100;
+    assert!(w.seen(|e| matches!(e, Effect::Damage { target: 11, amount } if *amount == copy)), "a 5% copy");
     assert_eq!(w.core.bank, 0);
 }
 
@@ -546,7 +603,7 @@ fn flurry_visuals_cover_eight_directions_without_changing_punch_count_or_cadence
 }
 
 #[test]
-fn the_flurry_vanishes_him_chains_36_accelerating_punches_and_brings_him_back_by_the_last_with_dodges_full() {
+fn the_flurry_vanishes_him_chains_36_accelerating_punches_and_brings_him_back_by_the_last() {
     let mut w = World::new(vec![champ(FOE, 2, 430_000, 500_000), champ(11, 2, 450_000, 500_000), creep(30, 470_000, 500_000, 90_000)]);
     for u in w.f.units.iter_mut() {
         u.hp = 90_000;
@@ -557,7 +614,7 @@ fn the_flurry_vanishes_him_chains_36_accelerating_punches_and_brings_him_back_by
     assert!(w.core.flurrying());
     w.run(d::ULT_TICKS as u64);
     assert!(!w.core.flurrying());
-    assert_eq!(w.core.charges, d::CHARGES_MAX, "he comes back with his dodges full");
+    assert_eq!(w.core.charges, 1, "contender-2.6: the flurry no longer refills his dodges");
     let punches = w.count(|e| matches!(e, Effect::Fx { name, .. } if name == "ct_flurry"));
     assert_eq!(punches, d::ULT_PUNCHES as usize);
     assert!(Core::flurry_gap(0) > Core::flurry_gap(d::ULT_PUNCHES - 1), "slow at first, fast at the end");
@@ -624,7 +681,7 @@ fn the_ai_farms_a_camp_with_its_skills_when_calm_and_banks_toward_the_ult() {
     for k in ["Farm: Shadow Cyclone", "Farm: tether"] {
         assert!(used.iter().any(|u| u == k), "{k}: {used:?}");
     }
-    assert_eq!(w.core.bank, d::ULT_BANK_MAX, "farming fills the bank");
+    assert!(w.core.bank > 0, "farming with his skills banks toward the ult (echoes and copies never do)");
 }
 
 #[test]
