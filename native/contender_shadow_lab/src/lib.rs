@@ -1,5 +1,5 @@
-//! Contender Lab transport (round 178): the game's exact core (`contender_shadow_core.rs`) behind a JSON step for the
-//! editor page. The page models the host (positions, glides, the shadow carrier, hits); the rules and his AI all come
+//! Contender Lab transport (round 178, contender-2.3): the game's exact core (`contender_shadow_core.rs`) behind a JSON step for the
+//! editor page. The page models the host (positions, glides, hits and the champion hits he may dodge); the rules and his AI all come
 //! from the core.
 #[path = "../../tfm2_custom_ai/src/contender_shadow_core.rs"]
 #[allow(dead_code)]
@@ -35,7 +35,8 @@ fn valid(f: &Frame) -> bool {
         && (1..=100_000_000).contains(&f.max_hp)
         && (0..=f.max_hp).contains(&f.hp)
         && f.basic_hits.len() <= 16
-        && f.shadow.is_none_or(|s| point(s.pos) && (1..=100_000_000).contains(&s.max_hp))
+        && f.incoming.len() <= 16
+        && f.incoming.iter().all(|p| point(*p))
         && f.units.iter().all(|u| u.id != f.owner && point(u.pos) && (1..=100_000_000).contains(&u.max_hp))
 }
 
@@ -107,13 +108,24 @@ mod transport_tests {
             (30, json!({"kind":"s2","aim":{"x":470000,"y":500000}})),
             (40, json!({"kind":"s3","aim":{"x":470000,"y":500000}})),
             (60, json!({"kind":"end"})),
-            (90, json!({"kind":"ult"})),
         ] {
             let mut i = input(t);
             i["frame"]["order"] = o;
+            i["frame"]["incoming"] = json!([{"x": 440000, "y": 500000}]);
             let out = run(&mut s, &i.to_string());
             assert!(!out.contains("\"error\""), "{out}");
         }
+        // bank the ult with basics, then cast it
+        for t in 100..130 {
+            let mut i = input(t);
+            i["frame"]["basic_hits"] = json!([10]);
+            run(&mut s, &i.to_string());
+        }
+        assert_eq!(s.core.bank, contender_shadow_data::ULT_BANK_MAX);
+        let mut i = input(200);
+        i["frame"]["order"] = json!({"kind":"ult"});
+        let out = run(&mut s, &i.to_string());
+        assert!(out.contains("\"bank\":0"), "{out}");
         assert!(s.core.flurrying());
     }
     #[test]

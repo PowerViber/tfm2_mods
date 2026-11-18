@@ -21,3 +21,20 @@
 - **Charge pips:** up to 5, under him; the core publishes a `ct_charges:<n>` buff.
 - **Small hit flashes:** for the echo, the stun and the knock-up.
 - **Budgets:** the same as the other champions.
+
+## `contender-2.3` uses (for Codex)
+Every 2.3 effect reuses a packaged cue at a packaged length, so nothing is unbound; better-fitting art is welcome.
+
+| Cue | 2.3 use |
+|---|---|
+| `ct_swap_t18` | A dodge: the shadow left where he stood |
+| `ct_launch_t18` | Shadow Merge starting |
+| `ct_body_idle0` | His shadow body drawn on him while merged (every 10 ticks); `ct_shadow` without the art |
+| `ct_cross_t18` | The step-out's cross |
+| `ct_cleave_t14` / `_t12` | Cyclone clone / the aimed self-cleave (now a 35,000 circle) |
+| `ct_echo_t12` | Shadow Pact echoes, Tether latching, each tether copy, and a flash on each tethered enemy every 12 ticks |
+| `ct_uppercut_t20` | The Tether yank's uppercut |
+| `ct_haymaker_t18` | A Shadow Break (and the haymaker) |
+| `ct_slam_t20` | No longer used |
+
+**Wanted when there's time:** a tether line or latched shadow on enemies, a dodge after-image, a Break burst, and pips for the bank. The bridge publishes `ct_bank:<0..20>` and `ct_merge` buffs with no view binding yet; `ct_charges:<n>` stays at 0..5 (merged dodges above 5 show as 5).

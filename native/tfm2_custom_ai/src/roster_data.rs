@@ -440,8 +440,8 @@ pub static CHAMPIONS: [ChampionDef; 88] = [
         SkillDef { slot: Slot::Ult, name: "Showstopper", kinds: 4 | 16, intents: 2 | 32 | 16 },
     ] },
     ChampionDef { id: "tfm2_custom_contender", name: "Contender", family: 13, role: "Fighter", native: true, basic: BasicAttack { name: "Jab / Cross", range: 23000, reach: Range::Melee }, skills: &[
-        SkillDef { slot: Slot::Skill, name: "Shadows / Shadow Pact / Shadow Rhythm / Shadow Projection", kinds: 1 | 512, intents: 2 | 4 },
-        SkillDef { slot: Slot::Skill2, name: "Shadow Cyclone / Slam & Uppercut", kinds: 16 | 512, intents: 2 | 1 },
+        SkillDef { slot: Slot::Skill, name: "Shadows / Shadow Pact / Shadow Rhythm / Shadow Merge", kinds: 1 | 1024, intents: 2 | 4 },
+        SkillDef { slot: Slot::Skill2, name: "Shadow Cyclone / Shadow Tether", kinds: 16 | 512, intents: 2 | 1 },
         SkillDef { slot: Slot::Ult, name: "Shadow Flurry", kinds: 16 | 512, intents: 2 },
     ] },
     ChampionDef { id: "tfm2_custom_rally", name: "Rally", family: 13, role: "Melee", native: true, basic: BasicAttack { name: "Palm / Volley", range: 55000, reach: Range::Ranged }, skills: &[

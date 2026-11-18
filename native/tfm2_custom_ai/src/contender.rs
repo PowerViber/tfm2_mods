@@ -1,24 +1,24 @@
-//! Contender 2.0's bridge (round 178): reads the sim into a `contender_shadow_core::Frame` once per tick and applies the
+//! Contender 2.3's bridge (round 178): reads the sim into a `contender_shadow_core::Frame` once per tick and applies the
 //! core's effects. The engine walks him and throws his Jab / Cross (the data basic attack); native code casts everything
 //! else (the data slots are never-cast shells, like Kicker's, Kagami's and Basalt's).
 //!
-//! * His projected shadow (S1) is a hidden carrier unit with his max HP (Thalassa's and Raze's pattern): enemies can
-//!   hit it, the core relays 70% of what it loses to him, and its body is drawn as effects. It moves by engine glides.
-//! * His body during a projection: a named Bind, a named attack block and an unhurt buff, renewed as a short lease.
+//! * Shadow dodges: `on_damaged` asks the core (`try_dodge`) when an enemy champion's hit lands; a dodge heals the hit
+//!   straight back (Kratos's Heimdall's Sight pattern) and the core slips him aside on the next step.
+//! * Shadow Merge: a named move-speed buff (`ct_merge`) for its 6 s; his shadow body is drawn over him.
+//! * Shadow Tether: each tethered enemy carries a drawn shadow while it lasts.
 //! * The ult's vanish: `entity_set_invisible` plus an unhurt, CC-immune buff and a named Bind, renewed as a lease; he
-//!   reappears by `entity_set_pos` (a teleport by design), as does the projection swap.
-//! * Basic attacks: `on_attack` adds Shadow Rhythm's vulnerability and reports the hit to the core (stacks, echoes,
-//!   the ult's cooldown, the charge recharge, the haymaker).
+//!   reappears by `entity_set_pos` (a teleport by design).
+//! * Basic attacks: `on_attack` adds Shadow Rhythm's vulnerability and reports the hit to the core (stacks, Breaks,
+//!   echoes, tether copies, the bank, the dodge recharge, the haymaker).
 //! * The AI's walk (`Effect::Steer`) is a short `ct_go:x:y` buff the shared input AI turns into a move order.
 //!
 //! The old kit (Combination, Slip / Guard, Main Event) is retired: `contender_core.rs` and `contender_arena.rs` stay
 //! for the realm code that shares their types, and no ring is ever opened now.
-use crate::contender_shadow_core::{Core, Effect, Frame, Point, ShadowView, Unit, CELL, CELLS};
+use crate::contender_shadow_core::{Core, Effect, Frame, Point, Unit, CELL, CELLS};
 use crate::contender_shadow_data as d;
-use mod_api_stable::{AttackTypeV1, BuffV1, CcKindV1, CcV1, InputTargetV1, StableEffectType, StablePassive, StableSim, StatV1, UnitAttackV1};
+use mod_api_stable::{AttackTypeV1, BuffV1, CcKindV1, CcV1, InputTargetV1, StableEffectType, StablePassive, StableSim, StatV1};
 
 pub(crate) const GO_PREFIX: &str = "ct_go:";
-const SHADOW_TAG: &str = "ct_shadow_unit";
 /// a cleave spot other AIs should avoid: `ctw:x:y:r:until` on him (read by `danger_zones`)
 const ZONE_PREFIX: &str = "ctw:";
 
@@ -112,13 +112,10 @@ pub struct Contender {
     pub core: Core,
     profile: Option<crate::athlete_ai_core::Profile>,
     terrain: Option<(u64, Vec<bool>)>,
-    /// the projected shadow's carrier unit
-    pub shadow: Option<usize>,
     shadow_drawn: u64,
+    tether_drawn: u64,
     shadow_art: bool,
     shadow_directions: bool,
-    shadow_last: Option<Point>,
-    shadow_punch_until: u64,
     cyclone_drawn: Option<(Point, u64)>,
     /// enemies his basic attacks landed on since the last frame
     basic_hits: Vec<usize>,
@@ -157,7 +154,7 @@ impl Contender {
         let farming = crate::farming::Context::new(sim, owner);
         let mut units = vec![];
         for e in (0..sim.entity_count()).filter_map(|i| sim.entity_at(i)) {
-            if e.id() == owner || !e.is_alive() || Some(e.id()) == self.shadow {
+            if e.id() == owner || !e.is_alive() {
                 continue;
             }
             let e_team = e.team();
@@ -188,11 +185,6 @@ impl Contender {
                 farmable,
             });
         }
-        let shadow = self.shadow.and_then(|id| sim.get_entity(id).filter(|e| e.is_alive())).map(|e| {
-            let p = e.pos();
-            let h = e.hp();
-            ShadowView { id: e.id(), pos: Point::new(p.0 as i64, p.1 as i64), hp: h.0 as i64, max_hp: h.1.max(1) as i64 }
-        });
         const HOME: [(i64, i64); 2] = [(96_000, 864_000), (864_000, 96_000)];
         let home = HOME.get(team).copied().unwrap_or(HOME[0]);
         Frame {
@@ -213,7 +205,7 @@ impl Contender {
             manual: false,
             order: None,
             basic_hits: std::mem::take(&mut self.basic_hits),
-            shadow,
+            incoming: vec![],
         }
     }
 
@@ -228,33 +220,6 @@ impl Contender {
             true
         } else {
             false
-        }
-    }
-
-    /// The projected shadow's hidden carrier: his max HP and defences, no attack of its own (the core punches for it).
-    fn spawn_shadow(&mut self, sim: &mut StableSim, owner: usize, at: Point, hp: i64, ticks: u64) {
-        let Some(me) = sim.get_entity(owner) else { return };
-        let (team, stat_me) = (me.team(), me.stat());
-        let stat = StatV1 {
-            hp: hp.max(1) as usize,
-            defence: stat_me.defence,
-            magic_resistance: stat_me.magic_resistance,
-            move_speed: 1,
-            ..StatV1::default()
-        };
-        let attack = UnitAttackV1 { attack: 0, attack_ratio: 0, range: 1, cooltime: 5_184_000, duration: 1, start_timing: 0, ..UnitAttackV1::default() };
-        let Some(id) = sim.spawn_unit("alchemist", owner, team, at.x.max(0) as u64, at.y.max(0) as u64, ticks, &stat, &attack) else { return };
-        for k in [CcKindV1::BlockAttack, CcKindV1::BlockSkill] {
-            sim.apply_cc(id, &named(k, ticks, "ct_shadow_hold"));
-        }
-        sim.apply_cc(id, &named(CcKindV1::Animation, ticks, "ct_shadow_hidden"));
-        sim.add_buff(id, &crate::timed(&format!("{SHADOW_TAG}:{owner}"), ticks as usize));
-        self.shadow = Some(id);
-        self.shadow_drawn = (sim.tick() as u64).saturating_sub(10);
-        self.shadow_last = None;
-        if self.shadow_art {
-            crate::fx_unit(sim, "ct_body_idle0", owner, id, 10);
-            self.shadow_drawn = sim.tick() as u64;
         }
     }
 
@@ -304,11 +269,6 @@ impl Contender {
                     crate::steve::note_placed(sim, owner, to.x, to.y);
                     replace_buff(sim, owner, &crate::timed(crate::place::MOVED, 2));
                 }
-                Effect::Hold { ticks } => {
-                    sim.apply_cc(owner, &named(CcKindV1::Bind, ticks, "ct_hold"));
-                    sim.apply_cc(owner, &named(CcKindV1::BlockAttack, ticks, "ct_hold_attack"));
-                    replace_buff(sim, owner, &unhurt("ct_hold", ticks, false));
-                }
                 Effect::Vanish { ticks } => {
                     sim.entity_set_invisible(owner, ticks as usize);
                     sim.apply_cc(owner, &named(CcKindV1::Bind, ticks, "ct_vanish"));
@@ -318,26 +278,15 @@ impl Contender {
                 Effect::Invulnerable { ticks } => {
                     replace_buff(sim, owner, &unhurt("ct_inv", ticks, false));
                 }
-                Effect::SpawnShadow { at, hp, ticks } => {
-                    if let Some(old) = self.shadow.take() {
-                        sim.entity_set_hp(old, 0);
-                    }
-                    self.spawn_shadow(sim, owner, at, hp, ticks);
+                Effect::Merge { ticks, move_pct } => {
+                    let mut b = crate::timed("ct_merge", ticks as usize);
+                    b.move_speed_mult = move_pct as i32;
+                    replace_buff(sim, owner, &b);
+                    self.shadow_drawn = 0;
                 }
-                Effect::MoveShadow { to, ticks } => {
-                    if let Some(id) = self.shadow {
-                        crate::motion::glide(sim, id, (to.x, to.y), ticks, crate::motion::Kind::SelfMove);
-                    }
-                }
-                Effect::DespawnShadow => {
-                    if let Some(id) = self.shadow.take() {
-                        sim.entity_set_hp(id, 0);
-                    }
-                }
-                Effect::SelfDamage { amount } => {
-                    if amount > 0 {
-                        sim.deal_damage_raw(owner, owner, amount as usize, 0, AttackTypeV1::Skill);
-                    }
+                Effect::Bank { count } => {
+                    remove_prefix(sim, owner, "ct_bank:");
+                    sim.add_buff(owner, &BuffV1::named(&format!("ct_bank:{count}")));
                 }
                 Effect::Rhythm { attack_speed, attack_permille, move_permille, ticks } => {
                     let mut b = crate::timed("ct_rhythm", ticks as usize);
@@ -347,17 +296,15 @@ impl Contender {
                     replace_buff(sim, owner, &b);
                 }
                 Effect::Charges { count } => {
+                    // the pips show up to five (Merge's extra dodges ride on top)
                     remove_prefix(sim, owner, "ct_charges:");
-                    sim.add_buff(owner, &BuffV1::named(&format!("ct_charges:{count}")));
+                    sim.add_buff(owner, &BuffV1::named(&format!("ct_charges:{}", count.clamp(0, d::CHARGES_MAX))));
                 }
                 Effect::Steer { to } => {
                     remove_prefix(sim, owner, GO_PREFIX);
                     sim.add_buff(owner, &crate::timed(&format!("{GO_PREFIX}{}:{}", to.x, to.y), 6));
                 }
                 Effect::Fx { name, at, ticks, heading } => {
-                    if name == "ct_cross" && ticks == 10 && self.shadow.is_some() {
-                        self.shadow_punch_until = tick + ticks;
-                    }
                     if name == "ct_shadow" {
                         // a cleave spot: other AIs read it as danger
                         remove_prefix(sim, owner, ZONE_PREFIX);
@@ -392,28 +339,18 @@ impl Contender {
                 self.cyclone_drawn = None;
             }
         }
-        // the projected shadow's body: drawn where its carrier stands
-        if let Some(id) = self.shadow {
-            if tick >= self.shadow_drawn + 10 {
-                if let Some((x, y)) = sim.get_entity(id).filter(|e| e.is_alive()).map(|e| e.pos()) {
-                    let at = Point::new(x as i64, y as i64);
-                    if self.shadow_art {
-                        let previous = self.shadow_last.unwrap_or(at);
-                        let moving = at.dist(previous) > 1000.0;
-                        let left = if moving { at.x < previous.x } else {
-                            sim.get_entity(owner).is_some_and(|e| (e.pos().0 as i64) > at.x)
-                        };
-                        let punching = tick < self.shadow_punch_until;
-                        let name = format!("ct_body_{}{}{}", if punching { "punch" } else if moving { "run" } else { "idle" },
-                            if punching { (tick / 10) % 2 } else if moving { (tick / 8) % 6 } else { 0 }, if left { "_l" } else { "" });
-                        crate::fx_unit(sim, &name, owner, id, 10);
-                    } else {
-                        crate::fx_point(sim, "ct_shadow", owner, x as i64, y as i64, 12);
-                    }
-                    self.shadow_last = Some(at);
-                    self.shadow_drawn = tick;
-                }
+        // Shadow Merge: his shadow drawn over him; Shadow Tether: a shadow on each tethered enemy
+        if self.core.merged(tick) && tick >= self.shadow_drawn + 10 {
+            let name = if self.shadow_art { "ct_body_idle0" } else { "ct_shadow" };
+            crate::fx_unit(sim, name, owner, owner, 10);
+            self.shadow_drawn = tick;
+        }
+        if !self.core.tethers.is_empty() && tick >= self.tether_drawn + 12 {
+            let name = if self.shadow_art { "ct_echo_t12" } else { "ct_echo" };
+            for (id, _) in self.core.tethers.clone() {
+                crate::fx_unit(sim, name, owner, id, 12);
             }
+            self.tether_drawn = tick;
         }
     }
 }
@@ -430,15 +367,24 @@ impl StablePassive for Contender {
     }
     fn on_spawn(&mut self, sim: &mut StableSim, _: usize, id: usize) {
         self.core.respawn();
-        if let Some(s) = self.shadow.take() {
-            sim.entity_set_hp(s, 0);
-        }
+        sim.entity_remove_buff(id, "ct_merge");
         remove_prefix(sim, id, GO_PREFIX);
         remove_prefix(sim, id, ZONE_PREFIX);
         self.basic_hits.clear();
         self.in_skill = false;
-        self.shadow_last = None;
         self.cyclone_drawn = None;
+    }
+    /// A Shadow dodge: an enemy champion's hit, with a dodge ready, is healed straight back (Kratos's pattern; the hook
+    /// reports damage after it lands) and the core slips him aside on its next step.
+    fn on_damaged(&mut self, sim: &mut StableSim, _: usize, id: usize, attacker: usize, damage: usize) {
+        if damage == 0 {
+            return;
+        }
+        let team = sim.get_entity(id).map(|e| e.team());
+        let Some(from) = sim.get_entity(attacker).filter(|a| a.is_champion() && Some(a.team()) != team).map(|a| a.pos()) else { return };
+        if self.core.try_dodge(sim.tick() as u64, Point::new(from.0 as i64, from.1 as i64)) {
+            sim.heal(id, id, damage);
+        }
     }
     /// His Jab / Cross: never across a cage or a ring; Shadow Rhythm's vulnerability; the hit goes to the core.
     fn on_attack(&mut self, sim: &mut StableSim, _: usize, id: usize, target: usize, damage: &mut usize) {
@@ -463,10 +409,5 @@ impl StablePassive for Contender {
         let f = self.frame(sim, id);
         let effects = self.core.step(&f);
         self.apply(sim, id, effects);
-        if !f.alive {
-            if let Some(s) = self.shadow.take() {
-                sim.entity_set_hp(s, 0);
-            }
-        }
     }
 }

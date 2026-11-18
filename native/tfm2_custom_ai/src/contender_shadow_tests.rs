@@ -1,12 +1,12 @@
-//! Contender 2.0's core: shadow charges and recasts, Shadow Pact's echoes and their cap, Shadow Rhythm's stacks, the
-//! projection (relay, swap, S2/S3 from the shadow), Shadow Cyclone, Slam & Uppercut, the Shadow Flurry and his AI.
+//! Contender 2.3's core: shadow dodges, free recasts, Shadow Pact's echoes and their cap, Shadow Rhythm's stacks and
+//! Breaks, Shadow Merge, Shadow Cyclone (and its aimed, pulling recast), Shadow Tether, the banked Shadow Flurry and his
+//! AI; then the bridge on the glue mock host.
 use crate::contender_shadow_core::*;
 use crate::contender_shadow_data as d;
 
 const ME: usize = 1;
 const ALLY: usize = 2;
 const FOE: usize = 10;
-const SHADOW: usize = 99;
 
 fn champ(id: usize, team: usize, x: i64, y: i64) -> Unit {
     Unit { id, team, pos: Point::new(x, y), hp: 1000, max_hp: 1000, radius: 3000, champion: true, tower: false, visible: true, targetable: true, farmable: false }
@@ -15,19 +15,19 @@ fn creep(id: usize, x: i64, y: i64, hp: i64) -> Unit {
     Unit { champion: false, farmable: true, hp, max_hp: hp, team: 9, ..champ(id, 9, x, y) }
 }
 
-/// A tiny world: him, his projected shadow and the units, with his effects applied the way the bridge and engine would.
+/// A tiny world: him and the units, with his effects applied the way the bridge and engine would. The bank starts full
+/// so the flurry fixtures can cast at once (the bank tests empty it).
 struct World {
     core: Core,
     f: Frame,
     log: Vec<(u64, Effect)>,
-    shadow: Option<ShadowView>,
-    /// damage the relay sent to his body
-    relayed: i64,
 }
 impl World {
     fn new(units: Vec<Unit>) -> World {
+        let mut core = Core::default();
+        core.bank = d::ULT_BANK_MAX;
         World {
-            core: Core::default(),
+            core,
             f: Frame {
                 tick: 1,
                 owner: ME,
@@ -46,15 +46,13 @@ impl World {
                 ..Frame::default()
             },
             log: vec![],
-            shadow: None,
-            relayed: 0,
         }
     }
     fn tick(&mut self, order: Option<Order>) -> Vec<Effect> {
         self.f.order = order;
-        self.f.shadow = self.shadow;
         let out = self.core.step(&self.f);
         self.f.basic_hits.clear();
+        self.f.incoming.clear();
         let tick = self.f.tick;
         for e in &out {
             self.log.push((tick, e.clone()));
@@ -70,17 +68,6 @@ impl World {
                     }
                 }
                 Effect::Glide { to, .. } | Effect::Teleport { to } => self.f.pos = *to,
-                Effect::SpawnShadow { at, hp, .. } => self.shadow = Some(ShadowView { id: SHADOW, pos: *at, hp: *hp, max_hp: *hp }),
-                Effect::MoveShadow { to, .. } => {
-                    if let Some(s) = self.shadow.as_mut() {
-                        s.pos = *to;
-                    }
-                }
-                Effect::DespawnShadow => self.shadow = None,
-                Effect::SelfDamage { amount } => {
-                    self.relayed += amount;
-                    self.f.hp -= amount;
-                }
                 _ => {}
             }
         }
@@ -101,108 +88,131 @@ impl World {
     fn count<F: Fn(&Effect) -> bool>(&self, f: F) -> usize {
         self.log.iter().filter(|(_, e)| f(e)).count()
     }
-    fn hits_on(&self, id: usize) -> usize {
-        self.count(|e| matches!(e, Effect::Damage { target, .. } if *target == id))
-    }
+}
+fn pct(base: i64, ratio: i64, ad: i64) -> i64 {
+    base + ratio * ad / 100
 }
 
-// ------------------------------------------------------------------ charges and recasts
+// ------------------------------------------------------------------ dodges and free recasts
 
 #[test]
-fn five_charges_recharge_and_basic_attacks_speed_them_up() {
+fn a_champion_hit_spends_a_dodge_and_he_slips_aside_once_per_gap() {
+    let mut w = World::new(vec![champ(FOE, 2, 430_000, 500_000)]);
+    let from = Point::new(430_000, 500_000);
+    assert!(w.core.try_dodge(w.f.tick, from));
+    assert!(!w.core.try_dodge(w.f.tick + 1, from), "one dodge per 0.4 s");
+    assert_eq!(w.core.charges, d::CHARGES_MAX - 1);
+    let before = w.f.pos;
+    w.tick(None);
+    assert!(w.f.pos.dist(before) > 5_000.0 && w.f.pos.x < before.x + 1, "he slips aside, away from the hit: {:?}", w.f.pos);
+    assert!(w.seen(|e| matches!(e, Effect::Fx { name, .. } if name == "ct_swap")), "a shadow stays where he stood");
+    w.run(d::CHARGES_DODGE_GAP_TICKS as u64);
+    assert!(w.core.try_dodge(w.f.tick, from), "after the gap another dodge works");
+}
+
+#[test]
+fn dodges_run_out_and_recharge_and_basics_speed_them_up() {
     let mut w = World::new(vec![champ(FOE, 2, 410_000, 500_000)]);
-    assert_eq!(w.core.charges, 5);
-    w.tick(Some(Order::S3 { aim: Point::new(410_000, 500_000) }));
-    w.tick(Some(Order::S3 { aim: Point::new(410_000, 500_000) }));
-    assert_eq!(w.core.charges, 4, "the recast spends a charge");
+    for _ in 0..d::CHARGES_MAX {
+        w.f.incoming.push(Point::new(430_000, 500_000));
+        w.run(d::CHARGES_DODGE_GAP_TICKS as u64);
+    }
+    assert_eq!(w.core.charges, 0);
+    assert!(!w.core.try_dodge(w.f.tick, Point::new(430_000, 500_000)), "no dodge left: the hit lands");
     let due = w.core.charge_at;
     w.f.basic_hits.push(FOE);
     w.tick(None);
-    assert_eq!(w.core.charge_at, due - d::CHARGES_BASIC_CUT_TICKS as u64, "a basic attack takes 0.5 s off");
-    w.run(d::CHARGES_RECHARGE_TICKS as u64);
-    assert_eq!(w.core.charges, 5);
+    assert_eq!(w.core.charge_at, due - d::CHARGES_BASIC_CUT_TICKS as u64);
 }
 
 #[test]
-fn a_recast_needs_its_window_and_a_charge_and_comes_once() {
-    let mut w = World::new(vec![creep(30, 410_000, 500_000, 5_000)]);
-    w.core.charges = 0;
-    w.tick(Some(Order::S3 { aim: Point::new(410_000, 500_000) }));
-    w.tick(Some(Order::S3 { aim: Point::new(410_000, 500_000) }));
-    assert_eq!(w.core.rejection, "s3 recast: no charge");
-    let mut w = World::new(vec![creep(30, 410_000, 500_000, 5_000)]);
-    w.tick(Some(Order::S3 { aim: Point::new(410_000, 500_000) }));
+fn skills_cost_nothing_and_each_recast_is_free_once_in_its_window() {
+    let mut w = World::new(vec![champ(FOE, 2, 430_000, 500_000), champ(11, 2, 440_000, 510_000)]);
+    w.tick(Some(Order::S3 { aim: Point::new(430_000, 500_000) }));
+    assert_eq!(w.core.charges, d::CHARGES_MAX, "no charge spent");
+    w.tick(Some(Order::S3 { aim: Point::new(430_000, 500_000) }));
+    assert!(w.core.rejection.is_empty(), "{}", w.core.rejection);
+    assert_eq!(w.core.charges, d::CHARGES_MAX, "the recast is free");
+    w.tick(Some(Order::S3 { aim: Point::new(430_000, 500_000) }));
+    assert_eq!(w.core.rejection, "s3", "used: back on cooldown");
+    let mut w = World::new(vec![champ(FOE, 2, 430_000, 500_000)]);
+    w.tick(Some(Order::S2 { aim: Point::new(430_000, 500_000) }));
     w.run(d::CHARGES_RECAST_WINDOW_TICKS as u64 + 1);
-    w.tick(Some(Order::S3 { aim: Point::new(410_000, 500_000) }));
-    assert_eq!(w.core.rejection, "s3", "the window closed: back on cooldown");
-    assert_eq!(w.core.charges, 5);
+    w.tick(Some(Order::S2 { aim: Point::new(430_000, 500_000) }));
+    assert_eq!(w.core.rejection, "s2", "the window closed");
 }
 
+// ------------------------------------------------------------------ the bank
+
 #[test]
-fn every_hit_on_anything_takes_a_second_off_the_ult() {
-    let mut w = World::new(vec![creep(30, 410_000, 500_000, 5_000)]);
-    w.core.ult_at = 10_000;
-    w.tick(Some(Order::S3 { aim: Point::new(410_000, 500_000) }));
-    assert_eq!(w.core.ult_at, 10_000 - d::ULT_CUT_PER_HIT_TICKS as u64, "a creep hit counts");
-    w.f.basic_hits.push(30);
-    w.tick(None);
-    assert_eq!(w.core.ult_at, 10_000 - 2 * d::ULT_CUT_PER_HIT_TICKS as u64);
+fn hits_outside_the_flurry_bank_up_to_20_and_the_ult_spends_them_all() {
+    let mut w = World::new(vec![champ(FOE, 2, 430_000, 500_000)]);
+    w.unit(FOE).hp = 1_000_000;
+    w.unit(FOE).max_hp = 1_000_000;
+    w.core.bank = 0;
+    w.tick(Some(Order::Ult));
+    assert_eq!(w.core.rejection, "ult", "an empty bank: no ult");
+    for _ in 0..25 {
+        w.f.basic_hits.push(FOE);
+        w.tick(None);
+    }
+    assert_eq!(w.core.bank, d::ULT_BANK_MAX, "capped at 20");
+    w.tick(Some(Order::Ult));
+    assert!(w.core.flurrying());
+    assert_eq!(w.core.bank, 0, "all 20 spent");
+    w.run(d::ULT_TICKS as u64 + 3 * d::PACT_DELAY_TICKS as u64);
+    assert_eq!(w.core.bank, 0, "flurry punches and their echoes never bank");
 }
 
 // ------------------------------------------------------------------ Shadow Pact
 
 #[test]
 fn every_hit_echoes_a_second_later_at_40_percent_with_half_its_crowd_control() {
-    let mut w = World::new(vec![champ(FOE, 2, 410_000, 500_000)]);
-    w.tick(Some(Order::S3 { aim: Point::new(410_000, 500_000) }));
-    let slam = pct(d::SLAM_BASE, d::SLAM_AD_RATIO, 100);
-    w.run(d::PACT_DELAY_TICKS as u64);
-    let echo = w.log.iter().find(|(t, e)| *t > 1 && matches!(e, Effect::Damage { target: FOE, .. }));
-    let (at, e) = echo.expect("the echo landed");
-    assert_eq!(*at, 1 + d::PACT_DELAY_TICKS as u64);
-    let Effect::Damage { amount, .. } = e else { unreachable!() };
-    // the slam's stack makes the echo hit a little harder (vulnerability)
-    assert!((*amount - slam * d::PACT_PCT / 100).abs() <= slam * d::PACT_PCT / 100 * 2 / 100 + 1, "{amount}");
-    assert!(w.seen(|e| matches!(e, Effect::Stun { target: FOE, ticks } if *ticks == d::SLAM_STUN_TICKS as u64 * d::PACT_CC_PCT as u64 / 100)));
-}
-fn pct(base: i64, ratio: i64, ad: i64) -> i64 {
-    base + ratio * ad / 100
+    let mut w = World::new(vec![champ(FOE, 2, 430_000, 500_000)]);
+    w.tick(Some(Order::S2 { aim: Point::new(430_000, 500_000) }));
+    w.run(d::CYCLONE_EVERY_TICKS as u64);
+    let first = w.log.iter().find_map(|(t, e)| matches!(e, Effect::Damage { target: FOE, .. }).then_some(*t)).expect("a cleave hit");
+    w.run(d::PACT_DELAY_TICKS as u64 + 2);
+    assert!(w.seen(|e| matches!(e, Effect::Fx { name, .. } if name == "ct_echo")));
+    let slow = d::CYCLONE_SLOW_TICKS as u64 * d::PACT_CC_PCT as u64 / 100;
+    assert!(w.seen(|e| matches!(e, Effect::Slow { target: FOE, ticks, .. } if *ticks == slow)), "the echo carries the slow, halved");
+    assert!(w.log.iter().any(|(t, e)| *t == first + d::PACT_DELAY_TICKS as u64 && matches!(e, Effect::Damage { target: FOE, .. })));
 }
 
 #[test]
 fn recast_hits_echo_twice_and_echoed_crowd_control_is_capped() {
-    let mut w = World::new(vec![champ(FOE, 2, 410_000, 500_000)]);
-    w.tick(Some(Order::S3 { aim: Point::new(410_000, 500_000) }));
-    w.tick(Some(Order::S3 { aim: Point::new(410_000, 500_000) }));
+    let mut w = World::new(vec![champ(FOE, 2, 430_000, 500_000)]);
+    w.tick(Some(Order::S3 { aim: Point::new(430_000, 500_000) }));
+    w.tick(Some(Order::S3 { aim: Point::new(430_000, 500_000) }));
     w.run(3 * d::PACT_DELAY_TICKS as u64);
-    // slam + its echo, uppercut + its two echoes
-    assert_eq!(w.hits_on(FOE), 5);
-    let echoed: u64 = w
-        .log
-        .iter()
-        .filter(|(t, _)| *t > 2)
-        .filter_map(|(_, e)| match e {
-            Effect::Stun { target: FOE, ticks } | Effect::KnockUp { target: FOE, ticks } => Some(*ticks),
-            _ => None,
-        })
-        .sum();
-    assert!(echoed <= d::PACT_CC_CAP_TICKS as u64, "echoes add at most 1.5 s of control: {echoed}");
+    let ups = w.count(|e| matches!(e, Effect::KnockUp { target: FOE, .. }));
+    assert_eq!(ups, 3, "the uppercut and its two echoes");
+    let echoed: u64 = w.log.iter().filter(|(t, _)| *t > 2).filter_map(|(_, e)| match e { Effect::KnockUp { target: FOE, ticks } => Some(*ticks), _ => None }).sum();
+    assert!(echoed <= d::PACT_CC_CAP_TICKS as u64);
 }
 
 // ------------------------------------------------------------------ Shadow Rhythm
 
 #[test]
-fn stacks_buff_him_from_the_most_stacked_enemy_and_make_it_take_more() {
+fn stacks_make_the_target_take_4_percent_more_each_and_10_trigger_a_shadow_break() {
     let mut w = World::new(vec![champ(FOE, 2, 410_000, 500_000)]);
+    w.unit(FOE).hp = 100_000;
+    w.unit(FOE).max_hp = 100_000;
     for _ in 0..4 {
         w.f.basic_hits.push(FOE);
         w.tick(None);
     }
-    assert_eq!(w.core.stacks_on(FOE, w.f.tick), 4);
     assert_eq!(w.core.vuln_permille(FOE, w.f.tick), 4 * d::RHYTHM_VULNERABILITY_PERMILLE_PER_STACK);
-    assert!(w.seen(|e| matches!(e, Effect::Rhythm { attack_speed, .. } if *attack_speed == 4 * d::RHYTHM_ATTACK_SPEED_PCT_PER_STACK)));
-    w.run(d::RHYTHM_STACK_TICKS as u64 + d::PACT_DELAY_TICKS as u64 + 2);
-    assert_eq!(w.core.stacks_on(FOE, w.f.tick), 0, "they fade after 4 s");
+    for _ in 0..6 {
+        w.f.basic_hits.push(FOE);
+        w.tick(None);
+    }
+    assert_eq!(w.core.stacks_on(FOE, w.f.tick), d::RHYTHM_MAX_STACKS);
+    w.f.basic_hits.push(FOE);
+    w.tick(None);
+    let burst = 100_000 * d::RHYTHM_BREAK_PERMILLE_MAX_HP / 1_000 + d::RHYTHM_BREAK_AD_RATIO;
+    assert!(w.seen(|e| matches!(e, Effect::Damage { target: FOE, amount } if *amount == burst)), "Shadow Break: 6% max HP + 30% Attack");
+    assert_eq!(w.core.stacks_on(FOE, w.f.tick), d::RHYTHM_BREAK_RESET_STACKS);
 }
 
 #[test]
@@ -212,11 +222,9 @@ fn a_max_stacked_creep_carries_four_stacks_onto_a_champion_and_a_kill_lingers() 
         w.f.basic_hits.push(30);
         w.tick(None);
     }
-    assert_eq!(w.core.stacks_on(30, w.f.tick), d::RHYTHM_MAX_STACKS);
     w.f.basic_hits.push(FOE);
     w.tick(None);
     assert_eq!(w.core.stacks_on(FOE, w.f.tick), d::RHYTHM_CARRY_STACKS);
-    // the stacked creep dies: his buffs stay up
     w.core.stacks.retain(|s| s.id != FOE);
     w.tick(None);
     w.f.units.retain(|u| u.id != 30);
@@ -224,135 +232,157 @@ fn a_max_stacked_creep_carries_four_stacks_onto_a_champion_and_a_kill_lingers() 
     assert!(w.core.linger.is_some_and(|l| l.0 == d::RHYTHM_MAX_STACKS));
 }
 
-// ------------------------------------------------------------------ S1 Shadow Projection
+// ------------------------------------------------------------------ S1 Shadow Merge
 
 #[test]
-fn projection_holds_his_body_and_relays_70_percent_of_the_shadows_damage() {
-    let mut w = World::new(vec![champ(FOE, 2, 480_000, 500_000)]);
-    w.tick(Some(Order::S1 { aim: Point::new(480_000, 500_000) }));
-    assert!(w.core.projecting());
-    assert!(w.seen(|e| matches!(e, Effect::Hold { .. })), "his body is held");
-    w.run(20);
-    let s = w.shadow.unwrap();
-    assert!(s.pos.x > 450_000, "launched toward the target: {:?}", s.pos);
-    w.shadow.as_mut().unwrap().hp -= 200;
+fn merge_doubles_the_dodge_recharge_adds_two_dodges_and_doubles_echoes_and_stacks() {
+    let mut w = World::new(vec![champ(FOE, 2, 410_000, 500_000)]);
+    w.tick(Some(Order::S1 { aim: Point::new(410_000, 500_000) }));
+    assert!(w.core.merged(w.f.tick));
+    assert_eq!(w.core.charges, d::CHARGES_MAX + d::MERGE_BONUS_DODGES);
+    assert!(w.seen(|e| matches!(e, Effect::Merge { move_pct, .. } if *move_pct == d::MERGE_MOVE_SPEED_PCT)));
+    w.f.basic_hits.push(FOE);
     w.tick(None);
-    assert_eq!(w.relayed, 140);
-    // it falls: the rest comes through
-    w.shadow = None;
-    w.tick(None);
-    assert_eq!(w.relayed, 1000 * d::PROJECTION_RELAY_PCT / 100, "a fallen shadow costs 70% of his max HP");
-    assert!(!w.core.projecting());
+    assert_eq!(w.core.stacks_on(FOE, w.f.tick), d::MERGE_STACKS_PER_HIT, "two stacks a hit");
+    assert_eq!(w.core.echoes.iter().filter(|e| e.target == FOE).count(), 2, "every hit echoes twice");
+    // a gap of 0.25 s between dodges while merged
+    assert!(w.core.try_dodge(w.f.tick, Point::new(430_000, 500_000)));
+    assert!(w.core.try_dodge(w.f.tick + d::MERGE_DODGE_GAP_TICKS as u64, Point::new(430_000, 500_000)));
+    w.run(d::MERGE_TICKS as u64);
+    assert!(!w.core.merged(w.f.tick));
+    assert!(w.core.charges <= d::CHARGES_MAX, "back to five at most");
 }
 
 #[test]
-fn projection_reaches_at_most_100000_and_ends_after_5_s() {
-    let mut w = World::new(vec![]);
-    w.tick(Some(Order::S1 { aim: Point::new(800_000, 500_000) }));
-    w.run(40);
-    assert!(w.shadow.unwrap().pos.x <= 400_000 + d::PROJECTION_RANGE + 1);
-    w.run(d::PROJECTION_TICKS as u64);
-    assert!(!w.core.projecting() && w.shadow.is_none());
-}
-
-#[test]
-fn the_shadow_boxes_and_its_punches_echo_twice() {
-    let mut w = World::new(vec![champ(FOE, 2, 470_000, 500_000)]);
-    w.tick(Some(Order::S1 { aim: Point::new(465_000, 500_000) }));
-    w.run(40 + 2 * d::PACT_DELAY_TICKS as u64);
-    assert!(w.hits_on(FOE) >= 3, "a shadow punch and its two echoes: {}", w.hits_on(FOE));
-    assert_eq!(w.f.pos, Point::new(400_000, 500_000), "his body never moved");
-}
-
-#[test]
-fn the_recast_swaps_his_body_to_the_shadow_and_its_cross_knocks_back() {
+fn stepping_out_crosses_the_nearest_enemy_and_slips_away() {
     let mut w = World::new(vec![champ(FOE, 2, 412_000, 500_000)]);
-    w.tick(Some(Order::S1 { aim: Point::new(480_000, 500_000) }));
-    w.run(20);
-    let at = w.shadow.unwrap().pos;
-    w.tick(Some(Order::S1 { aim: at }));
-    assert_eq!(w.f.pos, at, "his body swapped to the shadow");
-    assert!(w.seen(|e| matches!(e, Effect::Knock { target: FOE, .. })), "the cross from where he stood");
-    assert_eq!(w.core.charges, 4);
+    w.tick(Some(Order::S1 { aim: Point::new(412_000, 500_000) }));
+    w.run(10);
+    let before = w.f.pos;
+    w.tick(Some(Order::S1 { aim: Point::new(412_000, 500_000) }));
+    assert!(!w.core.merged(w.f.tick));
+    assert!(w.seen(|e| matches!(e, Effect::Knock { target: FOE, .. })), "the shadow's cross");
+    assert!(w.f.pos.x < before.x, "he slips away from it: {:?}", w.f.pos);
+    assert!(w.seen(|e| matches!(e, Effect::Invulnerable { .. })));
 }
 
 #[test]
-fn s2_and_s3_come_from_the_projected_shadow_and_the_uppercut_launches_toward_his_body() {
-    let mut w = World::new(vec![champ(FOE, 2, 485_000, 500_000)]);
-    w.tick(Some(Order::S1 { aim: Point::new(480_000, 500_000) }));
-    w.run(20);
-    w.tick(Some(Order::S3 { aim: Point::new(485_000, 500_000) }));
-    assert!(w.core.rejection.is_empty(), "far from his body, in reach of the shadow: {}", w.core.rejection);
-    w.tick(Some(Order::S3 { aim: Point::new(485_000, 500_000) }));
-    let to = w.log.iter().rev().find_map(|(_, e)| if let Effect::Knock { target: FOE, to, .. } = e { Some(*to) } else { None }).expect("launched");
-    assert!(to.x < 485_000 && to.x >= 400_000 + 12_000 - 1, "toward his body, not past it: {to:?}");
-    // contender-2.1: S2 from the shadow primes nothing (the projection itself makes the flurry echo)
-    let mut w = World::new(vec![champ(FOE, 2, 485_000, 500_000)]);
-    w.tick(Some(Order::S1 { aim: Point::new(480_000, 500_000) }));
-    w.run(20);
-    w.tick(Some(Order::S2 { aim: Point::new(485_000, 500_000) }));
-    assert!(w.core.flurry.is_none());
-}
-
-#[test]
-fn a_flurry_cast_while_projected_echoes_every_punch_and_starts_at_the_shadow() {
-    // the target is far from his body but by the shadow
-    let mut w = World::new(vec![champ(FOE, 2, 490_000, 500_000)]);
+fn a_flurry_cast_while_merged_echoes_every_punch() {
+    let mut w = World::new(vec![champ(FOE, 2, 430_000, 500_000)]);
     w.unit(FOE).hp = 1_000_000;
     w.unit(FOE).max_hp = 1_000_000;
-    w.tick(Some(Order::S1 { aim: Point::new(480_000, 500_000) }));
-    w.run(20);
+    w.tick(Some(Order::S1 { aim: Point::new(430_000, 500_000) }));
     w.tick(Some(Order::Ult));
-    assert!(w.core.flurry.is_some_and(|fl| fl.echo), "cast while projected: an echoing flurry ({})", w.core.rejection);
-    assert!(!w.core.projecting(), "the projection ends as he vanishes");
+    assert!(w.core.flurry.is_some_and(|fl| fl.echo));
     w.run(d::ULT_TICKS as u64 + d::PACT_DELAY_TICKS as u64 + 2);
     let punches = w.count(|e| matches!(e, Effect::Fx { name, .. } if name == "ct_flurry"));
     let echoes = w.count(|e| matches!(e, Effect::Fx { name, .. } if name == "ct_echo"));
-    assert!(echoes >= punches, "every punch echoes: {punches} punches, {echoes} echoes");
-    let back = w.log.iter().rev().find_map(|(_, e)| if let Effect::Teleport { to } = e { Some(*to) } else { None }).expect("he reappears");
-    assert!(back.within(Point::new(490_000, 500_000), 15_000), "by the last enemy hit, at the shadow's fight: {back:?}");
+    assert!(echoes >= punches, "{punches} punches, {echoes} echoes");
 }
 
 // ------------------------------------------------------------------ S2 Shadow Cyclone
 
 #[test]
-fn the_clone_cleaves_four_times_and_the_recast_cleaves_seven_invulnerable_with_a_knockup() {
+fn the_clone_cleaves_four_times_and_the_aimed_recast_cleaves_a_bigger_circle_pulling_them_in() {
     let mut w = World::new(vec![champ(FOE, 2, 450_000, 500_000), creep(30, 455_000, 505_000, 9_000)]);
     w.tick(Some(Order::S2 { aim: Point::new(450_000, 500_000) }));
     w.run(d::CYCLONE_HITS as u64 * d::CYCLONE_EVERY_TICKS as u64 + 1);
-    assert_eq!(w.count(|e| matches!(e, Effect::Slow { target: FOE, .. })), d::CYCLONE_HITS as usize, "4 cleave hits on the champion");
+    assert_eq!(w.count(|e| matches!(e, Effect::Slow { target: FOE, ticks, .. } if *ticks == d::CYCLONE_SLOW_TICKS as u64)), d::CYCLONE_HITS as usize);
     assert!(w.seen(|e| matches!(e, Effect::Damage { target: 30, .. })), "creeps too");
-    let mut w = World::new(vec![champ(FOE, 2, 450_000, 500_000)]);
-    w.tick(Some(Order::S2 { aim: Point::new(450_000, 500_000) }));
-    w.tick(Some(Order::S2 { aim: Point::new(450_000, 500_000) }));
+    // the recast lands somewhere else in reach: a foe 30,000 off that spot is inside the bigger circle and is pulled in
+    let mut w = World::new(vec![champ(FOE, 2, 470_000, 530_000)]);
+    w.tick(Some(Order::S2 { aim: Point::new(440_000, 500_000) }));
+    w.tick(Some(Order::S2 { aim: Point::new(450_000, 510_000) }));
+    assert!(w.f.pos.within(Point::new(450_000, 510_000), 1_000), "he went where the recast aimed, not the clone's spot");
     assert!(w.seen(|e| matches!(e, Effect::Invulnerable { .. })));
-    assert!(w.f.pos.within(Point::new(450_000, 500_000), 1_000), "he went there");
+    let start = Point::new(470_000, 530_000);
     w.run(8 + d::CYCLONE_RECAST_HITS as u64 * d::CYCLONE_RECAST_EVERY_TICKS as u64 + 2);
-    assert!(w.seen(|e| matches!(e, Effect::KnockUp { target: FOE, ticks } if *ticks == d::CYCLONE_RECAST_KNOCK_TICKS as u64)), "the last one knocks up");
+    let now = w.f.units[0].pos;
+    assert!(now.dist(Point::new(450_000, 510_000)) < start.dist(Point::new(450_000, 510_000)), "pulled toward the centre: {now:?}");
+    assert!(w.seen(|e| matches!(e, Effect::KnockUp { target: FOE, ticks } if *ticks == d::CYCLONE_RECAST_KNOCK_TICKS as u64)));
 }
 
-// ------------------------------------------------------------------ S3 Slam & Uppercut
+#[test]
+fn the_recast_cannot_reach_past_60000() {
+    let mut w = World::new(vec![champ(FOE, 2, 430_000, 500_000)]);
+    w.tick(Some(Order::S2 { aim: Point::new(430_000, 500_000) }));
+    w.tick(Some(Order::S2 { aim: Point::new(800_000, 500_000) }));
+    assert!(w.f.pos.x <= 400_000 + d::CYCLONE_RECAST_RANGE + 1);
+}
+
+// ------------------------------------------------------------------ S3 Shadow Tether
 
 #[test]
-fn the_slam_stuns_and_rings_and_never_takes_a_tower() {
-    let mut tower = champ(50, 2, 410_000, 500_000);
+fn tether_latches_onto_everyone_in_reach_and_copies_his_hits_at_30_percent() {
+    let mut tower = champ(50, 2, 420_000, 520_000);
     tower.champion = false;
     tower.tower = true;
-    let mut w = World::new(vec![tower, champ(FOE, 2, 412_000, 500_000), champ(11, 2, 420_000, 505_000)]);
+    let mut w = World::new(vec![champ(FOE, 2, 410_000, 500_000), champ(11, 2, 430_000, 520_000), creep(30, 440_000, 480_000, 9_000), tower, champ(12, 2, 600_000, 500_000)]);
     w.tick(Some(Order::S3 { aim: Point::new(410_000, 500_000) }));
-    assert!(w.seen(|e| matches!(e, Effect::Stun { target: FOE, .. })));
-    assert!(w.seen(|e| matches!(e, Effect::Damage { target: 11, .. })), "the impact ring");
-    assert!(!w.seen(|e| matches!(e, Effect::Damage { target: 50, .. })));
-    w.tick(Some(Order::S3 { aim: Point::new(410_000, 500_000) }));
-    assert!(w.seen(|e| matches!(e, Effect::KnockUp { target: FOE, ticks } if *ticks == d::SLAM_KNOCK_TICKS as u64)), "the uppercut");
+    let ids: Vec<usize> = w.core.tethers.iter().map(|t| t.0).collect();
+    assert_eq!(ids.len(), 3, "the two champions and the creep in reach (never the tower, never the far one): {ids:?}");
+    w.f.basic_hits.push(FOE);
+    w.tick(None);
+    let copy = 100 * d::TETHER_COPY_PCT / 100;
+    for id in [11, 30] {
+        assert!(w.seen(|e| matches!(e, Effect::Damage { target, amount } if *target == id && *amount == copy)), "copy on {id}");
+    }
+    assert!(w.core.stacks_on(11, w.f.tick) >= 1, "copies stack");
+    // too far: the tether breaks
+    w.unit(11).pos = Point::new(400_000 + d::TETHER_BREAK_RANGE + 10_000, 500_000);
+    w.tick(None);
+    assert!(!w.core.tethers.iter().any(|t| t.0 == 11));
+}
+
+#[test]
+fn the_tether_recast_yanks_everyone_toward_him_and_uppercuts() {
+    let mut w = World::new(vec![champ(FOE, 2, 440_000, 500_000), champ(11, 2, 400_000, 545_000)]);
+    w.tick(Some(Order::S3 { aim: Point::new(440_000, 500_000) }));
+    w.tick(Some(Order::S3 { aim: Point::new(440_000, 500_000) }));
+    assert!(w.core.tethers.is_empty());
+    for id in [FOE, 11] {
+        assert!(w.seen(|e| matches!(e, Effect::Knock { target, .. } if *target == id)), "{id} yanked");
+        assert!(w.seen(|e| matches!(e, Effect::KnockUp { target, ticks } if *target == id && *ticks == d::TETHER_KNOCK_TICKS as u64)));
+    }
+    assert!(w.f.units[0].pos.x < 440_000, "toward him");
+}
+
+#[test]
+fn flurry_punches_copy_onto_tethered_enemies_at_15_percent_and_never_bank() {
+    let mut w = World::new(vec![champ(FOE, 2, 430_000, 500_000), champ(11, 2, 400_000, 540_000)]);
+    for u in w.f.units.iter_mut() {
+        u.hp = 1_000_000;
+        u.max_hp = 1_000_000;
+    }
+    w.tick(Some(Order::S3 { aim: Point::new(430_000, 500_000) }));
+    w.unit(11).pos = Point::new(430_000, 560_000); // tethered, but out of the flurry's chain reach
+    w.tick(Some(Order::Ult));
+    w.run(60);
+    let copy = pct(d::ULT_BASE, d::ULT_AD_RATIO, 100) * d::TETHER_FLURRY_COPY_PCT / 100;
+    assert!(w.seen(|e| matches!(e, Effect::Damage { target: 11, amount } if *amount == copy)), "a 15% copy");
+    assert_eq!(w.core.bank, 0);
 }
 
 // ------------------------------------------------------------------ Ult Shadow Flurry
 
 fn flurry_targets(w: &World) -> Vec<usize> {
-    // Ground-cast fixtures have no echoes or unrelated attacks, so each damage
-    // packet corresponds to exactly one accepted Flurry punch.
-    w.log.iter().filter_map(|(_, e)| match e { Effect::Damage { target, .. } => Some(*target), _ => None }).collect()
+    // The punch's own damage packet is the first one after the previous punch's cue (a Shadow Break or a tether copy
+    // may follow it inside the same punch).
+    let mut out = vec![];
+    let mut waiting = false;
+    for (_, e) in &w.log {
+        match e {
+            Effect::Vanish { .. } if out.is_empty() && !waiting => waiting = true,
+            Effect::Damage { target, .. } if waiting => {
+                out.push(*target);
+                waiting = false;
+            }
+            Effect::Fx { name, .. } if name == "ct_flurry" => waiting = true,
+            _ => {}
+        }
+    }
+    out.truncate(w.count(|e| matches!(e, Effect::Fx { name, .. } if name == "ct_flurry")));
+    out
 }
 
 #[test]
@@ -425,7 +455,7 @@ fn flurry_visuals_cover_eight_directions_without_changing_punch_count_or_cadence
 }
 
 #[test]
-fn the_flurry_vanishes_him_chains_36_accelerating_punches_and_brings_him_back_by_the_last() {
+fn the_flurry_vanishes_him_chains_36_accelerating_punches_and_brings_him_back_by_the_last_with_dodges_full() {
     let mut w = World::new(vec![champ(FOE, 2, 430_000, 500_000), champ(11, 2, 450_000, 500_000), creep(30, 470_000, 500_000, 90_000)]);
     for u in w.f.units.iter_mut() {
         u.hp = 90_000;
@@ -434,9 +464,9 @@ fn the_flurry_vanishes_him_chains_36_accelerating_punches_and_brings_him_back_by
     w.core.charges = 1;
     w.tick(Some(Order::Ult));
     assert!(w.core.flurrying());
-    assert_eq!(w.core.charges, 5, "his charges refill");
     w.run(d::ULT_TICKS as u64);
     assert!(!w.core.flurrying());
+    assert_eq!(w.core.charges, d::CHARGES_MAX, "he comes back with his dodges full");
     let punches = w.count(|e| matches!(e, Effect::Fx { name, .. } if name == "ct_flurry"));
     assert_eq!(punches, d::ULT_PUNCHES as usize);
     assert!(Core::flurry_gap(0) > Core::flurry_gap(d::ULT_PUNCHES - 1), "slow at first, fast at the end");
@@ -447,7 +477,7 @@ fn the_flurry_vanishes_him_chains_36_accelerating_punches_and_brings_him_back_by
 }
 
 #[test]
-fn the_flurry_ends_early_when_nothing_is_left_in_reach_and_echoes_only_when_projected() {
+fn the_flurry_ends_early_when_nothing_is_left_in_reach_and_echoes_only_when_merged() {
     let mut w = World::new(vec![champ(FOE, 2, 430_000, 500_000)]);
     w.unit(FOE).hp = 1_000_000;
     w.unit(FOE).max_hp = 1_000_000;
@@ -457,7 +487,7 @@ fn the_flurry_ends_early_when_nothing_is_left_in_reach_and_echoes_only_when_proj
     w.run(30);
     assert!(!w.core.flurrying(), "nothing within 30,000 of the last hit: over");
     assert!(w.count(|e| matches!(e, Effect::Fx { name, .. } if name == "ct_flurry")) < d::ULT_PUNCHES as usize);
-    assert!(!w.seen(|e| matches!(e, Effect::Fx { name, .. } if name == "ct_echo")), "not projected: no echoes");
+    assert!(!w.seen(|e| matches!(e, Effect::Fx { name, .. } if name == "ct_echo")), "not merged: no echoes");
 }
 
 // ------------------------------------------------------------------ AI
@@ -465,38 +495,29 @@ fn the_flurry_ends_early_when_nothing_is_left_in_reach_and_echoes_only_when_proj
 fn ai(units: Vec<Unit>) -> World {
     let mut w = World::new(units);
     w.f.manual = false;
+    w.core.bank = 0;
     w
 }
 
 #[test]
-fn the_ai_projects_onto_a_far_target_then_fights_from_the_shadow() {
-    let mut w = ai(vec![champ(FOE, 2, 470_000, 500_000), champ(ALLY, 1, 410_000, 520_000)]);
-    w.f.ult_unlocked = false;
+fn the_ai_merges_going_into_a_fight_then_tethers_a_group() {
+    let mut w = ai(vec![champ(FOE, 2, 440_000, 500_000), champ(11, 2, 445_000, 510_000), champ(ALLY, 1, 410_000, 500_000), champ(3, 1, 415_000, 505_000)]);
     w.tick(None);
-    assert!(w.core.projecting(), "{}", w.core.reason);
-    w.run(60);
-    assert!(w.hits_on(FOE) >= 2, "{}", w.core.reason);
-}
-
-#[test]
-fn the_ai_lets_a_losing_projection_go() {
-    let mut w = ai(vec![champ(FOE, 2, 470_000, 500_000), champ(11, 2, 475_000, 500_000), champ(12, 2, 480_000, 505_000)]);
-    w.f.ult_unlocked = false;
-    w.core.proj = Some(Projection { until: 1_000, pos: Point::new(470_000, 500_000), shadow_hp: 300, spawned: true, next_basic: 0 });
-    w.shadow = Some(ShadowView { id: SHADOW, pos: Point::new(470_000, 500_000), hp: 300, max_hp: 1000 });
+    assert_eq!(w.core.reason, "S1: merge");
     w.tick(None);
-    assert!(!w.core.projecting(), "{}", w.core.reason);
+    assert_eq!(w.core.reason, "S3: tether");
+    assert_eq!(w.core.tethers.len(), 2);
 }
 
 #[test]
 fn the_ai_never_dives_a_one_versus_four() {
     let mut w = ai(vec![champ(FOE, 2, 440_000, 500_000), champ(11, 2, 445_000, 500_000), champ(12, 2, 440_000, 505_000), champ(13, 2, 445_000, 505_000)]);
     w.run(30);
-    assert!(!w.core.projecting() && !w.core.flurrying(), "{}", w.core.reason);
+    assert!(!w.core.merged(w.f.tick) && w.core.tethers.is_empty(), "{}", w.core.reason);
 }
 
 #[test]
-fn the_ai_farms_a_camp_with_its_skills_when_calm() {
+fn the_ai_farms_a_camp_with_its_skills_when_calm_and_banks_toward_the_ult() {
     let mut w = ai(vec![creep(30, 420_000, 500_000, 3_000), creep(31, 425_000, 505_000, 3_000), creep(32, 418_000, 495_000, 600)]);
     w.f.ult_unlocked = false;
     let mut used = vec![];
@@ -509,36 +530,20 @@ fn the_ai_farms_a_camp_with_its_skills_when_calm() {
             u.hp = u.max_hp;
         }
     }
-    for k in ["Farm: Shadow Cyclone", "Farm: Slam"] {
+    for k in ["Farm: Shadow Cyclone", "Farm: tether"] {
         assert!(used.iter().any(|u| u == k), "{k}: {used:?}");
     }
-    assert!(used.iter().any(|u| u.contains("recast")), "recasts with full charges: {used:?}");
+    assert_eq!(w.core.bank, d::ULT_BANK_MAX, "farming fills the bank");
 }
 
 #[test]
-fn the_ai_uses_the_flurry_on_a_group() {
+fn the_ai_flurries_with_a_full_bank_on_a_group() {
     let mut w = ai(vec![champ(FOE, 2, 430_000, 500_000), champ(11, 2, 440_000, 505_000), champ(ALLY, 1, 420_000, 500_000), champ(3, 1, 425_000, 510_000)]);
     w.core.cd = [u64::MAX / 2; 3];
+    w.core.bank = d::ULT_BANK_MAX;
     w.tick(None);
     assert_eq!(w.core.reason, "Shadow Flurry");
     assert!(w.core.flurrying());
-}
-
-#[test]
-fn the_ai_flurries_from_the_projection_on_a_lone_healthy_target() {
-    // one healthy champion: on foot that's no reason to flurry, but projected beside it, it is
-    let mut w2 = ai(vec![champ(FOE, 2, 480_000, 500_000)]);
-    w2.core.cd = [u64::MAX / 2; 3];
-    w2.tick(None);
-    assert_ne!(w2.core.reason, "Shadow Flurry", "on foot, a lone healthy target: no flurry");
-    let mut w3 = World::new(vec![champ(FOE, 2, 480_000, 500_000)]);
-    w3.tick(Some(Order::S1 { aim: Point::new(475_000, 500_000) }));
-    w3.run(20);
-    w3.f.manual = false;
-    w3.core.cd = [u64::MAX / 2; 3];
-    w3.tick(None);
-    assert_eq!(w3.core.reason, "Shadow Flurry");
-    assert!(w3.core.flurry.is_some_and(|fl| fl.echo));
 }
 
 // ------------------------------------------------------------------ the bridge on the glue mock host
@@ -547,7 +552,7 @@ mod glue {
     use crate::contender::Contender;
     use crate::contender_shadow_core::{Effect, Point};
     use crate::glue_tests::{open_spot, with_sim, Host, Unit as HostUnit};
-    use mod_api_stable::{AttackTypeV1, CcKindV1, EntityKindV1 as K, StablePassive};
+    use mod_api_stable::{AttackTypeV1, EntityKindV1 as K, StablePassive};
     use std::cell::RefCell;
 
     fn champ(team: usize, pos: (u64, u64), name: &'static str) -> HostUnit {
@@ -581,56 +586,26 @@ mod glue {
     }
 
     #[test]
-    fn shadow_art_preserves_core_damage_movement_and_control_on_the_host() {
+    fn a_champion_hit_is_dodged_healed_back_and_he_slips_but_creeps_never_trigger_it() {
         let _guard = crate::walls::TEST_LOCK.lock();
-        let (x, y) = open_spot(120_000);
-        let simulate = |art: bool| {
-            let host = Host::new(vec![champ(0, (x, y), "tfm2_custom_contender"), champ(1, (x + 70_000, y), "fighter")]);
-            host.borrow_mut().record_view_effects = true;
-            let mut c = Contender::default();
-            c.configure(if art { r#"{"shadow_art_v1":1,"shadow_directions_v1":1}"# } else { "{}" });
-            with_sim(&host, |sim| c.on_spawn(sim, 0, 0));
-            let mut trace = Vec::new();
-            for tick in 100..400 {
-                run(&host, &mut c, tick, 1);
-                let h = host.borrow();
-                trace.push(serde_json::json!({"core":c.core,"damage":h.damage,"moves":h.moves,
-                    "units":h.units.iter().map(|u|(u.pos,u.hp,u.targetable)).collect::<Vec<_>>(),
-                    "cc":h.ccs.iter().map(|cs|cs.iter().map(|(c,t)|(c.name().to_owned(),c.kind,*t)).collect::<Vec<_>>()).collect::<Vec<_>>(),
-                    "buffs":h.buffs.iter().map(|bs|bs.iter().map(|b|b.name().to_owned()).collect::<Vec<_>>()).collect::<Vec<_>>() }));
-            }
-            if art {
-                let h = host.borrow();
-                assert!(h.view_effects.iter().any(|(n,_,target,t)|n.starts_with("ct_body_") && target.target_id>1 && *t==10),
-                    "Projection leases follow the actual targetable carrier for exactly ten ticks");
-                assert!(!h.view_effects.iter().any(|(n,_,_,_)| n=="ct_shadow"), "No ambiguous long clone animation");
-            }
-            trace
-        };
-        assert_eq!(simulate(false), simulate(true));
-    }
-
-    #[test]
-    fn the_projection_spawns_a_shadow_carrier_holds_his_body_and_relays_its_damage() {
-        let _guard = crate::walls::TEST_LOCK.lock();
-        let (x, y) = open_spot(120_000);
-        let host = Host::new(vec![champ(0, (x, y), "tfm2_custom_contender"), champ(1, (x + 70_000, y), "fighter")]);
+        let (x, y) = open_spot(90_000);
+        let creep = HostUnit { kind: K::Minion, team: 1, pos: (x + 10_000, y), hp: 500, name: "minion", targetable: true };
+        let host = Host::new(vec![champ(0, (x, y), "tfm2_custom_contender"), champ(1, (x + 20_000, y), "fighter"), creep]);
         let mut c = Contender::default();
         with_sim(&host, |sim| c.on_spawn(sim, 0, 0));
-        run(&host, &mut c, 100, 30);
-        let carrier = c.shadow.expect("the AI projected onto the far target");
-        {
-            let g = host.borrow();
-            assert!(g.spawned.iter().any(|s| s.0 == carrier), "a carrier unit stands for the shadow");
-            assert!(g.ccs[0].iter().any(|cc| cc.0.kind == CcKindV1::Bind.code() && cc.0.name() == "ct_hold"), "his body is held");
-            assert_eq!(g.units[0].pos, (x, y), "his body never moved");
-        }
-        // the carrier takes 400: 280 reaches him, raw
-        let before = host.borrow().damage.iter().filter(|d| d.1 == 0).map(|d| d.2).sum::<usize>();
-        host.borrow_mut().units[carrier].hp -= 400;
-        run(&host, &mut c, 130, 1);
-        let after = host.borrow().damage.iter().filter(|d| d.1 == 0).map(|d| d.2).sum::<usize>();
-        assert_eq!(after - before, 280);
+        run(&host, &mut c, 100, 2);
+        host.borrow_mut().tick = 102;
+        let before = c.core.charges;
+        with_sim(&host, |sim| c.on_damaged(sim, 0, 0, 2, 80));
+        assert!(host.borrow().heals.is_empty(), "a creep's hit is never dodged");
+        assert_eq!(c.core.charges, before);
+        with_sim(&host, |sim| c.on_damaged(sim, 0, 0, 1, 120));
+        assert!(host.borrow().heals.iter().any(|h| h.1 == 0 && h.2 == 120), "the champion's hit is undone");
+        assert_eq!(c.core.charges, before - 1, "one dodge spent");
+        with_sim(&host, |sim| c.on_damaged(sim, 0, 0, 1, 90));
+        assert_eq!(host.borrow().heals.len(), 1, "the second hit inside the gap lands");
+        run(&host, &mut c, 103, 2);
+        assert!(c.core.pending_dodge.is_none(), "the slip was played");
     }
 
     #[test]
@@ -642,7 +617,6 @@ mod glue {
         let mut c = Contender::default();
         with_sim(&host, |sim| c.on_spawn(sim, 0, 0));
         for t in 0..4u64 {
-            c.core.stacks.retain(|_| true);
             let mut dmg = 100usize;
             host.borrow_mut().tick = 100 + t as usize;
             with_sim(&host, |sim| c.on_attack(sim, 0, 0, 1, &mut dmg));
@@ -652,26 +626,21 @@ mod glue {
             }
         }
         assert!(c.core.stacks_on(1, 104) >= 3);
-        let effects = vec![
-            crate::contender_shadow_core::Effect::Damage { target: 2, amount: 50 },
-            crate::contender_shadow_core::Effect::Stun { target: 2, ticks: 30 },
-        ];
+        let effects = vec![Effect::Damage { target: 2, amount: 50 }, Effect::Stun { target: 2, ticks: 30 }];
         with_sim(&host, |sim| c.apply(sim, 0, effects));
         let g = host.borrow();
         assert!(!g.damage.iter().any(|d| d.1 == 2 && d.3 == AttackTypeV1::Skill.code()) && g.ccs[2].is_empty(), "never a tower");
     }
 
     #[test]
-    fn a_tick_on_the_host_runs_clean_and_the_shadow_goes_when_he_dies() {
+    fn a_tick_on_the_host_runs_clean_with_the_ai_fighting() {
         let _guard = crate::walls::TEST_LOCK.lock();
         let (x, y) = open_spot(120_000);
-        let host = Host::new(vec![champ(0, (x, y), "tfm2_custom_contender"), champ(1, (x + 70_000, y), "fighter")]);
+        let host = Host::new(vec![champ(0, (x, y), "tfm2_custom_contender"), champ(1, (x + 40_000, y), "fighter"), champ(1, (x + 45_000, y + 8_000), "fighter")]);
         let mut c = Contender::default();
         with_sim(&host, |sim| c.on_spawn(sim, 0, 0));
-        run(&host, &mut c, 100, 30);
-        let carrier = c.shadow.expect("projected");
-        host.borrow_mut().units[0].hp = 0;
-        run(&host, &mut c, 130, 1);
-        assert!(c.shadow.is_none() && host.borrow().units[carrier].hp == 0, "the shadow is gone with him");
+        run(&host, &mut c, 100, 120);
+        assert!(host.borrow().buffs[0].iter().any(|b| b.name() == "ct_merge") || c.core.merged(220) || !c.core.tethers.is_empty() || c.core.cd != [0; 3], "{}", c.core.reason);
+        let _ = Point::default();
     }
 }

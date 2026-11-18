@@ -1,54 +1,55 @@
-# Contender, the Shadow Boxer (`contender-2.2`)
+# Contender, the Shadow Boxer (`contender-2.3`)
 
-Reihan's rework (round 178): Contender is a literal **shadow boxer**. His shadow steps off him and fights, and his shadow charges let the shadow recast any skill, stronger. The old kit is retired: Combination / Body Shot / Uppercut, Slip / Guard, stamina and the Main Event ring.
+Reihan's rework (round 178): Contender is a literal **shadow boxer**. Since `contender-2.3` he is **elusive**: a shadow that is hard to hit because he dodges, whose punches are light, and whose damage comes from his stacks. His skills never cost anything; his ult is cast from 20 banked shadow stacks instead of a cooldown. The old kit is retired: Combination / Body Shot / Uppercut, Slip / Guard, stamina and the Main Event ring.
 
 Category **Melee**, tags AD / Melee / CC. Basic attack **Jab / Cross** (23,000). Every number lives in `rules/contender.json`. `tools/generate-contender.py` writes the Rust table, the champion data, the tooltips, the editor data and the roster entry (`--check` only verifies). The approved hooded shadow-boxer body and effects are integrated; see `docs/contender-shadow-review/README.md`.
 
 ## Passives
-- **Shadows (charges and recasts):**
-  - **Charges:** up to **5**, one every **6 s**; each basic attack takes 0.5 s off the recharge.
-  - **Recasts:** for **3 s** after S2 or S3 (and for as long as S1's projection lasts), casting it again **spends a charge** and his shadow recasts it, stronger.
-  - **Ult cooldown:** **every hit of his, on anything** (champions, minions, camps), takes **1 s** off the ult's cooldown.
+- **Shadows (dodges and free recasts):**
+  - **Dodges:** up to **5**, one every **6 s**; each basic attack that lands takes 0.5 s off the recharge.
+  - **The dodge:** when an **enemy champion's** attack or skill hits him, a dodge is spent: the hit is undone and he slips **8,000** aside, leaving a shadow where he stood. At most one dodge every **0.4 s**, so a burst still lands after the first slip. Creeps, monsters and towers never trigger it.
+  - **No costs:** his skills never spend dodges. Each skill's recast is **free, once per cast**, within its window (S2 3 s; S1 while merged; S3 while tethered).
 - **Shadow Pact (echoes):**
   - **The echo:** every punch and skill hits again **1 s later** for **40%**, carrying its crowd control at half length.
-  - **Double echoes:** recast hits echo **twice**, and so does every hit while he's projected.
+  - **Double echoes:** recast hits echo **twice**, and so does every hit while he's **merged** (S1).
   - **Cap:** echoes add at most **1.5 s** of crowd control per target every 6 s.
-  - **The ult's punches:** they echo only when the ult is **cast while his shadow is projected** (`contender-2.1`, Reihan).
-- **Shadow Rhythm (stacks):**
+  - **The ult's punches:** they echo only when the flurry is **cast while merged**.
+- **Shadow Rhythm (stacks, his damage engine):**
   - **Stacks:** every hit stacks on its target (**10** max, **4 s**).
   - **Buffs:** the most-stacked enemy gives him, per stack, **+3% attack speed, +2% Attack and +1.5% move speed**.
-  - **Vulnerability:** that enemy takes **+1.5% damage from him** per stack.
+  - **Vulnerability:** a stacked enemy takes **+4% damage from him** per stack.
+  - **Shadow Break:** at 10 stacks his next hit on it detonates for **6% of its max HP + 30% Attack**, and it drops back to **5** stacks.
   - **Carry-over:** a max-stacked creep carries **4 stacks** onto the next champion he hits.
   - **On a kill:** a stacked kill keeps the buffs **5 s** longer.
 
 ## Skills
-| Slot | Cast | Recast (1 shadow charge) |
+| Slot | Cast | Free recast |
 |---|---|---|
-| S1 **Shadow Projection** (12 s) | His body holds still and can't be hurt, and his shadow is launched up to **100,000**. For **5 s** it fights as him: it boxes, and S2 and S3 come from it. **70%** of the damage it takes reaches him; if it falls, that's 70% of his max HP. | His body **swaps** to the shadow, and the shadow's **cross** (from where he stood) knocks the nearest enemy back 20,000. |
-| S2 **Shadow Cyclone** (8 s) | A shadow clone cleaves a **25,000** circle at a spot within **60,000**: 4 hits and a slow. It can't be hit. | **He goes there** and cleaves **7 hits**, invulnerable; the last hit knocks up. |
-| S3 **Slam & Uppercut** (10 s) | He grabs an enemy within 20,000 and **slams** it: a stun, plus an impact ring. | An **uppercut** knock-up. From the projection it **launches the target toward his body**. |
-| Ult **Shadow Flurry** (120 s; not recastable) | He's **unseen and unhurt for 5 s**, and his charges refill. **Cast while projected**, it starts at his shadow and **every punch echoes** (the projection ends as he vanishes). **36 punches** start slow and speed up, each chained to an enemy within 30,000 of the last one hit (creeps and summons too). **Each punch prefers a different eligible enemy**; it repeats the last victim only when no alternative is in reach. Every second the last enemy hit is knocked up. The flurry ends early when nothing is in reach, and he reappears beside the last enemy hit with a **haymaker** ready (his next basic within 2 s). | — |
+| S1 **Shadow Merge** (14 s) | He **merges with his shadow** for **6 s**: dodges recharge **twice as fast**, **+2 dodges** at once (over the 5 maximum while it lasts), 0.25 s between dodges, every hit **echoes twice** and adds **2 stacks**, and +15% move speed. | He **steps out** early: the shadow left behind throws a **cross** at the nearest enemy (within 30,000; 30 + 40% Attack, knocked back 20,000) and he slips 15,000 away, unhurt for a moment. |
+| S2 **Shadow Cyclone** (8 s) | A shadow clone cleaves a **25,000** circle at a spot within **60,000**: 4 hits (15 + 18% Attack) and a slow. It can't be hit. | **He cleaves himself anywhere within 60,000 of him** (not necessarily the clone's spot), invulnerable, in a **35,000** circle: 7 hits (18 + 22% Attack), **each pulling enemies 5,000 toward the centre**; the last hit knocks up. |
+| S3 **Shadow Tether** (10 s) | A shadow latches onto **every enemy within 50,000** (up to 5, champions first, creeps too, never towers) for **4 s**. Each hit he lands is **copied onto every tethered enemy** at **30%** (flurry punches at 15%), with a Rhythm stack each and no crowd control. A tether breaks past 90,000. | Every tethered enemy is **yanked 20,000 toward him** (stopping at walls) and uppercut: 30 + 35% Attack, 0.5 s airborne. The tethers end. |
+| Ult **Shadow Flurry** (no cooldown; **20 banked stacks**) | **The bank:** every hit of his outside the flurry (basics, skills, echoes, tether copies) banks a shadow stack, up to **20**; casting spends all 20. Flurry punches, their echoes and their copies never bank. **The flurry:** he's **unseen and unhurt for 5 s**, and his dodges refill. **36 punches** start slow and speed up, each chained to an enemy within 30,000 of the last one hit (creeps and summons too); each punch prefers a different eligible enemy. **Cast while merged**, every punch echoes. Every second the last enemy hit is knocked up. The flurry ends early when nothing is in reach, and he reappears beside the last enemy hit with a **haymaker** ready (his next basic within 2 s). | — |
 
-**The engage:** S1 projects the shadow onto the target. S2 from the shadow cleaves while untouchable and builds stacks. Then either:
-- **Pick:** S3 slams, and the recast uppercuts the target back to his body; or
-- **Commit:** the ult **while still projected**, for the echoing flurry; or the S1 recast to swap him in.
+**The big combo (Reihan asked):** S1 Merge, S3 Tether the group, recast to yank them together, then the ult. The clump keeps the flurry chaining, every punch copies onto the whole group at 15% and echoes (merged), and the Rhythm stacks race to Shadow Breaks across the group.
 
 ## AI (his own, Kicker's flat list)
-1. **Recasts:** the uppercut on a slammed champion. The projection swap when the target is low or his team is there; the projection lapses early when the shadow is losing. The self-cleave on a champion in the circle.
+1. **Recasts:** the yank once the tethered group is spread, a tethered champion is low, or the tether is about to lapse with 2+ on it; the step-out to escape when he's under 30% HP with a champion on him; the self-cleave onto the lowest champion within reach.
 2. **Fight (not outnumbered, not under a tower unless the target is low):**
-   - the ult on 2+ champions, a low one, or any champion by his projected shadow (for the echoes);
-   - S1 onto a target 40,000–120,000 away;
-   - S2 in reach, then S3 in grab range.
-   - Otherwise it walks (or steers the shadow) to the target.
-3. **Farm (calm):** S2 on a wave or camp, S3 on a camp monster, S1 onto a far camp with full charges, and recasts only with full charges. The ult goes on a big camp.
+   - the ult with 20 banked, on 2+ champions, a tethered group, a low one, or any champion while merged;
+   - S1 Merge with a champion within 60,000;
+   - S3 Tether on 2+ enemies within 50,000;
+   - S2 in reach. Otherwise it walks to the target.
+   - Dodges are automatic.
+3. **Farm (calm):** S2 (and its recast) on a wave or camp, S3 on 2+ creeps; both bank stacks for the ult. The ult goes on a big camp.
 
 ## Code
 - **Core:** `native/tfm2_custom_ai/src/contender_shadow_core.rs`. It's deterministic, and the Lab runs this same file.
 - **Bridge:** `contender.rs`.
-  - **The projected shadow:** a hidden carrier unit (Thalassa's pattern) with his max HP; the core relays 70% of what it loses.
-  - **His body during a projection:** a named Bind and attack block, plus an unhurt lease.
+  - **The dodge:** `on_damaged` reports an enemy champion's hit after it lands; if the core spends a dodge, the bridge heals the damage straight back (Kratos's pattern) and the core's slip glides him aside. A lethal hit can still kill him before the heal-back, as with Kratos.
+  - **Shadow Merge:** a `ct_merge` move-speed buff, and his shadow body drawn on him while merged.
+  - **Tethers:** an echo flash on each tethered enemy every 12 ticks.
   - **The ult:** `entity_set_invisible`, plus an unhurt, CC-immune lease.
-  - **Teleports:** the swap and the ult's reappearance use `entity_set_pos` (allowlisted).
+  - **Teleports:** only the ult's reappearance uses `entity_set_pos` (allowlisted).
   - **Basic attacks:** `on_attack` reports them to the core with the vulnerability.
   - **Cleave circles:** published as `ctw:` danger zones.
 - **Tests:** `contender_shadow_tests.rs` (core, AI and glue).

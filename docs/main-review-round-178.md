@@ -30,8 +30,21 @@
 - **Codex's Basalt continuity fix:** PR #90 (Basalt effect continuity) merged into `main` first and took 0.10.112 / 0.2.115, so this round moved to 0.10.113 / 0.2.116.
 - **The DLL:** rebuilt from the merged source, so it carries both #90's fix and this rework.
 
+## `contender-2.3`: the elusive shadow (Reihan)
+"ult hits cant reduce the ult cd itself, the shadows are useless … i want him to be like a shadow, really hard to hit since he dodges but his punches dont do a lot bot focusing on the stacks". Built on top of Codex's `contender-2.2` commits (flurry alternation, eight-direction flurry art, the 1vX Lab), which are kept unchanged.
+- **Shadows:** the charges become **dodges**: an enemy champion's hit is undone and he slips aside (5 dodges, one every 6 s, at most one per 0.4 s). Skills cost nothing; each recast is free, once per cast.
+- **Shadow Rhythm:** +4% damage taken per stack (was 1.5%), and a **Shadow Break** at 10 stacks (6% max HP + 30% Attack, back to 5 stacks). Base skill damage is down about 40%, and Mod Power Attack goes 30 → 15.
+- **S1 Shadow Merge** replaces the projection (and its carrier, relay and launch): 6 s of double dodge recharge, +2 dodges, double echoes and double stacks; the recast steps out with a cross.
+- **S2 Shadow Cyclone:** the recast is aimed anywhere within 60,000, in a bigger 35,000 circle, and each hit pulls enemies in.
+- **S3 Shadow Tether** replaces Slam & Uppercut: every enemy within 50,000 (up to 5) takes 30% copies of his hits; the recast yanks them 20,000 toward him and uppercuts.
+- **Ult:** no cooldown and no cooldown cuts; it's cast from **20 banked shadow stacks** (every non-flurry hit banks one). Merged, the flurry echoes; tethered enemies take 15% copies of each punch; his dodges refill when he reappears.
+- **Code:** the core, bridge (with the `on_damaged` heal-back dodge), the Lab transport and both Lab pages are updated; the wasm and DLL are rebuilt.
+- **Tests:** `contender_shadow_tests.rs` is rewritten for 2.3: 31 tests (Codex's alternation and directional tests kept), covering dodges, free recasts, the bank, Merge, the aimed pulling recast, Breaks, Tether copies and the yank, the AI, and the glue (including the dodge heal-back).
+- **For Codex:** the Windows parity fixtures (`tools/test-contender-shadow-parity.cjs`) and the real-map Lab checks need a refresh against 2.3; see `docs/contender-shadow-art-handoff.md` for the effect uses.
+
 ## Checks
-- **Native tests:** 1,388 passed, 18 ignored, including 24 new Contender tests (core, AI and glue). Contender's tick cost is about 4.7 µs.
-- **Lab:** the Lab crate's transport tests pass. A headless Chromium run of `editor/contender.html` (projection, priming, slam and uppercut, the swap, and the flurry) showed no console errors.
+- **Native tests (2.3):** 1,400 passed, 18 ignored, including 31 Contender tests (core, AI and glue).
+- **Wasm (2.3):** driven directly: a champion hit spends a dodge and slips him; 10 stacks fire a Break; 20 basics fill the bank, the flurry spends it, and the bank stays at 0 through the flurry.
+- **Lab:** the Lab crate's transport tests pass (2.3: dodges through `incoming`, the bank, then the flurry).
 - **Other checks:** the generators are current; the DLL is built; the Mod Manager tests (15) pass.
 - **Not run here:** the real-map Lab (it needs the extracted game reference) and Codex's Windows checks.

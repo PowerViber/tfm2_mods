@@ -4072,3 +4072,9 @@ Native 0.10.112 / custom 0.2.115, art basalt-art-6, gameplay remains basalt-1.4.
   - does the ult come back too fast (every hit takes 1 s off);
   - does the flurry's reappearance land in walls.
 - **contender-2.1 (Reihan):** the ult's echoes now come from casting it while projected (it starts at the shadow), not from Cyclone. Watch whether project-then-ult reads clearly and isn't too strong.
+- **contender-2.3 (Reihan), the elusive shadow:** his charges are now 5 **dodges**: an enemy champion's hit is undone and he slips aside (one per 0.4 s). Skills cost nothing, with one free recast each. S1 is **Shadow Merge** (6 s: double dodge recharge, +2 dodges, double echoes and stacks; recast steps out with a cross). S2's recast lands anywhere within 60,000 in a bigger circle and pulls enemies in. S3 is **Shadow Tether** (30% copies of his hits onto every enemy within 50,000; recast yanks them in and uppercuts). Rhythm stacks make the target take +4% each and burst into a **Shadow Break** at 10. The ult is cast from **20 banked shadow stacks**, no cooldown. Watch for:
+  - does he feel hard to hit, and is the heal-back dodge readable (the shadow left behind);
+  - are his punches light enough that the stacks and Breaks carry his damage;
+  - how fast the 20-stack bank fills in lane and in fights;
+  - does Merge, Tether, yank, ult feel like the big combo;
+  - a lethal hit can still kill him before a dodge's heal-back (as with Kratos).
