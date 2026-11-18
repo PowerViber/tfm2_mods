@@ -4,7 +4,7 @@
 //! Contender's round-148 tests drove the core with hand-built frames and never saw his own Bind read back as
 //! "rooted", which is why his dash never ran in the game.
 use mod_api_stable::{
-    AttackTypeV1, BuffV1, CcKindV1, CcV1, EntityHandleV1 as E, EntityKindV1 as K, SimCtxV1, SimVtableV1, StablePassive,
+    BuffV1, CcV1, EntityHandleV1 as E, EntityKindV1 as K, SimCtxV1, SimVtableV1,
     StableSim, StatV1, UnitAttackV1,
 };
 use std::{cell::RefCell, ffi::c_void, mem::size_of};
@@ -294,6 +294,7 @@ pub(crate) fn with_sim<T>(host: &RefCell<Host>, f: impl FnOnce(&mut StableSim) -
         t.entity_cc_at = Some(cc);
         t.apply_cc = Some(apply_cc);
         t.deal_damage = Some(deal);
+        t.deal_damage_raw = Some(deal);
         t.champion_count = Some(champ_count);
         t.champion_id_at = Some(champ_at);
         t.entity_level = Some(level);
@@ -331,81 +332,4 @@ pub(crate) fn open_spot(clear: i64) -> (u64, u64) {
     panic!("no open spot");
 }
 
-fn champ(team: usize, pos: (u64, u64), name: &'static str) -> Unit {
-    Unit { kind: K::Champion, team, pos, hp: 2000, name, targetable: true }
-}
 
-fn run_contender(host: &RefCell<Host>, c: &mut crate::contender::Contender, from: usize, ticks: usize) {
-    for t in from..from + ticks {
-        host.borrow_mut().tick = t;
-        with_sim(host, |sim| c.on_update(sim, t as u64, 0, 0));
-    }
-}
-
-#[test]
-fn contender_own_locks_never_root_him_and_his_punch_dashes_and_lands() {
-    let (x, y) = open_spot(70_000);
-    let host = Host::new(vec![
-        champ(0, (x, y), "tfm2_custom_contender"),
-        champ(1, (x + 33_000, y), "fighter"),
-    ]);
-    let mut c = crate::contender::Contender::default();
-    with_sim(&host, |sim| c.on_spawn(sim, 0, 0));
-    run_contender(&host, &mut c, 100, 120);
-    let g = host.borrow();
-    let skill_hits = g.damage.iter().filter(|d| d.0 == 0 && d.1 == 1 && d.3 == AttackTypeV1::Skill.code()).count();
-    let moved = g.moves.iter().any(|m| m.0 == 0 && m.1 .0 > x);
-    assert!(moved, "the punch dashes toward the target: moves {:?}", &g.moves[..g.moves.len().min(8)]);
-    assert!(skill_hits > 0, "a punch landed on the champion: damage {:?}", g.damage);
-    // his own Bind and attack lock carry his names, so the frame never reads them as control
-    let own: Vec<_> =
-        g.ccs[0].iter().filter(|c| c.0.kind != CcKindV1::Animation.code()).map(|c| c.0.name().to_owned()).collect();
-    assert!(own.iter().all(|n| crate::contender::OWN_LOCKS.contains(&n.as_str())), "{own:?}");
-    assert!(own.iter().any(|n| n == "ct_motion"));
-}
-
-#[test]
-fn contender_basics_land_on_minions_camps_and_during_a_cast_even_when_untargetable() {
-    let (x, y) = open_spot(70_000);
-    let minion = Unit { kind: K::Minion, team: 1, pos: (x + 20_000, y), hp: 500, name: "minion", targetable: false };
-    let camp = Unit { kind: K::Jungle, team: 2, pos: (x, y + 20_000), hp: 900, name: "camp", targetable: false };
-    let host = Host::new(vec![champ(0, (x, y), "tfm2_custom_contender"), minion, camp]);
-    let mut c = crate::contender::Contender::default();
-    with_sim(&host, |sim| c.on_spawn(sim, 0, 0));
-    run_contender(&host, &mut c, 100, 5);
-    for (t, target) in [(110usize, 1usize), (140, 2)] {
-        host.borrow_mut().tick = t;
-        // what `contender_basic` leaves when the game's own basic attack lands
-        with_sim(&host, |sim| sim.add_buff(0, &crate::timed(&format!("ct_hit:{t}:{target}"), 2)));
-        run_contender(&host, &mut c, t, 3);
-    }
-    let g = host.borrow();
-    for target in [1, 2] {
-        assert!(
-            g.damage.iter().any(|d| d.0 == 0 && d.1 == target && d.3 == AttackTypeV1::BaseAttack.code()),
-            "basic on {target} landed: {:?}",
-            g.damage
-        );
-    }
-}
-
-#[test]
-fn contender_basic_accepted_mid_cast_still_lands() {
-    let (x, y) = open_spot(70_000);
-    let host = Host::new(vec![champ(0, (x, y), "tfm2_custom_contender"), champ(1, (x + 30_000, y), "fighter")]);
-    let mut c = crate::contender::Contender::default();
-    with_sim(&host, |sim| c.on_spawn(sim, 0, 0));
-    // run until he is casting
-    let mut t = 100;
-    while !c.core.busy() && t < 400 {
-        run_contender(&host, &mut c, t, 1);
-        t += 1;
-    }
-    assert!(c.core.busy(), "he started a technique");
-    let before = host.borrow().damage.iter().filter(|d| d.3 == AttackTypeV1::BaseAttack.code()).count();
-    host.borrow_mut().tick = t;
-    with_sim(&host, |sim| sim.add_buff(0, &crate::timed(&format!("ct_hit:{t}:1"), 2)));
-    run_contender(&host, &mut c, t, 2);
-    let after = host.borrow().damage.iter().filter(|d| d.3 == AttackTypeV1::BaseAttack.code()).count();
-    assert_eq!(after, before + 1, "the accepted basic landed during the cast");
-}

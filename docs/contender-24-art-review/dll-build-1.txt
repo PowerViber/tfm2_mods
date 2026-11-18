@@ -1,0 +1,2 @@
+Compiling tfm2_custom_ai v0.1.0 (C:\Users\arian\.codex\worktrees\contender-shadow-art\tfm2_mods\native\tfm2_custom_ai)
+    Finished `release` profile [optimized] target(s) in 2m 51s

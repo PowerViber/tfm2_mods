@@ -1,0 +1,1 @@
+36 scenarios / 5,400 frames: complete native/WASM state and effects equal

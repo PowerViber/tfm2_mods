@@ -1,0 +1,38 @@
+{
+  "rules": "contender-2.4",
+  "checks": [
+    "Every packaged pose/frame in both facings; exact original frame counts, durations and anchors",
+    "Merge draws one fused whole body at the owner; no ordinary body or offset idle clone",
+    "Free step-out recast clears the form and restores the normal body",
+    "Exact Merge expiry clears the body without a stale following lease",
+    "Death removes Merge and leaves one normal death animation",
+    "Flurry vanish never reveals the merged body",
+    "420-tick complete combat records and actor state equal with presentation enabled/disabled"
+  ],
+  "poses": [
+    "idle",
+    "run",
+    "attack",
+    "jab",
+    "cross",
+    "projection",
+    "cyclone",
+    "slam",
+    "uppercut",
+    "flurry",
+    "hit",
+    "dead",
+    "combination",
+    "bodyShot",
+    "slip",
+    "guard",
+    "mainEvent",
+    "skill1",
+    "skill2",
+    "ult"
+  ],
+  "traces_equal": true,
+  "decoded": 6414336,
+  "errors": [],
+  "scope": "Packaged-art and Lab host observations; native renderer acceptance remains pending."
+}

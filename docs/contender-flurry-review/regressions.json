@@ -1,0 +1,47 @@
+{
+  "native": {
+    "exit_code": 0,
+    "passed": [
+      1400
+    ],
+    "unused_warnings": 4
+  },
+  "lab": {
+    "exit_code": 0,
+    "passed": [
+      2,
+      0,
+      0
+    ],
+    "unused_warnings": 0
+  },
+  "manager": {
+    "exit_code": 0,
+    "passed": [
+      15
+    ],
+    "unused_warnings": 0
+  },
+  "ledger": {
+    "exit_code": 0,
+    "passed": [],
+    "unused_warnings": 0
+  },
+  "catalogue": {
+    "exit_code": 0,
+    "passed": [],
+    "unused_warnings": 0
+  },
+  "generator": {
+    "exit_code": 0,
+    "passed": [],
+    "unused_warnings": 0
+  },
+  "rules": "contender-2.2",
+  "native_gameplay_and_packaged_assets_unchanged": false,
+  "wasm_sha256": "ca192daa7d1fcf9fbf98a9a6f390ca974cf7c1de3e9c1a296801e32d972ce919",
+  "packaged_dll_sha256": "3fd1a216837c2414cd584eec9d7bde6d9c62eacfe719c1a184fee2245259f80f",
+  "installed": false,
+  "career_migration": false,
+  "actual_game_acceptance": "separate; this is a Lab host feature"
+}

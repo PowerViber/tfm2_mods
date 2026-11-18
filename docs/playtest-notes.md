@@ -4054,3 +4054,31 @@ Outlined body/effects approved and integrated. All thirteen athlete values affec
 Native 0.10.112 / custom 0.2.115, art basalt-art-6, gameplay remains basalt-1.4. Persistent art previously lasted one tick despite 3/6-tick renewals. Duration-matched aliases now reuse approved atlas pixels, match expiry to renewal and clip known flight endings. One-shot impacts play once; the Lab stops holding expired frames. New definitions opt into the timed bindings; old career definitions retain visible legacy aliases and need a separate backed-up migration for the fix.
 
 1,371 native tests (18 ignored, four inherited warnings), 13 Lab tests, 15 Manager tests, 36 native/WASM scenarios and browser continuity checks pass. Two Windows builds match. Actual-game visual acceptance remains pending after Computer Use stopped before a disposable match. No installed game or real career changed. Full evidence: docs/basalt-flicker/README.md.
+
+## Nov 17: round 178 (native 0.10.113, tfm2_custom 0.2.116), `contender-2.0`: Contender, the Shadow Boxer
+- **What Reihan asked:** a literal shadow boxer, with the whole old kit removed.
+- **The kit:**
+  - **Passives:** 5 shadow charges that recast any skill stronger; echoes 1 s later (Shadow Pact); stacks that buff him and make the target vulnerable (Shadow Rhythm).
+  - **S1 Projection:** his shadow fights as him and relays 70% of its damage to him; the recast swaps him in.
+  - **S2 Cyclone:** a clone cleave; the recast is him cleaving, invulnerable.
+  - **S3 Slam & Uppercut.**
+  - **Ult Shadow Flurry:** 5 s unseen, 36 accelerating punches.
+- **Art:** placeholder shadow effects (Kagami, Kicker, Grimhald and Akane effects) until Codex's shadow art.
+- **Install:** merge, pull, then Mod Manager → Install.
+- **Watch for:**
+  - does the projected shadow read, move and get hit;
+  - does the 70% relay feel fair;
+  - do the recasts feel strong enough;
+  - does the ult come back too fast (every hit takes 1 s off);
+  - does the flurry's reappearance land in walls.
+- **contender-2.1 (Reihan):** the ult's echoes now come from casting it while projected (it starts at the shadow), not from Cyclone. Watch whether project-then-ult reads clearly and isn't too strong.
+- **contender-2.3 (Reihan), the elusive shadow:** his charges are now 5 **dodges**: an enemy champion's hit is undone and he slips aside (one per 0.4 s). Skills cost nothing, with one free recast each. S1 is **Shadow Merge** (6 s: double dodge recharge, +2 dodges, double echoes and stacks; recast steps out with a cross). S2's recast lands anywhere within 60,000 in a bigger circle and pulls enemies in. S3 is **Shadow Tether** (30% copies of his hits onto every enemy within 50,000; recast yanks them in and uppercuts). Rhythm stacks make the target take +4% each and burst into a **Shadow Break** at 10. The ult is cast from **20 banked shadow stacks**, no cooldown. Watch for:
+  - does he feel hard to hit, and is the heal-back dodge readable (the shadow left behind);
+  - are his punches light enough that the stacks and Breaks carry his damage;
+  - how fast the 20-stack bank fills in lane and in fights;
+  - does Merge, Tether, yank, ult feel like the big combo;
+  - a lethal hit can still kill him before a dodge's heal-back (as with Kratos).
+- **contender-2.4 (Reihan):** Shadow Rhythm stacks to **20** (half the value per stack, so the same totals at full). **Shadow Break** fires on the hit after 20, resets the target to **0**, and his Rhythm buffs **stay at full for 8 s**. The ult needs **40** banked stacks. Watch for:
+  - does a Break now feel like a payoff rather than constant damage;
+  - is 40 banked too slow for the ult in lane and in fights;
+  - does the 8 s full-buff window after a Break read and feel worth chasing.

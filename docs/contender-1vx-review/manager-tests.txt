@@ -1,0 +1,22 @@
+
+running 15 tests
+test core::tests::build_outputs_reset_before_pull ... ok
+test core::tests::log_scan_finds_load_errors ... ok
+test core::tests::mods_json_enable ... ok
+test core::tests::perf_log_is_read ... ok
+test core::tests::stamps_are_dates ... ok
+test core::tests::native_version_meets_the_champions_requirement ... ok
+test core::tests::the_repos_champions_all_load ... ok
+test core::tests::vdf_and_manifest_parse ... ok
+test core::tests::repo_root_found_from_exe_dir ... ok
+test core::tests::champion_data_errors_name_the_bad_tag ... ok
+test core::tests::champion_data_errors_name_a_text_passive_param ... ok
+test core::tests::installed_dll_carries_the_install_time ... ok
+test core::tests::stale_duplicates_go_to_backup ... ok
+test core::tests::install_copies_and_keeps_plans ... ok
+test core::tests::check_reports_mismatch ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+
+    Finished `release` profile [optimized] target(s) in 0.06s
+     Running unittests src\main.rs (tools\manager\target\release\deps\tfm2_manager-3380c9828e17c97e.exe)

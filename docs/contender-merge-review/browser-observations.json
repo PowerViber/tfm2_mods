@@ -1,0 +1,12 @@
+{
+  "revision": "contender-2.3",
+  "preview": "contender-merge-proposal-1",
+  "traces_equal": true,
+  "ticks": 420,
+  "one_body_when_merged": true,
+  "expiry_clears": true,
+  "poses": 4,
+  "facings": 2,
+  "errors": [],
+  "scope": "Review-only appearance; no complete animation/native acceptance claim."
+}

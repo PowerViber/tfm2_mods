@@ -1,7 +1,7 @@
 //! Shared deterministic boxing rules. Host acceptance/impact receipts are explicit inputs.
 use serde::{Deserialize, Serialize};
 use std::{collections::BTreeSet, sync::OnceLock};
-pub const RULES: &str = include_str!("../../../rules/contender.json");
+pub const RULES: &str = include_str!("../../../rules/contender-1-legacy.json");
 pub fn canonical() -> &'static serde_json::Value {
     static VALUE: OnceLock<serde_json::Value> = OnceLock::new();
     VALUE.get_or_init(|| serde_json::from_str(RULES).expect("canonical boxing rules"))

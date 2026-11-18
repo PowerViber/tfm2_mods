@@ -1,6 +1,6 @@
 (async()=>{'use strict';
 const $=s=>document.querySelector(s),canvas=$('#arena'),ctx=canvas.getContext('2d'),enc=new TextEncoder(),dec=new TextDecoder();
-const rules=await(await fetch('../rules/contender.json')).json(),wasm=(await WebAssembly.instantiate(await(await fetch('boxing.wasm')).arrayBuffer())).instance.exports;
+const rules=await(await fetch('../rules/contender-1-legacy.json')).json(),wasm=(await WebAssembly.instantiate(await(await fetch('boxing.wasm')).arrayBuffer())).instance.exports;
 const body=new Image(),ringArt=new Image();body.src='../mods/tfm2_custom/champions/tfm2_custom_contender%23sheet.png';ringArt.src='../docs/contender-art-review/ring-proposal.png';await Promise.all([body.decode(),ringArt.decode()]);const animations=(await(await fetch('../mods/tfm2_custom/champions/tfm2_custom_contender%23anim.fanim')).json()).anims;
 const fields=['Ego','Judgement','Positioning','Control Speed','Skill Accuracy','Skill Dodge','Aggressive','Order','Roaming','Macro','Micro','Map Awareness','Strategy'];
 fields.forEach((n,i)=>{const l=document.createElement('label');l.className='stat';l.innerHTML=`<span>${n}</span><input type="range" min="0" max="100" value="50" data-stat="${i}"><output>50</output>`;l.querySelector('input').oninput=e=>l.querySelector('output').textContent=e.target.value;$('#profiles').append(l);});

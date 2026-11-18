@@ -1,0 +1,16 @@
+{
+  "body": {
+    "approved": true,
+    "date": "2026-11-18",
+    "statement": "Approve this shadow-boxer appearance",
+    "source": "body-source-v1.png",
+    "sha256": "9d1cccb855b90d42d8e7414722cb67e12a5e972e7f4a5de8022ff6c07a031ad0"
+  },
+  "effects": {
+    "approved": true,
+    "date": "2026-11-18",
+    "statement": "Approve these shadow effects",
+    "source": "effects-source-v1.png",
+    "sha256": "d79f6254575c4ae6c21a27618e23755ffeb77b080a03f47ca86cdf06c53cf30e"
+  }
+}

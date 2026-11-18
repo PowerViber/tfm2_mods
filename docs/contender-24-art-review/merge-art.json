@@ -1,0 +1,27 @@
+{
+  "appearance_approved": true,
+  "source_hashes": {
+    "merge-source-v1.png": "ef964444f8ee5bf71d3fd86282884f1dd12052eabb68baaed8a617f6b62a64b9",
+    "merge-animation-source-v1.png": "b68b500ed0887c88ec21bdb6d0cd3c58ef86b5e31154f16307b037d5ecd31116"
+  },
+  "poses": 20,
+  "tiles": 24,
+  "facings": 2,
+  "exact_original_frame_counts_durations_and_anchors": true,
+  "mirrors_match": true,
+  "unclipped": true,
+  "legacy_pixels_and_metadata_unchanged": [
+    "mods/tfm2_custom/champions/tfm2_custom_contender#sheet.png",
+    "mods/tfm2_custom/champions/tfm2_custom_contender#anim.fanim",
+    "mods/tfm2_custom/vfx/contender_shadow#sheet.png",
+    "mods/tfm2_custom/vfx/contender_shadow#anim.fanim"
+  ],
+  "deterministic_packing": true,
+  "atlas": [
+    960,
+    256
+  ],
+  "total_decoded_bytes": 7806976,
+  "merge_sheet_sha256": "cc3237d65e3a32ecc2dda1421fa9d234db529b7f64cdafb77d99e4d5c6d78539",
+  "native_alignment_acceptance": "pending; registered anchors and Lab rendering are not host-renderer proof"
+}

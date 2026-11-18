@@ -1,0 +1,1 @@
+{"revision":"contender-2.3","punches":36,"directions":8,"alternates":true,"creepSwitch":true,"soloFallback":true,"decoded":6414336,"errors":[]}

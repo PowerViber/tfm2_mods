@@ -1,0 +1,21 @@
+
+running 2 tests
+test transport_tests::stale_ticks_and_old_rules_are_refused ... ok
+test transport_tests::every_order_reaches_the_core_and_every_effect_serializes ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+    Finished `release` profile [optimized] target(s) in 0.06s
+     Running unittests src\lib.rs (native\contender_shadow_lab\target\release\deps\contender_shadow_lab-1c890bb49c9b0afd.exe)
+     Running unittests src\bin\trace.rs (native\contender_shadow_lab\target\release\deps\trace-056d7d68620e8d0d.exe)
+   Doc-tests contender_shadow_lab

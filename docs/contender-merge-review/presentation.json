@@ -1,0 +1,424 @@
+{
+  "approved": true,
+  "source_hashes": {
+    "merge-source-v1.png": "ef964444f8ee5bf71d3fd86282884f1dd12052eabb68baaed8a617f6b62a64b9",
+    "merge-animation-source-v1.png": "b68b500ed0887c88ec21bdb6d0cd3c58ef86b5e31154f16307b037d5ecd31116"
+  },
+  "atlas": [
+    960,
+    256
+  ],
+  "decoded_total_bytes": 7806976,
+  "clock": {
+    "idle": [
+      {
+        "tile": 0,
+        "milli_ticks": 12000
+      },
+      {
+        "tile": 0,
+        "milli_ticks": 12000
+      },
+      {
+        "tile": 6,
+        "milli_ticks": 12000
+      },
+      {
+        "tile": 0,
+        "milli_ticks": 12000
+      }
+    ],
+    "run": [
+      {
+        "tile": 1,
+        "milli_ticks": 8000
+      },
+      {
+        "tile": 2,
+        "milli_ticks": 8000
+      },
+      {
+        "tile": 3,
+        "milli_ticks": 8000
+      },
+      {
+        "tile": 4,
+        "milli_ticks": 8000
+      },
+      {
+        "tile": 5,
+        "milli_ticks": 8000
+      },
+      {
+        "tile": 0,
+        "milli_ticks": 8000
+      }
+    ],
+    "attack": [
+      {
+        "tile": 6,
+        "milli_ticks": 4500
+      },
+      {
+        "tile": 6,
+        "milli_ticks": 4500
+      },
+      {
+        "tile": 7,
+        "milli_ticks": 4500
+      },
+      {
+        "tile": 8,
+        "milli_ticks": 4500
+      }
+    ],
+    "jab": [
+      {
+        "tile": 6,
+        "milli_ticks": 4500
+      },
+      {
+        "tile": 6,
+        "milli_ticks": 4500
+      },
+      {
+        "tile": 7,
+        "milli_ticks": 4500
+      },
+      {
+        "tile": 6,
+        "milli_ticks": 4500
+      }
+    ],
+    "cross": [
+      {
+        "tile": 6,
+        "milli_ticks": 4500
+      },
+      {
+        "tile": 6,
+        "milli_ticks": 4500
+      },
+      {
+        "tile": 8,
+        "milli_ticks": 4500
+      },
+      {
+        "tile": 6,
+        "milli_ticks": 4500
+      }
+    ],
+    "projection": [
+      {
+        "tile": 12,
+        "milli_ticks": 4500
+      },
+      {
+        "tile": 13,
+        "milli_ticks": 4500
+      },
+      {
+        "tile": 14,
+        "milli_ticks": 4500
+      },
+      {
+        "tile": 0,
+        "milli_ticks": 4500
+      }
+    ],
+    "cyclone": [
+      {
+        "tile": 6,
+        "milli_ticks": 3000
+      },
+      {
+        "tile": 11,
+        "milli_ticks": 3000
+      },
+      {
+        "tile": 9,
+        "milli_ticks": 3000
+      },
+      {
+        "tile": 11,
+        "milli_ticks": 3000
+      }
+    ],
+    "slam": [
+      {
+        "tile": 15,
+        "milli_ticks": 5000
+      },
+      {
+        "tile": 16,
+        "milli_ticks": 5000
+      },
+      {
+        "tile": 16,
+        "milli_ticks": 5000
+      },
+      {
+        "tile": 14,
+        "milli_ticks": 5000
+      }
+    ],
+    "uppercut": [
+      {
+        "tile": 9,
+        "milli_ticks": 6000
+      },
+      {
+        "tile": 9,
+        "milli_ticks": 6000
+      },
+      {
+        "tile": 10,
+        "milli_ticks": 6000
+      },
+      {
+        "tile": 10,
+        "milli_ticks": 6000
+      },
+      {
+        "tile": 0,
+        "milli_ticks": 6000
+      }
+    ],
+    "flurry": [
+      {
+        "tile": 12,
+        "milli_ticks": 4800
+      },
+      {
+        "tile": 15,
+        "milli_ticks": 4800
+      },
+      {
+        "tile": 16,
+        "milli_ticks": 4800
+      },
+      {
+        "tile": 16,
+        "milli_ticks": 4800
+      },
+      {
+        "tile": 0,
+        "milli_ticks": 4800
+      }
+    ],
+    "hit": [
+      {
+        "tile": 17,
+        "milli_ticks": 4800
+      },
+      {
+        "tile": 17,
+        "milli_ticks": 4800
+      },
+      {
+        "tile": 0,
+        "milli_ticks": 4800
+      }
+    ],
+    "dead": [
+      {
+        "tile": 18,
+        "milli_ticks": 7200
+      },
+      {
+        "tile": 19,
+        "milli_ticks": 7200
+      },
+      {
+        "tile": 20,
+        "milli_ticks": 7200
+      },
+      {
+        "tile": 21,
+        "milli_ticks": 7200
+      },
+      {
+        "tile": 22,
+        "milli_ticks": 7200
+      },
+      {
+        "tile": 23,
+        "milli_ticks": 7200
+      }
+    ],
+    "combination": [
+      {
+        "tile": 6,
+        "milli_ticks": 6000
+      },
+      {
+        "tile": 7,
+        "milli_ticks": 6000
+      },
+      {
+        "tile": 6,
+        "milli_ticks": 6000
+      },
+      {
+        "tile": 8,
+        "milli_ticks": 6000
+      },
+      {
+        "tile": 8,
+        "milli_ticks": 6000
+      },
+      {
+        "tile": 0,
+        "milli_ticks": 6000
+      }
+    ],
+    "bodyShot": [
+      {
+        "tile": 6,
+        "milli_ticks": 4200
+      },
+      {
+        "tile": 6,
+        "milli_ticks": 4200
+      },
+      {
+        "tile": 9,
+        "milli_ticks": 4200
+      },
+      {
+        "tile": 9,
+        "milli_ticks": 4200
+      },
+      {
+        "tile": 0,
+        "milli_ticks": 4200
+      }
+    ],
+    "slip": [
+      {
+        "tile": 14,
+        "milli_ticks": 3000
+      },
+      {
+        "tile": 14,
+        "milli_ticks": 3000
+      },
+      {
+        "tile": 14,
+        "milli_ticks": 3000
+      },
+      {
+        "tile": 0,
+        "milli_ticks": 3000
+      }
+    ],
+    "guard": [
+      {
+        "tile": 12,
+        "milli_ticks": 6750
+      },
+      {
+        "tile": 12,
+        "milli_ticks": 6750
+      },
+      {
+        "tile": 12,
+        "milli_ticks": 6750
+      },
+      {
+        "tile": 0,
+        "milli_ticks": 6750
+      }
+    ],
+    "mainEvent": [
+      {
+        "tile": 12,
+        "milli_ticks": 7800
+      },
+      {
+        "tile": 15,
+        "milli_ticks": 7800
+      },
+      {
+        "tile": 16,
+        "milli_ticks": 7800
+      },
+      {
+        "tile": 16,
+        "milli_ticks": 7800
+      },
+      {
+        "tile": 0,
+        "milli_ticks": 7800
+      }
+    ],
+    "skill1": [
+      {
+        "tile": 12,
+        "milli_ticks": 6000
+      },
+      {
+        "tile": 13,
+        "milli_ticks": 6000
+      },
+      {
+        "tile": 14,
+        "milli_ticks": 6000
+      },
+      {
+        "tile": 0,
+        "milli_ticks": 6000
+      },
+      {
+        "tile": 0,
+        "milli_ticks": 6000
+      },
+      {
+        "tile": 0,
+        "milli_ticks": 6000
+      }
+    ],
+    "skill2": [
+      {
+        "tile": 6,
+        "milli_ticks": 6750
+      },
+      {
+        "tile": 11,
+        "milli_ticks": 6750
+      },
+      {
+        "tile": 9,
+        "milli_ticks": 6750
+      },
+      {
+        "tile": 0,
+        "milli_ticks": 6750
+      }
+    ],
+    "ult": [
+      {
+        "tile": 12,
+        "milli_ticks": 7800
+      },
+      {
+        "tile": 15,
+        "milli_ticks": 7800
+      },
+      {
+        "tile": 16,
+        "milli_ticks": 7800
+      },
+      {
+        "tile": 16,
+        "milli_ticks": 7800
+      },
+      {
+        "tile": 0,
+        "milli_ticks": 7800
+      }
+    ]
+  },
+  "generation_deterministic": false,
+  "packing_deterministic": true
+}

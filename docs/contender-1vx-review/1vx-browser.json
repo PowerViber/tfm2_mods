@@ -1,0 +1,85 @@
+{
+  "rules": "contender-2.1",
+  "checks": [
+    "Updated 2.1 core; default 1v3 with a right-side target list at desktop size",
+    "All stock/custom champions, minions, camps, structures, dummies and summon templates load actual assets",
+    "WASM Cyclone and echoes damage three independent unlimited-HP targets without killing them",
+    "Reset preserves target identity, chosen finite max HP, armour, shields and unlimited setting while clearing counters",
+    "Per-target finite HP can die normally; unlimited mode is not invulnerability",
+    "Global reset clears all counters",
+    "Real UI search and Add spawn a custom champion with its shipped body",
+    "Selecting a tower does not give skills illegal tower damage",
+    "Latest 2.1 projected Flurry echoes and its damage appear in the target counter",
+    "Bounded 64-target setup rejects excess units without invalidating the WASM transport",
+    "Existing tactical objective scenarios remain available",
+    "Narrow layout keeps the map and target panel accessible without horizontal clipping"
+  ],
+  "catalog": {
+    "count": 101,
+    "counts": {
+      "champion": 88,
+      "minion": 2,
+      "camp": 4,
+      "objective": 2,
+      "tower": 1,
+      "nexus": 1,
+      "dummy": 1,
+      "summon": 2
+    },
+    "custom": 28
+  },
+  "aoe": [
+    {
+      "id": 1003,
+      "hp": 1940,
+      "max": 1940,
+      "counter": {
+        "raw": 499,
+        "hp": 235,
+        "shield": 0,
+        "hits": 8,
+        "first": 28812,
+        "last": 28908,
+        "total": 235,
+        "dps": 108.46153846153847
+      }
+    },
+    {
+      "id": 1004,
+      "hp": 1940,
+      "max": 1940,
+      "counter": {
+        "raw": 499,
+        "hp": 235,
+        "shield": 0,
+        "hits": 8,
+        "first": 28812,
+        "last": 28908,
+        "total": 235,
+        "dps": 108.46153846153847
+      }
+    },
+    {
+      "id": 1005,
+      "hp": 1940,
+      "max": 1940,
+      "counter": {
+        "raw": 499,
+        "hp": 235,
+        "shield": 0,
+        "hits": 8,
+        "first": 28812,
+        "last": 28908,
+        "total": 235,
+        "dps": 108.46153846153847
+      }
+    }
+  ],
+  "flurry": {
+    "echo": true,
+    "echoes": 31,
+    "total": 1408
+  },
+  "errors": [],
+  "scope": "Lab-only host tests; native gameplay unchanged; actual-game acceptance separate"
+}

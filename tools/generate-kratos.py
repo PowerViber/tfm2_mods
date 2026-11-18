@@ -55,7 +55,7 @@ text = {
             f"{fe['returnAdRatio']}% Attack, knock-up {sec(fe['knockUpTicks'])}). His skills and Fenrir never hit towers."),
 }
 
-champ = copy.deepcopy(json.loads((ROOT / 'mods/tfm2_custom/champion/tfm2_custom_contender.data_champion').read_text()))
+champ = copy.deepcopy(json.loads((ROOT / 'tools/native-champion-template.json').read_text()))
 # his own body sheet (Codex's art); like Wright, the game skips him until it exists
 champ.update(id=ID, category=rules['category'], tags=rules['tags'], sprite='asset/tfm2_custom/champions/' + ID, anim_prefix='')
 for key in ['stat', 'growth']:

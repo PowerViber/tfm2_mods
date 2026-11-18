@@ -1,0 +1,306 @@
+{
+  "id": "tfm2_custom_contender",
+  "category": "Melee",
+  "tags": [
+    "AD",
+    "Melee",
+    "CC"
+  ],
+  "sprite": "asset/tfm2_custom/champions/tfm2_custom_contender",
+  "anim_prefix": "",
+  "stat": {
+    "attack": 85,
+    "magic_power": 0,
+    "hp": 1050,
+    "defence": 24,
+    "magic_resistance": 22,
+    "move_speed": 1050,
+    "hp_regen": 0,
+    "stack": 0,
+    "crit_chance": 0
+  },
+  "growth": {
+    "attack": 10,
+    "magic_power": 0,
+    "hp": 95,
+    "defence": 4,
+    "magic_resistance": 4,
+    "move_speed": 10,
+    "hp_regen": 0,
+    "stack": 0,
+    "crit_chance": 0
+  },
+  "attack": {
+    "action_name": "attack",
+    "cancelable": true,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 18,
+    "cooltime": 54,
+    "start_timing": 9,
+    "range": 23000,
+    "casting_type": "Targeting",
+    "casting_target": "Enemy",
+    "attack_type": "BaseAttack",
+    "effect": {
+      "type": "Native",
+      "effect_ref": "tfm2_custom_ai:contender_basic"
+    }
+  },
+  "skill": {
+    "action_name": "skill1",
+    "cancelable": false,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 6,
+    "cooltime": 5184000,
+    "start_timing": 3,
+    "range": 1,
+    "casting_type": "Targeting",
+    "casting_target": "EnemyChampionInCC",
+    "attack_type": "Skill",
+    "effect": {
+      "type": "Combine",
+      "effects": []
+    },
+    "description": "#asset/base/text/champion?description.tfm2_custom_contender.skill"
+  },
+  "skill2": {
+    "action_name": "skill2",
+    "cancelable": false,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 6,
+    "cooltime": 5184000,
+    "start_timing": 3,
+    "range": 1,
+    "casting_type": "Targeting",
+    "casting_target": "EnemyChampionInCC",
+    "attack_type": "Skill",
+    "effect": {
+      "type": "Combine",
+      "effects": []
+    },
+    "description": "#asset/base/text/champion?description.tfm2_custom_contender.skill2"
+  },
+  "ult": {
+    "action_name": "ult",
+    "cancelable": false,
+    "growth_range": 0,
+    "can_use_with_move": false,
+    "duration": 6,
+    "cooltime": 5184000,
+    "start_timing": 3,
+    "range": 1,
+    "casting_type": "Targeting",
+    "casting_target": "EnemyChampionInCC",
+    "attack_type": "Skill",
+    "effect": {
+      "type": "Combine",
+      "effects": []
+    },
+    "description": "#asset/base/text/champion?description.tfm2_custom_contender.ult"
+  },
+  "passive": {
+    "passive_ref": "tfm2_custom_ai:contender",
+    "params": {}
+  },
+  "passive_ult": {
+    "passive_ref": "tfm2_custom_ai:contender_ultimate",
+    "params": {}
+  },
+  "view_buffs": [
+    {
+      "type": "Animated",
+      "name": "ct_stamina0",
+      "anim": "asset/tfm2_custom/vfx/contender",
+      "tag": "stamina0",
+      "z": 6
+    },
+    {
+      "type": "Animated",
+      "name": "ct_stamina1",
+      "anim": "asset/tfm2_custom/vfx/contender",
+      "tag": "stamina1",
+      "z": 6
+    },
+    {
+      "type": "Animated",
+      "name": "ct_stamina2",
+      "anim": "asset/tfm2_custom/vfx/contender",
+      "tag": "stamina2",
+      "z": 6
+    },
+    {
+      "type": "Animated",
+      "name": "ct_stamina3",
+      "anim": "asset/tfm2_custom/vfx/contender",
+      "tag": "stamina3",
+      "z": 6
+    },
+    {
+      "type": "Animated",
+      "name": "ct_stamina4",
+      "anim": "asset/tfm2_custom/vfx/contender",
+      "tag": "stamina4",
+      "z": 6
+    },
+    {
+      "type": "Animated",
+      "name": "ct_stamina5",
+      "anim": "asset/tfm2_custom/vfx/contender",
+      "tag": "stamina5",
+      "z": 6
+    },
+    {
+      "type": "Animated",
+      "name": "ct_stamina6",
+      "anim": "asset/tfm2_custom/vfx/contender",
+      "tag": "stamina6",
+      "z": 6
+    },
+    {
+      "type": "Animated",
+      "name": "ct_stamina7",
+      "anim": "asset/tfm2_custom/vfx/contender",
+      "tag": "stamina7",
+      "z": 6
+    },
+    {
+      "type": "Animated",
+      "name": "ct_stamina8",
+      "anim": "asset/tfm2_custom/vfx/contender",
+      "tag": "stamina8",
+      "z": 6
+    },
+    {
+      "type": "Animated",
+      "name": "ct_stamina9",
+      "anim": "asset/tfm2_custom/vfx/contender",
+      "tag": "stamina9",
+      "z": 6
+    },
+    {
+      "type": "Animated",
+      "name": "ct_stamina10",
+      "anim": "asset/tfm2_custom/vfx/contender",
+      "tag": "stamina10",
+      "z": 6
+    }
+  ],
+  "view_effects": [
+    {
+      "type": "Animation",
+      "name": "ct_ring",
+      "anim": "asset/tfm2_custom/vfx/contender",
+      "tag": "ring",
+      "z": -2,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_impact",
+      "anim": "asset/tfm2_custom/vfx/contender",
+      "tag": "impact",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_counter",
+      "anim": "asset/tfm2_custom/vfx/contender",
+      "tag": "counter",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_guard_arc",
+      "anim": "asset/tfm2_custom/vfx/contender",
+      "tag": "guard_arc",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_return_red",
+      "anim": "asset/tfm2_custom/vfx/contender",
+      "tag": "return_red",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_return_blue",
+      "anim": "asset/tfm2_custom/vfx/contender",
+      "tag": "return_blue",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_warning0",
+      "anim": "asset/tfm2_custom/vfx/contender",
+      "tag": "warning0",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_warning1",
+      "anim": "asset/tfm2_custom/vfx/contender",
+      "tag": "warning1",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_warning2",
+      "anim": "asset/tfm2_custom/vfx/contender",
+      "tag": "warning2",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_warning3",
+      "anim": "asset/tfm2_custom/vfx/contender",
+      "tag": "warning3",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_warning4",
+      "anim": "asset/tfm2_custom/vfx/contender",
+      "tag": "warning4",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_warning5",
+      "anim": "asset/tfm2_custom/vfx/contender",
+      "tag": "warning5",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_warning6",
+      "anim": "asset/tfm2_custom/vfx/contender",
+      "tag": "warning6",
+      "z": 5,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_warning7",
+      "anim": "asset/tfm2_custom/vfx/contender",
+      "tag": "warning7",
+      "z": 5,
+      "is_follow": false
+    }
+  ],
+  "view_projectiles": []
+}

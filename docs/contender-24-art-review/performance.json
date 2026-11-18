@@ -1,0 +1,31 @@
+{
+  "runs": [
+    {
+      "cold_local_ready_ms": 427.42060000000015,
+      "warm_draw_ms": 0.41700000007947285,
+      "actors": 56
+    },
+    {
+      "cold_local_ready_ms": 321.34029999999984,
+      "warm_draw_ms": 0.42700000007947286,
+      "actors": 56
+    },
+    {
+      "cold_local_ready_ms": 284.4829,
+      "warm_draw_ms": 0.2873333332935969,
+      "actors": 56
+    },
+    {
+      "cold_local_ready_ms": 375.8349000000003,
+      "warm_draw_ms": 0.4060000000397364,
+      "actors": 56
+    },
+    {
+      "cold_local_ready_ms": 376.4479999999994,
+      "warm_draw_ms": 0.4680000001192093,
+      "actors": 56
+    }
+  ],
+  "scope": "Five isolated headless Edge local loads; warm draw includes extracted map and 56 actors. Not Proceed/day-advance measurements or actual-game performance.",
+  "decoded_bytes": 7806976
+}

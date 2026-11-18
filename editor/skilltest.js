@@ -1509,7 +1509,7 @@
     if(T.view==='arena'&&T.json?.id==='tfm2_custom_contender')T.view='boxing';
     if(!$('#stBoxing')){const pane=document.createElement('div');pane.id='stBoxing';$('#stChess').after(pane);}
     $('#stBoxing').hidden=T.view!=='boxing';
-    if(T.view==='boxing'&&!$('#stBoxing').querySelector('iframe'))$('#stBoxing').innerHTML='<iframe title="Boxing Lab (host acceptance pending)" src="/boxing.html" style="width:100%;height:1600px;border:0"></iframe>';
+    if(T.view==='boxing'&&!$('#stBoxing').querySelector('iframe'))$('#stBoxing').innerHTML='<iframe title="Contender Lab (the Shadow Boxer)" src="/contender.html" style="width:100%;height:1600px;border:0"></iframe>';
     if(!$('#stAthlete')){const pane=document.createElement('div');pane.id='stAthlete';$('#stChess').after(pane);}
     $('#stAthlete').hidden=T.view!=='athlete';
     if(T.view==='athlete'&&!$('#stAthlete').querySelector('iframe'))$('#stAthlete').innerHTML='<iframe title="Athlete tactics" src="/athlete.html" style="width:100%;height:1450px;border:0"></iframe>';

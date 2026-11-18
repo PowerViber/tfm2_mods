@@ -1,0 +1,14 @@
+
+==============================  TFM2 Mod Manager  ==============================
+ repo: C:\Users\arian\.codex\worktrees\contender-shadow-art\tfm2_mods\backups\basalt-art-manager-h9h8q0e1\repo [codex/contender-shadow-art] e8e99ba test(lab): verify 1vX controls and refresh Contender 2.1 parity evidence
+ game: C:\Users\arian\.codex\worktrees\contender-shadow-art\tfm2_mods\backups\basalt-art-manager-h9h8q0e1\game
+ installed: native 0.10.113  champions 0.2.116
+ log: C:\Users\arian\.codex\worktrees\contender-shadow-art\tfm2_mods\backups\basalt-art-manager-h9h8q0e1\repo\logs\manager-20261118_064602.txt
+================================================================================
+Game folder: C:\Users\arian\.codex\worktrees\contender-shadow-art\tfm2_mods\backups\basalt-art-manager-h9h8q0e1\game
+  native (tfm2_custom_ai): repo 0.10.113  game 0.10.113
+  champions (tfm2_custom): repo 0.2.116  game 0.2.116
+  789 champion files compared, 0 differ, 0 missing; native DLL identical
+
+  UP TO DATE: the game has exactly the repo's mods.
+Log saved: C:\Users\arian\.codex\worktrees\contender-shadow-art\tfm2_mods\backups\basalt-art-manager-h9h8q0e1\repo\logs\manager-20261118_064602.txt

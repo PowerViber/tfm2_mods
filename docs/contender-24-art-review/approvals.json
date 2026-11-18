@@ -1,0 +1,12 @@
+{
+  "effects": {
+    "approved": true,
+    "date": "2026-11-18",
+    "user_statement": "Approve the 2.4 effects and indicators",
+    "source_hashes": {
+      "break-source-v1.png": "71295408b0bc4449b2e8e380c8b75d2dd7b2b09bb2e45047452deeee05c570dc",
+      "aura-source-v1.png": "58e9a76b281e25b7b12e3b0696791a3092f2df9d0e24c6fd5ea00a1278023b3e"
+    },
+    "scope": "Break burst, full-Rhythm aura, enemy stack icons and bank pips. Presentation only; installation and live acceptance separate."
+  }
+}

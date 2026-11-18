@@ -1,0 +1,15 @@
+{
+  "break_tick": 29276,
+  "break_once_per_cue": true,
+  "aura_drawn": true,
+  "aura_expiry_ticks": 480,
+  "bank_drawn": true,
+  "cyclone_radii": [
+    25000,
+    35000
+  ],
+  "packaged_rhythm": "../mods/tfm2_custom/vfx/contender_rhythm#sheet.png",
+  "decoded": 7806976,
+  "errors": [],
+  "actual_game_acceptance": "pending; Lab host is simulated"
+}

@@ -1,0 +1,17 @@
+{
+  "deterministic_packing": true,
+  "generation_deterministic": false,
+  "effect_lifetimes_match": true,
+  "six_unique_movement_frames": true,
+  "combat_core_and_rules_unchanged": true,
+  "decoded_bytes": 3072000,
+  "hashes": {
+    "mods/tfm2_custom/champions/tfm2_custom_contender#anim.fanim": "9c75505804235084b2e3e142282eebc26c1f2caa5fd62c8b0068575880b49a07",
+    "mods/tfm2_custom/champions/tfm2_custom_contender#sheet.png": "b8cc1dcaf8f933ceca9c3a6f7e54f840ac6ac912a1ea40c17ac0219c383ebb41",
+    "mods/tfm2_custom/vfx/contender_shadow#anim.fanim": "1831a0b8c38b3222b527faf3bc36dda2dde85a0ecb0880f0e1c0f4ac3cace851",
+    "mods/tfm2_custom/vfx/contender_shadow#sheet.png": "5dcdd8c7008e3f8a398d13636475057524df6fe5ebc215bd56f7c0d09e2d1d32",
+    "editor/contender-presentation.js": "f72b743eaddfbb8f2787a52193d383a63de75f380ea9b9a3a0ab7f384ec1c786",
+    "docs/contender-shadow-review/presentation.json": "bd60a46a1ea1921abc95727c03bdb31215539b3a13208800980491f6e49be8d7"
+  },
+  "actual_game_acceptance": "pending"
+}

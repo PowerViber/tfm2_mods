@@ -1,0 +1,15 @@
+{
+  "tool": "built-in image_gen",
+  "intent": "Complete animations from Reihan's approved fused Shadow Merge appearance",
+  "output": "merge-animation-source-v1.png",
+  "source_sha256": "b68b500ed0887c88ec21bdb6d0cd3c58ef86b5e31154f16307b037d5ecd31116",
+  "references": [
+    "../contender-shadow-review/body-animation-source-v1.png",
+    "merge-source-v1.png"
+  ],
+  "generation_deterministic": false,
+  "extraction_and_packing_deterministic": true,
+  "approval_scope": "Appearance approved 2026-11-18; animation completion follows that appearance. Actual-game rendering remains unaccepted.",
+  "prompt_summary": "Extend the APPROVED fused Shadow Merge appearance over the supplied original normal 6-by-4 animation sheet. Preserve all 24 original poses, cell positions, scale, anchor, connected anatomy, clothing shapes and timings. Row one: idle plus five running phases. Row two: guard, jab, cross, low punch, uppercut, turning punch. Row three: Merge preparation, palm cast, slip, wind-up, ground strike, hit. Row four: six falling/death phases. Apply the approved charcoal shadow arms, violet seams, ivory wraps and bright fists consistently. No separate duplicate, detached body parts, labels or large glows. Transparent background; simple blocky pixels.",
+  "prompt_record": "Semantic summary of the built-in edit request; references and the frozen generated source are authoritative. Generation is not reproducible."
+}

@@ -1,0 +1,16 @@
+{
+  "native": "0.10.113",
+  "champion_pack": "0.2.116",
+  "rules": "contender-2.2",
+  "baseline": "e8e99baef3d753dec9012d80fbd94be9793db5ea",
+  "source_date_epoch": "1794982988",
+  "source_sha256": "08da4020da02ded7ba9fae73b8fc350d1d375a497ec09cfd6729bef30078d2ee",
+  "built_dll_sha256": "3fd1a216837c2414cd584eec9d7bde6d9c62eacfe719c1a184fee2245259f80f",
+  "reproduced_dll_sha256": "3fd1a216837c2414cd584eec9d7bde6d9c62eacfe719c1a184fee2245259f80f",
+  "packaged_dll_sha256": "3fd1a216837c2414cd584eec9d7bde6d9c62eacfe719c1a184fee2245259f80f",
+  "wasm_sha256": "ca192daa7d1fcf9fbf98a9a6f390ca974cf7c1de3e9c1a296801e32d972ce919",
+  "installed": false,
+  "career_migration": false,
+  "actual_game_acceptance": "pending",
+  "toolchain": "rustc 1.98.1 (48a229cea 2026-09-01)"
+}

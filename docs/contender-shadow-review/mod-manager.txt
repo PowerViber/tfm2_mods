@@ -1,0 +1,14 @@
+
+==============================  TFM2 Mod Manager  ==============================
+ repo: C:\Users\arian\.codex\worktrees\contender-shadow-art\tfm2_mods\backups\basalt-art-manager-8idw95hm\repo [codex/contender-shadow-art] dc0e0b7 Merge main (Codex's Basalt effect continuity, PR #90) into round 178
+ game: C:\Users\arian\.codex\worktrees\contender-shadow-art\tfm2_mods\backups\basalt-art-manager-8idw95hm\game
+ installed: native 0.10.113  champions 0.2.116
+ log: C:\Users\arian\.codex\worktrees\contender-shadow-art\tfm2_mods\backups\basalt-art-manager-8idw95hm\repo\logs\manager-20261117_204056.txt
+================================================================================
+Game folder: C:\Users\arian\.codex\worktrees\contender-shadow-art\tfm2_mods\backups\basalt-art-manager-8idw95hm\game
+  native (tfm2_custom_ai): repo 0.10.113  game 0.10.113
+  champions (tfm2_custom): repo 0.2.116  game 0.2.116
+  789 champion files compared, 0 differ, 0 missing; native DLL identical
+
+  UP TO DATE: the game has exactly the repo's mods.
+Log saved: C:\Users\arian\.codex\worktrees\contender-shadow-art\tfm2_mods\backups\basalt-art-manager-8idw95hm\repo\logs\manager-20261117_204056.txt

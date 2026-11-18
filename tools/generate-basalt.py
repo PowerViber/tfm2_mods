@@ -57,7 +57,7 @@ text = {
             f"slingshots him to where it landed. His skills never hit towers."),
 }
 
-champ = copy.deepcopy(json.loads((ROOT / 'mods/tfm2_custom/champion/tfm2_custom_contender.data_champion').read_text()))
+champ = copy.deepcopy(json.loads((ROOT / 'tools/native-champion-template.json').read_text()))
 # placeholder body until Codex's art: Grimhald's sheet (an original melee bruiser)
 sprite = 'asset/tfm2_custom/champions/' + ID
 if not (ROOT / f'mods/tfm2_custom/champions/{ID}#sheet.png').exists():
