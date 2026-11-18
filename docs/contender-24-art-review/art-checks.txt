@@ -1,0 +1,26 @@
+{"atlas": [960, 256], "decoded_total_bytes": 6414336, "poses": 20, "source_hash": "b68b500ed0887c88ec21bdb6d0cd3c58ef86b5e31154f16307b037d5ecd31116"}
+{"atlas": [512, 680], "decoded_bytes": 1392640, "sources": {"break-source-v1.png": "71295408b0bc4449b2e8e380c8b75d2dd7b2b09bb2e45047452deeee05c570dc", "aura-source-v1.png": "58e9a76b281e25b7b12e3b0696791a3092f2df9d0e24c6fd5ea00a1278023b3e"}, "review_only": false}
+{"body": [960, 256], "fx": [1024, 1086], "decoded_bytes": 5431296, "animations": 74}
+{
+  "deterministic_packing": true,
+  "generation_deterministic": false,
+  "effect_lifetimes_match": true,
+  "six_unique_movement_frames": true,
+  "combat_core_and_rules_unchanged": false,
+  "decoded_bytes": 7806976,
+  "hashes": {
+    "mods/tfm2_custom/champions/tfm2_custom_contender#anim.fanim": "9c75505804235084b2e3e142282eebc26c1f2caa5fd62c8b0068575880b49a07",
+    "mods/tfm2_custom/champions/tfm2_custom_contender#sheet.png": "b8cc1dcaf8f933ceca9c3a6f7e54f840ac6ac912a1ea40c17ac0219c383ebb41",
+    "mods/tfm2_custom/champions/tfm2_custom_contender_merge#anim.fanim": "ea91fef22d740d3292f64dcd667f2e72a0e2250c219073633e92f681fc368ebe",
+    "mods/tfm2_custom/champions/tfm2_custom_contender_merge#sheet.png": "cc3237d65e3a32ecc2dda1421fa9d234db529b7f64cdafb77d99e4d5c6d78539",
+    "mods/tfm2_custom/vfx/contender_shadow#anim.fanim": "693ef037af3566b308763a6f585bb1b1c9eff0682629cb4ed8ada91b69780859",
+    "mods/tfm2_custom/vfx/contender_shadow#sheet.png": "96f6b66d1ead5a3f012c4587f6134c23b96448729dc38f2c6249e8bb46e7bfde",
+    "mods/tfm2_custom/vfx/contender_rhythm#anim.fanim": "4a2a1f9a400e5e704e683e89efd1b18cc173e9d4191cea7ef63e564b217d9287",
+    "mods/tfm2_custom/vfx/contender_rhythm#sheet.png": "702059a15458c3ac927d4c2bf25a7a5c039d709a104ff9960059d6776f656e70",
+    "editor/contender-presentation.js": "c1521b2622133e99f3bc5aa9f9638e5134e51ea6a54e866a15d64f87eca19867",
+    "docs/contender-shadow-review/presentation.json": "9a8561e7887d1556f14df1c4a5fdb8cbd3fe2b5c7eb91912070cac98829f380d"
+  },
+  "actual_game_acceptance": "pending"
+}
+C:\Users\arian\.codex\worktrees\contender-shadow-art\tfm2_mods\tools\prepare-contender-24-review.py:28: DeprecationWarning: Image.Image.getdata is deprecated and will be removed in Pillow 14 (2027-10-15). Use get_flattened_data instead.
+  alpha=tile.getchannel('A');pixels=list(alpha.getdata());dense=[yy for yy in range(cell) if sum(v>0 for v in pixels[yy*cell:(yy+1)*cell])>=15]

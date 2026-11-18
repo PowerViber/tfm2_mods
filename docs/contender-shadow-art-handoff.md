@@ -45,7 +45,7 @@ Every 2.3 effect reuses a packaged cue at a packaged length, so nothing is unbou
 Reihan approved the fused charcoal/violet form. The full 24-drawing animation extension, mirrored atlas, native pose-driven artwork buffs and default Lab integration are complete in this PR. Normal body/effect pixels and combat rules are unchanged. See `docs/contender-merge-integration-review/README.md` for hashes, timings, current 2.3 checks and pending actual-game alignment. Older embedded definitions use their existing fallback until a separately backed-up migration.
 
 
-## `contender-2.4` art wanted (for Codex)
+## `contender-2.4` art request (completed below)
 2.4 changes gameplay only. Every cue it plays is already packaged, so nothing is unbound. These are the visuals the new rules would benefit from; none of them may change combat, movement or control.
 
 | Wanted | When it plays | Current stand-in | Notes |
@@ -56,3 +56,17 @@ Reihan approved the fused charcoal/violet form. The full 24-drawing animation ex
 | **Bank pips** (`ct_bank:<0..40>` on him) | Always; the ult is ready at 40 | none (the buff is published unbound) | For example 8 pips of 5 stacks, or a ring that fills; it should be clearly "ready" at 40. |
 
 **Budgets:** the same as the rest of his art. The Break and the aura must also read on the fused Merge body (`ct_mb_*`).
+
+### Approved 2.4 completion — 18 November 2026
+
+Reihan approved the new effects and indicators. The separate `contender_rhythm`
+atlas and native/Lab bindings are integrated: `ct_break_t18` (and mirrored facing),
+stable `ct_rhythm_full_<phase>` artwork buffs, owner-scoped
+`ct_rhythm_p<player>:<1..20>` enemy markers, and existing `ct_bank:<0..40>` buffs.
+The native presentation hooks are complete; no follow-up Claude hook addition is
+needed. Break is now an explicit visual core cue, preserving all damage and state.
+Cyclone also shows its canonical 25,000/35,000 circles.
+
+See [the 2.4 review](contender-24-art-review/README.md) for approved sources,
+reproducible packing, refreshed Windows/Lab evidence and pending actual-game
+acceptance. The request table above records the former stand-ins, not remaining work.

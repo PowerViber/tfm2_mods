@@ -3,23 +3,23 @@ from pathlib import Path
 from PIL import Image
 import hashlib,json,subprocess,re,os
 ROOT=Path(__file__).resolve().parents[1];OUT=ROOT/'docs/contender-shadow-review'
-paths=list((ROOT/'mods/tfm2_custom/champions').glob('tfm2_custom_contender#*'))+list((ROOT/'mods/tfm2_custom/champions').glob('tfm2_custom_contender_merge#*'))+list((ROOT/'mods/tfm2_custom/vfx').glob('contender_shadow#*'))+[ROOT/'editor/contender-presentation.js',OUT/'presentation.json']
+paths=list((ROOT/'mods/tfm2_custom/champions').glob('tfm2_custom_contender#*'))+list((ROOT/'mods/tfm2_custom/champions').glob('tfm2_custom_contender_merge#*'))+list((ROOT/'mods/tfm2_custom/vfx').glob('contender_shadow#*'))+list((ROOT/'mods/tfm2_custom/vfx').glob('contender_rhythm#*'))+[ROOT/'editor/contender-presentation.js',OUT/'presentation.json']
 def hashes():return {p.relative_to(ROOT).as_posix():hashlib.sha256(p.read_bytes()).hexdigest() for p in paths}
 before=hashes();subprocess.run(['rtk','proxy','python','tools/build-contender-shadow-art.py'],cwd=ROOT,check=True);assert before==hashes()
 manifest=json.loads((OUT/'presentation.json').read_text());decoded=0
-for group in ['body','effects','merge']:
+for group in ['body','effects','merge','rhythm']:
     p=ROOT/manifest[group]['file'].removeprefix('../');sheet=Image.open(p).convert('RGBA');assert max(sheet.size)<=2048;decoded+=sheet.width*sheet.height*4
     for tag,a in manifest[group]['anims'].items():
         for f in a['frames']:
             r=f['data'];assert min(r.values())>=0 and r['x']+r['w']<=sheet.width and r['y']+r['h']<=sheet.height and f['duration']>0,tag
             im=sheet.crop((r['x'],r['y'],r['x']+r['w'],r['y']+r['h']))
-            assert im.getbbox() or tag=='charges0',tag
+            assert im.getbbox() or tag in ['charges0','enemy_0'],tag
 assert decoded==manifest['decoded_bytes'] and decoded<=32*1024*1024
 champ=json.loads((ROOT/'mods/tfm2_custom/champion/tfm2_custom_contender.data_champion').read_text())
 for e in manifest['bindings']:
     a=manifest['effects']['anims'][e['tag']];assert abs(sum(f['duration']*60 for f in a['frames'])-e['ticks'])<1e-7,e
 for e in champ['view_effects']+champ['view_buffs']:
-    group='merge' if e['anim'].endswith('tfm2_custom_contender_merge') else 'effects'
+    group='merge' if e['anim'].endswith('tfm2_custom_contender_merge') else 'rhythm' if e['anim'].endswith('contender_rhythm') else 'effects'
     assert e['tag'] in manifest[group]['anims']
 assert champ['passive']['params']['shadow_art_v1']==1 and champ['passive']['params']['shadow_directions_v1']==1
 # Keep all legacy body aliases. Four connected attack frames now align with the native 18-tick basic.

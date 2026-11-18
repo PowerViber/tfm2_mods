@@ -1,0 +1,43 @@
+{
+  "native": {
+    "exit_code": 0,
+    "passed": [
+      1406
+    ]
+  },
+  "lab": {
+    "exit_code": 0,
+    "passed": [
+      2,
+      0,
+      0
+    ]
+  },
+  "manager": {
+    "exit_code": 0,
+    "passed": [
+      15
+    ]
+  },
+  "generator": {
+    "exit_code": 0,
+    "passed": []
+  },
+  "catalogue": {
+    "exit_code": 0,
+    "passed": []
+  },
+  "art": {
+    "exit_code": 0,
+    "passed": []
+  },
+  "merge_art": {
+    "exit_code": 0,
+    "passed": []
+  },
+  "rules": "contender-2.4",
+  "baseline": "1648b00b8d6c610b5be472784fc04edb30d79a64",
+  "combat_source_unchanged_except_visual_cue": true,
+  "installed": false,
+  "actual_game_acceptance": "pending"
+}

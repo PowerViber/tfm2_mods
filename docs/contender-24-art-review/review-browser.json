@@ -1,0 +1,16 @@
+{
+  "rules": "contender-2.4",
+  "stack_states": 21,
+  "bank_states": 41,
+  "break_frames": 4,
+  "break_ticks": 18,
+  "aura_ticks": 480,
+  "atlas": [
+    512,
+    680
+  ],
+  "decoded_bytes": 1392640,
+  "review_only": false,
+  "errors": [],
+  "scope": "Approved packaged-art/HUD preview; native renderer acceptance remains pending."
+}

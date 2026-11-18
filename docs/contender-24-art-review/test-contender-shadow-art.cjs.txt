@@ -1,0 +1,47 @@
+Lab loaded
+{
+  "checks": [
+    "Both editor routes and actual packed assets return HTTP 200",
+    "Registered real map, stock champions/minions/camps/towers, thirteen athlete values",
+    "Complete combat traces equal with presentation on/off and manual profiles 20/80",
+    "Exactly 300 ticks over five seconds at 30/60/120/144/240 Hz; paused clock does not advance",
+    "Actual focused Q input reaches the shared WASM core",
+    "Focus loss clears held movement",
+    "Objective situation uses extracted map coordinates",
+    "Effect renderer stops at packaged duration without indefinite final-frame holding"
+  ],
+  "initial": {
+    "map": 900,
+    "actors": 4,
+    "stocks": true,
+    "stats": 13
+  },
+  "traces": {
+    "art": true,
+    "manual": true
+  },
+  "clock": [
+    {
+      "hz": 30,
+      "n": 300
+    },
+    {
+      "hz": 60,
+      "n": 300
+    },
+    {
+      "hz": 120,
+      "n": 300
+    },
+    {
+      "hz": 144,
+      "n": 300
+    },
+    {
+      "hz": 240,
+      "n": 300
+    }
+  ],
+  "errors": [],
+  "actualGameAcceptance": "pending; browser host is simulated"
+}
