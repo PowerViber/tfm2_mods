@@ -1,8 +1,8 @@
-# Shadow Merge: fused-body appearance proposal
+# Shadow Merge: approved appearance and frozen concept sources
 
-Reihan requested that Contender actually look merged with his shadow. The current native presentation renews an idle shadow over the normal body. This proposal instead uses one connected whole body: charcoal shadow arms, violet seams through the wraps, bright fists and the same recognisable hooded face, scale and anchor.
+Reihan requested that Contender actually look merged with his shadow. The previous native presentation renewed an idle shadow over the normal body. This proposal instead uses one connected whole body: charcoal shadow arms, violet seams through the wraps, bright fists and the same recognisable hooded face, scale and anchor.
 
-**Approval is pending.** These are four appearance poses (idle, movement, straight punch, uppercut), in both facings. They are not a completed animation set. No shipped body/effect assets, DLL, WASM, rules or release versions are changed.
+**Appearance approved on 18 November 2026.** The four concept poses below are frozen approval evidence. The completed animation set and native/Lab integration are documented in [the integration review](../contender-merge-integration-review/README.md). Core rules and normal body/effect pixels remain unchanged.
 
 - Comparison/inspector: `http://localhost:7309/editor/contender-merge-review.html`
 - Actual-map candidate: `http://localhost:7309/editor/contender.html?mergePreview=1&build=contender-merge-1`. Press Q. Only the opt-in candidate replaces the old offset shadow/body pair; the ordinary Lab retains the packaged presentation until approval.
@@ -22,4 +22,8 @@ Exact imagegen prompt:
 
 `browser-observations.json` records the current `contender-2.3` Lab check: complete 420-tick traces agree with the candidate enabled/disabled; only one body is drawn during the opt-in Merge; expiry returns to the normal presentation; four poses and both facings load without browser errors. `merge-lab.png` shows the candidate on the actual extracted map. This does not establish native rendering acceptance or full 2.3 gameplay/parity validation.
 
-After appearance approval: complete the pose animations, add native pose/facing-aware presentation with safe effect lifetimes, verify packaged assets and compare actual-game alignment separately. Installation and career migration remain separate.
+The completed extension uses `merge-animation-source-v1.png` (built-in imagegen), frozen by SHA-256 in `presentation.json`. `tools/build-contender-merge-art.py` reproduces extraction/packing; AI generation itself is not deterministic. The gallery now reads full packaged animations. Native rendering acceptance, installation and career migration remain separate.
+
+## Animation-extension prompt direction (built-in imagegen)
+
+Extend the approved merged appearance over the original normal six-by-four pose sheet: preserve every pose, proportion, anchor and connected silhouette; use charcoal shadow arms, violet seams, ivory wraps and bright violet fists consistently across idle, running, punches, casts, hit and death; keep the same hooded human identity and transparent alpha. The source edit used the approved merged concept and original normal animation sheet as references. No separate shadow duplicate or detached anatomy.

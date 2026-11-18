@@ -30,7 +30,11 @@ for i, (pose, (ax, ay)) in enumerate(zip(poses, anchors)):
         frames.append(frame)
         rects[pose+('_l' if left else '')] = dict(x=x, y=0, w=80, h=64)
 sheet.save(OUT / 'merge-proposals.png')
-manifest = dict(revision='contender-merge-proposal-1', approved=False,
+approval_path = OUT/'approvals.json'
+approval = json.loads(approval_path.read_text())['appearance'] if approval_path.exists() else {}
+if approval.get('approved'):
+    assert approval['source_sha256'] == hashlib.sha256(source.read_bytes()).hexdigest()
+manifest = dict(revision='contender-merge-proposal-1', approved=approval.get('approved', False),
                 file='../docs/contender-merge-review/merge-proposals.png',
                 source_sha256=hashlib.sha256(source.read_bytes()).hexdigest(),
                 sheet_sha256=hashlib.sha256((OUT/'merge-proposals.png').read_bytes()).hexdigest(),

@@ -1,6 +1,6 @@
 """Reproducible packing of approved imagegen drawings. Generation is not deterministic."""
 from pathlib import Path
-import hashlib, json, sys
+import hashlib, json, sys, subprocess
 from PIL import Image, ImageOps
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -120,7 +120,7 @@ for heading in range(8):
 fxsheet=fxsheet.crop((0,0,1024,y+rowh))
 fxbase=ROOT/'mods/tfm2_custom/vfx/contender_shadow'
 fxsheet.save(str(fxbase)+'#sheet.png');Path(str(fxbase)+'#anim.fanim').write_text(json.dumps({'anims':fxanims},separators=(',',':'))+'\n')
-manifest={'revision':'contender-shadow-art-2','rules':'contender-2.2','flurry_headings':8,'canvas':[CW,CH],'foot_anchor':list(FOOT),
+manifest={'revision':'contender-shadow-art-2','rules':json.loads((ROOT/'rules/contender.json').read_text())['revision'],'flurry_headings':8,'canvas':[CW,CH],'foot_anchor':list(FOOT),
  'body':{'file':'../mods/tfm2_custom/champions/tfm2_custom_contender#sheet.png','anims':anims},
  'effects':{'file':'../mods/tfm2_custom/vfx/contender_shadow#sheet.png','anims':fxanims},'bindings':bindings,
  'source_hashes':{p.name:sha(p) for p in [DOC/'body-source-v1.png',DOC/'body-animation-source-v1.png',DOC/'effects-source-v1.png']},
@@ -129,3 +129,5 @@ assert manifest['decoded_bytes']<=32*1024*1024
 (DOC/'presentation.json').write_text(json.dumps(manifest,indent=2)+'\n')
 (ROOT/'editor/contender-presentation.js').write_text('window.CONTENDER_PRESENTATION='+json.dumps(manifest,separators=(',',':'))+';\n')
 print(json.dumps({'body':sheet.size,'fx':fxsheet.size,'decoded_bytes':manifest['decoded_bytes'],'animations':len(fxanims)}))
+if (ROOT/'docs/contender-merge-review/approvals.json').exists():
+    subprocess.run(['rtk','proxy',sys.executable,str(ROOT/'tools/build-contender-merge-art.py')],check=True,cwd=ROOT)

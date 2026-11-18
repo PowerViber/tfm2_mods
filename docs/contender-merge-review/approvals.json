@@ -1,0 +1,9 @@
+{
+  "appearance": {
+    "approved": true,
+    "date": "2026-11-18",
+    "source_sha256": "ef964444f8ee5bf71d3fd86282884f1dd12052eabb68baaed8a617f6b62a64b9",
+    "statements": ["Approve this merged appearance", "Approve the merged appearance"],
+    "scope": "Fused Shadow Merge appearance and completion of its animation set; not native visual acceptance or installation."
+  }
+}

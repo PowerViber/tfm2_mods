@@ -1,6 +1,6 @@
 {
   "revision": "contender-merge-proposal-1",
-  "approved": false,
+  "approved": true,
   "file": "../docs/contender-merge-review/merge-proposals.png",
   "source_sha256": "ef964444f8ee5bf71d3fd86282884f1dd12052eabb68baaed8a617f6b62a64b9",
   "sheet_sha256": "d1a2f50ee01895f8fe6cf18c6a681c59e808d0e6b793b9aacafdb2d4580966b8",
