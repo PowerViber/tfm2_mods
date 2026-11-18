@@ -3,6 +3,8 @@
 const $=id=>document.getElementById(id),R=CONTENDER_RULES,canvas=$('arena'),ctx=canvas.getContext('2d');
 const ex=(await WebAssembly.instantiate(await(await fetch('contender.wasm')).arrayBuffer())).instance.exports;
 const world=await new GameWorld().ready,painter=await new ContenderPainter().ready,clock=new KratosClock();
+const mergePreview=new URLSearchParams(location.search).get('mergePreview')==='1'?await new ContenderMergePreview().ready:null;
+if(mergePreview)$('mergePreviewNote').hidden=false;
 const targets=await new LabTargets(world).ready;
 let scene,tick,me,units,incoming=[],aim,running=false,held=new Set(),glides=new Map(),fx=[],notes=[],hits=[],state={},nextBasic=0,pendingBasic=null,flags={},queued=null,view,zoom=.0025,records=[];
 let ledger=new LabDamageLedger(),panel=null,targetSpecs=null,nextTargetId=1000,selectedTarget=null,resetEpoch=0,isDamageTest=false,loading=false;
@@ -82,8 +84,8 @@ function draw(){if(!me)return;if($('follow').checked)view={...me.pos};ctx.clearR
  for(const e of fx)if($('showArt').checked)painter.draw(ctx,'effects',e.tag,e.at,tick-e.start,P,W);
  if($('showArt').checked)for(const c of state.cleaves||[])if(!c.recast)painter.draw(ctx,'effects','body_punch'+Math.floor(tick/10)%2+(me.pos.x>c.at.x?'_l':''),c.at,0,P,W);
  for(const u of units.filter(u=>u.visible||u.team===0)){targets.draw(ctx,u,tick,P,W);if(u.hp>0){const p=P(u.pos);ctx.fillStyle='#251a2f';ctx.fillRect(p.x-18,p.y-W(31000),36,3);ctx.fillStyle=u.team===0?'#85dcbb':'#f18386';ctx.fillRect(p.x-18,p.y-W(31000),36*u.hp/u.max_hp,3);if(u.team!==0){ctx.fillStyle='#eee5fb';ctx.font='11px monospace';ctx.fillText('#'+u.id+(u.unlimitedHP?' ∞':''),p.x-18,p.y-W(35000));}}}
- if($('showArt').checked){const merged=tick<(flags.merge?.until||0);if(merged&&tick>=(flags.vanish||0))painter.draw(ctx,'effects','body_idle0'+(me.left?'_l':''),{x:me.pos.x-3000,y:me.pos.y+1500},0,P,W);for(const[id]of state.tethers||[]){const u=actor(id);if(u&&u.hp>0)painter.draw(ctx,'effects','echo_t12',u.pos,tick%12,P,W);}}
- if($('showArt').checked&&tick>=(flags.vanish||0))painter.body(ctx,me,tick,P,W);world.drawMap(ctx,P,W,true);drawRhythmStacks();
+ if($('showArt').checked){const merged=tick<(flags.merge?.until||0);if(merged&&!mergePreview&&tick>=(flags.vanish||0))painter.draw(ctx,'effects','body_idle0'+(me.left?'_l':''),{x:me.pos.x-3000,y:me.pos.y+1500},0,P,W);for(const[id]of state.tethers||[]){const u=actor(id);if(u&&u.hp>0)painter.draw(ctx,'effects','echo_t12',u.pos,tick%12,P,W);}}
+ if($('showArt').checked&&tick>=(flags.vanish||0)){if(!(mergePreview&&tick<(flags.merge?.until||0)&&mergePreview.draw(ctx,me,tick,P,W)))painter.body(ctx,me,tick,P,W);}world.drawMap(ctx,P,W,true);drawRhythmStacks();
  const p=P(me.pos);ctx.fillStyle='#2b183b';ctx.fillRect(p.x-20,p.y-W(34000),40,5);ctx.fillStyle='#9be2b9';ctx.fillRect(p.x-20,p.y-W(34000),40*me.hp/me.max_hp,5);ctx.fillStyle='#c7a0ff';ctx.font='13px monospace';ctx.fillText('◆'.repeat(Math.min(7,state.charges??5))+'◇'.repeat(Math.max(0,R.charges.max-(state.charges??5))),p.x-25,p.y-W(39000));
  if($('ranges').checked){ctx.strokeStyle='#bca1e5';for(const radius of[R.cyclone.recastRange,R.tether.radius,R.merge.crossRadius]){ctx.beginPath();ctx.arc(p.x,p.y,W(radius),0,Math.PI*2);ctx.stroke();}}
  const a=P(aim);ctx.strokeStyle='#fff';ctx.beginPath();ctx.moveTo(a.x-6,a.y);ctx.lineTo(a.x+6,a.y);ctx.moveTo(a.x,a.y-6);ctx.lineTo(a.x,a.y+6);ctx.stroke();

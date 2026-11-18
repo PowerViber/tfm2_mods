@@ -7,6 +7,7 @@ body{display:grid;grid-template-columns:270px minmax(360px,1fr) 300px;gap:14px;p
 <h1>Contender Lab <small id="revision"></small></h1>
 <p>Approved Shadow Boxer artwork on the extracted game map, with stock champions, minions, camps and towers. Skills and AI use the native Rust core; movement, attacks, mitigation and visibility are simulated host behaviour, not actual-game acceptance.</p>
 <p><a href="contender-shadow-review.html" style="color:#c6a7ff">Animation and effects review</a></p>
+<p id="mergePreviewNote" hidden style="color:#ffe0a8">Merge concept preview: four whole-body pose concepts, not completed animations or approved game assets. Press Q to transform. <a href="contender-merge-review.html" style="color:#c6a7ff">Compare normal / merged bodies</a>.</p>
 <label>Mode / situation <select id="scenario"></select> <button id="loadScene">Load</button></label><p id="description"></p>
 <label><input id="follow" type="checkbox" checked> Follow Contender</label>
 <label><input id="showArt" type="checkbox" checked> Show approved artwork</label>
@@ -36,5 +37,5 @@ body{display:grid;grid-template-columns:270px minmax(360px,1fr) 300px;gap:14px;p
 <p class="testNote">Opponent attacks, stats and mitigation are a Lab host model. Custom targets use shipped base bodies and Mod Power; their abilities, item passives and mastery are not simulated. Summon templates have editable test stats.</p></details>
 <p id="targetError" class="error" role="status"></p><div id="targetList"></div>
 </aside>
-<script src="contender-data.js"></script><script src="game-world.js"></script><script src="lab-scenarios.js"></script><script src="lab-damage.js"></script><script src="lab-targets.js"></script><script src="lab-target-panel.js"></script><script src="kratos-clock.js"></script><script src="contender-presentation.js"></script><script src="contender-painter.js"></script><script src="contender-shadow-lab.js"></script>
+<script src="contender-data.js"></script><script src="game-world.js"></script><script src="lab-scenarios.js"></script><script src="lab-damage.js"></script><script src="lab-targets.js"></script><script src="lab-target-panel.js"></script><script src="kratos-clock.js"></script><script src="contender-presentation.js"></script><script src="contender-painter.js"></script><script src="contender-merge-data.js"></script><script src="contender-merge-preview.js"></script><script src="contender-shadow-lab.js"></script>
 </body></html>
