@@ -70,3 +70,11 @@ Cyclone also shows its canonical 25,000/35,000 circles.
 See [the 2.4 review](contender-24-art-review/README.md) for approved sources,
 reproducible packing, refreshed Windows/Lab evidence and pending actual-game
 acceptance. The request table above records the former stand-ins, not remaining work.
+
+## `contender-2.7` notes (for Codex)
+- **Bank pips:** the 40-stack bank is gone (the ult is a 120 s cooldown again). The bridge no longer publishes `ct_bank:<n>`, so the bank-pip bindings are unused and can be removed or repurposed.
+- **Dodge pips:** he has **one** dodge now, so `ct_charges:<n>` is only 0 or 1.
+- **The Flurry banishes him:** it uses `entity_banish`, renewed every tick. Please confirm on Windows that:
+  - enemies can't target or hit him;
+  - the fused Merge body and the normal body are both hidden until he reappears;
+  - the Flurry's punches still land while he's banished.

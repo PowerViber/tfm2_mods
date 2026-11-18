@@ -7,7 +7,7 @@
     "Melee",
     "CC"
   ],
-  "revision": "contender-2.6",
+  "revision": "contender-2.7",
   "stat": {
     "attack": 76,
     "magic_power": 0,
@@ -41,17 +41,17 @@
     "startTiming": 9
   },
   "charges": {
-    "max": 3,
-    "rechargeTicks": 600,
-    "basicCutTicks": 30,
+    "max": 1,
+    "rechargeTicks": 720,
     "recastWindowTicks": 180,
     "dodgeSlip": 8000,
     "dodgeSlipTicks": 8,
-    "dodgeGapTicks": 24
+    "dodgeGapTicks": 24,
+    "basicsOnly": 1
   },
   "pact": {
     "delayTicks": 60,
-    "pct": 15,
+    "pct": 10,
     "ccPct": 50,
     "ccCapTicks": 90,
     "ccWindowTicks": 360
@@ -59,24 +59,24 @@
   "rhythm": {
     "maxStacks": 20,
     "stackTicks": 240,
-    "attackSpeedPermillePerStack": 10,
+    "attackSpeedPermillePerStack": 5,
     "attackPermillePerStack": 0,
-    "moveSpeedPermillePerStack": 8,
-    "vulnerabilityPermillePerStack": 10,
+    "moveSpeedPermillePerStack": 4,
+    "vulnerabilityPermillePerStack": 5,
     "carryStacks": 8,
-    "lingerTicks": 300,
-    "breakPermilleMaxHp": 40,
-    "breakAdRatio": 20,
-    "breakBuffTicks": 300
+    "lingerTicks": 180,
+    "breakPermilleMaxHp": 30,
+    "breakAdRatio": 15,
+    "breakBuffTicks": 180
   },
   "merge": {
     "cooldownTicks": 840,
     "ticks": 360,
     "rechargeMult": 1,
-    "bonusDodges": 1,
+    "bonusDodges": 0,
     "dodgeGapTicks": 24,
     "stacksPerHit": 1,
-    "moveSpeedPct": 15,
+    "moveSpeedPct": 10,
     "crossRadius": 30000,
     "crossKnock": 20000,
     "crossKnockTicks": 18,
@@ -120,6 +120,7 @@
     "knockTicks": 30
   },
   "ult": {
+    "cooldownTicks": 7200,
     "ticks": 300,
     "startRange": 50000,
     "chainRange": 30000,
@@ -134,7 +135,7 @@
     "haymakerBase": 40,
     "haymakerAdRatio": 50,
     "haymakerStunTicks": 30,
-    "bankMax": 40
+    "cutCentisPerHit": 1
   },
   "ai": {
     "engageRange": 160000,

@@ -48,6 +48,17 @@ fn hard_cc(sim: &StableSim, id: usize) -> bool {
             .any(|c| !c.name().starts_with("ct_") && !crate::motion::is_self_motion(&c) && HARD.iter().any(|k| k.code() == c.kind))
     })
 }
+/// Did `attacker` cast one of its engine skills (Skill, Skill2, Ult) in the last 1.5 s? The passive's `on_damaged` hook
+/// doesn't say whether a hit was a basic attack, so a hit right after a cast counts as a skill. Native kits whose
+/// skills bypass the engine slots (placeholder cooltimes) read as basics here.
+pub(crate) fn recently_cast(sim: &StableSim, attacker: usize) -> bool {
+    const WINDOW: usize = 90;
+    let Some(a) = sim.get_entity(attacker) else { return false };
+    [mod_api_stable::SkillSlotV1::Skill, mod_api_stable::SkillSlotV1::Skill2, mod_api_stable::SkillSlotV1::Ult].into_iter().any(|slot| {
+        a.cooldown(slot).is_some_and(|c| c.cooltime > 0 && c.cooltime < 5_000_000 && c.remaining > 0 && c.remaining + WINDOW >= c.cooltime)
+    })
+}
+
 fn unhurt(name: &str, ticks: u64, cc_immune: bool) -> BuffV1 {
     let mut b = crate::timed(name, ticks as usize);
     b.damaged_reduce = 100;
@@ -275,6 +286,9 @@ impl Contender {
                     replace_buff(sim, owner, &crate::timed(crate::place::MOVED, 2));
                 }
                 Effect::Vanish { ticks } => {
+                    // contender-2.7: banished for the whole flurry (untargetable, unseen, input-locked; renewed every
+                    // flurry tick), so enemies can't target or hit him; the unhurt, CC-immune lease stays as a backstop
+                    sim.entity_banish(owner, owner, ticks as usize, "", "");
                     sim.entity_set_invisible(owner, ticks as usize);
                     sim.apply_cc(owner, &named(CcKindV1::Bind, ticks, "ct_vanish"));
                     sim.apply_cc(owner, &named(CcKindV1::BlockAttack, ticks, "ct_vanish_attack"));
@@ -288,10 +302,6 @@ impl Contender {
                     b.move_speed_mult = move_pct as i32;
                     replace_buff(sim, owner, &b);
                     self.shadow_drawn = 0;
-                }
-                Effect::Bank { count } => {
-                    remove_prefix(sim, owner, "ct_bank:");
-                    sim.add_buff(owner, &BuffV1::named(&format!("ct_bank:{count}")));
                 }
                 Effect::Rhythm { attack_speed, attack_permille, move_permille, ticks } => {
                     let mut b = crate::timed("ct_rhythm", ticks as usize);
@@ -398,6 +408,10 @@ impl StablePassive for Contender {
         }
         let team = sim.get_entity(id).map(|e| e.team());
         let Some(from) = sim.get_entity(attacker).filter(|a| a.is_champion() && Some(a.team()) != team).map(|a| a.pos()) else { return };
+        // contender-2.7: only an enemy champion's basic attack can be dodged; skills and ults always land
+        if crate::contender_shadow_data::CHARGES_BASICS_ONLY != 0 && recently_cast(sim, attacker) {
+            return;
+        }
         if self.core.try_dodge(sim.tick() as u64, Point::new(from.0 as i64, from.1 as i64)) {
             sim.heal(id, id, damage);
         }

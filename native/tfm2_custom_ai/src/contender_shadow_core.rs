@@ -17,7 +17,7 @@
 //!      invulnerable, in a bigger circle that pulls enemies in, the last hit knocking up.
 //!   S3 Shadow Tether: a shadow latches onto every enemy within 50,000 (5 at most) for 4 s and copies each of his hits
 //!      onto them (30%; flurry punches 15%). Recast: every tethered enemy is yanked toward him and uppercut.
-//!   Ult Shadow Flurry: cast with 20 banked stacks (every hit outside the flurry banks one); 5 s unseen and unhurt, 36
+//!   Ult Shadow Flurry: a 120 s cooldown that every hit outside the flurry cuts by 0.01 s (contender-2.7); 5 s unseen and unhurt, 36
 //!      accelerating chained punches (each prefers a new enemy), a knock-up every second, an early end when nothing is
 //!      in reach; he reappears by the last enemy hit with a haymaker ready and his dodges full.
 //!
@@ -234,8 +234,6 @@ pub enum Effect {
     Rhythm { attack_speed: i64, attack_permille: i64, move_permille: i64, ticks: u64 },
     /// his shadow dodges (for the pips)
     Charges { count: i64 },
-    /// his banked shadow stacks toward the ult
-    Bank { count: i64 },
     /// a purposeful walk the shared input AI turns into a move order
     Steer { to: Point },
     Fx {
@@ -358,9 +356,12 @@ pub struct Core {
     /// tethered enemies: (id, until)
     #[serde(default)]
     pub tethers: Vec<(usize, u64)>,
-    /// banked shadow stacks toward the ult
+    /// the ult is ready from this tick, less the cut (contender-2.7: a 120 s cooldown)
     #[serde(default)]
-    pub bank: i64,
+    pub ult_at: u64,
+    /// hundredths of a second cut off the ult cooldown by his hits since the last cast
+    #[serde(default)]
+    pub ult_cut_centis: u64,
     pub flurry: Option<Flurry>,
     pub haymaker_until: u64,
     pub echoes: Vec<Echo>,
@@ -371,8 +372,6 @@ pub struct Core {
     pub linger: Option<(i64, u64)>,
     pub rhythm_shown: (i64, u64),
     pub charges_shown: i64,
-    #[serde(default)]
-    pub bank_shown: i64,
     pub steer_at: u64,
     #[serde(default)]
     pub reason: String,
@@ -392,7 +391,8 @@ impl Default for Core {
             merge_until: 0,
             cleaves: vec![],
             tethers: vec![],
-            bank: 0,
+            ult_at: 0,
+            ult_cut_centis: 0,
             flurry: None,
             haymaker_until: 0,
             echoes: vec![],
@@ -402,7 +402,6 @@ impl Default for Core {
             linger: None,
             rhythm_shown: (0, 0),
             charges_shown: -1,
-            bank_shown: -1,
             steer_at: 0,
             reason: String::new(),
             rejection: String::new(),
@@ -431,7 +430,11 @@ impl Core {
         self.flurry.is_some()
     }
     pub fn ult_ready(&self, f: &Frame) -> bool {
-crate::unlocks::ult_unlocked(f.level, f.ult_unlocked) && self.bank >= d::ULT_BANK_MAX && self.flurry.is_none()
+crate::unlocks::ult_unlocked(f.level, f.ult_unlocked) && f.tick >= self.ult_ready_at() && self.flurry.is_none()
+    }
+    /// the tick the ult is ready from: its cooldown less 0.01 s per hit since the last cast
+    pub fn ult_ready_at(&self) -> u64 {
+        self.ult_at.saturating_sub(self.ult_cut_centis * 60 / 100)
     }
     pub fn ready(&self, slot: usize, f: &Frame) -> bool {
         f.tick >= self.cd[slot] && crate::unlocks::skill_unlocked(f.level, slot)
@@ -509,10 +512,6 @@ crate::unlocks::ult_unlocked(f.level, f.ult_unlocked) && self.bank >= d::ULT_BAN
             self.charges_shown = self.charges;
             out.push(Effect::Charges { count: self.charges });
         }
-        if self.bank != self.bank_shown {
-            self.bank_shown = self.bank;
-            out.push(Effect::Bank { count: self.bank });
-        }
         out
     }
 
@@ -556,12 +555,14 @@ crate::unlocks::ult_unlocked(f.level, f.ult_unlocked) && self.bank >= d::ULT_BAN
             self.cc(f, u.id, c, src == Src::Echo, out);
         }
         // echoes deal damage, carry crowd control and bank, but never add Rhythm stacks (contender-2.5)
+        // contender-2.7: flurry punches (and their copies) still stack, but never set off a Shadow Break
+        let flurryish = matches!(src, Src::Flurry | Src::Copy(true)) || (src == Src::Echo && self.flurry.is_some());
         if src != Src::Echo {
-            self.add_stacks(f, u, out);
+            self.add_stacks(f, u, !flurryish, out);
         }
-        // contender-2.6: only his own direct hits bank (basics, skills, recasts), never echoes, copies or the flurry
-        if matches!(src, Src::Basic | Src::Skill | Src::Recast) {
-            self.bank = (self.bank + 1).min(d::ULT_BANK_MAX);
+        // contender-2.7: every hit outside the flurry, echoes and copies included, cuts the ult cooldown by 0.01 s
+        if !flurryish {
+            self.ult_cut_centis += d::ULT_CUT_CENTIS_PER_HIT as u64;
         }
         let echoes = match src {
             Src::Echo | Src::Copy(_) => 0,
@@ -618,10 +619,17 @@ crate::unlocks::ult_unlocked(f.level, f.ult_unlocked) && self.bank >= d::ULT_BAN
     }
 
     /// Shadow Rhythm: a hit on a full target is a Shadow Break; otherwise it stacks (2 while merged).
-    fn add_stacks(&mut self, f: &Frame, u: &Unit, out: &mut Vec<Effect>) {
+    fn add_stacks(&mut self, f: &Frame, u: &Unit, can_break: bool, out: &mut Vec<Effect>) {
         let max = d::RHYTHM_MAX_STACKS;
         let until = f.tick + t(d::RHYTHM_STACK_TICKS);
         if self.stacks_on(u.id, f.tick) >= max {
+            if !can_break {
+                // a flurry punch on a full target: it holds at full; his next normal hit Breaks
+                if let Some(s) = self.stacks.iter_mut().find(|s| s.id == u.id) {
+                    s.until = until;
+                }
+                return;
+            }
             let burst = u.max_hp * d::RHYTHM_BREAK_PERMILLE_MAX_HP / 1_000 + d::RHYTHM_BREAK_AD_RATIO * f.attack / 100;
             out.push(Effect::Damage { target: u.id, amount: burst });
             out.push(Effect::Fx { name: "ct_break".into(), at: u.pos, ticks: 18, heading: None });
@@ -669,9 +677,6 @@ crate::unlocks::ult_unlocked(f.level, f.ult_unlocked) && self.bank >= d::ULT_BAN
                 self.hit(f, &v, f.attack * d::TETHER_COPY_PCT / 100, None, Src::Copy(false), true, out);
                 out.push(Effect::Fx { name: "ct_echo".into(), at: v.pos, ticks: 12, heading: None });
             }
-        }
-        if self.charges < d::CHARGES_MAX && self.charge_at > 0 {
-            self.charge_at = self.charge_at.saturating_sub(t(d::CHARGES_BASIC_CUT_TICKS));
         }
         if f.tick < self.haymaker_until {
             self.haymaker_until = 0;
@@ -922,9 +927,10 @@ crate::unlocks::ult_unlocked(f.level, f.ult_unlocked) && self.bank >= d::ULT_BAN
         let Some(first) = Self::targets_near(f, f.pos, d::ULT_START_RANGE).first().cloned() else {
             return self.reject("ult: nothing in reach");
         };
-        // cast while merged: the shadow's echoes ride the whole flurry
-        let echo = self.merged(f.tick);
-        self.bank = 0;
+        // contender-2.7: a merged cast no longer echoes; the cooldown starts and the cut resets
+        let echo = false;
+        self.ult_at = f.tick + t(d::ULT_COOLDOWN_TICKS);
+        self.ult_cut_centis = 0;
         self.flurry = Some(Flurry {
             start: f.tick,
             next: f.tick + 6,

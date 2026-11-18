@@ -20,8 +20,8 @@ body{display:grid;grid-template-columns:270px minmax(360px,1fr) 300px;gap:14px;p
 <label><input type="checkbox" id="ai"> Athlete AI decides</label>
 <label><input type="checkbox" id="fight" checked> Simulated opponents / waves / towers</label>
 <details><summary>Thirteen athlete values</summary><div id="athleteStats"></div></details>
-<div class="row"><button data-key="q">Q Merge / step out</button><button data-key="e">E Cyclone</button><button data-key="c">C Tether / yank</button><button data-key="r">R Flurry (20 banked)</button><button data-key="f">F End merge</button></div>
-<p>Click to aim. WASD walks him. Space throws basic attacks at the nearest enemy. Skills cost nothing; press one again within its window (S1: while merged, S3: while tethered) for its free recast — the Cyclone recast lands where you aim, within reach. Every hit outside the flurry banks a shadow stack; with 20 the flurry is ready. Turn on opponent attacks to watch his dodges.</p>
+<div class="row"><button data-key="q">Q Merge / step out</button><button data-key="e">E Cyclone</button><button data-key="c">C Tether / yank</button><button data-key="r">R Flurry</button><button data-key="f">F End merge</button></div>
+<p>Click to aim. WASD walks him. Space throws basic attacks at the nearest enemy. Skills cost nothing; press one again within its window (S1: while merged, S3: while tethered) for its free recast — the Cyclone recast lands where you aim, within reach. The flurry is a 120 s cooldown; every hit outside it takes 0.01 s off. His one dodge only undoes enemy basic attacks. Turn on opponent attacks to watch his dodges.</p>
 <pre id="state">Loading the shared core…</pre><pre id="log"></pre>
 <button id="saveRecording">Export last 1,200 frames</button><label>Inspect recording <input id="recording" type="file" accept=".json"></label><small id="recordingStatus"></small>
 <label>Recorded frame <input id="recordedFrame" type="range" min="0" max="0" value="0"></label><pre id="recordedDetail"></pre>

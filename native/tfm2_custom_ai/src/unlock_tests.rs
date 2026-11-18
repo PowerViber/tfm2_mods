@@ -58,9 +58,8 @@ fn contender_rejects_locked_orders_and_his_ai_only_merges_at_level_1() {
     assert_eq!(c.rejection, "s2: locked until level 2");
     c.step(&base(2, 2, Some(Order::S3 { aim: foe.pos })));
     assert_eq!(c.rejection, "s3: locked until level 3");
-    c.bank = crate::contender_shadow_data::ULT_BANK_MAX;
     c.step(&base(4, 3, Some(Order::Ult)));
-    assert!(!c.flurrying(), "the ult waits for level 5 even with the bank full");
+    assert!(!c.flurrying(), "the ult waits for level 5 even off cooldown");
     c.step(&base(5, 4, Some(Order::Ult)));
     assert!(c.flurrying());
     // the AI at level 1 beside a champion and a pair: only S1 Merge, never Cyclone or Tether

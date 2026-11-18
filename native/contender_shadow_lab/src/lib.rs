@@ -1,4 +1,4 @@
-//! Contender Lab transport (round 178, contender-2.4): the game's exact core (`contender_shadow_core.rs`) behind a JSON step for the
+//! Contender Lab transport (round 178, contender-2.7): the game's exact core (`contender_shadow_core.rs`) behind a JSON step for the
 //! editor page. The page models the host (positions, glides, hits and the champion hits he may dodge); the rules and his AI all come
 //! from the core.
 #[path = "../../tfm2_custom_ai/src/contender_shadow_core.rs"]
@@ -117,17 +117,11 @@ mod transport_tests {
             let out = run(&mut s, &i.to_string());
             assert!(!out.contains("\"error\""), "{out}");
         }
-        // bank the ult with basics, then cast it
-        for t in 100..150 {
-            let mut i = input(t);
-            i["frame"]["basic_hits"] = json!([10]);
-            run(&mut s, &i.to_string());
-        }
-        assert_eq!(s.core.bank, contender_shadow_data::ULT_BANK_MAX);
+        // the ult: ready at the start (no cast yet), then a 120 s cooldown
         let mut i = input(300);
         i["frame"]["order"] = json!({"kind":"ult"});
         let out = run(&mut s, &i.to_string());
-        assert!(out.contains("\"bank\":0"), "{out}");
+        assert!(out.contains("\"ult_at\""), "{out}");
         assert!(s.core.flurrying());
     }
     #[test]
