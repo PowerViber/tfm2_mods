@@ -1,6 +1,6 @@
 """Generate Contender's Rust tables, champion data, tooltips, editor data and roster entry from rules/contender.json.
 
-Contender 2.7, the elusive Shadow Boxer (round 178). Change numbers in the rules file and rerun; never edit the outputs by hand.
+Contender 2.8, the elusive Shadow Boxer (round 178). Change numbers in the rules file and rerun; never edit the outputs by hand.
 `--check` only verifies.
 """
 from pathlib import Path

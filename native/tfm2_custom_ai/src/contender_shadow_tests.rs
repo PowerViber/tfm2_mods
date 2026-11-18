@@ -200,8 +200,9 @@ fn flurry_punches_never_set_off_a_shadow_break_but_his_next_hit_does() {
 }
 
 #[test]
-fn every_hit_echoes_a_second_later_at_40_percent_with_half_its_crowd_control() {
+fn every_hit_echoes_a_second_later_with_half_its_crowd_control() {
     let mut w = World::new(vec![champ(FOE, 2, 430_000, 500_000)]);
+    w.f.attack = 10_000; // so the small echo of a small skill hit is a whole number
     w.tick(Some(Order::S2 { aim: Point::new(430_000, 500_000) }));
     w.run(d::CYCLONE_EVERY_TICKS as u64);
     let first = w.log.iter().find_map(|(t, e)| matches!(e, Effect::Damage { target: FOE, .. }).then_some(*t)).expect("a cleave hit");
@@ -396,11 +397,11 @@ fn fight_1v2(level: i64) -> (f64, f64) {
 }
 
 #[test]
-fn in_a_1v2_his_damage_stays_under_1_8x_plain_basics_and_he_dodges_at_most_15_percent() {
+fn in_a_1v2_his_damage_stays_under_1_4x_plain_basics_and_he_dodges_at_most_15_percent() {
     for level in [3, 9] {
         let (damage, dodges) = fight_1v2(level);
         println!("level {level}: {damage:.2}x, {:.0}% dodged", dodges * 100.0);
-        assert!(damage <= 1.8, "level {level}: {damage:.2}x a plain champion's basics");
+        assert!(damage <= 1.4, "level {level}: {damage:.2}x a plain champion's basics");
         assert!(dodges <= 0.15, "level {level}: {:.0}% of champion hits dodged", dodges * 100.0);
     }
 }
@@ -521,9 +522,9 @@ fn the_tether_recast_yanks_everyone_toward_him_and_uppercuts() {
 }
 
 #[test]
-fn flurry_punches_copy_onto_tethered_enemies_at_5_percent_and_never_bank() {
+fn flurry_punches_copy_onto_tethered_enemies_and_never_cut_the_ult() {
     let mut w = World::new(vec![champ(FOE, 2, 430_000, 500_000), champ(11, 2, 400_000, 540_000)]);
-    w.f.attack = 1_000; // so a 5% copy is a whole number
+    w.f.attack = 10_000; // so a small copy is a whole number
     for u in w.f.units.iter_mut() {
         u.hp = 1_000_000;
         u.max_hp = 1_000_000;
@@ -532,8 +533,8 @@ fn flurry_punches_copy_onto_tethered_enemies_at_5_percent_and_never_bank() {
     w.unit(11).pos = Point::new(430_000, 560_000); // tethered, but out of the flurry's chain reach
     w.tick(Some(Order::Ult));
     w.run(60);
-    let copy = pct(d::ULT_BASE, d::ULT_AD_RATIO, 1_000) * d::TETHER_FLURRY_COPY_PCT / 100;
-    assert!(w.seen(|e| matches!(e, Effect::Damage { target: 11, amount } if *amount == copy)), "a 5% copy");
+    let copy = pct(d::ULT_BASE, d::ULT_AD_RATIO, 10_000) * d::TETHER_FLURRY_COPY_PCT / 100;
+    assert!(w.seen(|e| matches!(e, Effect::Damage { target: 11, amount } if *amount == copy)), "a flurry copy");
     assert_eq!(w.core.ult_cut_centis, 0, "flurry copies never cut the ult cooldown");
 }
 

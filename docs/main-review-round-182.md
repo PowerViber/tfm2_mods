@@ -48,3 +48,35 @@ The passive's `on_damaged` hook doesn't say what kind of hit it was, so the brid
 - **Lab, driven directly:** the ult casts at once, is refused at 119 s, and casts again at 120 s.
 - **Other checks:** 3 Lab transport tests and 15 Mod Manager tests pass; the generators are current; the wasm and the DLL are rebuilt.
 - **For Codex (Windows):** check in game that the banished flurry can't be targeted or hit and that his body is hidden. Refresh parity. The bank pips are now unused, and the dodge pips are 0/1.
+
+## `contender-2.8`: lower damage, the same dodge (Reihan)
+"can I have a lower final damage but keep the dodges?" Target: about 1.3× a plain champion's basics. The dodge stays exactly as in 2.7.
+
+| | 2.7 | 2.8 |
+|---|---|---|
+| Echoes | 10% | **3%** (mostly crowd control now) |
+| Tether copies (flurry) | 10% (5%) | **3% (2%)** |
+| Tether yank, step-out cross | 20 + 25% Attack | **12 + 15%** |
+| Cyclone clone, 4 hits | 10 + 12% | **3 + 4%** |
+| Cyclone recast, 3 hits | 12 + 15% | **4 + 5%** |
+| Flurry punch | 8 + 10% | **3 + 4%** |
+| Haymaker | 40 + 50% | **15 + 20%** |
+| Shadow Break | 3% max HP + 15% Attack | **1% + 5%** |
+
+- **His skills now:** mostly utility (slows, pulls, knock-ups, the yank and the Flurry's knock-ups); his damage comes from his basic attacks and stacks.
+- **Small echoes:** echoes and copies of small skill hits round down to 0 damage, but still carry their crowd control.
+
+**Measured (AI 1v2, 20 s):**
+
+| | 2.7 | 2.8 |
+|---|---|---|
+| Level 3 | 1.55× | **1.26×** |
+| Level 9 (with one ult) | 1.69× | **1.32×** |
+| Basics alone | 1.11× | **1.04×** |
+| Enemy hits dodged | 9% | **9%** (unchanged) |
+
+**Checks:**
+- **Native tests:** 1,420 passed. The fight guard is tightened to ≤ 1.4×, and two tests use a higher Attack so the small echoes and copies aren't rounded to 0.
+- **Lab and Mod Manager:** 3 Lab transport tests and 15 Mod Manager tests pass.
+- **Generators:** current.
+- **Builds:** the wasm and the DLL are rebuilt.

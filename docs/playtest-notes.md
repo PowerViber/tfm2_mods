@@ -4123,3 +4123,8 @@ Native 0.10.112 / custom 0.2.115, art basalt-art-6, gameplay remains basalt-1.4.
   - can enemies hit or target him during the flurry;
   - does his body vanish;
   - does he now feel fair.
+- **contender-2.8 (same round):**
+  - **Damage:** cut to about 1.3x a plain champion's basics (1.26x / 1.32x at levels 3 / 9, was 1.55x / 1.69x).
+  - **Dodge:** unchanged.
+  - **Skills:** mostly utility now (echoes 3%, Cyclone 3 + 4% per hit, Flurry punch 3 + 4%, Break 1% + 5%).
+  - **Watch for:** is he now too weak in damage.
