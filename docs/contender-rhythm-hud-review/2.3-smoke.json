@@ -1,0 +1,21 @@
+{
+  "result": {
+    "revision": "contender-2.3",
+    "count": 3,
+    "shown": {
+      "text": [
+        "3"
+      ],
+      "icons": 1
+    },
+    "readOnly": true,
+    "expired": {
+      "text": [],
+      "icons": 0
+    },
+    "until": 29148,
+    "tick": 29148
+  },
+  "errors": [],
+  "scope": "Enemy-stack icon smoke check only; not full 2.3 gameplay/parity validation."
+}
