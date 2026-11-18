@@ -2,7 +2,8 @@
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor
 import hashlib,json,os,shutil,subprocess,tempfile
-ROOT=Path(__file__).resolve().parents[1];OUT=ROOT/'docs/contender-shadow-review';BASE='dc0e0b7b2de8a326e80ff9d7fd5d226a9fd423a1'
+ROOT=Path(__file__).resolve().parents[1];OUT=ROOT/os.environ.get('CONTENDER_RESULTS','docs/contender-shadow-review');OUT.mkdir(exist_ok=True)
+BASE=os.environ.get('CONTENDER_BASE','dc0e0b7b2de8a326e80ff9d7fd5d226a9fd423a1')
 def run(args,env=None):
     p=subprocess.run(['rtk','proxy',*args],cwd=ROOT,env=env,capture_output=True,text=True,encoding='utf8',errors='replace')
     if p.returncode:raise RuntimeError(p.stdout+p.stderr)
@@ -23,7 +24,7 @@ built=ROOT/'native/tfm2_custom_ai/target/release/tfm2_custom_ai.dll';repro=secon
 meta=json.loads((ROOT/'mods/tfm2_custom_ai/mod.mod_info').read_text());assert meta['version']=='0.10.113'
 assert json.loads((ROOT/'mods/tfm2_custom/mod.mod_info').read_text())['version']=='0.2.116'
 package=ROOT/'mods/tfm2_custom_ai/tfm2_custom_ai.dll';shutil.copyfile(built,package)
-report={'native':'0.10.113','champion_pack':'0.2.116','rules':'contender-2.0','baseline':BASE,'source_date_epoch':epoch,'source_sha256':before,
+report={'native':'0.10.113','champion_pack':'0.2.116','rules':json.loads((ROOT/'rules/contender.json').read_text())['revision'],'baseline':BASE,'source_date_epoch':epoch,'source_sha256':before,
  'built_dll_sha256':sha(built),'reproduced_dll_sha256':sha(repro),'packaged_dll_sha256':sha(package),'wasm_sha256':sha(ROOT/'editor/contender.wasm'),
  'installed':False,'career_migration':False,'actual_game_acceptance':'pending','toolchain':run(['rustc','+stable-x86_64-pc-windows-gnu','--version'])}
 (OUT/'package.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report,indent=2))

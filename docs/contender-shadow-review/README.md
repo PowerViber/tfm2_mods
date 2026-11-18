@@ -1,5 +1,7 @@
 # Contender: approved Shadow Boxer artwork and real-map Lab
 
+**Current extension:** [Contender 2.2](../contender-flurry-review/README.md) adds eight incoming Flurry directions using the approved fist material. Current decoded artwork is 5.18 MiB; the original 2.0 measurements and approvals below remain historical evidence.
+
 18 November 2026. Based on PR #91 head `dc0e0b7b2de8a326e80ff9d7fd5d226a9fd423a1`.
 Reserved versions remain native **0.10.113**, champion pack **0.2.116** and rules **contender-2.0**. Main still uses 0.10.112 / 0.2.115 at publication.
 

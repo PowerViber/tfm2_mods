@@ -1,0 +1,1246 @@
+{
+  "revision": "contender-2.2",
+  "multiple": {
+    "damage": [
+      1003,
+      1004,
+      1003,
+      1004,
+      1003,
+      1004,
+      1003,
+      1004,
+      1003,
+      1004,
+      1003,
+      1004,
+      1003,
+      1004,
+      1003,
+      1004,
+      1003,
+      1004,
+      1003,
+      1004,
+      1003,
+      1004,
+      1003,
+      1004,
+      1003,
+      1004,
+      1003,
+      1004,
+      1003,
+      1004,
+      1003,
+      1004,
+      1003,
+      1004,
+      1003,
+      1004
+    ],
+    "cues": [
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 1,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 470000,
+          "y": 508000
+        },
+        "heading": 4,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 7,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 470000,
+          "y": 508000
+        },
+        "heading": 2,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 5,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 470000,
+          "y": 508000
+        },
+        "heading": 0,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 3,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 470000,
+          "y": 508000
+        },
+        "heading": 6,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 1,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 470000,
+          "y": 508000
+        },
+        "heading": 4,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 7,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 470000,
+          "y": 508000
+        },
+        "heading": 2,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 5,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 470000,
+          "y": 508000
+        },
+        "heading": 0,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 3,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 470000,
+          "y": 508000
+        },
+        "heading": 6,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 1,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 470000,
+          "y": 508000
+        },
+        "heading": 4,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 7,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 470000,
+          "y": 508000
+        },
+        "heading": 2,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 5,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 470000,
+          "y": 508000
+        },
+        "heading": 0,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 3,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 470000,
+          "y": 508000
+        },
+        "heading": 6,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 1,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 470000,
+          "y": 508000
+        },
+        "heading": 4,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 7,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 470000,
+          "y": 508000
+        },
+        "heading": 2,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 5,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 470000,
+          "y": 508000
+        },
+        "heading": 0,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 3,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 470000,
+          "y": 508000
+        },
+        "heading": 6,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 1,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 470000,
+          "y": 508000
+        },
+        "heading": 4,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 7,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 470000,
+          "y": 508000
+        },
+        "heading": 2,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      }
+    ],
+    "targets": [
+      {
+        "id": 1003,
+        "type": "stock:knight",
+        "total": 444
+      },
+      {
+        "id": 1004,
+        "type": "stock:berserker",
+        "total": 540
+      }
+    ],
+    "revision": "contender-2.2"
+  },
+  "creep": {
+    "damage": [
+      1005,
+      1006,
+      1005,
+      1006,
+      1005,
+      1006,
+      1005,
+      1006,
+      1005,
+      1006,
+      1005,
+      1006,
+      1005,
+      1006,
+      1005,
+      1006,
+      1005,
+      1006,
+      1005,
+      1006,
+      1005,
+      1006,
+      1005,
+      1006,
+      1005,
+      1006,
+      1005,
+      1006,
+      1005,
+      1006,
+      1005,
+      1006,
+      1005,
+      1006,
+      1005,
+      1006
+    ],
+    "cues": [
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 1,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 470000,
+          "y": 508000
+        },
+        "heading": 4,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 7,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 470000,
+          "y": 508000
+        },
+        "heading": 2,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 5,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 470000,
+          "y": 508000
+        },
+        "heading": 0,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 3,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 470000,
+          "y": 508000
+        },
+        "heading": 6,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 1,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 470000,
+          "y": 508000
+        },
+        "heading": 4,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 7,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 470000,
+          "y": 508000
+        },
+        "heading": 2,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 5,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 470000,
+          "y": 508000
+        },
+        "heading": 0,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 3,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 470000,
+          "y": 508000
+        },
+        "heading": 6,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 1,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 470000,
+          "y": 508000
+        },
+        "heading": 4,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 7,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 470000,
+          "y": 508000
+        },
+        "heading": 2,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 5,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 470000,
+          "y": 508000
+        },
+        "heading": 0,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 3,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 470000,
+          "y": 508000
+        },
+        "heading": 6,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 1,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 470000,
+          "y": 508000
+        },
+        "heading": 4,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 7,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 470000,
+          "y": 508000
+        },
+        "heading": 2,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 5,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 470000,
+          "y": 508000
+        },
+        "heading": 0,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 3,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 470000,
+          "y": 508000
+        },
+        "heading": 6,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 1,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 470000,
+          "y": 508000
+        },
+        "heading": 4,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 7,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 470000,
+          "y": 508000
+        },
+        "heading": 2,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      }
+    ],
+    "targets": [
+      {
+        "id": 1005,
+        "type": "stock:knight",
+        "total": 444
+      },
+      {
+        "id": 1006,
+        "type": "melee",
+        "total": 956
+      }
+    ],
+    "revision": "contender-2.2"
+  },
+  "solo": {
+    "damage": [
+      1007,
+      1007,
+      1007,
+      1007,
+      1007,
+      1007,
+      1007,
+      1007,
+      1007,
+      1007,
+      1007,
+      1007,
+      1007,
+      1007,
+      1007,
+      1007,
+      1007,
+      1007,
+      1007,
+      1007,
+      1007,
+      1007,
+      1007,
+      1007,
+      1007,
+      1007,
+      1007,
+      1007,
+      1007,
+      1007,
+      1007,
+      1007,
+      1007,
+      1007,
+      1007,
+      1007
+    ],
+    "cues": [
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 1,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 4,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 7,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 2,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 5,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 0,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 3,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 6,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 1,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 4,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 7,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 2,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 5,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 0,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 3,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 6,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 1,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 4,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 7,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 2,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 5,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 0,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 3,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 6,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 1,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 4,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 7,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 2,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 5,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 0,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 3,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 6,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 1,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 4,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 7,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      },
+      {
+        "at": {
+          "x": 456000,
+          "y": 508000
+        },
+        "heading": 2,
+        "kind": "fx",
+        "name": "ct_flurry",
+        "ticks": 8
+      }
+    ],
+    "targets": [
+      {
+        "id": 1007,
+        "type": "stock:knight",
+        "total": 930
+      }
+    ],
+    "revision": "contender-2.2"
+  },
+  "decoded_bytes": 5431296,
+  "errors": [],
+  "scope": "Shared-core Lab tests: different-target preference, solo fallback and eight directional punches. Not native visual acceptance."
+}

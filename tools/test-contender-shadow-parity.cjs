@@ -1,6 +1,6 @@
 const {chromium}=require(require.resolve('playwright',{paths:[process.cwd(),require('os').homedir()+'/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules']}));
 const fs=require('fs'),assert=require('assert'),cp=require('child_process'),path=require('path');
-const revision=JSON.parse(fs.readFileSync('rules/contender.json','utf8')).revision,out='docs/contender-1vx-review';fs.mkdirSync(out,{recursive:true});
+const revision=JSON.parse(fs.readFileSync('rules/contender.json','utf8')).revision,out=process.env.CONTENDER_RESULTS||'docs/contender-1vx-review';fs.mkdirSync(out,{recursive:true});
 (async()=>{const browser=await chromium.launch({channel:'msedge',headless:true}),page=await browser.newPage();try{
  await page.goto('http://127.0.0.1:7309/editor/contender.html');await page.waitForFunction(()=>window.contenderLab?.me);await page.uncheck('#fight');
  const scenes=['laning','gank','countergank','camp','morgard','serpen','defend','dive'],results=[];
