@@ -37,9 +37,22 @@ Every 2.3 effect reuses a packaged cue at a packaged length, so nothing is unbou
 | `ct_haymaker_t18` | A Shadow Break (and the haymaker) |
 | `ct_slam_t20` | No longer used |
 
-**Wanted when there's time:** a tether line or latched shadow on enemies, a dodge after-image, a Break burst, and pips for the bank. The bridge publishes `ct_bank:<0..20>` (no dedicated native bank artwork yet), and Merge now uses the approved `ct_mb_` body bindings; `ct_charges:<n>` stays at 0..5 (merged dodges above 5 show as 5).
+**Wanted when there's time:** a tether line or latched shadow on enemies, a dodge after-image, a Break burst, and pips for the bank. The bridge publishes `ct_bank:<0..40>` (no dedicated native bank artwork yet), and Merge now uses the approved `ct_mb_` body bindings; `ct_charges:<n>` stays at 0..5 (merged dodges above 5 show as 5).
 
 
 ## Approved fused Merge completion (18 November 2026)
 
 Reihan approved the fused charcoal/violet form. The full 24-drawing animation extension, mirrored atlas, native pose-driven artwork buffs and default Lab integration are complete in this PR. Normal body/effect pixels and combat rules are unchanged. See `docs/contender-merge-integration-review/README.md` for hashes, timings, current 2.3 checks and pending actual-game alignment. Older embedded definitions use their existing fallback until a separately backed-up migration.
+
+
+## `contender-2.4` art wanted (for Codex)
+2.4 changes gameplay only. Every cue it plays is already packaged, so nothing is unbound. These are the visuals the new rules would benefit from; none of them may change combat, movement or control.
+
+| Wanted | When it plays | Current stand-in | Notes |
+|---|---|---|---|
+| **Shadow Break burst** (`ct_break_t18` or similar) | On the enemy, on the hit after it reaches 20 Rhythm stacks: 6% max HP + 30% Attack, and its stacks reset to 0 | `ct_haymaker_t18` (shared with the post-ult haymaker) | It is now rare (one per 20 stacks), so it can be big: a violet implosion and shatter that reads as "the stacks were spent". |
+| **Full-rhythm aura on him** (a named buff such as `ct_rhythm_full`) | For the 8 s after a Break, while his Rhythm buffs stay at the 20-stack level even though the target is at 0 | none (the core emits a `Rhythm` effect each refresh; the bridge has no named buff for it yet) | A low-key violet pulse at his feet or fists, readable over the normal body and the fused Merge body. Claude will add the named buff once a binding exists. |
+| **Enemy Rhythm stack pips in the game** (`ct_rhythm:<0..20>` on the enemy) | While an enemy carries his stacks | Lab only (the violet fist icon with a count; gold at 20) | Match the Lab icon; gold at 20 warns that the next hit Breaks. It needs a bridge buff on enemies, which Claude can add alongside the binding. |
+| **Bank pips** (`ct_bank:<0..40>` on him) | Always; the ult is ready at 40 | none (the buff is published unbound) | For example 8 pips of 5 stacks, or a ring that fills; it should be clearly "ready" at 40. |
+
+**Budgets:** the same as the rest of his art. The Break and the aura must also read on the fused Merge body (`ct_mb_*`).

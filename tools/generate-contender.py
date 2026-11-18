@@ -1,6 +1,6 @@
 """Generate Contender's Rust tables, champion data, tooltips, editor data and roster entry from rules/contender.json.
 
-Contender 2.3, the elusive Shadow Boxer (round 178). Change numbers in the rules file and rerun; never edit the outputs by hand.
+Contender 2.4, the elusive Shadow Boxer (round 178). Change numbers in the rules file and rerun; never edit the outputs by hand.
 `--check` only verifies.
 """
 from pathlib import Path
@@ -36,10 +36,10 @@ text = {
               f"Shadow Pact (passive): every punch and skill hits again {sec(pa['delayTicks'])} later for {pa['pct']}%, with its crowd control at "
               f"{pa['ccPct']}% (at most {sec(pa['ccCapTicks'])} more per target every {sec(pa['ccWindowTicks'])}); recast hits echo twice. "
               f"Shadow Rhythm (passive): each hit stacks on its target (up to {rh['maxStacks']}, {sec(rh['stackTicks'])}); the most-stacked enemy "
-              f"gives him +{rh['attackSpeedPctPerStack']}% attack speed, +{rh['attackPermillePerStack'] / 10:g}% Attack and "
+              f"gives him +{rh['attackSpeedPermillePerStack'] / 10:g}% attack speed, +{rh['attackPermillePerStack'] / 10:g}% Attack and "
               f"+{rh['moveSpeedPermillePerStack'] / 10:g}% move speed per stack, and takes +{rh['vulnerabilityPermillePerStack'] / 10:g}% damage "
               f"from him per stack. At {rh['maxStacks']} stacks his next hit is a Shadow Break: {rh['breakPermilleMaxHp'] / 10:g}% of its max HP + "
-              f"{rh['breakAdRatio']}% Attack, and it drops to {rh['breakResetStacks']} stacks. A max-stacked creep carries {rh['carryStacks']} stacks "
+              f"{rh['breakAdRatio']}% Attack, and its stacks reset to 0, but his Rhythm buffs stay at full for {sec(rh['breakBuffTicks'])}. A max-stacked creep carries {rh['carryStacks']} stacks "
               f"onto the next champion he hits; a stacked kill keeps the buffs {sec(rh['lingerTicks'])} longer. "
               f"S1 Shadow Merge ({sec(me['cooldownTicks'])}): he merges with his shadow for {sec(me['ticks'])}: dodges recharge {me['rechargeMult']}x "
               f"as fast, +{me['bonusDodges']} dodges at once, every hit echoes twice and adds {me['stacksPerHit']} stacks, +{me['moveSpeedPct']}% "

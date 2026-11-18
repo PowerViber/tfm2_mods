@@ -4078,3 +4078,7 @@ Native 0.10.112 / custom 0.2.115, art basalt-art-6, gameplay remains basalt-1.4.
   - how fast the 20-stack bank fills in lane and in fights;
   - does Merge, Tether, yank, ult feel like the big combo;
   - a lethal hit can still kill him before a dodge's heal-back (as with Kratos).
+- **contender-2.4 (Reihan):** Shadow Rhythm stacks to **20** (half the value per stack, so the same totals at full). **Shadow Break** fires on the hit after 20, resets the target to **0**, and his Rhythm buffs **stay at full for 8 s**. The ult needs **40** banked stacks. Watch for:
+  - does a Break now feel like a payoff rather than constant damage;
+  - is 40 banked too slow for the ult in lane and in fights;
+  - does the 8 s full-buff window after a Break read and feel worth chasing.

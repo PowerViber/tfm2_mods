@@ -7,7 +7,7 @@
     "Melee",
     "CC"
   ],
-  "revision": "contender-2.3",
+  "revision": "contender-2.4",
   "stat": {
     "attack": 85,
     "magic_power": 0,
@@ -57,17 +57,17 @@
     "ccWindowTicks": 360
   },
   "rhythm": {
-    "maxStacks": 10,
+    "maxStacks": 20,
     "stackTicks": 240,
-    "attackSpeedPctPerStack": 3,
-    "attackPermillePerStack": 20,
-    "moveSpeedPermillePerStack": 15,
-    "vulnerabilityPermillePerStack": 40,
-    "carryStacks": 4,
+    "attackSpeedPermillePerStack": 15,
+    "attackPermillePerStack": 10,
+    "moveSpeedPermillePerStack": 8,
+    "vulnerabilityPermillePerStack": 20,
+    "carryStacks": 8,
     "lingerTicks": 300,
     "breakPermilleMaxHp": 60,
     "breakAdRatio": 30,
-    "breakResetStacks": 5
+    "breakBuffTicks": 480
   },
   "merge": {
     "cooldownTicks": 840,
@@ -134,7 +134,7 @@
     "haymakerBase": 60,
     "haymakerAdRatio": 80,
     "haymakerStunTicks": 30,
-    "bankMax": 20
+    "bankMax": 40
   },
   "ai": {
     "engageRange": 160000,

@@ -619,10 +619,10 @@ impl Core {
             let burst = u.max_hp * d::RHYTHM_BREAK_PERMILLE_MAX_HP / 1_000 + d::RHYTHM_BREAK_AD_RATIO * f.attack / 100;
             out.push(Effect::Damage { target: u.id, amount: burst });
             out.push(Effect::Fx { name: "ct_haymaker".into(), at: u.pos, ticks: 18, heading: None });
-            if let Some(s) = self.stacks.iter_mut().find(|s| s.id == u.id) {
-                s.count = d::RHYTHM_BREAK_RESET_STACKS;
-                s.until = until;
-            }
+            // the target's stacks reset to 0, but his Rhythm buffs stay at full for a while (the kill-linger path)
+            self.stacks.retain(|s| s.id != u.id);
+            let end = f.tick + t(d::RHYTHM_BREAK_BUFF_TICKS);
+            self.linger = Some((max, self.linger.filter(|l| l.0 >= max).map_or(end, |l| l.1.max(end))));
             return;
         }
         let gain = if self.merged(f.tick) { d::MERGE_STACKS_PER_HIT } else { 1 };
@@ -690,7 +690,7 @@ impl Core {
         if n != self.rhythm_shown.0 || (n > 0 && f.tick >= self.rhythm_shown.1) {
             self.rhythm_shown = (n, f.tick + 30);
             out.push(Effect::Rhythm {
-                attack_speed: n * d::RHYTHM_ATTACK_SPEED_PCT_PER_STACK,
+                attack_speed: n * d::RHYTHM_ATTACK_SPEED_PERMILLE_PER_STACK / 10,
                 attack_permille: n * d::RHYTHM_ATTACK_PERMILLE_PER_STACK,
                 move_permille: n * d::RHYTHM_MOVE_SPEED_PERMILLE_PER_STACK,
                 ticks: if n > 0 { 40 } else { 1 },

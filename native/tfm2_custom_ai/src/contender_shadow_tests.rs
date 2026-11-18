@@ -145,18 +145,24 @@ fn skills_cost_nothing_and_each_recast_is_free_once_in_its_window() {
 // ------------------------------------------------------------------ the bank
 
 #[test]
-fn hits_outside_the_flurry_bank_up_to_20_and_the_ult_spends_them_all() {
+fn hits_outside_the_flurry_bank_up_to_40_and_the_ult_spends_them_all() {
     let mut w = World::new(vec![champ(FOE, 2, 430_000, 500_000)]);
     w.unit(FOE).hp = 1_000_000;
     w.unit(FOE).max_hp = 1_000_000;
     w.core.bank = 0;
     w.tick(Some(Order::Ult));
     assert_eq!(w.core.rejection, "ult", "an empty bank: no ult");
-    for _ in 0..25 {
+    for _ in 0..d::ULT_BANK_MAX - 1 {
         w.f.basic_hits.push(FOE);
         w.tick(None);
     }
-    assert_eq!(w.core.bank, d::ULT_BANK_MAX, "capped at 20");
+    w.tick(Some(Order::Ult));
+    assert_eq!(w.core.rejection, "ult", "39 banked: not yet");
+    for _ in 0..6 {
+        w.f.basic_hits.push(FOE);
+        w.tick(None);
+    }
+    assert_eq!(w.core.bank, d::ULT_BANK_MAX, "capped at 40");
     w.tick(Some(Order::Ult));
     assert!(w.core.flurrying());
     assert_eq!(w.core.bank, 0, "all 20 spent");
@@ -194,29 +200,55 @@ fn recast_hits_echo_twice_and_echoed_crowd_control_is_capped() {
 // ------------------------------------------------------------------ Shadow Rhythm
 
 #[test]
-fn stacks_make_the_target_take_4_percent_more_each_and_10_trigger_a_shadow_break() {
+fn stacks_make_the_target_take_2_percent_more_each_and_20_trigger_a_shadow_break_that_resets_them() {
     let mut w = World::new(vec![champ(FOE, 2, 410_000, 500_000)]);
     w.unit(FOE).hp = 100_000;
     w.unit(FOE).max_hp = 100_000;
+    let burst = 100_000 * d::RHYTHM_BREAK_PERMILLE_MAX_HP / 1_000 + d::RHYTHM_BREAK_AD_RATIO;
+    let breaks = |w: &World| w.count(|e| matches!(e, Effect::Damage { target: FOE, amount } if *amount == burst));
     for _ in 0..4 {
         w.f.basic_hits.push(FOE);
         w.tick(None);
     }
     assert_eq!(w.core.vuln_permille(FOE, w.f.tick), 4 * d::RHYTHM_VULNERABILITY_PERMILLE_PER_STACK);
-    for _ in 0..6 {
+    for _ in 4..d::RHYTHM_MAX_STACKS {
         w.f.basic_hits.push(FOE);
         w.tick(None);
     }
     assert_eq!(w.core.stacks_on(FOE, w.f.tick), d::RHYTHM_MAX_STACKS);
+    assert_eq!(breaks(&w), 0, "20 hits stack to 20, no Break yet");
     w.f.basic_hits.push(FOE);
     w.tick(None);
-    let burst = 100_000 * d::RHYTHM_BREAK_PERMILLE_MAX_HP / 1_000 + d::RHYTHM_BREAK_AD_RATIO;
-    assert!(w.seen(|e| matches!(e, Effect::Damage { target: FOE, amount } if *amount == burst)), "Shadow Break: 6% max HP + 30% Attack");
-    assert_eq!(w.core.stacks_on(FOE, w.f.tick), d::RHYTHM_BREAK_RESET_STACKS);
+    assert_eq!(breaks(&w), 1, "the 21st hit is a Shadow Break: 6% max HP + 30% Attack");
+    assert_eq!(w.core.stacks_on(FOE, w.f.tick), 0, "its stacks reset to 0");
 }
 
 #[test]
-fn a_max_stacked_creep_carries_four_stacks_onto_a_champion_and_a_kill_lingers() {
+fn after_a_shadow_break_his_rhythm_buffs_stay_at_full_for_8_seconds() {
+    let mut w = World::new(vec![champ(FOE, 2, 410_000, 500_000)]);
+    w.unit(FOE).hp = 100_000;
+    w.unit(FOE).max_hp = 100_000;
+    for _ in 0..=d::RHYTHM_MAX_STACKS {
+        w.f.basic_hits.push(FOE);
+        w.tick(None);
+    }
+    let broke = w.f.tick - 1;
+    let full = d::RHYTHM_MAX_STACKS * d::RHYTHM_ATTACK_SPEED_PERMILLE_PER_STACK / 10;
+    // the echoes of those basics land a second later and stack the target again; drop them to see the buff alone
+    w.core.echoes.clear();
+    w.run(d::RHYTHM_BREAK_BUFF_TICKS as u64 - 60);
+    assert_eq!(w.core.stacks_on(FOE, w.f.tick), 0);
+    let last = w.log.iter().rev().find_map(|(_, e)| match e { Effect::Rhythm { attack_speed, .. } => Some(*attack_speed), _ => None });
+    assert_eq!(last, Some(full), "7 s on, still the 20-stack buff");
+    while w.f.tick < broke + d::RHYTHM_BREAK_BUFF_TICKS as u64 + 2 {
+        w.tick(None);
+    }
+    let last = w.log.iter().rev().find_map(|(_, e)| match e { Effect::Rhythm { attack_speed, .. } => Some(*attack_speed), _ => None });
+    assert_eq!(last, Some(0), "gone after 8 s");
+}
+
+#[test]
+fn a_max_stacked_creep_carries_eight_stacks_onto_a_champion_and_a_kill_lingers() {
     let mut w = World::new(vec![creep(30, 405_000, 500_000, 50_000), champ(FOE, 2, 410_000, 500_000)]);
     for _ in 0..d::RHYTHM_MAX_STACKS {
         w.f.basic_hits.push(30);

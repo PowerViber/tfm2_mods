@@ -42,6 +42,17 @@
 - **Tests:** `contender_shadow_tests.rs` is rewritten for 2.3: 31 tests (Codex's alternation and directional tests kept), covering dodges, free recasts, the bank, Merge, the aimed pulling recast, Breaks, Tether copies and the yank, the AI, and the glue (including the dodge heal-back).
 - **For Codex:** the Windows parity fixtures (`tools/test-contender-shadow-parity.cjs`) and the real-map Lab checks need a refresh against 2.3; see `docs/contender-shadow-art-handoff.md` for the effect uses.
 
+## `contender-2.4`: a slower Shadow Break and a 40-stack ult (Reihan)
+"this is too strong … stack stacks up to 20 and shadow break detonates at 20 and stack becomes 0 but the buff stays after a shadow break, the buff gets longer time" and "ult requires 40". Built on top of Codex's fused Shadow Merge art commits (`65cca43`), unchanged.
+- **Shadow Rhythm:** up to **20** stacks. The per-stack values are halved, so the full-stack totals stay the same: +2% damage taken (+40%), +1.5% attack speed (+30%), +1% Attack (+20%) and +0.8% move speed (+16%). The carry-over is 8.
+- **Shadow Break:** on the hit after 20 stacks (same 6% max HP + 30% Attack); the target's stacks **reset to 0**, and his Rhythm buffs **stay at the 20-stack level for 8 s** (`rhythm.breakBuffTicks`, through the kill-linger path).
+- **Ult:** needs **40** banked stacks (`ult.bankMax`).
+- **Tests:** 1,406 native tests pass. They include a new test that his buffs stay after a Break, and the Break and bank tests updated to 20 stacks and 40 banked.
+- **Wasm, driven directly:**
+  - the Break lands on the 21st hit and leaves the target at 0 stacks;
+  - his attack-speed buff stays at +30%;
+  - 40 hits fill the bank, and the flurry spends it all.
+
 ## Checks
 - **Native tests (2.3):** 1,400 passed, 18 ignored, including 31 Contender tests (core, AI and glue).
 - **Wasm (2.3):** driven directly: a champion hit spends a dodge and slips him; 10 stacks fire a Break; 20 basics fill the bank, the flurry spends it, and the bank stays at 0 through the flurry.
