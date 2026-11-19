@@ -1,32 +1,18 @@
-# Contender, the Shadow Boxer (contender-3.0)
+# Contender, the Shadow Boxer (contender-3.1)
 
-Contender fights shadow first. Shadow Link replaces the old Tether and yank, and
-the AI checks safety before sending his real body into a fight. Native Shadow
-Link is gated while the game carrier is tested. The playable Lab simulates its
-health and allied hits.
+Contender retaliates when his passive dodges a champion hit, stacks Rhythm with a
+short Flurry and sets up teammates with Shadow Link.
 
-| Technique | Behaviour |
+| Move | Rules |
 |---|---|
-| Shadows | Five dodges, one charge recovered every 15 seconds. One champion hit can be dodged per 0.4 seconds. |
-| Shadow Pact | Direct hits echo after one second for 3% damage, with reduced and capped control. Merge doubles ordinary echoes. |
-| Shadow Rhythm | Up to 20 stacks per target. The next eligible hit Breaks the target and clears its stacks. |
-| S1. Shadow Merge | Six seconds of higher movement speed and double ordinary echoes. Recast to step out with a cross and slip. |
-| S2. Shadow Cyclone | Send a clone to cleave. Recast to glide to the aim point and replace its cleave with a larger one that pulls enemies and knocks up on the last hit. |
-| S3. Shadow Link | Dash one shadow up to 50,000. On landing it slows enemies by 25% for one second within 50,000 and links the recipients. The shadow has the highest linked maximum HP and lasts four seconds. Team damage stored on it returns as one physical hit per surviving link on depletion or expiry, capped at 30% of each victim's maximum HP. Moving more than 120,000 away from the shadow breaks a link. |
-| Ultimate. Shadow Flurry | A 60-second cooldown. Contender vanishes and delivers up to 72 alternating punches at four ticks apart before returning with a haymaker ready. Hits outside Flurry shorten its cooldown. |
+| Shadows and Counterpunch | Five dodges, one recovered every 15 seconds, with a 0.4-second dodge gap. The dodge shadow punches the triggering champion once within 45,000 for 20 + 30% Attack physical damage. Terrain, cage and realm boundaries stop the counter. |
+| Shadow Pact and Rhythm | A basic echoes after one second for 3% damage. Merge doubles these echoes. Basics and Flurry stack Rhythm, up to 20 per enemy. A basic or Counterpunch can trigger Shadow Break on a full stack. |
+| Q. Shadow Merge | Gain movement speed for six seconds. A 30,000-radius cross strikes around his current position once a second for 12 + 15% Attack physical damage. |
+| E. Shadow Flurry | Unlocks at level two. Vanish and throw up to ten alternating punches in one second. Three charges, 16 seconds to recharge one and a 0.75-second gap after reappearing. Each landed non-Flurry hit cuts the active recharge by 0.5 seconds. A successful burst primes a damage-only Haymaker. |
+| R. Shadow Link | 75-second cooldown, 60,000 range, 85,000 radius. Refills all five dodges. After a 0.75-second warning, remaining links are pulled for 0.2 seconds, knocked up for 0.5 seconds, and stunned for 0.4 seconds. Zero damage. |
 
-S3 unlocks at level three and has a 10-second cooldown. Ordinary jungle creeps
-and minions can be linked. Structures, major objectives and slow-immune targets
-are excluded. The shadow and payout never feed his other passives. A
-stationary shadow stays attackable while the real targets can move and fight.
-Broken links do not reconnect.
+Contender's AI checks allied follow-up, enemy numbers, towers and retreat paths
+before committing Flurry. The projected Shadow Link serves a supported group
+catch or a teammate peel. Manual Lab orders retain their own controls.
 
-The AI casts Shadow Link from cover and prefers a nearby shadow in basic range.
-It needs a usable exit, a route outside tower range, and timely champion support
-for a body commit. It will take an isolated basic finish when the observed HP,
-armour and shields indicate it can finish safely. Low health calls for retreat.
-Aggressive changes the HP and chase thresholds. These checks govern Contender's
-AI, including his previous unchecked Cyclone recast, while manual Lab casts use
-the ordinary skill rules.
-
-[Shadow Link review, controls and evidence](contender-shadow-link-review.md)
+[Contender 3.1 review and verification](contender-31-review.md)

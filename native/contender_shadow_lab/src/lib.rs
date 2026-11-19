@@ -1,4 +1,4 @@
-//! Contender Lab transport (round 178, contender-3.0): the game's exact core (`contender_shadow_core.rs`) behind a JSON step for the
+//! Contender Lab transport (contender-3.1): the game's exact core (`contender_shadow_core.rs`) behind a JSON step for the
 //! editor page. The page models the host (positions, glides, hits and the champion hits he may dodge); the rules and his AI all come
 //! from the core.
 #[path = "../../tfm2_custom_ai/src/contender_shadow_core.rs"]
@@ -38,15 +38,12 @@ fn valid(f: &Frame) -> bool {
         && (0..=f.max_hp).contains(&f.hp)
         && f.barriers.len() <= 128 && f.barriers.iter().all(|wall| point(wall.from) && point(wall.to) && (0..=32_000).contains(&wall.half_width))
         && f.defences.len() <= 128 && f.defences.iter().all(|defence| (0..=1_000_000).contains(&defence.armour) && (0..=100_000_000).contains(&defence.shield))
-        && f.link_excluded.len() <= 128 && f.separated.len() <= 128
-        && match &f.shadow_observation {
-            None => true,
-            Some(ShadowObservation::Landed { targets, .. }) => targets.len() <= 128,
-            Some(ShadowObservation::Health { hp, .. }) => (0..=100_000_000).contains(hp),
-        }
+        && f.link_excluded.len() <= 128 && f.separated.len() <= 128 && f.link_airborne.len() <= 128
         && f.basic_hits.len() <= 16
+        && f.landed_hits <= 256
         && f.incoming.len() <= 16
-        && f.incoming.iter().all(|p| point(*p))
+        && f.incoming.iter().all(|hit| hit.attacker != f.owner && point(hit.from))
+        && match f.order { Some(Order::Ult { aim }) => point(aim), _ => true }
         && f.units.iter().all(|u| u.id != f.owner && point(u.pos) && (1..=100_000_000).contains(&u.max_hp))
 }
 
@@ -104,7 +101,7 @@ mod transport_tests {
     fn input(tick: u64) -> serde_json::Value {
         json!({"version": 1, "rules_revision": REVISION, "frame": {
             "tick": tick, "owner": 1, "team": 0, "alive": true, "pos": {"x": 400000, "y": 500000}, "hp": 1000, "max_hp": 1000,
-            "attack": 100, "ult_unlocked": true, "shadow_link_enabled": true, "units": [
+            "attack": 100, "ult_unlocked": true, "units": [
                 {"id": 10, "team": 1, "pos": {"x": 440000, "y": 500000}, "hp": 1000, "max_hp": 1000, "radius": 3000, "champion": true,
                  "tower": false, "visible": true, "targetable": true}],
             "profile": [50,50,50,50,50,50,50,50,50,50,50,50,50], "manual": true, "order": null}})
@@ -113,24 +110,18 @@ mod transport_tests {
     fn every_order_reaches_the_core_and_every_effect_serializes() {
         let mut s = Session::default();
         for (t, o) in [
-            (1, json!({"kind":"s1","aim":{"x":470000,"y":500000}})),
-            (20, json!({"kind":"move","aim":{"x":480000,"y":500000}})),
-            (30, json!({"kind":"s2","aim":{"x":470000,"y":500000}})),
-            (40, json!({"kind":"s3","aim":{"x":470000,"y":500000}})),
-            (60, json!({"kind":"end"})),
+            (1, json!({"kind":"s1"})),
+            (2, json!({"kind":"s2"})),
+            (64, serde_json::Value::Null),
+            (65, json!({"kind":"ult","aim":{"x":445000,"y":500000}})),
         ] {
             let mut i = input(t);
             i["frame"]["order"] = o;
-            i["frame"]["incoming"] = json!([{"x": 440000, "y": 500000}]);
             let out = run(&mut s, &i.to_string());
             assert!(!out.contains("\"error\""), "{out}");
         }
-        // the ult: ready at the start (no cast yet), then a 120 s cooldown
-        let mut i = input(300);
-        i["frame"]["order"] = json!({"kind":"ult"});
-        let out = run(&mut s, &i.to_string());
-        assert!(out.contains("\"ult_at\""), "{out}");
-        assert!(s.core.flurrying());
+        assert_eq!(s.core.flurry_charges, 2);
+        assert!(s.core.shadow_link.is_some());
     }
     #[test]
     fn stale_ticks_and_old_rules_are_refused() {

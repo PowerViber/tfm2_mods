@@ -9,7 +9,6 @@ pub struct Presenter {
     markers: BTreeMap<usize, String>,
     aura: Option<String>,
     break_at: Option<u64>,
-    rings: BTreeMap<(i64, i64, i64), u64>,
 }
 
 impl Presenter {
@@ -17,7 +16,6 @@ impl Presenter {
         for (id, name) in std::mem::take(&mut self.markers) { sim.entity_remove_buff(id, &name); }
         if let (Some(owner), Some(name)) = (self.owner, self.aura.take()) { sim.entity_remove_buff(owner, &name); }
         self.break_at = None;
-        self.rings.clear();
     }
     pub fn sync(&mut self, sim: &mut StableSim<'_>, owner: usize, player: usize, f: &Frame, core: &Core, effects: &[Effect]) {
         // Cloned simulations retain their own identical entity IDs. Rebinding a
@@ -53,15 +51,7 @@ impl Presenter {
             }
             self.aura = phase;
         }
-        self.rings.retain(|key, _| core.cleaves.iter().any(|c| (c.at.x,c.at.y,c.radius) == *key));
-        for c in &core.cleaves {
-            let key = (c.at.x,c.at.y,c.radius);
-            if self.rings.get(&key).is_none_or(|due| f.tick >= *due) {
-                let radius = if c.recast { 35 } else { 25 };
-                crate::fx_point(sim, &format!("ct_ring{radius}_t6"), owner, c.at.x, c.at.y, 6);
-                self.rings.insert(key, f.tick + 6);
-            }
-        }
+
     }
 }
 

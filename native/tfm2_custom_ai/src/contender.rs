@@ -1,22 +1,27 @@
-//! Native bridge for Contender and the gated Shadow Link carrier prototype.
-use crate::contender_shadow_core::{Barrier, Core, Effect, Frame, LinkTarget, Point, ShadowObservation, TargetDefence, Unit, CELL, CELLS};
+//! Native adapter for the deterministic Contender combat core.
+use crate::contender_shadow_core::{Barrier, Core, Effect, Frame, HitSource, IncomingHit, Point, ShadowLink, TargetDefence, Unit, CELL, CELLS};
 use crate::contender_shadow_data as d;
 use mod_api_stable::{AttackTypeV1, BuffV1, CcKindV1, CcV1, InputTargetV1, StableEffectType, StablePassive, StableSim, StatV1};
+use std::cell::Cell;
 
 pub(crate) const GO_PREFIX: &str = "ct_go:";
-/// a cleave spot other AIs should avoid: `ctw:x:y:r:until` on him (read by `danger_zones`)
 const ZONE_PREFIX: &str = "ctw:";
 const HOLD_PREFIX: &str = "ct_hold:";
-const SHADOW_ATTACK: &str = "ct_attack_shadow:";
-const CARRIER: &str = "ct_link_carrier";
-const PROBE: bool = cfg!(feature = "contender-shadow-link-probe");
+const BASIC_RECEIPT: &str = "ct_basic_landed:";
 
-#[derive(Clone, Copy)]
-struct Carrier {
-    cast: u64,
-    id: usize,
+// Set only during a synchronous host damage call. Never persisted or shared between simulated matches.
+thread_local! {
+    static COUNTER_PACKET: Cell<Option<(usize, usize, usize)>> = const { Cell::new(None) };
 }
 
+fn health(sim: &StableSim<'_>, id: usize) -> Option<(usize, usize)> {
+    sim.get_entity(id).map(|entity| (entity.hp().0, entity.shield()))
+}
+
+fn landed(sim: &StableSim<'_>, id: usize, before: Option<(usize, usize)>) -> bool {
+    before.zip(health(sim, id)).is_some_and(|((hp, shield), (after_hp, after_shield))|
+        after_hp < hp || after_shield < shield)
+}
 
 fn named(kind: CcKindV1, ticks: u64, name: &str) -> CcV1 {
     let mut c = CcV1::of_kind(kind, ticks);
@@ -41,20 +46,9 @@ fn hard_cc(sim: &StableSim, id: usize) -> bool {
     sim.get_entity(id).is_some_and(|e| {
         (0..e.cc_count())
             .filter_map(|i| e.cc_at(i))
-            .any(|c| !c.name().starts_with("ct_") && !crate::motion::is_self_motion(&c) && HARD.iter().any(|k| k.code() == c.kind))
+            .any(|c| !matches!(c.name(), "ct_vanish" | "ct_vanish_attack") && !crate::motion::is_self_motion(&c) && HARD.iter().any(|k| k.code() == c.kind))
     })
 }
-/// Did `attacker` cast one of its engine skills (Skill, Skill2, Ult) in the last 1.5 s? The passive's `on_damaged` hook
-/// doesn't say whether a hit was a basic attack, so a hit right after a cast counts as a skill. Native kits whose
-/// skills bypass the engine slots (placeholder cooltimes) read as basics here.
-pub(crate) fn recently_cast(sim: &StableSim, attacker: usize) -> bool {
-    const WINDOW: usize = 90;
-    let Some(a) = sim.get_entity(attacker) else { return false };
-    [mod_api_stable::SkillSlotV1::Skill, mod_api_stable::SkillSlotV1::Skill2, mod_api_stable::SkillSlotV1::Ult].into_iter().any(|slot| {
-        a.cooldown(slot).is_some_and(|c| c.cooltime > 0 && c.cooltime < 5_000_000 && c.remaining > 0 && c.remaining + WINDOW >= c.cooltime)
-    })
-}
-
 fn unhurt(name: &str, ticks: u64, cc_immune: bool) -> BuffV1 {
     let mut b = crate::timed(name, ticks as usize);
     b.damaged_reduce = 100;
@@ -78,20 +72,6 @@ pub(crate) fn shadow_input(sim: &StableSim<'_>, owner: usize, base: Option<mod_a
     }
     let me = sim.get_entity(owner)?;
     let (x, y) = me.pos();
-    for buff in (0..me.buff_count()).filter_map(|i| me.buff_at(i)) {
-        let name = buff.name();
-        if let Some(raw) = name.strip_prefix(SHADOW_ATTACK) {
-            let id: usize = raw.parse().ok()?;
-            let target = sim.get_entity(id)?;
-            let (tx, ty) = target.pos();
-            if target.team() != me.team() && target.is_alive() && target.is_targetable()
-                && sim.is_visible(me.team(), id)
-                && Point::new(x as i64, y as i64).within(Point::new(tx as i64, ty as i64), d::BASIC_RANGE)
-                && (0..target.buff_count()).filter_map(|i| target.buff_at(i)).any(|b| b.name() == CARRIER) {
-                return Some(InputV1::action(InputKindV1::Attack, InputTargetV1::target(id)));
-            }
-        }
-    }
     let movement = base?;
     for buff in (0..me.buff_count()).filter_map(|i| me.buff_at(i)) {
         if let Some(raw) = buff.name().strip_prefix(HOLD_PREFIX) {
@@ -108,7 +88,7 @@ pub(crate) fn shadow_input(sim: &StableSim<'_>, owner: usize, base: Option<mod_a
     None
 }
 
-/// Danger zones for other AIs: the cleave circles his shadows are spinning in.
+/// Warning circles other AIs can avoid using their normal movement rules.
 pub fn danger_zones(all: &[crate::Champ], me: &crate::Champ, tick: usize) -> Vec<(i64, i64, i64, usize, usize)> {
     let mut zones = vec![];
     for c in all.iter().filter(|c| c.team != me.team) {
@@ -124,14 +104,20 @@ pub fn danger_zones(all: &[crate::Champ], me: &crate::Champ, tick: usize) -> Vec
     zones
 }
 
-/// Old careers keep the round-176 data that points its basic at `tfm2_custom_ai:contender_basic`: it still lands as a
-/// plain basic attack.
+/// Preserve the engine's BaseAttack hit and item identity, and sample the delivered impact.
 pub struct BasicImpact;
 impl StableEffectType for BasicImpact {
     fn apply(&self, sim: &mut StableSim, _: u64, caster: usize, input: InputTargetV1) {
-        if input.kind == mod_api_stable::InputTargetKindV1::Target.code() {
-            let ad = sim.get_entity(caster).map_or(0, |e| e.stat().attack);
-            sim.deal_damage(caster, input.target_id, ad, 0, AttackTypeV1::BaseAttack);
+        if input.kind != mod_api_stable::InputTargetKindV1::Target.code() {
+            return;
+        }
+        let target = input.target_id;
+        let attack = sim.get_entity(caster).map_or(0, |e| e.stat().attack);
+        let before = health(sim, target);
+        sim.deal_damage(caster, target, attack, 0, AttackTypeV1::BaseAttack);
+        if landed(sim, target, before) {
+            let tick = sim.tick();
+            sim.add_buff(caster, &crate::timed(&format!("{BASIC_RECEIPT}{tick}:{target}"), 3));
         }
     }
     fn expected_damage(&self, s: &StatV1) -> (usize, usize) {
@@ -158,17 +144,16 @@ pub struct Contender {
     profile: Option<crate::athlete_ai_core::Profile>,
     terrain: Option<(u64, Vec<bool>)>,
     shadow_drawn: u64,
-    carrier: Option<Carrier>,
-    landing_receipt: Option<ShadowObservation>,
     hold_hint: Option<String>,
-    shadow_hint: Option<String>,
     shadow_art: bool,
     shadow_directions: bool,
     merge_art: bool,
     merge_presenter: crate::contender_merge::Presenter,
     rhythm_art: bool,
     rhythm_presenter: crate::contender_rhythm::Presenter,
-    cyclone_drawn: Option<(Point, u64)>,
+    link_drawn_at: u64,
+    receipt_basic: bool,
+    landed_hits: u16,
     /// enemies his basic attacks landed on since the last frame
     basic_hits: Vec<usize>,
     in_skill: bool,
@@ -208,30 +193,18 @@ impl Contender {
         let mut link_excluded = vec![];
         let mut separated = vec![];
         let mut defences = vec![];
-        let owner_can_spawn = PROBE && team < 2 && crate::realm::realm_of(&realms, owner).is_none()
-            && snapshot.iter().find(|champ| champ.id == owner).and_then(crate::grimhald_cage::member_of).is_none();
         let barriers = crate::steve::walls_up(&snapshot, tick as usize).into_iter().map(|wall| {
             let (bx, by) = wall.built_end(tick as usize);
             Barrier {
                 from: Point::new(wall.ax, wall.ay), to: Point::new(bx, by), half_width: crate::steve::WALL_HALF,
             }
         }).collect();
-        let shadow_observation = self.landing_receipt.take().or_else(|| {
-            let carrier = self.carrier?;
-            let entity = sim.get_entity(carrier.id)?;
-            if entity.is_alive() && !(0..entity.buff_count()).filter_map(|i| entity.buff_at(i)).any(|b| b.name() == CARRIER) {
-                return None;
-            }
-            let hp = entity.hp().0 as i64;
-            if !entity.is_alive() && hp != 0 {
-                return None;
-            }
-            Some(ShadowObservation::Health { cast: carrier.cast, hp })
-        });
+        let link_airborne_name = format!("ct_link_air_{owner}");
+        let mut link_airborne = Vec::new();
+        let watch_link = self.core.ult_ready(&Frame { tick, level: 0, ult_unlocked: true, ..Frame::default() })
+            || self.core.shadow_link.is_some();
         for e in (0..sim.entity_count()).filter_map(|i| sim.entity_at(i)) {
-            if e.id() == owner || !e.is_alive() || (PROBE && self.carrier.is_some_and(|carrier| carrier.id == e.id()))
-                || (PROBE && e.kind() == Some(mod_api_stable::EntityKindV1::Summon)
-                    && (0..e.buff_count()).filter_map(|i| e.buff_at(i)).any(|b| b.name() == CARRIER)) {
+            if e.id() == owner || !e.is_alive() {
                 continue;
             }
             let e_team = e.team();
@@ -246,13 +219,17 @@ impl Contender {
             if visible && champion && e_team != team {
                 defences.push(TargetDefence { id: e.id(), armour: e.stat().defence as i64, shield: e.shield() as i64 });
             }
-            if owner_can_spawn {
+            if watch_link && e_team != team {
                 use mod_api_stable::EntityKindV1 as K;
                 let eligible = champion || matches!(kind, Some(K::Minion | K::Jungle)) || (kind.is_none() && e.is_minion());
                 let immune = (0..e.buff_count()).filter_map(|i| e.buff_at(i)).any(|b| b.cc_immune);
                 if !eligible || immune { link_excluded.push(e.id()); }
+                if matches!(self.core.shadow_link, Some(ShadowLink::Airborne { .. }))
+                    && (0..e.cc_count()).filter_map(|i| e.cc_at(i)).any(|cc| cc.name() == link_airborne_name) {
+                    link_airborne.push(e.id());
+                }
             }
-            let linked = matches!(&self.core.shadow_link, Some(crate::contender_shadow_core::ShadowLink::Active { linked, .. }) if linked.contains(&e.id()));
+            let counter_source = self.core.pending_dodge.is_some_and(|hit| hit.attacker == e.id());
             let farmable = farming.calm()
                 && e_team != team
                 && targetable
@@ -262,7 +239,7 @@ impl Contender {
             units.push(Unit {
                 id: e.id(),
                 team: e_team,
-                pos: if visible || linked { Point::new(p.0 as i64, p.1 as i64) } else { Point::default() },
+                pos: if visible || counter_source { Point::new(p.0 as i64, p.1 as i64) } else { Point::default() },
                 hp: h.0 as i64,
                 max_hp: h.1.max(1) as i64,
                 radius: e.radius().max(1000) as i64,
@@ -295,57 +272,13 @@ impl Contender {
             order: None,
             basic_hits: std::mem::take(&mut self.basic_hits),
             incoming: vec![],
-            shadow_link_enabled: owner_can_spawn,
-            shadow_observation,
+            landed_hits: std::mem::take(&mut self.landed_hits),
             link_excluded,
+            link_airborne,
             separated,
             barriers,
             defences,
         }
-    }
-
-    fn clear_carrier(&mut self, sim: &mut StableSim<'_>) {
-        if let Some(carrier) = self.carrier.take() {
-            if sim.get_entity(carrier.id).is_some_and(|e| e.is_alive()
-                && (0..e.buff_count()).filter_map(|i| e.buff_at(i)).any(|b| b.name() == CARRIER)) {
-                sim.entity_set_hp(carrier.id, 0);
-            }
-        }
-        self.landing_receipt = None;
-    }
-
-    fn land_shadow(&mut self, sim: &mut StableSim<'_>, owner: usize, cast: u64, at: Point, candidates: Vec<LinkTarget>) {
-        if !PROBE { return; }
-        let Some(team) = sim.get_entity(owner).map(|e| e.team()).filter(|team| *team < 2) else { return };
-        if self.carrier.is_some() { return; }
-        let mut confirmed = Vec::new();
-        for target in candidates {
-            let eligible = sim.get_entity(target.id).is_some_and(|e| e.is_alive() && e.is_targetable()
-                && !(0..e.buff_count()).filter_map(|i| e.buff_at(i)).any(|b| b.cc_immune));
-            if !eligible { continue; }
-            let name = format!("ct_link_slow:{owner}");
-            let mut slow = crate::timed(&name, d::SHADOW_LINK_SLOW_TICKS as usize);
-            slow.move_speed_mult = -d::SHADOW_LINK_SLOW_PCT as i32;
-            replace_buff(sim, target.id, &slow);
-            if sim.get_entity(target.id).is_some_and(|e| (0..e.buff_count())
-                .filter_map(|i| e.buff_at(i)).any(|b| b.name() == name)) {
-                confirmed.push(target);
-            }
-        }
-        let Some(hp) = confirmed.iter().map(|target| target.max_hp).max() else { return };
-        // Keep the carrier through the terminal observation at logical expiry.
-        let life = d::SHADOW_LINK_TICKS as u64 + 2;
-        let stat = StatV1 { hp: hp as usize, move_speed: 1, ..StatV1::default() };
-        let attack = mod_api_stable::UnitAttackV1 { range: 1, cooltime: 5_184_000, duration: 1, ..Default::default() };
-        let Some(id) = sim.spawn_unit("alchemist", owner, 1 - team, at.x as u64, at.y as u64, life, &stat, &attack) else { return };
-        for kind in [CcKindV1::Bind, CcKindV1::BlockAttack, CcKindV1::BlockSkill] {
-            sim.apply_cc(id, &named(kind, life, "ct_link_idle"));
-        }
-        let mut marker = crate::timed(CARRIER, life as usize);
-        marker.cc_immune = true;
-        sim.add_buff(id, &marker);
-        self.carrier = Some(Carrier { id, cast });
-        self.landing_receipt = Some(ShadowObservation::Landed { cast, targets: confirmed.into_iter().map(|target| target.id).collect() });
     }
 
     fn sync_hint(sim: &mut StableSim<'_>, owner: usize, slot: &mut Option<String>, hint: Option<String>) {
@@ -377,31 +310,31 @@ impl Contender {
         let reach = |a: usize, b: usize| crate::realm::can_interact(&realms, a, b) && crate::grimhald_cage::can_interact(&all, a, b);
         let not_tower = |sim: &StableSim, id: usize| sim.get_entity(id).is_some_and(|e| !e.is_tower() && e.kind() != Some(mod_api_stable::EntityKindV1::Nexus));
         let mut hold = None;
-        let mut prefer_shadow = false;
         for e in effects {
             match e {
-                Effect::Damage { target, amount } | Effect::ShadowPayout { target, amount } => {
-                    if reach(owner, target) && not_tower(sim, target) {
+                Effect::Damage { target, amount, source } => {
+                    if amount > 0 && reach(owner, target) && not_tower(sim, target) {
+                        let before = source.credits_flurry().then(|| health(sim, target)).flatten();
+                        let counter = source == HitSource::Counter;
+                        let key = (sim.instance(), owner, target);
+                        let previous = COUNTER_PACKET.with(|packet| packet.replace(counter.then_some(key)));
                         self.in_skill = true;
-                        sim.deal_damage(owner, target, amount.max(0) as usize, 0, AttackTypeV1::Skill);
+                        sim.deal_damage(owner, target, amount as usize, 0, AttackTypeV1::Skill);
                         self.in_skill = false;
+                        COUNTER_PACKET.with(|packet| packet.set(previous));
+                        if landed(sim, target, before) {
+                            self.landed_hits = self.landed_hits.saturating_add(1);
+                        }
                     }
                 }
-                Effect::Stun { target, ticks } => {
+                Effect::LinkStun { target, ticks } => {
                     if reach(owner, target) && not_tower(sim, target) {
-                        sim.apply_cc(target, &named(CcKindV1::Stun, ticks, "ct_stun"));
+                        sim.apply_cc(target, &named(CcKindV1::Stun, ticks, &format!("ct_link_stun_{owner}")));
                     }
                 }
-                Effect::KnockUp { target, ticks } => {
+                Effect::LinkAirborne { target, ticks } => {
                     if reach(owner, target) && not_tower(sim, target) {
-                        sim.apply_cc(target, &named(CcKindV1::Airborne, ticks, "ct_knockup"));
-                    }
-                }
-                Effect::Slow { target, pct, ticks } => {
-                    if reach(owner, target) && not_tower(sim, target) {
-                        let mut b = crate::timed("ct_slow", ticks as usize);
-                        b.move_speed_mult = -(pct.clamp(0, 90) as i32);
-                        replace_buff(sim, target, &b);
+                        sim.apply_cc(target, &named(CcKindV1::Airborne, ticks, &format!("ct_link_air_{owner}")));
                     }
                 }
                 Effect::Knock { target, to, ticks } => {
@@ -427,9 +360,6 @@ impl Contender {
                     sim.apply_cc(owner, &named(CcKindV1::BlockAttack, ticks, "ct_vanish_attack"));
                     replace_buff(sim, owner, &unhurt("ct_vanish", ticks, true));
                 }
-                Effect::Invulnerable { ticks } => {
-                    replace_buff(sim, owner, &unhurt("ct_inv", ticks, false));
-                }
                 Effect::Merge { ticks, move_pct } => {
                     let mut b = crate::timed("ct_merge", ticks as usize);
                     b.move_speed_mult = move_pct as i32;
@@ -454,13 +384,7 @@ impl Contender {
                 }
                 Effect::Fx { name, at, ticks, heading } => {
                     let name = if name == "ct_break" && !self.rhythm_art { "ct_haymaker".into() } else { name };
-                    if name == "ct_shadow" {
-                        // a cleave spot: other AIs read it as danger
-                        remove_prefix(sim, owner, ZONE_PREFIX);
-                        let until = tick + ticks;
-                        sim.add_buff(owner, &crate::timed(&format!("{ZONE_PREFIX}{}:{}:{}:{until}", at.x, at.y, d::CYCLONE_RADIUS), ticks as usize));
-                    }
-                    if !(self.shadow_art && name == "ct_shadow") && self.fx_ok(tick) {
+                    if self.fx_ok(tick) {
                         let visual = if self.shadow_art && self.shadow_directions && name == "ct_flurry" && heading.is_some() {
                             format!("ct_flurry_d{}_t{ticks}", heading.unwrap_or(0) % 8)
                         } else if self.shadow_art {
@@ -470,42 +394,36 @@ impl Contender {
                         crate::fx_point(sim, &visual, owner, at.x, at.y, ticks);
                     }
                 }
-                Effect::ShadowLand { cast, at, candidates } => {
-                    let valid = candidates.into_iter().filter(|target| reach(owner, target.id)).collect();
-                    self.land_shadow(sim, owner, cast, at, valid);
+                Effect::LinkWarning { at, until } => {
+                    self.link_drawn_at = 0;
+                    remove_prefix(sim, owner, ZONE_PREFIX);
+                    let radius = d::SHADOW_LINK_RADIUS;
+                    sim.add_buff(owner, &crate::timed(&format!("{ZONE_PREFIX}{}:{}:{radius}:{until}", at.x, at.y),
+                        until.saturating_sub(tick) as usize));
                 }
-                Effect::ShadowStrike { cast, amount } => {
-                    if let Some(carrier) = self.carrier.filter(|carrier| carrier.cast == cast) {
-                        if reach(owner, carrier.id) {
-                            self.in_skill = true;
-                            sim.deal_damage(owner, carrier.id, amount.max(0) as usize, 0, AttackTypeV1::Skill);
-                            self.in_skill = false;
-                        }
-                    }
-                }
-                Effect::ShadowEnd { cast, .. } => {
-                    if self.carrier.is_some_and(|carrier| carrier.cast == cast) { self.clear_carrier(sim); }
-                }
-                Effect::PreferShadow => prefer_shadow = true,
+                Effect::LinkEnd => remove_prefix(sim, owner, ZONE_PREFIX),
                 Effect::HoldForward { threat, cover } => {
                     hold = Some(format!("{HOLD_PREFIX}{}:{}:{}:{}", threat.x, threat.y, cover.x, cover.y));
                 }
                 Effect::Log { .. } => {}
             }
         }
-        // S2's clone exists only while the normal cleave is active. Short adjoining
-        // leases avoid replaying a long clone animation over the recast's real body.
-        if self.shadow_art {
-            if let Some(c) = self.core.cleaves.iter().find(|c| !c.recast) {
-                let at = c.at;
-                if self.cyclone_drawn.is_none_or(|(p, due)| p != at || tick >= due) {
-                    let left = sim.get_entity(owner).is_some_and(|e| (e.pos().0 as i64) > at.x);
-                    let name = format!("ct_body_punch{}{}", (tick / 10) % 2, if left { "_l" } else { "" });
-                    crate::fx_point(sim, &name, owner, at.x, at.y, 10);
-                    self.cyclone_drawn = Some((at, tick + 10));
+        if self.shadow_art && tick >= self.link_drawn_at {
+            match self.core.shadow_link {
+                Some(ShadowLink::Flight { cursor, from, at, .. }) => {
+                    let facing = if at.x < from.x { "_l" } else { "" };
+                    let name = format!("ct_body_run{}{facing}", (tick / 10) % 6);
+                    crate::fx_point(sim, &name, owner, cursor.x, cursor.y, 4);
+                    self.link_drawn_at = tick + 4;
                 }
-            } else {
-                self.cyclone_drawn = None;
+                Some(ShadowLink::Warning { at, until, .. }) => {
+                    let lease = (until.saturating_sub(tick)).min(6);
+                    if lease > 0 {
+                        crate::fx_point(sim, "ct_link_warning", owner, at.x, at.y, lease);
+                    }
+                    self.link_drawn_at = tick + 6;
+                }
+                _ => {}
             }
         }
         // Legacy definitions keep their separate Merge overlay.
@@ -517,14 +435,14 @@ impl Contender {
         if hold.is_some() && !self.core.reason.starts_with("Retreat") && !self.core.reason.starts_with("Peel") {
             remove_prefix(sim, owner, GO_PREFIX);
         }
-        let attack = if prefer_shadow { self.carrier.map(|carrier| format!("{SHADOW_ATTACK}{}", carrier.id)) } else { None };
         Self::sync_hint(sim, owner, &mut self.hold_hint, hold);
-        Self::sync_hint(sim, owner, &mut self.shadow_hint, attack);
     }
 }
 
 impl StablePassive for Contender {
     fn configure(&mut self, params: &str) {
+        self.receipt_basic = serde_json::from_str::<serde_json::Value>(params).ok()
+            .and_then(|v| v.get("shadow_receipts_v1").and_then(|n| n.as_i64())) == Some(1);
         self.shadow_art = serde_json::from_str::<serde_json::Value>(params).ok()
             .and_then(|v| v.get("shadow_art_v1").and_then(|n| n.as_i64())) == Some(1);
         self.shadow_directions = serde_json::from_str::<serde_json::Value>(params).ok()
@@ -542,17 +460,16 @@ impl StablePassive for Contender {
         self.merge_presenter = crate::contender_merge::Presenter::default();
         self.rhythm_presenter.clear(sim);
         self.rhythm_presenter = crate::contender_rhythm::Presenter::default();
-        self.clear_carrier(sim);
         Self::sync_hint(sim, id, &mut self.hold_hint, None);
-        Self::sync_hint(sim, id, &mut self.shadow_hint, None);
         self.core.respawn();
         sim.entity_remove_buff(id, "ct_merge");
         remove_prefix(sim, id, GO_PREFIX);
+        remove_prefix(sim, id, BASIC_RECEIPT);
         remove_prefix(sim, id, ZONE_PREFIX);
-        remove_prefix(sim, id, "ct_bank:");
         self.basic_hits.clear();
         self.in_skill = false;
-        self.cyclone_drawn = None;
+        self.link_drawn_at = 0;
+        self.landed_hits = 0;
     }
     /// A Shadow dodge: an enemy champion's hit, with a dodge ready, is healed straight back (Kratos's pattern; the hook
     /// reports damage after it lands) and the core slips him aside on its next step.
@@ -563,18 +480,15 @@ impl StablePassive for Contender {
         }
         let team = sim.get_entity(id).map(|e| e.team());
         let Some(from) = sim.get_entity(attacker).filter(|a| a.is_champion() && Some(a.team()) != team).map(|a| a.pos()) else { return };
-        // contender-2.7: only an enemy champion's basic attack can be dodged; skills and ults always land
-        if crate::contender_shadow_data::CHARGES_BASICS_ONLY != 0 && recently_cast(sim, attacker) {
-            return;
-        }
-        if self.core.try_dodge(sim.tick() as u64, Point::new(from.0 as i64, from.1 as i64)) {
+        let counter = COUNTER_PACKET.with(|packet| packet.get() == Some((sim.instance(), attacker, id)));
+        let hit = IncomingHit { attacker, from: Point::new(from.0 as i64, from.1 as i64), counter };
+        if self.core.try_dodge(sim.tick() as u64, hit) {
             sim.heal(id, id, damage);
         }
     }
     /// His Jab / Cross: never across a cage or a ring; Shadow Rhythm's vulnerability; the hit goes to the core.
     fn on_attack(&mut self, sim: &mut StableSim, _: usize, id: usize, target: usize, damage: &mut usize) {
-        if self.in_skill || (PROBE && sim.get_entity(target).is_some_and(|e| (0..e.buff_count())
-            .filter_map(|i| e.buff_at(i)).any(|b| b.name() == CARRIER))) {
+        if self.in_skill {
             return;
         }
         let all = crate::champions_shared(sim);
@@ -587,7 +501,9 @@ impl StablePassive for Contender {
         if vuln > 0 {
             *damage = (*damage as i64 * (1_000 + vuln) / 1_000).max(0) as usize;
         }
-        if sim.get_entity(target).is_some_and(|e| !e.is_tower()) && self.basic_hits.len() < 16 {
+        // Embedded definitions can still have a stock Attack effect and no delivery receipt.
+        if !self.receipt_basic && *damage > 0 && self.basic_hits.len() < 16
+            && sim.get_entity(target).is_some_and(|e| e.team() != sim.get_entity(id).map_or(usize::MAX, |owner| owner.team())) {
             self.basic_hits.push(target);
         }
     }
@@ -595,14 +511,25 @@ impl StablePassive for Contender {
         if self.merge_art { self.merge_presenter.basic(sim.tick() as u64); }
     }
     fn on_dead(&mut self, sim: &mut StableSim, id: usize) {
-        self.clear_carrier(sim);
         Self::sync_hint(sim, id, &mut self.hold_hint, None);
-        Self::sync_hint(sim, id, &mut self.shadow_hint, None);
         self.merge_presenter.clear(sim);
         self.rhythm_presenter.clear(sim);
-        remove_prefix(sim, id, "ct_bank:");
+        remove_prefix(sim, id, BASIC_RECEIPT);
+        remove_prefix(sim, id, ZONE_PREFIX);
     }
     fn on_update(&mut self, sim: &mut StableSim, _: u64, player: usize, id: usize) {
+        if let Some(entity) = sim.get_entity(id) {
+            let receipts: Vec<_> = (0..entity.buff_count()).filter_map(|i| entity.buff_at(i))
+                .filter_map(|b| b.name().strip_prefix(BASIC_RECEIPT).and_then(|raw| raw.split_once(':'))
+                    .and_then(|(_, target)| target.parse::<usize>().ok().map(|target| (b.name().to_owned(), target))))
+                .collect();
+            for (name, target) in receipts {
+                sim.entity_remove_buff(id, &name);
+                if self.basic_hits.len() < 16 && self.receipt_basic {
+                    self.basic_hits.push(target);
+                }
+            }
+        }
         let f = self.frame(sim, id);
         let effects = self.core.step(&f);
         if self.merge_art {

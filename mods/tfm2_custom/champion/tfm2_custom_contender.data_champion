@@ -43,9 +43,8 @@
     "casting_target": "Enemy",
     "attack_type": "BaseAttack",
     "effect": {
-      "type": "Attack",
-      "damage": 0,
-      "attack_ratio": 100
+      "type": "Native",
+      "effect_ref": "tfm2_custom_ai:contender_basic"
     }
   },
   "skill": {
@@ -108,7 +107,8 @@
       "shadow_art_v1": 1,
       "shadow_directions_v1": 1,
       "shadow_merge_art_v1": 1,
-      "shadow_rhythm_art_v1": 1
+      "shadow_rhythm_art_v1": 1,
+      "shadow_receipts_v1": 1
     }
   },
   "passive_ult": {
@@ -2833,6 +2833,14 @@
       "anim": "asset/tfm2_custom/vfx/contender_rhythm",
       "tag": "ring35_t6",
       "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_link_warning",
+      "anim": "asset/tfm2_custom/vfx/contender_link_warning",
+      "tag": "warning",
+      "z": -2,
       "is_follow": false
     }
   ],

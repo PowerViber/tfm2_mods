@@ -7,7 +7,7 @@
     "Melee",
     "CC"
   ],
-  "revision": "contender-3.0",
+  "revision": "contender-3.1",
   "stat": {
     "attack": 76,
     "magic_power": 0,
@@ -43,18 +43,13 @@
   "charges": {
     "max": 5,
     "rechargeTicks": 900,
-    "recastWindowTicks": 180,
     "dodgeSlip": 8000,
     "dodgeSlipTicks": 8,
-    "dodgeGapTicks": 24,
-    "basicsOnly": 0
+    "dodgeGapTicks": 24
   },
   "pact": {
     "delayTicks": 60,
-    "pct": 3,
-    "ccPct": 50,
-    "ccCapTicks": 90,
-    "ccWindowTicks": 360
+    "pct": 3
   },
   "rhythm": {
     "maxStacks": 20,
@@ -72,67 +67,22 @@
   "merge": {
     "cooldownTicks": 840,
     "ticks": 360,
-    "rechargeMult": 1,
-    "bonusDodges": 0,
-    "dodgeGapTicks": 24,
     "stacksPerHit": 1,
     "moveSpeedPct": 10,
     "crossRadius": 30000,
-    "crossKnock": 20000,
-    "crossKnockTicks": 18,
     "crossBase": 12,
     "crossAdRatio": 15,
-    "slip": 15000,
-    "slipTicks": 8
-  },
-  "cyclone": {
-    "cooldownTicks": 480,
-    "range": 60000,
-    "radius": 25000,
-    "hits": 4,
-    "everyTicks": 12,
-    "base": 3,
-    "adRatio": 4,
-    "slowPct": 20,
-    "slowTicks": 30,
-    "recastHits": 3,
-    "recastEveryTicks": 10,
-    "recastBase": 4,
-    "recastAdRatio": 5,
-    "recastKnockTicks": 24,
-    "recastRange": 60000,
-    "recastRadius": 35000,
-    "recastPull": 5000,
-    "recastPullTicks": 8
+    "crossEveryTicks": 60
   },
   "shadowLink": {
-    "cooldownTicks": 600,
-    "range": 50000,
+    "cooldownTicks": 4500,
+    "range": 60000,
     "flightTicks": 18,
-    "radius": 50000,
-    "slowPct": 25,
-    "slowTicks": 60,
-    "ticks": 240,
-    "breakRange": 120000,
-    "maxHpDamagePct": 30
-  },
-  "ult": {
-    "cooldownTicks": 3600,
-    "ticks": 300,
-    "startRange": 50000,
-    "chainRange": 30000,
-    "punches": 72,
-    "firstGapTicks": 4,
-    "lastGapTicks": 4,
-    "base": 1,
-    "adRatio": 2,
-    "knockEveryTicks": 60,
-    "knockTicks": 24,
-    "haymakerTicks": 120,
-    "haymakerBase": 15,
-    "haymakerAdRatio": 20,
-    "haymakerStunTicks": 30,
-    "cutCentisPerHit": 1
+    "radius": 85000,
+    "warningTicks": 45,
+    "pullTicks": 12,
+    "knockTicks": 30,
+    "stunTicks": 24
   },
   "ai": {
     "fightRange": 80000,
@@ -151,5 +101,26 @@
     "threatRange": 70000,
     "shadowStep": 12000
   },
-  "fxTokens": 16
+  "fxTokens": 16,
+  "counter": {
+    "range": 45000,
+    "base": 20,
+    "adRatio": 30
+  },
+  "flurry": {
+    "maxCharges": 3,
+    "rechargeTicks": 960,
+    "hitCreditTicks": 30,
+    "castGapTicks": 45,
+    "ticks": 60,
+    "punches": 10,
+    "gapTicks": 6,
+    "startRange": 50000,
+    "chainRange": 30000,
+    "base": 1,
+    "adRatio": 2,
+    "haymakerTicks": 120,
+    "haymakerBase": 15,
+    "haymakerAdRatio": 20
+  }
 }

@@ -10,10 +10,6 @@ edition = "2021"
 [lib]
 crate-type = ["cdylib"]
 
-[features]
-# For a disposable live SDK test build only. Standard packages leave S3 gated.
-contender-shadow-link-probe = []
-
 [dependencies]
 mod-api-stable = { path = "../mod-api-stable" }
 serde_json = "1.0"
