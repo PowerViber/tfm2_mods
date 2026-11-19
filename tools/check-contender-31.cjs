@@ -29,7 +29,7 @@ function sample(engine, count, profile) {
   engine.reset();
   const units = Array.from({length:count},(_,i)=>unit(10+i,430000+1500*i,500000+750*i));
   const old=engine.revision==='contender-3.0';
-  let credited=0;
+  let credited=0,mergeCredited=0;
   const frames=[], states=[];
   const start=performance.now();
   let peak=0;
@@ -39,12 +39,15 @@ function sample(engine, count, profile) {
     if(tick===32 && !old)f.incoming=[{attacker:10,from:units[0].pos}];
     if(tick===72 && !old)f.incoming=[{attacker:10,from:units[0].pos}];
     if(tick===82)f.basic_hits=[10];
+    if(tick===85 && !old)f.order={kind:'exchange_dodge'};
     if(tick===120 && !old)f.order={kind:'s1'};
     f.landed_hits=credited;
+    f.landed_merge_hits=mergeCredited;
     const begin=performance.now();
     const result=engine.step(f);
     peak=Math.max(peak,performance.now()-begin);
-    credited=result.effects.filter(e=>e.kind==='damage'&&['counter','echo','merge'].includes(e.source)&&e.amount>0).length;
+    credited=result.effects.filter(e=>e.kind==='damage'&&['counter','echo'].includes(e.source)&&e.amount>0).length;
+    mergeCredited=result.effects.filter(e=>e.kind==='damage'&&e.source==='merge'&&e.amount>0).length;
     frames.push(f); states.push(result);
   }
   const effects=states.flatMap(s=>s.effects);
@@ -92,7 +95,8 @@ function parity(trace,current,frames,results){
   const blob=spawnSync('rtk',['proxy','git','show',baseline+':editor/contender.wasm'],{maxBuffer:4*1024*1024});
   assert.equal(blob.status,0,blob.stderr?.toString());
   const old=await wasm(blob.stdout,'contender-3.0');
-  const current=await wasm(readFileSync('editor/contender.wasm'),'contender-3.1');
+  const revision=JSON.parse(readFileSync('rules/contender.json','utf8')).revision;
+  const current=await wasm(readFileSync('editor/contender.wasm'),revision);
   const trace=path.resolve('native/contender_shadow_lab/target/release/'+(process.platform==='win32'?'trace.exe':'trace'));
   const matched=[];
   let parityFrames=0;

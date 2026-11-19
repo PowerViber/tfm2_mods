@@ -38,10 +38,11 @@ text = {
         f"Stacks increase his speed and damage against the target. A basic or Counterpunch at full stacks triggers Shadow Break. "
         f"Shadow Merge ({sec(me['cooldownTicks'])}): gain {me['moveSpeedPct']}% movement for {sec(me['ticks'])}. "
         f"Every {sec(me['crossEveryTicks'])}, a cross hits within {me['crossRadius']} of his current position for "
-        f"{me['crossBase']} + {me['crossAdRatio']}% Attack."),
+        f"{me['crossBase']} + {me['crossAdRatio']}% Attack. Each enemy hit cuts {sec(me['crossRechargeCreditTicks'])} from Flurry recharge."),
     'skill2': (
         f"Shadow Flurry (level 2): hold {fl['maxCharges']} charges and recover one every {sec(fl['rechargeTicks'])}. "
-        f"Each landed non-Flurry hit cuts {sec(fl['hitCreditTicks'])} from the next charge. "
+        f"Each landed non-Flurry hit cuts {sec(fl['hitCreditTicks'])} from the next charge, or {sec(me['crossRechargeCreditTicks'])} for Shadow Cross. "
+        f"When out of Flurry charges, he can spend one passive dodge on a safe Flurry. "
         f"Vanish for up to {sec(fl['ticks'])} and throw up to {fl['punches']} punches for {fl['base']} + {fl['adRatio']}% Attack each. "
         f"Prefer a different target on each punch. After reappearing wait {sec(fl['castGapTicks'])} to cast again. "
         f"A successful Flurry primes his next basic for {fl['haymakerBase']} + {fl['haymakerAdRatio']}% Attack bonus damage."),

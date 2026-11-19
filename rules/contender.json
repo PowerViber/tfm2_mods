@@ -7,7 +7,7 @@
     "Melee",
     "CC"
   ],
-  "revision": "contender-3.1",
+  "revision": "contender-3.1.2",
   "stat": {
     "attack": 76,
     "magic_power": 0,
@@ -69,7 +69,8 @@
     "ticks": 360,
     "stacksPerHit": 1,
     "moveSpeedPct": 10,
-    "crossRadius": 30000,
+    "crossRadius": 50000,
+    "crossRechargeCreditTicks": 45,
     "crossBase": 12,
     "crossAdRatio": 15,
     "crossEveryTicks": 60

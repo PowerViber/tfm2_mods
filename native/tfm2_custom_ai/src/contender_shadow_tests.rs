@@ -51,6 +51,7 @@ impl World {
         self.f.link_airborne = self.air.iter().filter(|(_, until)| self.f.tick < *until).map(|(id, _)| *id).collect();
         let out = self.core.step(&self.f);
         self.f.landed_hits = 0;
+        self.f.landed_merge_hits = 0;
         self.f.basic_hits.clear();
         self.f.incoming.clear();
         let tick = self.f.tick;
@@ -60,7 +61,13 @@ impl World {
                 Effect::Damage { target, amount, source } => {
                     if let Some(u) = self.f.units.iter_mut().find(|u| u.id == *target) {
                         u.hp = (u.hp - amount).max(1);
-                        if *amount > 0 && source.credits_flurry() { self.f.landed_hits += 1; }
+                        if *amount > 0 && source.credits_flurry() {
+                            if *source == HitSource::Merge {
+                                self.f.landed_merge_hits += 1;
+                            } else {
+                                self.f.landed_hits += 1;
+                            }
+                        }
                     }
                 }
                 Effect::LinkAirborne { target, ticks } => self.air.push((*target, tick + ticks)),
@@ -345,9 +352,11 @@ fn counterpunch_rejects_a_wall_or_range_and_can_break_at_full_stacks() {
 }
 
 #[test]
-fn moving_merge_pulse_credits_each_landed_target_once() {
-    let mut w = World::new(vec![champ(FOE, 2, 440_000, 500_000), champ(11, 2, 449_000, 500_000),
-        creep(30, 452_000, 500_000, 1000)]);
+fn moving_merge_cross_checks_the_50k_boundary_and_credits_each_target_once() {
+    let mut w = World::new(vec![
+        champ(FOE, 2, 440_000, 500_000), champ(11, 2, 493_000, 500_000),
+        creep(30, 402_000, 500_000, 1000), champ(12, 2, 493_001, 500_000),
+    ]);
     w.core.flurry_charges = 2;
     w.core.flurry_charge_at = 500;
     w.tick(Some(Order::S1));
@@ -355,10 +364,14 @@ fn moving_merge_pulse_credits_each_landed_target_once() {
     w.run(59);
     assert!(!w.seen(|e| matches!(e, Effect::Damage { .. })));
     let pulse = w.tick(None);
-    assert_eq!(pulse.iter().filter(|e| matches!(e, Effect::Damage { source: HitSource::Merge, .. })).count(), 3);
+    let targets: Vec<_> = pulse.iter().filter_map(|effect| match effect {
+        Effect::Damage { source: HitSource::Merge, target, .. } => Some(*target),
+        _ => None,
+    }).collect();
+    assert_eq!(targets, [FOE, 11, 30]);
     let cds = w.core.flurry_charge_at;
     w.tick(None);
-    assert_eq!(w.core.flurry_charge_at, cds - 90);
+    assert_eq!(w.core.flurry_charge_at, cds - 135);
     assert!(w.core.stacks.is_empty() && w.core.echoes.is_empty());
 }
 
@@ -381,6 +394,64 @@ fn tenth_punch_at_sixty_ticks_and_cast_gap_is_exactly_forty_five() {
     assert!(!w.core.flurrying());
     w.tick(Some(Order::S2));
     assert!(w.core.flurrying());
+}
+
+#[test]
+fn trading_a_dodge_grants_one_flurry_charge_without_triggering_a_dodge() {
+    let mut w = World::new(vec![]);
+    w.core.flurry_charges = 1;
+    w.core.flurry_charge_at = 500;
+    w.core.flurry_cast_at = 75;
+    w.core.last_dodge = 1;
+    let effects = w.tick(Some(Order::ExchangeDodge));
+    assert_eq!((w.core.charges, w.core.flurry_charges), (4, 2));
+    assert_eq!((w.core.charge_at, w.core.flurry_charge_at), (901, 500));
+    assert_eq!((w.core.last_dodge, w.core.flurry_cast_at), (1, 75));
+    assert!(!w.core.flurrying() && w.core.pending_dodge.is_none());
+    assert!(!effects.iter().any(|effect| matches!(effect, Effect::Glide { .. } | Effect::Damage { .. })));
+
+    w.tick(Some(Order::ExchangeDodge));
+    assert_eq!((w.core.charges, w.core.flurry_charges), (3, 3));
+    assert_eq!((w.core.charge_at, w.core.flurry_charge_at), (901, 0));
+    w.tick(Some(Order::ExchangeDodge));
+    assert_eq!((w.core.charges, w.core.flurry_charges), (3, 3));
+    assert!(w.core.rejection.contains("full"));
+}
+
+#[test]
+fn dodge_exchange_respects_the_learning_gate_and_requires_a_dodge() {
+    let mut w = World::new(vec![]);
+    w.core.flurry_charges = 2;
+    w.core.flurry_charge_at = 500;
+    w.f.level = 1;
+    w.tick(Some(Order::ExchangeDodge));
+    assert!(w.core.rejection.contains("level 2"));
+    assert_eq!((w.core.charges, w.core.flurry_charges), (5, 2));
+    w.f.level = 2;
+    w.core.charges = 0;
+    w.core.charge_at = 500;
+    w.tick(Some(Order::ExchangeDodge));
+    assert!(w.core.rejection.contains("no passive dodge"));
+    assert_eq!((w.core.charges, w.core.flurry_charges), (0, 2));
+}
+
+#[test]
+fn ai_spends_a_dodge_only_for_a_safe_flurry_when_out_of_charges() {
+    let mut w = ai(vec![champ(FOE, 2, 440_000, 500_000), champ(11, 2, 447_000, 500_000)]);
+    w.f.ult_unlocked = false;
+    w.core.flurry_charges = 0;
+    w.core.flurry_charge_at = 500;
+    w.tick(None);
+    assert_eq!(w.core.charges, 5);
+    assert!(!w.core.flurrying(), "no follow-up");
+    w.f.units.push(champ(ALLY, 1, 435_000, 500_000));
+    w.core.flurry_cast_at = w.f.tick + 1;
+    w.tick(None);
+    assert_eq!(w.core.charges, 5, "the cast gap still applies");
+    w.tick(None);
+    assert!(w.core.flurrying(), "{}", w.core.reason);
+    assert_eq!((w.core.charges, w.core.flurry_charges), (4, 0));
+    assert_eq!(w.core.flurry_charge_at, 500);
 }
 
 #[test]
@@ -633,14 +704,15 @@ mod glue {
                 Effect::Damage { target: 1, amount: 40, source: HitSource::Counter },
                 Effect::Damage { target: 1, amount: 10, source: HitSource::Flurry },
                 Effect::Damage { target: 1, amount: 0, source: HitSource::Merge },
+                Effect::Damage { target: 1, amount: 30, source: HitSource::Merge },
             ]);
         });
         run(&host, &mut c, 101, 1);
-        assert_eq!(c.core.flurry_charge_at, 740);
+        assert_eq!(c.core.flurry_charge_at, 695);
         assert_eq!(c.core.stacks_on(1, 101), 1);
         assert_eq!(host.borrow().damage.iter().filter(|d|d.3 == AttackTypeV1::BaseAttack.code()).count(),1);
         run(&host, &mut c, 102, 1);
-        assert_eq!(c.core.flurry_charge_at, 740, "consumed receipt counts once");
+        assert_eq!(c.core.flurry_charge_at, 695, "consumed receipt counts once");
     }
 
     #[test]
@@ -652,7 +724,8 @@ mod glue {
         with_sim(&host, |sim| c.on_spawn(sim, 0, 0));
         run(&host, &mut c, 100, 120);
         assert!(c.core.reason.starts_with("Hold:"), "{}", c.core.reason);
-        assert!(host.borrow().damage.is_empty());
+        // Shadow Cross may reach enemies from here. A hold still forbids a body commit.
+        assert_eq!(host.borrow().units[0].pos, (x, y));
         assert!(!c.core.flurrying() && c.core.shadow_link.is_none());
     }
 }

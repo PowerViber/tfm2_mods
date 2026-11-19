@@ -7,7 +7,7 @@ const world=await new GameWorld().ready,painter=await new ContenderPainter().rea
 if(new URLSearchParams(location.search).get('mergePreview')==='1')$('mergePreviewNote').hidden=false;
 const targets=await new LabTargets(world).ready;
 let scene,tick,me,units,incoming=[],aim,running=false,held=new Set(),glides=new Map(),fx=[],notes=[],hits=[],state={},nextBasic=0,pendingBasic=null,flags={},queued=null,view,zoom=.0025,records=[];
-let landedHits=0, lastCounter='';
+let landedHits=0, landedMergeHits=0, lastCounter='';
 const linkWarningImage=new Image();
 linkWarningImage.src='../mods/tfm2_custom/vfx/contender_link_warning%23sheet.png';
 let ledger=new LabDamageLedger(),panel=null,targetSpecs=null,nextTargetId=1000,selectedTarget=null,resetEpoch=0,isDamageTest=false,loading=false;
@@ -23,7 +23,7 @@ for(const[k,v]of Object.entries(GameScenario.choices))$('scenario').add(new Opti
 $('fight').checked=false;
 function core(frame){const bytes=new TextEncoder().encode(JSON.stringify({version:1,rules_revision:R.revision,frame})),p=ex.contender_input(bytes.length);new Uint8Array(ex.memory.buffer,p,bytes.length).set(bytes);const out=ex.contender_step(bytes.length),r=JSON.parse(new TextDecoder().decode(new Uint8Array(ex.memory.buffer,out,ex.contender_output_len())));if(r.error)throw Error(r.error);return r;}
 async function reset(){
- const epoch=++resetEpoch;loading=true;$('addTargets').disabled=$('clearTargets').disabled=true;running=false;ex.contender_reset();const fixture=$('scenario').value==='shadowLink',test=$('scenario').value==='damage';isDamageTest=test;scene=new GameScenario(world,test||fixture?'laning':$('scenario').value||'laning',8);const s=scene.setup();ledger=new LabDamageLedger();ledger.attach(scene);tick=s.clock;landedHits=0;lastCounter='';flags={};fx=[];hits=[];glides.clear();incoming=[];pendingBasic=null;state={};nextBasic=0;notes=[];records=[];held.clear();queued=null;clock.reset();
+ const epoch=++resetEpoch;loading=true;$('addTargets').disabled=$('clearTargets').disabled=true;running=false;ex.contender_reset();const fixture=$('scenario').value==='shadowLink',test=$('scenario').value==='damage';isDamageTest=test;scene=new GameScenario(world,test||fixture?'laning':$('scenario').value||'laning',8);const s=scene.setup();ledger=new LabDamageLedger();ledger.attach(scene);tick=s.clock;landedHits=landedMergeHits=0;lastCounter='';flags={};fx=[];hits=[];glides.clear();incoming=[];pendingBasic=null;state={};nextBasic=0;notes=[];records=[];held.clear();queued=null;clock.reset();
  const stats=scene.stats(R);for(const[k,pct]of [['attack',R.modPower[0]],['hp',R.modPower[2]],['defence',R.modPower[3]],['magic_resistance',R.modPower[4]]])stats[k]=Math.floor(stats[k]*(100+pct)/100);
  me={id:1,team:0,pos:s.pos,hp:stats.hp,max_hp:stats.hp,attack:stats.attack,stats,radius:world.data.settings.champion_radius,champion:true,targetable:true,visible:true,attackStart:-100,attackUntil:0,moving:false,shields:[]};
  units=test||fixture?[]:s.units;aim=test||fixture?{x:me.pos.x+30000,y:me.pos.y-20000}:{...units.find(u=>u.team===1&&u.champion).pos};view={...me.pos};$('description').textContent=test?'One controlled Contender against your chosen targets. Add mixed targets on the right; each has its own HP setting and damage counter. Opponent attacks are optional.':s.description;$('revision').textContent=R.revision;
@@ -68,7 +68,7 @@ function frame(order){
   terrain:world.walls,profile:[...document.querySelectorAll('[data-stat]')].map(input=>Math.max(0,Math.min(100,+input.value||0))),
   manual:!$('ai').checked,order:$('ai').checked?null:order,basic_hits:hits.splice(0),
   incoming:incoming.slice(0,16).map(hit=>({attacker:hit.attacker,from:round(hit.pos),counter:!!hit.counter})),
-  landed_hits:landedHits,
+  landed_hits:landedHits,landed_merge_hits:landedMergeHits,
   link_excluded:living.filter(unit=>unit.ccImmune||(!unit.champion&&!['minion','camp'].includes(unit.kind))).map(unit=>unit.id),
   separated:living.filter(unit=>unit.separated).map(unit=>unit.id),
   link_airborne:living.filter(unit=>tick<(unit.linkAirborneUntil||0)).map(unit=>unit.id),
@@ -82,7 +82,10 @@ function damage(u,raw){
 }
 function apply(e){const u=actor(e.target);switch(e.kind){
  case 'damage':
-  if(damage(u,e.amount)&&['echo','merge','counter'].includes(e.source))landedHits++;
+  if(damage(u,e.amount)){
+   if(e.source==='merge')landedMergeHits++;
+   else if(e.source==='echo'||e.source==='counter')landedHits++;
+  }
   break;
  case 'hold_forward':flags.holdForward=true;break;
  case 'link_airborne':
@@ -105,7 +108,7 @@ function apply(e){const u=actor(e.target);switch(e.kind){
 function stepWorld(order){
  scene.refreshVisibility(me,units);if(tick>=flags.rhythmUntil)flags.rhythm=null;
  flags.holdForward=flags.steered=false;
- const f=frame(order),r=core(f);landedHits=0;state=r.state;if(r.rejection)log('Rejected: '+r.rejection);if(incoming.length&&state.last_dodge===f.tick){const h=incoming[0];me.hp=Math.min(me.max_hp,me.hp+h.amount);scene.metrics.taken-=h.amount;log('Dodged '+h.amount);}incoming=[];for(const e of r.effects)apply(e);
+ const f=frame(order),r=core(f);landedHits=landedMergeHits=0;state=r.state;if(r.rejection)log('Rejected: '+r.rejection);if(incoming.length&&state.last_dodge===f.tick){const h=incoming[0];me.hp=Math.min(me.max_hp,me.hp+h.amount);scene.metrics.taken-=h.amount;log('Dodged '+h.amount);}incoming=[];for(const e of r.effects)apply(e);
  if(flags.holdForward&&!flags.steered&&!state.reason.startsWith('Retreat')&&!state.reason.startsWith('Peel'))flags.walk=null;
  records.push({frame:f,effects:r.effects,state:r.state});if(records.length>1200)records.shift();
  for(const[id,g]of glides){const u=actor(id);if(!u){glides.delete(id);continue;}const k=Math.min(1,(tick-g.start+1)/g.ticks),to={x:g.from.x+(g.to.x-g.from.x)*k,y:g.from.y+(g.to.y-g.from.y)*k},prev=u.pos;u.pos=world.sweep(u.pos,to,u.radius);u.left=u.pos.x<prev.x;u.moving=dist(prev,u.pos)>.1;if(k>=1)glides.delete(id);}
@@ -229,11 +232,11 @@ function draw(){if(!me)return;if($('follow').checked)view={...me.pos};ctx.clearR
  $('shadowStatus').textContent=shadowReadout();
  panel?.update(tick);
 }
-const orderFor=k=>({q:{kind:'s1'},e:{kind:'s2'},r:{kind:'ult',aim:round(aim)}})[k];
+const orderFor=k=>({q:{kind:'s1'},e:{kind:'s2'},exchange:{kind:'exchange_dodge'},r:{kind:'ult',aim:round(aim)}})[k];
 function next(){if(loading)return;const o=queued;queued=null;stepWorld(o);}
 function clearHeld(){held.clear();queued=null;clock.reset();}
 canvas.addEventListener('pointerdown',e=>{canvas.focus();const r=canvas.getBoundingClientRect(),x=(e.clientX-r.left)*900/r.width,y=(e.clientY-r.top)*900/r.height;aim={x:Math.max(0,Math.min(960000,view.x+(x-450)/zoom)),y:Math.max(0,Math.min(960000,view.y+(y-450)/zoom))};draw();});
-canvas.addEventListener('keydown',e=>{const k=e.key.toLowerCase();if(!['w','a','s','d','q','e','r',' '].includes(k))return;e.preventDefault();held.add(k);if(!e.repeat&&orderFor(k))queued=orderFor(k);running=true;});
+canvas.addEventListener('keydown',e=>{const k=e.key.toLowerCase();if(!['w','a','s','d','q','e','r',' '].includes(k))return;e.preventDefault();held.add(k);if(!e.repeat){const order=orderFor(k==='e'&&e.shiftKey?'exchange':k);if(order)queued=order;}running=true;});
 addEventListener('keyup',e=>held.delete(e.key.toLowerCase()));canvas.addEventListener('blur',clearHeld);addEventListener('blur',clearHeld);document.addEventListener('visibilitychange',clearHeld);
 canvas.addEventListener('wheel',e=>{e.preventDefault();zoom=Math.max(.0008,Math.min(.006,zoom*Math.exp(-e.deltaY*.001)));draw();},{passive:false});
 for(const b of document.querySelectorAll('[data-key]'))b.onclick=()=>{queued=orderFor(b.dataset.key);if(!running){next();draw();}};
