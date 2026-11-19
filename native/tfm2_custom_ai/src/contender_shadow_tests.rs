@@ -51,6 +51,7 @@ impl World {
         self.f.link_airborne = self.air.iter().filter(|(_, until)| self.f.tick < *until).map(|(id, _)| *id).collect();
         let out = self.core.step(&self.f);
         self.f.landed_hits = 0;
+        self.f.landed_merge_hits = 0;
         self.f.basic_hits.clear();
         self.f.incoming.clear();
         let tick = self.f.tick;
@@ -60,7 +61,13 @@ impl World {
                 Effect::Damage { target, amount, source } => {
                     if let Some(u) = self.f.units.iter_mut().find(|u| u.id == *target) {
                         u.hp = (u.hp - amount).max(1);
-                        if *amount > 0 && source.credits_flurry() { self.f.landed_hits += 1; }
+                        if *amount > 0 && source.credits_flurry() {
+                            if *source == HitSource::Merge {
+                                self.f.landed_merge_hits += 1;
+                            } else {
+                                self.f.landed_hits += 1;
+                            }
+                        }
                     }
                 }
                 Effect::LinkAirborne { target, ticks } => self.air.push((*target, tick + ticks)),
@@ -345,9 +352,11 @@ fn counterpunch_rejects_a_wall_or_range_and_can_break_at_full_stacks() {
 }
 
 #[test]
-fn moving_merge_pulse_credits_each_landed_target_once() {
-    let mut w = World::new(vec![champ(FOE, 2, 440_000, 500_000), champ(11, 2, 449_000, 500_000),
-        creep(30, 452_000, 500_000, 1000)]);
+fn moving_merge_cross_checks_the_50k_boundary_and_credits_each_target_once() {
+    let mut w = World::new(vec![
+        champ(FOE, 2, 440_000, 500_000), champ(11, 2, 493_000, 500_000),
+        creep(30, 402_000, 500_000, 1000), champ(12, 2, 493_001, 500_000),
+    ]);
     w.core.flurry_charges = 2;
     w.core.flurry_charge_at = 500;
     w.tick(Some(Order::S1));
@@ -355,10 +364,14 @@ fn moving_merge_pulse_credits_each_landed_target_once() {
     w.run(59);
     assert!(!w.seen(|e| matches!(e, Effect::Damage { .. })));
     let pulse = w.tick(None);
-    assert_eq!(pulse.iter().filter(|e| matches!(e, Effect::Damage { source: HitSource::Merge, .. })).count(), 3);
+    let targets: Vec<_> = pulse.iter().filter_map(|effect| match effect {
+        Effect::Damage { source: HitSource::Merge, target, .. } => Some(*target),
+        _ => None,
+    }).collect();
+    assert_eq!(targets, [FOE, 11, 30]);
     let cds = w.core.flurry_charge_at;
     w.tick(None);
-    assert_eq!(w.core.flurry_charge_at, cds - 90);
+    assert_eq!(w.core.flurry_charge_at, cds - 135);
     assert!(w.core.stacks.is_empty() && w.core.echoes.is_empty());
 }
 
@@ -691,14 +704,15 @@ mod glue {
                 Effect::Damage { target: 1, amount: 40, source: HitSource::Counter },
                 Effect::Damage { target: 1, amount: 10, source: HitSource::Flurry },
                 Effect::Damage { target: 1, amount: 0, source: HitSource::Merge },
+                Effect::Damage { target: 1, amount: 30, source: HitSource::Merge },
             ]);
         });
         run(&host, &mut c, 101, 1);
-        assert_eq!(c.core.flurry_charge_at, 740);
+        assert_eq!(c.core.flurry_charge_at, 695);
         assert_eq!(c.core.stacks_on(1, 101), 1);
         assert_eq!(host.borrow().damage.iter().filter(|d|d.3 == AttackTypeV1::BaseAttack.code()).count(),1);
         run(&host, &mut c, 102, 1);
-        assert_eq!(c.core.flurry_charge_at, 740, "consumed receipt counts once");
+        assert_eq!(c.core.flurry_charge_at, 695, "consumed receipt counts once");
     }
 
     #[test]

@@ -40,7 +40,7 @@ fn valid(f: &Frame) -> bool {
         && f.defences.len() <= 128 && f.defences.iter().all(|defence| (0..=1_000_000).contains(&defence.armour) && (0..=100_000_000).contains(&defence.shield))
         && f.link_excluded.len() <= 128 && f.separated.len() <= 128 && f.link_airborne.len() <= 128
         && f.basic_hits.len() <= 16
-        && f.landed_hits <= 256
+        && u32::from(f.landed_hits) + u32::from(f.landed_merge_hits) <= 256
         && f.incoming.len() <= 16
         && f.incoming.iter().all(|hit| hit.attacker != f.owner && point(hit.from))
         && match f.order { Some(Order::Ult { aim }) => point(aim), _ => true }

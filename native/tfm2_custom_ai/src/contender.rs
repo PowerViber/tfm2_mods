@@ -154,6 +154,7 @@ pub struct Contender {
     link_drawn_at: u64,
     receipt_basic: bool,
     landed_hits: u16,
+    landed_merge_hits: u16,
     /// enemies his basic attacks landed on since the last frame
     basic_hits: Vec<usize>,
     in_skill: bool,
@@ -273,6 +274,7 @@ impl Contender {
             basic_hits: std::mem::take(&mut self.basic_hits),
             incoming: vec![],
             landed_hits: std::mem::take(&mut self.landed_hits),
+            landed_merge_hits: std::mem::take(&mut self.landed_merge_hits),
             link_excluded,
             link_airborne,
             separated,
@@ -323,7 +325,8 @@ impl Contender {
                         self.in_skill = false;
                         COUNTER_PACKET.with(|packet| packet.set(previous));
                         if landed(sim, target, before) {
-                            self.landed_hits = self.landed_hits.saturating_add(1);
+                            let hits = if source == HitSource::Merge { &mut self.landed_merge_hits } else { &mut self.landed_hits };
+                            *hits = hits.saturating_add(1);
                         }
                     }
                 }
@@ -470,6 +473,7 @@ impl StablePassive for Contender {
         self.in_skill = false;
         self.link_drawn_at = 0;
         self.landed_hits = 0;
+        self.landed_merge_hits = 0;
     }
     /// A Shadow dodge: an enemy champion's hit, with a dodge ready, is healed straight back (Kratos's pattern; the hook
     /// reports damage after it lands) and the core slips him aside on its next step.

@@ -146,6 +146,9 @@ pub struct Frame {
     /// Confirmed non-basic damage impacts from the adapter's previous step.
     #[serde(default)]
     pub landed_hits: u16,
+    /// Confirmed Shadow Cross hits, which grant a larger recharge credit.
+    #[serde(default)]
+    pub landed_merge_hits: u16,
     /// Units that are immune or otherwise ineligible for Link.
     #[serde(default)]
     pub link_excluded: Vec<usize>,
@@ -495,11 +498,12 @@ impl Core {
             self.try_dodge(f.tick, hit);
         }
         self.recharge(f.tick);
-        self.credit_flurry(f.tick, f.landed_hits);
+        self.credit_flurry(f.tick, f.landed_hits, d::FLURRY_HIT_CREDIT_TICKS);
+        self.credit_flurry(f.tick, f.landed_merge_hits, d::MERGE_CROSS_RECHARGE_CREDIT_TICKS);
         self.stacks.retain(|s| f.tick < s.until);
         self.slip(f, &mut out);
         for &id in &f.basic_hits {
-            self.credit_flurry(f.tick, 1);
+            self.credit_flurry(f.tick, 1, d::FLURRY_HIT_CREDIT_TICKS);
             if let Some(u) = f.unit(id).filter(|u| !u.tower && u.team != f.team) {
                 self.basic_landed(f, u, &mut out);
             }
@@ -544,12 +548,12 @@ impl Core {
         }
     }
 
-    fn credit_flurry(&mut self, tick: u64, hits: u16) {
+    fn credit_flurry(&mut self, tick: u64, hits: u16, credit_ticks: i64) {
         for _ in 0..hits {
             if self.flurry_charges == d::FLURRY_MAX_CHARGES {
                 break;
             }
-            let cut = t(d::FLURRY_HIT_CREDIT_TICKS).min(self.flurry_charge_at.saturating_sub(tick));
+            let cut = t(credit_ticks).min(self.flurry_charge_at.saturating_sub(tick));
             self.flurry_credited_ticks += cut;
             self.flurry_charge_at -= cut;
             self.recharge(tick);

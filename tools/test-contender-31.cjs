@@ -12,7 +12,7 @@ const base = process.env.CONTENDER_LAB_URL || 'http://127.0.0.1:7311';
     page.on('pageerror', e=>errors.push(e.message));
     await page.goto(base+'/editor/contender.html?demo=shadow-link');
     await page.waitForFunction(()=>window.contenderLab?.units?.length===4 && !document.getElementById('addTargets').disabled);
-    assert.equal(await page.locator('#revision').textContent(),'contender-3.1.1');
+    assert.equal(await page.locator('#revision').textContent(),'contender-3.1.2');
     assert.equal(await page.locator('[data-key=c]').count(),0);
     assert.equal(await page.evaluate(()=>contenderLab.world.geometry.registration.matching),900);
     await page.locator('[data-key=e]').click();
@@ -27,6 +27,25 @@ const base = process.env.CONTENDER_LAB_URL || 'http://127.0.0.1:7311';
     assert.equal(run.punches[9][0]-run.start,60);
     assert.equal(run.gap-run.punches[9][0],45);
     assert.equal(run.charges,2);
+    const cross=await page.evaluate(()=>{
+      const lab=contenderLab,from=lab.me.pos;
+      const angles=Array.from({length:24},(_,i)=>i*Math.PI/12);
+      const at=angles.map(angle=>({x:Math.round(from.x+45000*Math.cos(angle)),y:Math.round(from.y+45000*Math.sin(angle))}))
+        .find(pos=>lab.world.clear(from,pos));
+      if(!at)throw Error('No clear Shadow Cross path in the fixture');
+      const foe=lab.units.find(u=>u.name==='Tank');
+      for(const u of lab.units)if(u!==foe)u.targetable=false;
+      foe.pos=at;
+      const before=lab.state.flurry_charge_at;
+      lab.step({kind:'s1'});
+      for(let i=0;i<61;i++)lab.step();
+      const hits=lab.records.flatMap(row=>row.effects.filter(e=>e.kind==='damage'&&e.source==='merge'));
+      return {targets:hits.map(hit=>hit.target),foe:foe.id,credit:before-lab.state.flurry_charge_at,
+        distance:Math.hypot(at.x-from.x,at.y-from.y)};
+    });
+    assert.deepEqual(cross.targets,[cross.foe]);
+    assert.equal(cross.credit,45);
+    assert.ok(cross.distance>30000&&cross.distance<50000);
     await page.locator('#arena').focus();
     await page.keyboard.press('Shift+E');
     await page.waitForFunction(()=>contenderLab.state.flurry_charges===3);
@@ -79,7 +98,7 @@ const base = process.env.CONTENDER_LAB_URL || 'http://127.0.0.1:7311';
       buffer:Buffer.from(JSON.stringify({version:1,rules_revision:'contender-3.0',records:[{state:{},effects:[]}]}))});
     await page.waitForFunction(()=>document.getElementById('recordingStatus').textContent.includes('Replay requires original rules contender-3.0'));
     assert.deepEqual(errors,[]);
-    console.log(JSON.stringify({mapCells:900,punches:run.punches.length,castGap:45,exchange:true,counter:counter.name,linkTargets:link.air.length,
+    console.log(JSON.stringify({mapCells:900,punches:run.punches.length,castGap:45,exchange:true,crossCreditTicks:cross.credit,counter:counter.name,linkTargets:link.air.length,
       ccTicks:[30,24],olderRecording:true,errors},null,2));
   } finally { await browser.close(); }
 })().catch(error=>{console.error(error);process.exitCode=1;});
