@@ -1,4 +1,4 @@
-# Contender, the Shadow Boxer (contender-3.1.2)
+# Contender, the Shadow Boxer (contender-3.1.3)
 
 Contender retaliates when his passive dodges a champion hit, stacks Rhythm with a
 short Flurry and sets up teammates with Shadow Link.
@@ -21,3 +21,18 @@ before committing Flurry. The projected Shadow Link serves a supported group
 catch or a teammate peel. Manual Lab orders retain their own controls.
 
 [Contender 3.1 review and verification](contender-31-review.md)
+
+## AI and athlete stats (`contender-3.1.3`, round 184)
+- **Every skill is used.** The ult (Shadow Link) peels or holds a supported group. S2 Shadow Flurry commits when the fight is safe, or trades a dodge for a charge. S1 Merge goes in on supported approaches.
+- **Farming:** when calm, he farms with **S2 Shadow Flurry** (3+ creeps, or one big camp monster within 50,000, using real charges only, never a traded dodge) as well as with Merge.
+- **Athlete stats shape his play.** Each bounds an existing check and adds no power:
+
+| Stat | Effect |
+|---|---|
+| **Aggressive** | Commit HP and chase range (Codex, 3.0). |
+| **Judgement** | Retreat line ±3% around 35%. Below 35 Judgement, he accepts one more enemy than his support covers. |
+| **Skill Accuracy** | Below 40, Shadow Link goes on a single champion; otherwise it waits for two. |
+| **Micro** | Dodges kept before trading one for a Flurry charge: 0 (below 40), 1, or 2 (70 and up). |
+| **Control Speed** | Below 50, up to 12 ticks before committing S1 or S2 to a new target. |
+
+- **Guard test:** his own AI in a 1v2 for 20 s at athlete 20/50/80 and levels 3 and 9 must stay at or below 1.9× a plain champion's basics and 25% dodged. It measures 1.59–1.79× and 14–18%.

@@ -378,6 +378,9 @@ pub struct Core {
     pub steer_at: u64,
     #[serde(default)]
     pub reason: String,
+    /// the target the AI first saw, and when (Control Speed's reaction delay)
+    #[serde(default)]
+    pub seen: Option<(usize, u64)>,
     #[serde(default)]
     pub rejection: String,
 }
@@ -407,6 +410,7 @@ impl Default for Core {
             charges_shown: -1,
             steer_at: 0,
             reason: String::new(),
+            seen: None,
             rejection: String::new(),
         }
     }
@@ -440,7 +444,24 @@ impl Core {
 
     pub fn flurry_ready(&self, f: &Frame) -> bool {
         crate::unlocks::skill_unlocked(f.level, 1) && f.tick >= self.flurry_cast_at
-            && (self.flurry_charges > 0 || (!f.manual && self.charges > 0))
+            && (self.flurry_charges > 0 || (!f.manual && self.charges > Self::dodge_reserve(f)))
+    }
+
+    /// Micro: how many dodges the AI keeps before trading one for a Flurry charge (contender-3.1.3).
+    pub fn dodge_reserve(f: &Frame) -> i64 {
+        let micro = f.p(10);
+        if micro >= d::AI_MICRO_HIGH { 2 } else if micro >= d::AI_MICRO_LOW { 1 } else { 0 }
+    }
+
+    /// Control Speed: ticks between first seeing a target and committing S1 / S2 to it (contender-3.1.3). Average and
+    /// better athletes react at once; below average adds up to `AI_REACTION_MAX_TICKS` (at 0).
+    pub fn reaction_ticks(f: &Frame) -> u64 {
+        ((50 - f.p(3)).max(0) * d::AI_REACTION_MAX_TICKS / 50) as u64
+    }
+
+    /// Judgement: the HP share (percent) below which he retreats; a better judge leaves a little earlier.
+    pub fn retreat_hp(f: &Frame) -> i64 {
+        d::AI_RETREAT_HP + (f.p(1) - 50) / d::AI_JUDGEMENT_RETREAT_DIVISOR
     }
 
     pub fn stacks_on(&self, id: usize, tick: u64) -> i64 {
@@ -958,7 +979,8 @@ impl Core {
     fn safe_commit(f: &Frame, at: Point) -> bool {
         let allies = Self::support(f, at);
         f.hp * 100 >= (d::AI_COMMIT_HP - f.p(6) / d::AI_AGGRESSIVE_HP_DIVISOR) * f.max_hp.max(1)
-            && allies > 0 && allies + 1 >= Self::nearby_threats(f, at)
+            // Judgement: a poor judge takes a fight one enemy more than his support covers
+            && allies > 0 && allies + 1 + i64::from(f.p(1) < d::AI_JUDGEMENT_LOW) as usize >= Self::nearby_threats(f, at)
             && f.enemy_tower_at(at).is_none() && f.path_until(f.pos, at, true) == at
             && Self::cover(f, at).is_some()
     }
@@ -995,7 +1017,9 @@ impl Core {
                     && f.path_until(at, enemy.pos, false) == enemy.pos).collect();
                 let peel = f.allies().any(|ally| Self::hurt_pct(ally) < 45
                     && trapped.iter().any(|enemy| enemy.pos.within(ally.pos, 30_000)));
-                let supported_group = Self::support(f, at) > 0 && trapped.len() >= 2
+                // Skill Accuracy: a precise caster waits for two champions in the circle; a sloppy one links one
+                let need = if f.p(4) < d::AI_ACCURACY_LOW { 1 } else { 2 };
+                let supported_group = Self::support(f, at) > 0 && trapped.len() >= need
                     && f.hp * 100 >= d::AI_RETREAT_HP * f.max_hp.max(1);
                 (peel || supported_group).then_some((at, peel, trapped.len()))
             })
@@ -1040,7 +1064,7 @@ impl Core {
             }
             return Some(Order::Ult { aim });
         }
-        if f.hp * 100 < d::AI_RETREAT_HP * f.max_hp.max(1) {
+        if f.hp * 100 < Self::retreat_hp(f) * f.max_hp.max(1) {
             if !self.reason.starts_with("Retreat") {
                 self.steer_at = 0;
             }
@@ -1054,11 +1078,16 @@ impl Core {
             return (target.is_some() && f.tick >= self.merge_at && !self.merged(f.tick)).then_some(Order::S1);
         }
         if let Some(foe) = target {
+            // Control Speed: a slower athlete reacts a little later to a new target
+            if self.seen.map(|s| s.0) != Some(foe.id) {
+                self.seen = Some((foe.id, f.tick));
+            }
+            let reacted = f.tick >= self.seen.map_or(0, |s| s.1) + Self::reaction_ticks(f);
             if self.solo_finish(f, &foe) && Self::cover(f, f.pos).is_some() {
                 self.reason = "Commit: basic can finish".into();
                 return None;
             }
-            if self.flurry_ready(f) && self.safe_flurry(f) {
+            if reacted && self.flurry_ready(f) && self.safe_flurry(f) {
                 self.reason = if self.flurry_charges == 0 {
                     "Commit: exchange a dodge for Shadow Flurry"
                 } else {
@@ -1071,7 +1100,7 @@ impl Core {
             if dist <= limit && dist > d::BASIC_RANGE && Self::safe_commit(f, foe.pos) {
                 self.reason = "Commit: supported approach".into();
                 self.steer(f, foe.pos, out);
-                if f.tick >= self.merge_at && dist <= d::AI_MERGE_RANGE {
+                if reacted && f.tick >= self.merge_at && dist <= d::AI_MERGE_RANGE {
                     return Some(Order::S1);
                 }
             } else {
@@ -1084,6 +1113,16 @@ impl Core {
             return None;
         }
         self.reason.clear();
+        self.seen = None;
+        // farming (calm): Shadow Flurry on a wave or a big camp monster, with real charges only (never a traded dodge)
+        let calm = f.enemy_champions().all(|u| !u.pos.within(f.pos, d::AI_CALM_RANGE));
+        if calm && self.flurry_charges > 0 && self.flurry_ready(f) {
+            let farm: Vec<&Unit> = f.units.iter().filter(|u| u.farmable && f.skill_target(u) && u.pos.within(f.pos, d::FLURRY_START_RANGE)).collect();
+            if farm.len() >= 3 || farm.iter().any(|u| u.max_hp >= d::AI_FARM_BIG_HP) {
+                self.reason = "Farm: Shadow Flurry".into();
+                return Some(Order::S2);
+            }
+        }
         if f.tick >= self.merge_at && f.units.iter().filter(|unit| unit.farmable && f.skill_target(unit)
             && unit.pos.within(f.pos, d::MERGE_CROSS_RADIUS)).count() >= 2 {
             self.reason = "Farm: Shadow Merge".into();
