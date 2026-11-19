@@ -724,7 +724,8 @@ mod glue {
         with_sim(&host, |sim| c.on_spawn(sim, 0, 0));
         run(&host, &mut c, 100, 120);
         assert!(c.core.reason.starts_with("Hold:"), "{}", c.core.reason);
-        assert!(host.borrow().damage.is_empty());
+        // Shadow Cross may reach enemies from here. A hold still forbids a body commit.
+        assert_eq!(host.borrow().units[0].pos, (x, y));
         assert!(!c.core.flurrying() && c.core.shadow_link.is_none());
     }
 }
