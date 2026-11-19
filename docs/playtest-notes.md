@@ -4137,3 +4137,12 @@ Native 0.10.112 / custom 0.2.115, art basalt-art-6, gameplay remains basalt-1.4.
   - is 5 dodges too slippery again;
   - does the steady flurry read well;
   - is a 60 s ult too frequent.
+
+## Nov 19: round 184 (native 0.10.119, tfm2_custom 0.2.122), Contender 3.1.3 actually in the game
+- **Why the game was out of date:** Codex's 3.0-3.1.2 changed the source but not the shipped DLL or versions, so the game kept running 2.9's native code. This round ships the rebuilt DLL.
+- **AI:**
+  - S2 Shadow Flurry now farms;
+  - Judgement, Skill Accuracy, Micro and Control Speed shape how he plays.
+- **Install:** close the game, Mod Manager -> 1 Update everything, then 2 Check (UP TO DATE); 4 Show logs must show native 0.10.119. Use a new career.
+- **Measured:** 1.65-1.79x a plain champion's basics in a 1v2 (2.9 was about 1.3x); 14-18% of hits dodged.
+- **Watch for:** Counterpunch, the S2 Flurry, and Shadow Link's pull and stun in real matches.
