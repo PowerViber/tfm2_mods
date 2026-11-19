@@ -1,6 +1,4 @@
-//! Contender 2.3's core: shadow dodges, free recasts, Shadow Pact's echoes and their cap, Shadow Rhythm's stacks and
-//! Breaks, Shadow Merge, Shadow Cyclone (and its aimed, pulling recast), Shadow Tether, the Shadow Flurry (a 120 s cooldown) and his
-//! AI; then the bridge on the glue mock host.
+//! Contender core and native adapter regression tests.
 use crate::contender_shadow_core::*;
 use crate::contender_shadow_data as d;
 
@@ -24,7 +22,7 @@ struct World {
 }
 impl World {
     fn new(units: Vec<Unit>) -> World {
-        let mut core = Core::default();
+        let core = Core::default();
         World {
             core,
             f: Frame {
@@ -42,6 +40,7 @@ impl World {
                 terrain: vec![false; (CELLS * CELLS) as usize],
                 profile: [50; 13],
                 manual: true,
+                shadow_link_enabled: true,
                 ..Frame::default()
             },
             log: vec![],
@@ -56,7 +55,7 @@ impl World {
         for e in &out {
             self.log.push((tick, e.clone()));
             match e {
-                Effect::Damage { target, amount } => {
+                Effect::Damage { target, amount } | Effect::ShadowPayout { target, amount } => {
                     if let Some(u) = self.f.units.iter_mut().find(|u| u.id == *target) {
                         u.hp = (u.hp - amount).max(1);
                     }
@@ -88,10 +87,6 @@ impl World {
         self.log.iter().filter(|(_, e)| f(e)).count()
     }
 }
-fn pct(base: i64, ratio: i64, ad: i64) -> i64 {
-    base + ratio * ad / 100
-}
-
 // ------------------------------------------------------------------ dodges and free recasts
 
 #[test]
@@ -132,19 +127,23 @@ fn five_dodges_come_back_one_at_a_time_every_15_seconds_and_basics_dont_speed_th
 }
 
 #[test]
-fn skills_cost_nothing_and_each_recast_is_free_once_in_its_window() {
-    let mut w = World::new(vec![champ(FOE, 2, 430_000, 500_000), champ(11, 2, 440_000, 510_000)]);
-    w.tick(Some(Order::S3 { aim: Point::new(430_000, 500_000) }));
+fn cyclone_recast_is_free_once_and_shadow_link_has_no_recast() {
+    let aim = Point::new(430_000, 500_000);
+    let mut w = World::new(vec![champ(FOE, 2, 430_000, 500_000)]);
+    w.tick(Some(Order::S3 { aim }));
     assert_eq!(w.core.charges, d::CHARGES_MAX, "no charge spent");
-    w.tick(Some(Order::S3 { aim: Point::new(430_000, 500_000) }));
+    w.tick(Some(Order::S3 { aim }));
+    assert_eq!(w.core.rejection, "s3: not ready");
+    w.tick(Some(Order::S2 { aim }));
+    w.tick(Some(Order::S2 { aim }));
     assert!(w.core.rejection.is_empty(), "{}", w.core.rejection);
     assert_eq!(w.core.charges, d::CHARGES_MAX, "the recast is free");
-    w.tick(Some(Order::S3 { aim: Point::new(430_000, 500_000) }));
-    assert_eq!(w.core.rejection, "s3", "used: back on cooldown");
+    w.tick(Some(Order::S2 { aim }));
+    assert_eq!(w.core.rejection, "s2");
     let mut w = World::new(vec![champ(FOE, 2, 430_000, 500_000)]);
-    w.tick(Some(Order::S2 { aim: Point::new(430_000, 500_000) }));
+    w.tick(Some(Order::S2 { aim }));
     w.run(d::CHARGES_RECAST_WINDOW_TICKS as u64 + 1);
-    w.tick(Some(Order::S2 { aim: Point::new(430_000, 500_000) }));
+    w.tick(Some(Order::S2 { aim }));
     assert_eq!(w.core.rejection, "s2", "the window closed");
 }
 
@@ -219,13 +218,18 @@ fn every_hit_echoes_a_second_later_with_half_its_crowd_control() {
 #[test]
 fn recast_hits_echo_once_and_echoed_crowd_control_is_capped() {
     let mut w = World::new(vec![champ(FOE, 2, 430_000, 500_000)]);
-    w.tick(Some(Order::S3 { aim: Point::new(430_000, 500_000) }));
-    w.tick(Some(Order::S3 { aim: Point::new(430_000, 500_000) }));
+    w.tick(Some(Order::S2 { aim: Point::new(430_000, 500_000) }));
+    w.tick(Some(Order::S2 { aim: Point::new(430_000, 500_000) }));
     w.run(3 * d::PACT_DELAY_TICKS as u64);
-    let ups = w.count(|e| matches!(e, Effect::KnockUp { target: FOE, .. }));
-    assert_eq!(ups, 2, "the uppercut and one echo (contender-2.6)");
-    let echoed: u64 = w.log.iter().filter(|(t, _)| *t > 2).filter_map(|(_, e)| match e { Effect::KnockUp { target: FOE, ticks } => Some(*ticks), _ => None }).sum();
-    assert!(echoed <= d::PACT_CC_CAP_TICKS as u64);
+    let knockup = d::CYCLONE_RECAST_KNOCK_TICKS as u64;
+    let ups: Vec<_> = w.log.iter().filter_map(|(at, effect)| match effect {
+        Effect::KnockUp { target: FOE, ticks } => Some((*at, *ticks)),
+        _ => None,
+    }).collect();
+    assert_eq!(ups.len(), 2, "Cyclone finisher and one echo");
+    assert_eq!(ups[0].1, knockup);
+    assert_eq!(ups[1], (ups[0].0 + d::PACT_DELAY_TICKS as u64, knockup * d::PACT_CC_PCT as u64 / 100));
+    assert!(ups[1].1 <= d::PACT_CC_CAP_TICKS as u64);
 }
 
 // ------------------------------------------------------------------ Shadow Rhythm
@@ -488,58 +492,87 @@ fn the_recast_cannot_reach_past_60000() {
     assert!(w.f.pos.x <= 400_000 + d::CYCLONE_RECAST_RANGE + 1);
 }
 
-// ------------------------------------------------------------------ S3 Shadow Tether
+// ------------------------------------------------------------------ S3 Shadow Link
+
+fn land(w: &mut World, aim: Point, accept: &[usize]) -> (u64, Point, u64) {
+    let cast = w.f.tick;
+    w.tick(Some(Order::S3 { aim }));
+    let Some(ShadowLink::Flight { at, landing, .. }) = w.core.shadow_link else {
+        panic!("expected flight: {}", w.core.rejection)
+    };
+    w.f.tick = landing;
+    let effects = w.tick(None);
+    assert!(effects.iter().any(|effect| matches!(effect, Effect::ShadowLand { cast: id, .. } if *id == cast)));
+    w.f.shadow_observation = Some(ShadowObservation::Landed { cast, targets: accept.to_vec() });
+    w.tick(None);
+    let Some(ShadowLink::Active { until, .. }) = w.core.shadow_link else { panic!("expected active shadow") };
+    (cast, at, until)
+}
 
 #[test]
-fn tether_latches_onto_everyone_in_reach_and_copies_his_hits_at_30_percent() {
-    let mut tower = champ(50, 2, 420_000, 520_000);
-    tower.champion = false;
+fn shadow_uses_highest_max_hp_and_pays_capped_flat_damage_once_on_expiry() {
+    let mut tank = champ(FOE, 2, 450_000, 500_000);
+    tank.hp = 2500;
+    tank.max_hp = 3000;
+    let mut assassin = champ(11, 2, 452_000, 512_000);
+    assassin.max_hp = 1200;
+    let mut w = World::new(vec![tank, assassin, creep(30, 443_000, 500_000, 650)]);
+    let (cast, at, until) = land(&mut w, Point::new(600_000, 500_000), &[FOE, 11, 30]);
+    assert_eq!(at, Point::new(450_000, 500_000));
+    assert!(matches!(w.core.shadow_link, Some(ShadowLink::Active { max_hp: 3000, hp: 3000, .. })));
+    assert_eq!(until, cast + d::SHADOW_LINK_FLIGHT_TICKS as u64 + d::SHADOW_LINK_TICKS as u64);
+    w.f.shadow_observation = Some(ShadowObservation::Health { cast, hp: 1500 });
+    assert!(!w.tick(None).iter().any(|effect| matches!(effect, Effect::ShadowPayout { .. })));
+    w.f.tick = until;
+    let payout: Vec<_> = w.tick(None).into_iter().filter_map(|effect| match effect {
+        Effect::ShadowPayout { target, amount } => Some((target, amount)),
+        _ => None,
+    }).collect();
+    assert_eq!(payout, vec![(FOE, 900), (11, 360), (30, 195)]);
+    assert!(w.core.shadow_link.is_none() && w.core.stacks.is_empty() && w.core.echoes.is_empty());
+    assert_eq!(w.core.ult_cut_centis, 0);
+    assert!(!w.tick(None).iter().any(|effect| matches!(effect, Effect::ShadowPayout { .. })));
+}
+
+#[test]
+fn shadow_resolves_exact_link_boundary_and_partition_before_depletion() {
+    let mut w = World::new(vec![champ(FOE, 2, 450_000, 500_000), champ(11, 2, 451_000, 500_000), champ(12, 2, 452_000, 500_000)]);
+    let (cast, at, _) = land(&mut w, Point::new(450_000, 500_000), &[FOE, 11, 12]);
+    w.unit(FOE).pos.x = at.x + d::SHADOW_LINK_BREAK_RANGE;
+    w.unit(11).pos.x = at.x + d::SHADOW_LINK_BREAK_RANGE + 1;
+    w.f.separated = vec![12];
+    w.f.shadow_observation = Some(ShadowObservation::Health { cast, hp: 0 });
+    let effects = w.tick(None);
+    assert!(effects.iter().any(|effect| matches!(effect, Effect::ShadowPayout { target: FOE, amount: 300 })));
+    assert_eq!(effects.iter().filter(|effect| matches!(effect, Effect::ShadowPayout { .. })).count(), 1);
+}
+
+#[test]
+fn shadow_stops_at_wall_and_skips_immune_tower_and_unconfirmed_targets() {
+    let mut tower = champ(50, 2, 420_000, 500_000);
     tower.tower = true;
-    let mut w = World::new(vec![champ(FOE, 2, 410_000, 500_000), champ(11, 2, 430_000, 520_000), creep(30, 440_000, 480_000, 9_000), tower, champ(12, 2, 600_000, 500_000)]);
-    w.tick(Some(Order::S3 { aim: Point::new(410_000, 500_000) }));
-    let ids: Vec<usize> = w.core.tethers.iter().map(|t| t.0).collect();
-    assert_eq!(ids.len(), 3, "the two champions and the creep in reach (never the tower, never the far one): {ids:?}");
-    w.f.basic_hits.push(FOE);
-    w.tick(None);
-    let copy = 100 * d::TETHER_COPY_PCT / 100;
-    for id in [11, 30] {
-        assert!(w.seen(|e| matches!(e, Effect::Damage { target, amount } if *target == id && *amount == copy)), "copy on {id}");
-    }
-    assert!(w.core.stacks_on(11, w.f.tick) >= 1, "copies stack");
-    // too far: the tether breaks
-    w.unit(11).pos = Point::new(400_000 + d::TETHER_BREAK_RANGE + 10_000, 500_000);
-    w.tick(None);
-    assert!(!w.core.tethers.iter().any(|t| t.0 == 11));
+    tower.champion = false;
+    let mut w = World::new(vec![champ(FOE, 2, 440_000, 500_000), champ(11, 2, 425_000, 500_000), creep(30, 435_000, 500_000, 650), tower]);
+    w.f.link_excluded = vec![11];
+    w.f.barriers = vec![Barrier { from: Point::new(429_000, 480_000), to: Point::new(429_000, 520_000), half_width: 2000 }];
+    let (cast, at, _) = land(&mut w, Point::new(450_000, 500_000), &[11, 30, 50]);
+    assert!(at.x < 427_000);
+    assert!(matches!(&w.core.shadow_link, Some(ShadowLink::Active { linked, max_hp: 650, .. }) if linked == &[30]));
+    w.f.shadow_observation = Some(ShadowObservation::Health { cast, hp: 100 });
+    w.f.alive = false;
+    let effects = w.tick(None);
+    assert!(effects.iter().any(|effect| matches!(effect, Effect::ShadowEnd { paid: false, .. })));
+    assert!(!effects.iter().any(|effect| matches!(effect, Effect::ShadowPayout { .. })));
 }
 
 #[test]
-fn the_tether_recast_yanks_everyone_toward_him_and_uppercuts() {
-    let mut w = World::new(vec![champ(FOE, 2, 440_000, 500_000), champ(11, 2, 400_000, 545_000)]);
-    w.tick(Some(Order::S3 { aim: Point::new(440_000, 500_000) }));
-    w.tick(Some(Order::S3 { aim: Point::new(440_000, 500_000) }));
-    assert!(w.core.tethers.is_empty());
-    for id in [FOE, 11] {
-        assert!(w.seen(|e| matches!(e, Effect::Knock { target, .. } if *target == id)), "{id} yanked");
-        assert!(w.seen(|e| matches!(e, Effect::KnockUp { target, ticks } if *target == id && *ticks == d::TETHER_KNOCK_TICKS as u64)));
-    }
-    assert!(w.f.units[0].pos.x < 440_000, "toward him");
-}
-
-#[test]
-fn flurry_punches_copy_onto_tethered_enemies_and_never_cut_the_ult() {
-    let mut w = World::new(vec![champ(FOE, 2, 430_000, 500_000), champ(11, 2, 400_000, 540_000)]);
-    w.f.attack = 10_000; // so a small copy is a whole number
-    for u in w.f.units.iter_mut() {
-        u.hp = 1_000_000;
-        u.max_hp = 1_000_000;
-    }
-    w.tick(Some(Order::S3 { aim: Point::new(430_000, 500_000) }));
-    w.unit(11).pos = Point::new(430_000, 560_000); // tethered, but out of the flurry's chain reach
-    w.tick(Some(Order::Ult));
-    w.run(60);
-    let copy = pct(d::ULT_BASE, d::ULT_AD_RATIO, 10_000) * d::TETHER_FLURRY_COPY_PCT / 100;
-    assert!(w.seen(|e| matches!(e, Effect::Damage { target: 11, amount } if *amount == copy)), "a flurry copy");
-    assert_eq!(w.core.ult_cut_centis, 0, "flurry copies never cut the ult cooldown");
+fn native_feature_gate_leaves_ordinary_build_without_s3_commitment() {
+    let mut w = World::new(vec![champ(FOE, 2, 450_000, 500_000)]);
+    w.f.shadow_link_enabled = false;
+    w.tick(Some(Order::S3 { aim: Point::new(450_000, 500_000) }));
+    assert_eq!(w.core.cd[2], 0);
+    assert!(w.core.shadow_link.is_none());
+    assert!(w.core.rejection.contains("verification pending"));
 }
 
 // ------------------------------------------------------------------ Ult Shadow Flurry
@@ -680,20 +713,68 @@ fn ai(units: Vec<Unit>) -> World {
 }
 
 #[test]
-fn the_ai_merges_going_into_a_fight_then_tethers_a_group() {
-    let mut w = ai(vec![champ(FOE, 2, 440_000, 500_000), champ(11, 2, 445_000, 510_000), champ(ALLY, 1, 410_000, 500_000), champ(3, 1, 415_000, 505_000)]);
+fn ai_uses_shadow_before_committing_and_does_not_dive_when_outnumbered() {
+    let mut w = ai(vec![champ(FOE, 2, 440_000, 500_000), champ(11, 2, 445_000, 510_000), champ(12, 2, 440_000, 505_000), champ(13, 2, 445_000, 505_000)]);
     w.tick(None);
-    assert_eq!(w.core.reason, "S1: merge");
-    w.tick(None);
-    assert_eq!(w.core.reason, "S3: tether");
-    assert_eq!(w.core.tethers.len(), 2);
+    assert_eq!(w.core.reason, "Poke: Shadow Link");
+    assert!(matches!(w.core.shadow_link, Some(ShadowLink::Flight { .. })));
+    w.run(30);
+    assert!(!w.core.merged(w.f.tick));
+    assert!(!w.seen(|effect| matches!(effect, Effect::Glide { .. } | Effect::Vanish { .. })));
 }
 
 #[test]
-fn the_ai_never_dives_a_one_versus_four() {
-    let mut w = ai(vec![champ(FOE, 2, 440_000, 500_000), champ(11, 2, 445_000, 500_000), champ(12, 2, 440_000, 505_000), champ(13, 2, 445_000, 505_000)]);
-    w.run(30);
-    assert!(!w.core.merged(w.f.tick) && w.core.tethers.is_empty(), "{}", w.core.reason);
+fn low_hp_chase_and_cyclone_recast_do_not_bypass_the_commit_checks() {
+    for aggressive in [20, 80] {
+        let mut w = ai(vec![champ(FOE, 2, 550_000, 500_000), champ(11, 2, 551_000, 500_000)]);
+        w.f.hp = 100;
+        w.f.profile[6] = aggressive;
+        let effects = w.tick(None);
+        assert_eq!(w.core.reason, "Retreat: low HP");
+        assert!(effects.iter().any(|effect| matches!(effect, Effect::Steer { to } if to.x < 400_000)));
+        w.f.manual = true;
+        w.tick(Some(Order::S2 { aim: Point::new(450_000, 500_000) }));
+        w.f.manual = false;
+        w.unit(FOE).pos.x = 450_000;
+        let mut tower = champ(50, 2, 495_000, 500_000);
+        tower.tower = true;
+        tower.champion = false;
+        w.f.units.extend([champ(12, 2, 450_000, 520_000), tower]);
+        let effects = w.tick(None);
+        assert!(!effects.iter().any(|effect| matches!(effect, Effect::Glide { .. } | Effect::Vanish { .. })));
+        assert!(!w.core.used[1], "kept free recast instead of entering a tower 1v3");
+    }
+}
+
+#[test]
+fn aggressive_values_change_supported_chase_without_relaxing_tower_safety() {
+    for (aggressive, expected) in [(20, false), (80, true)] {
+        let mut w = ai(vec![champ(FOE, 2, 475_000, 500_000), champ(ALLY, 1, 463_000, 510_000)]);
+        w.f.profile[6] = aggressive;
+        w.core.cd = [999; 3];
+        w.tick(None);
+        assert_eq!(w.core.reason == "Commit: supported approach", expected);
+        let mut tower = champ(50, 2, 475_000, 510_000);
+        tower.tower = true; tower.champion = false;
+        w.f.units.push(tower);
+        w.tick(None);
+        assert_eq!(w.core.reason, "Hold: unsafe or unsupported approach");
+    }
+}
+
+#[test]
+fn basic_finish_checks_hp_shield_and_retains_flurry() {
+    let mut w = ai(vec![champ(FOE, 2, 420_000, 500_000)]);
+    w.core.cd = [500; 3];
+    w.core.ult_at = 0;
+    w.unit(FOE).hp = 70;
+    w.f.defences = vec![TargetDefence { id: FOE, armour: 25, shield: 20 }];
+    w.tick(None);
+    assert!(w.core.reason.starts_with("Hold"));
+    w.f.defences[0].shield = 0;
+    w.tick(None);
+    assert_eq!(w.core.reason, "Commit: basic can finish");
+    assert!(!w.core.flurrying());
 }
 
 #[test]
@@ -710,7 +791,7 @@ fn the_ai_farms_a_camp_with_its_skills_when_calm_and_cuts_the_ult_cooldown() {
             u.hp = u.max_hp;
         }
     }
-    for k in ["Farm: Shadow Cyclone", "Farm: tether"] {
+    for k in ["Farm: Shadow Cyclone", "Farm: Shadow Link"] {
         assert!(used.iter().any(|u| u == k), "{k}: {used:?}");
     }
     assert!(w.core.ult_cut_centis > 0, "farming with his skills cuts the ult cooldown");
@@ -722,7 +803,7 @@ fn the_ai_flurries_with_the_ult_ready_on_a_group() {
     w.core.cd = [u64::MAX / 2; 3];
     w.core.ult_at = 0;
     w.tick(None);
-    assert_eq!(w.core.reason, "Shadow Flurry");
+    assert_eq!(w.core.reason, "Commit: supported Shadow Flurry");
     assert!(w.core.flurrying());
 }
 
@@ -879,7 +960,7 @@ mod glue {
         let mut c = Contender::default();
         with_sim(&host, |sim| c.on_spawn(sim, 0, 0));
         run(&host, &mut c, 100, 120);
-        assert!(host.borrow().buffs[0].iter().any(|b| b.name() == "ct_merge") || c.core.merged(220) || !c.core.tethers.is_empty() || c.core.cd != [0; 3], "{}", c.core.reason);
+        assert!(host.borrow().buffs[0].iter().any(|b| b.name() == "ct_merge") || c.core.merged(220) || c.core.shadow_link.is_some() || c.core.cd != [0; 3], "{}", c.core.reason);
         let _ = Point::default();
     }
 }

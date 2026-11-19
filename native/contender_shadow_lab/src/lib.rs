@@ -1,4 +1,4 @@
-//! Contender Lab transport (round 178, contender-2.7): the game's exact core (`contender_shadow_core.rs`) behind a JSON step for the
+//! Contender Lab transport (round 178, contender-3.0): the game's exact core (`contender_shadow_core.rs`) behind a JSON step for the
 //! editor page. The page models the host (positions, glides, hits and the champion hits he may dodge); the rules and his AI all come
 //! from the core.
 #[path = "../../tfm2_custom_ai/src/contender_shadow_core.rs"]
@@ -36,6 +36,14 @@ fn valid(f: &Frame) -> bool {
         && f.profile.iter().all(|v| (0..=100).contains(v))
         && (1..=100_000_000).contains(&f.max_hp)
         && (0..=f.max_hp).contains(&f.hp)
+        && f.barriers.len() <= 128 && f.barriers.iter().all(|wall| point(wall.from) && point(wall.to) && (0..=32_000).contains(&wall.half_width))
+        && f.defences.len() <= 128 && f.defences.iter().all(|defence| (0..=1_000_000).contains(&defence.armour) && (0..=100_000_000).contains(&defence.shield))
+        && f.link_excluded.len() <= 128 && f.separated.len() <= 128
+        && match &f.shadow_observation {
+            None => true,
+            Some(ShadowObservation::Landed { targets, .. }) => targets.len() <= 128,
+            Some(ShadowObservation::Health { hp, .. }) => (0..=100_000_000).contains(hp),
+        }
         && f.basic_hits.len() <= 16
         && f.incoming.len() <= 16
         && f.incoming.iter().all(|p| point(*p))
@@ -96,7 +104,7 @@ mod transport_tests {
     fn input(tick: u64) -> serde_json::Value {
         json!({"version": 1, "rules_revision": REVISION, "frame": {
             "tick": tick, "owner": 1, "team": 0, "alive": true, "pos": {"x": 400000, "y": 500000}, "hp": 1000, "max_hp": 1000,
-            "attack": 100, "ult_unlocked": true, "units": [
+            "attack": 100, "ult_unlocked": true, "shadow_link_enabled": true, "units": [
                 {"id": 10, "team": 1, "pos": {"x": 440000, "y": 500000}, "hp": 1000, "max_hp": 1000, "radius": 3000, "champion": true,
                  "tower": false, "visible": true, "targetable": true}],
             "profile": [50,50,50,50,50,50,50,50,50,50,50,50,50], "manual": true, "order": null}})

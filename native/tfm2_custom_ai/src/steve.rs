@@ -1019,6 +1019,16 @@ impl StablePlayerAi for WallAi {
                 }
             }
         }
+        if cname.as_deref().is_some_and(|name| name.ends_with("_contender")) {
+            let player = ctx.player_id();
+            let alternative = ctx.sim().and_then(|sim| {
+                let owner = sim.get_player(player)?.champion()?.id();
+                crate::contender::shadow_input(&sim, owner, base)
+            });
+            if let Some(input) = alternative {
+                if ctx.is_valid_input(&input) { return Some(input); }
+            }
+        }
         // Round 146: a Main Event duelist's walk, retreat or recall order becomes a walk to the opponent (movement
         // guidance only: attacks and casts are never rewritten, and outsiders are never touched)
         if let Some(inp) = base {
