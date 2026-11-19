@@ -76,7 +76,7 @@ function draw(){
  const hidden=tick<(flags.vanish||0);body(me,hidden?'rgba(255,255,255,0.15)':tick<(flags.merge||0)?'#8a7fb0':'#f2f2f2','Contender');
  const a=P(aim);ctx.strokeStyle='#fff';ctx.beginPath();ctx.moveTo(a.x-6,a.y);ctx.lineTo(a.x+6,a.y);ctx.moveTo(a.x,a.y-6);ctx.lineTo(a.x,a.y+6);ctx.stroke();
  $('pips').textContent='◆'.repeat(state.charges??5)+'◇'.repeat(R.charges.max-(state.charges??5));
- $('state').textContent=`HP ${Math.round(me.hp)}/${me.max_hp}  bank ${state.bank??0}/${R.ult.bankMax}  dodges ${state.charges??5}\nS1 ${(Math.max(0,(state.cd?.[0]||0)-tick)/60).toFixed(1)} s  S2 ${(Math.max(0,(state.cd?.[1]||0)-tick)/60).toFixed(1)} s  S3 ${(Math.max(0,(state.cd?.[2]||0)-tick)/60).toFixed(1)} s\nmerged: ${tick<(state.merge_until||0)}  tethers: ${(state.tethers||[]).length}  flurry: ${!!state.flurry}  echoing flurry: ${!!state.flurry?.echo}\nrhythm stacks (focus): ${state.focus?state.focus[1]:0}\nAI: ${state.reason||'-'}`;
+ $('state').textContent=`HP ${Math.round(me.hp)}/${me.max_hp}  ult ${Math.max(0,((state.ult_at||0)-Math.floor((state.ult_cut_centis||0)*60/100)-tick)/60).toFixed(1)} s  dodges ${state.charges??5}\nS1 ${(Math.max(0,(state.cd?.[0]||0)-tick)/60).toFixed(1)} s  S2 ${(Math.max(0,(state.cd?.[1]||0)-tick)/60).toFixed(1)} s  S3 ${(Math.max(0,(state.cd?.[2]||0)-tick)/60).toFixed(1)} s\nmerged: ${tick<(state.merge_until||0)}  tethers: ${(state.tethers||[]).length}  flurry: ${!!state.flurry}  echoing flurry: ${!!state.flurry?.echo}\nrhythm stacks (focus): ${state.focus?state.focus[1]:0}\nAI: ${state.reason||'-'}`;
 }
 const orderFor=k=>({q:{kind:'s1',aim:round(aim)},e:{kind:'s2',aim:round(aim)},c:{kind:'s3',aim:round(aim)},r:{kind:'ult'},f:{kind:'end'}})[k];
 let queued=null;

@@ -1,6 +1,6 @@
 """Generate Contender's Rust tables, champion data, tooltips, editor data and roster entry from rules/contender.json.
 
-Contender 2.6, the elusive Shadow Boxer (round 178). Change numbers in the rules file and rerun; never edit the outputs by hand.
+Contender 2.8, the elusive Shadow Boxer (round 178). Change numbers in the rules file and rerun; never edit the outputs by hand.
 `--check` only verifies.
 """
 from pathlib import Path
@@ -29,9 +29,9 @@ b, ch, pa, rh, me, cy, te, ul, _ = (rules[k] for k in GROUPS)
 sec = lambda n: f'{n / 60:g} s'
 text = {
     'name': rules['name'],
-    'skill': (f"Shadows (passive): up to {ch['max']} shadow dodges, one every {sec(ch['rechargeTicks'])} (each basic attack that lands takes "
-              f"{sec(ch['basicCutTicks'])} off). When an enemy champion's attack or skill hits him, a dodge is spent: he slips {ch['dodgeSlip']} "
-              f"aside and the hit is undone (at most one dodge every {sec(ch['dodgeGapTicks'])}). His skills never cost dodges; each can be recast "
+    'skill': (f"Shadows (passive): {ch['max']} shadow dodge{'s' if ch['max'] != 1 else ''}, recharging every {sec(ch['rechargeTicks'])}. When an enemy "
+              f"champion's basic attack hits him, a dodge is spent: he slips {ch['dodgeSlip']} aside and the hit is undone (skills and ults "
+              f"always land). His skills never cost dodges; each can be recast "
               f"once, free, within {sec(ch['recastWindowTicks'])}. "
               f"Shadow Pact (passive): every punch and skill hits again {sec(pa['delayTicks'])} later for {pa['pct']}%, with its crowd control at "
               f"{pa['ccPct']}% (at most {sec(pa['ccCapTicks'])} more per target every {sec(pa['ccWindowTicks'])}). Echoes never add Rhythm stacks. "
@@ -43,7 +43,7 @@ text = {
               f"{rh['breakAdRatio']}% Attack, and its stacks reset to 0, but his Rhythm buffs stay at full for {sec(rh['breakBuffTicks'])}. A max-stacked creep carries {rh['carryStacks']} stacks "
               f"onto the next champion he hits; a stacked kill keeps the buffs {sec(rh['lingerTicks'])} longer. "
               f"S1 Shadow Merge ({sec(me['cooldownTicks'])}): he merges with his shadow for {sec(me['ticks'])}: "
-              + (f"dodges recharge {me['rechargeMult']}x as fast, " if me['rechargeMult'] > 1 else '') + f"+{me['bonusDodges']} dodge{'s' if me['bonusDodges'] != 1 else ''} at once, every hit echoes twice and adds {me['stacksPerHit']} stacks, +{me['moveSpeedPct']}% "
+              + (f"dodges recharge {me['rechargeMult']}x as fast, " if me['rechargeMult'] > 1 else '') + (f"+{me['bonusDodges']} dodge{'s' if me['bonusDodges'] != 1 else ''} at once, " if me['bonusDodges'] else '') + f"every hit echoes twice and adds {me['stacksPerHit']} stacks, +{me['moveSpeedPct']}% "
               f"move speed. Recast: he steps out; the shadow's cross knocks the nearest enemy {me['crossKnock']} back ({me['crossBase']} + "
               f"{me['crossAdRatio']}% Attack) and he slips {me['slip']} away."),
     'skill2': (f"Shadow Cyclone ({sec(cy['cooldownTicks'])}): a shadow clone goes to a spot within {cy['range']} and cleaves the circle around "
@@ -55,12 +55,12 @@ text = {
                f"{sec(te['ticks'])}; each hit he lands is copied onto every tethered enemy at {te['copyPct']}% (flurry punches at "
                f"{te['flurryCopyPct']}%), with a stack each. A tether breaks past {te['breakRange']}. Recast: every tethered enemy is yanked "
                f"{te['yank']} toward him and uppercut ({te['base']} + {te['adRatio']}% Attack, {sec(te['knockTicks'])} airborne)."),
-    'ult': (f"Shadow Flurry (no cooldown): every hit of his outside the flurry banks a shadow stack (up to {ul['bankMax']}); with "
-            f"{ul['bankMax']} banked he can cast it, spending them all. He melts into the ground, untargetable and unhurt for {sec(ul['ticks'])}, "
-            f"and his dodges refill. His shadows strike the enemy nearest him (within {ul['startRange']}), then chain {ul['punches']} punches, "
+    'ult': (f"Shadow Flurry ({sec(ul['cooldownTicks'])}; every hit of his outside the flurry, echoes and copies included, takes "
+            f"{ul['cutCentisPerHit'] / 100:g} s off the cooldown). He melts into the ground: banished (untargetable, unseen, unhurt) for "
+            f"{sec(ul['ticks'])}. His shadows strike the enemy nearest him (within {ul['startRange']}), then chain {ul['punches']} punches, "
             f"slow at first and faster at the end, each onto an enemy within {ul['chainRange']} of the last one hit ({ul['base']} + "
             f"{ul['adRatio']}% Attack). Each punch prefers a different eligible enemy; it repeats the last target only when no alternative is in reach. "
-            f"Cast while merged, every punch echoes. Every second the last enemy hit is knocked up. With nothing left in reach the flurry ends early. He "
+            f"Flurry punches never echo and never set off a Shadow Break (a full target Breaks on his next hit after). Every second the last enemy hit is knocked up. With nothing left in reach the flurry ends early. He "
             f"reappears beside the last enemy hit, and his next basic within {sec(ul['haymakerTicks'])} is a haymaker "
             f"(+{ul['haymakerBase']} + {ul['haymakerAdRatio']}% Attack, a {sec(ul['haymakerStunTicks'])} stun). His skills never hit towers."),
 }

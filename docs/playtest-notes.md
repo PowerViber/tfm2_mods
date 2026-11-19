@@ -4110,3 +4110,21 @@ Native 0.10.112 / custom 0.2.115, art basalt-art-6, gameplay remains basalt-1.4.
   - **Echoes:** 15%, and recasts echo once.
   - **Skills:** Cyclone recast 3 hits; Tether copies 10%; skill, cross, yank, flurry and haymaker damage all lower.
 - **Watch for:** is he now too weak; how often he gets his ult (40 of his own hits).
+
+## Nov 18: round 182 (native 0.10.117, tfm2_custom 0.2.120), `contender-2.7`
+- **Report:** still too strong: he couldn't be hit; 20 stacks + Merge echoes + the ult killed people; the ult should make him unhittable.
+- **Changes:**
+  - **Dodge:** one dodge every 12 s, vs basic attacks only.
+  - **Ult:** back to a 120 s cooldown (each hit -0.01 s); during the flurry he is banished (untargetable).
+  - **The ult combo:** a merged flurry doesn't echo, and flurry punches never Break.
+  - **Passive buffs halved:** +10% attack speed / +8% move / +10% damage taken at 20 stacks; Break 3% + 15%, buffs held 3 s; echoes 10%; Merge +10% move.
+- **Measured (AI 1v2):** 1.55x / 1.69x a plain champion's basics; 9% of hits dodged.
+- **Watch for:**
+  - can enemies hit or target him during the flurry;
+  - does his body vanish;
+  - does he now feel fair.
+- **contender-2.8 (same round):**
+  - **Damage:** cut to about 1.3x a plain champion's basics (1.26x / 1.32x at levels 3 / 9, was 1.55x / 1.69x).
+  - **Dodge:** unchanged.
+  - **Skills:** mostly utility now (echoes 3%, Cyclone 3 + 4% per hit, Flurry punch 3 + 4%, Break 1% + 5%).
+  - **Watch for:** is he now too weak in damage.

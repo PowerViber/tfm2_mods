@@ -1,5 +1,5 @@
 //! Contender 2.3's core: shadow dodges, free recasts, Shadow Pact's echoes and their cap, Shadow Rhythm's stacks and
-//! Breaks, Shadow Merge, Shadow Cyclone (and its aimed, pulling recast), Shadow Tether, the banked Shadow Flurry and his
+//! Breaks, Shadow Merge, Shadow Cyclone (and its aimed, pulling recast), Shadow Tether, the Shadow Flurry (a 120 s cooldown) and his
 //! AI; then the bridge on the glue mock host.
 use crate::contender_shadow_core::*;
 use crate::contender_shadow_data as d;
@@ -15,8 +15,8 @@ fn creep(id: usize, x: i64, y: i64, hp: i64) -> Unit {
     Unit { champion: false, farmable: true, hp, max_hp: hp, team: 9, ..champ(id, 9, x, y) }
 }
 
-/// A tiny world: him and the units, with his effects applied the way the bridge and engine would. The bank starts full
-/// so the flurry fixtures can cast at once (the bank tests empty it).
+/// A tiny world: him and the units, with his effects applied the way the bridge and engine would. The ult starts ready
+/// (`ult_at` 0) so the flurry fixtures can cast at once.
 struct World {
     core: Core,
     f: Frame,
@@ -25,7 +25,6 @@ struct World {
 impl World {
     fn new(units: Vec<Unit>) -> World {
         let mut core = Core::default();
-        core.bank = d::ULT_BANK_MAX;
         World {
             core,
             f: Frame {
@@ -96,33 +95,37 @@ fn pct(base: i64, ratio: i64, ad: i64) -> i64 {
 // ------------------------------------------------------------------ dodges and free recasts
 
 #[test]
-fn a_champion_hit_spends_a_dodge_and_he_slips_aside_once_per_gap() {
+fn a_champion_hit_spends_his_dodge_and_he_slips_aside() {
     let mut w = World::new(vec![champ(FOE, 2, 430_000, 500_000)]);
     let from = Point::new(430_000, 500_000);
     assert!(w.core.try_dodge(w.f.tick, from));
-    assert!(!w.core.try_dodge(w.f.tick + 1, from), "one dodge per 0.4 s");
+    assert!(!w.core.try_dodge(w.f.tick + 1, from), "his one dodge is spent");
     assert_eq!(w.core.charges, d::CHARGES_MAX - 1);
     let before = w.f.pos;
     w.tick(None);
     assert!(w.f.pos.dist(before) > 5_000.0 && w.f.pos.x < before.x + 1, "he slips aside, away from the hit: {:?}", w.f.pos);
     assert!(w.seen(|e| matches!(e, Effect::Fx { name, .. } if name == "ct_swap")), "a shadow stays where he stood");
-    w.run(d::CHARGES_DODGE_GAP_TICKS as u64);
-    assert!(w.core.try_dodge(w.f.tick, from), "after the gap another dodge works");
+    w.run(d::CHARGES_RECHARGE_TICKS as u64);
+    assert!(w.core.try_dodge(w.f.tick, from), "it recharges");
 }
 
 #[test]
-fn dodges_run_out_and_recharge_and_basics_speed_them_up() {
+fn his_one_dodge_recharges_in_12_seconds_and_basics_no_longer_speed_it() {
     let mut w = World::new(vec![champ(FOE, 2, 410_000, 500_000)]);
-    for _ in 0..d::CHARGES_MAX {
-        w.f.incoming.push(Point::new(430_000, 500_000));
-        w.run(d::CHARGES_DODGE_GAP_TICKS as u64);
-    }
+    assert_eq!(d::CHARGES_MAX, 1);
+    w.f.incoming.push(Point::new(430_000, 500_000));
+    w.tick(None);
     assert_eq!(w.core.charges, 0);
-    assert!(!w.core.try_dodge(w.f.tick, Point::new(430_000, 500_000)), "no dodge left: the hit lands");
+    assert!(!w.core.try_dodge(w.f.tick + 100, Point::new(430_000, 500_000)), "no dodge left: the hit lands");
     let due = w.core.charge_at;
+    assert_eq!(due, w.f.tick - 1 + d::CHARGES_RECHARGE_TICKS as u64);
     w.f.basic_hits.push(FOE);
     w.tick(None);
-    assert_eq!(w.core.charge_at, due - d::CHARGES_BASIC_CUT_TICKS as u64);
+    assert_eq!(w.core.charge_at, due, "basics don't speed the recharge");
+    while w.f.tick <= due {
+        w.tick(None);
+    }
+    assert_eq!(w.core.charges, 1);
 }
 
 #[test]
@@ -145,36 +148,61 @@ fn skills_cost_nothing_and_each_recast_is_free_once_in_its_window() {
 // ------------------------------------------------------------------ the bank
 
 #[test]
-fn hits_outside_the_flurry_bank_up_to_40_and_the_ult_spends_them_all() {
+fn the_ult_is_a_120_second_cooldown_that_each_hit_cuts_by_a_hundredth_of_a_second() {
     let mut w = World::new(vec![champ(FOE, 2, 430_000, 500_000)]);
     w.unit(FOE).hp = 1_000_000;
     w.unit(FOE).max_hp = 1_000_000;
-    w.core.bank = 0;
-    w.tick(Some(Order::Ult));
-    assert_eq!(w.core.rejection, "ult", "an empty bank: no ult");
-    for _ in 0..d::ULT_BANK_MAX - 1 {
-        w.f.basic_hits.push(FOE);
-        w.tick(None);
-    }
-    w.tick(Some(Order::Ult));
-    assert_eq!(w.core.rejection, "ult", "39 banked: not yet");
-    for _ in 0..6 {
-        w.f.basic_hits.push(FOE);
-        w.tick(None);
-    }
-    assert_eq!(w.core.bank, d::ULT_BANK_MAX, "capped at 40");
     w.tick(Some(Order::Ult));
     assert!(w.core.flurrying());
-    assert_eq!(w.core.bank, 0, "all 20 spent");
+    let cast = w.f.tick - 1;
+    assert_eq!(w.core.ult_at, cast + d::ULT_COOLDOWN_TICKS as u64);
     w.run(d::ULT_TICKS as u64 + 3 * d::PACT_DELAY_TICKS as u64);
-    assert_eq!(w.core.bank, 0, "flurry punches and their echoes never bank");
+    assert_eq!(w.core.ult_cut_centis, 0, "flurry punches, their echoes and copies never cut it");
+    w.tick(Some(Order::Ult));
+    assert_eq!(w.core.rejection, "ult", "on cooldown");
+    // 6,000 hits take 60 s off
+    w.core.ult_cut_centis = 6_000;
+    assert_eq!(w.core.ult_ready_at(), cast + d::ULT_COOLDOWN_TICKS as u64 - 3_600);
+    w.core.ult_cut_centis = 0;
+    // one basic (and its echo) cut 0.02 s
+    w.f.basic_hits.push(FOE);
+    w.tick(None);
+    w.run(d::PACT_DELAY_TICKS as u64 + 1);
+    assert_eq!(w.core.ult_cut_centis, 2 * d::ULT_CUT_CENTIS_PER_HIT as u64);
+    while w.f.tick < w.core.ult_ready_at() {
+        w.tick(None);
+    }
+    w.tick(Some(Order::Ult));
+    assert!(w.core.flurrying(), "ready again after the cooldown");
 }
 
-// ------------------------------------------------------------------ Shadow Pact
+#[test]
+fn flurry_punches_never_set_off_a_shadow_break_but_his_next_hit_does() {
+    let mut w = World::new(vec![champ(FOE, 2, 430_000, 500_000)]);
+    w.unit(FOE).hp = 1_000_000;
+    w.unit(FOE).max_hp = 100_000;
+    for _ in 0..d::RHYTHM_MAX_STACKS {
+        w.f.basic_hits.push(FOE);
+        w.tick(None);
+    }
+    w.core.echoes.clear();
+    let burst = |w: &World| w.count(|e| matches!(e, Effect::Fx { name, .. } if name == "ct_break"));
+    assert_eq!(burst(&w), 0);
+    w.tick(Some(Order::Ult));
+    while w.core.flurrying() {
+        w.tick(None);
+    }
+    assert_eq!(burst(&w), 0, "no Break inside the flurry");
+    assert_eq!(w.core.stacks_on(FOE, w.f.tick), d::RHYTHM_MAX_STACKS);
+    w.f.basic_hits.push(FOE);
+    w.tick(None);
+    assert_eq!(burst(&w), 1, "his next basic Breaks");
+}
 
 #[test]
-fn every_hit_echoes_a_second_later_at_40_percent_with_half_its_crowd_control() {
+fn every_hit_echoes_a_second_later_with_half_its_crowd_control() {
     let mut w = World::new(vec![champ(FOE, 2, 430_000, 500_000)]);
+    w.f.attack = 10_000; // so the small echo of a small skill hit is a whole number
     w.tick(Some(Order::S2 { aim: Point::new(430_000, 500_000) }));
     w.run(d::CYCLONE_EVERY_TICKS as u64);
     let first = w.log.iter().find_map(|(t, e)| matches!(e, Effect::Damage { target: FOE, .. }).then_some(*t)).expect("a cleave hit");
@@ -289,7 +317,7 @@ fn both_merged_echoes_of_a_basic_deal_damage() {
 /// Reihan's emergency nerf (contender-2.5): ten seconds of basics on a 1,500 HP champion (no items, level 1) must stay
 /// near a plain champion's basic damage, merged or not.
 #[test]
-fn ten_seconds_of_basics_stay_under_1_4_times_a_plain_champion() {
+fn ten_seconds_of_basics_stay_under_1_2_times_a_plain_champion() {
     for merged in [false, true] {
         let mut w = World::new(vec![champ(FOE, 2, 410_000, 500_000)]);
         w.unit(FOE).hp = 1_000_000;
@@ -319,7 +347,7 @@ fn ten_seconds_of_basics_stay_under_1_4_times_a_plain_champion() {
         }
         let plain = (600 / d::BASIC_COOLDOWN_TICKS + 1) * attack;
         let ratio = total as f64 / plain as f64;
-        assert!(basics > 0 && ratio > 1.0 && ratio <= 1.4, "merged {merged}: {total} vs a plain {plain} ({ratio:.2}x)");
+        assert!(basics > 0 && ratio > 1.0 && ratio <= 1.2, "merged {merged}: {total} vs a plain {plain} ({ratio:.2}x)");
     }
 }
 
@@ -338,7 +366,6 @@ fn fight_1v2(level: i64) -> (f64, f64) {
     w.f.manual = false;
     w.f.level = level;
     w.f.attack = attack;
-    w.core.bank = 0;
     let (mut speed, mut next, mut total, mut hits, mut dodged) = (0i64, 1u64, 0i64, 0, 0);
     let start = w.f.tick;
     while w.f.tick < start + 1_200 {
@@ -370,19 +397,19 @@ fn fight_1v2(level: i64) -> (f64, f64) {
 }
 
 #[test]
-fn in_a_1v2_his_damage_stays_under_2x_plain_basics_and_he_dodges_at_most_35_percent() {
+fn in_a_1v2_his_damage_stays_under_1_4x_plain_basics_and_he_dodges_at_most_15_percent() {
     for level in [3, 9] {
         let (damage, dodges) = fight_1v2(level);
         println!("level {level}: {damage:.2}x, {:.0}% dodged", dodges * 100.0);
-        assert!(damage <= 2.0, "level {level}: {damage:.2}x a plain champion's basics");
-        assert!(dodges <= 0.35, "level {level}: {:.0}% of champion hits dodged", dodges * 100.0);
+        assert!(damage <= 1.4, "level {level}: {damage:.2}x a plain champion's basics");
+        assert!(dodges <= 0.15, "level {level}: {:.0}% of champion hits dodged", dodges * 100.0);
     }
 }
 
 // ------------------------------------------------------------------ S1 Shadow Merge
 
 #[test]
-fn merge_doubles_the_dodge_recharge_adds_two_dodges_and_doubles_echoes_and_stacks() {
+fn merge_doubles_echoes_and_adds_no_dodges() {
     let mut w = World::new(vec![champ(FOE, 2, 410_000, 500_000)]);
     w.tick(Some(Order::S1 { aim: Point::new(410_000, 500_000) }));
     assert!(w.core.merged(w.f.tick));
@@ -390,14 +417,14 @@ fn merge_doubles_the_dodge_recharge_adds_two_dodges_and_doubles_echoes_and_stack
     assert!(w.seen(|e| matches!(e, Effect::Merge { move_pct, .. } if *move_pct == d::MERGE_MOVE_SPEED_PCT)));
     w.f.basic_hits.push(FOE);
     w.tick(None);
-    assert_eq!(w.core.stacks_on(FOE, w.f.tick), d::MERGE_STACKS_PER_HIT, "two stacks a hit");
+    assert_eq!(w.core.stacks_on(FOE, w.f.tick), d::MERGE_STACKS_PER_HIT, "one stack a hit");
     assert_eq!(w.core.echoes.iter().filter(|e| e.target == FOE).count(), 2, "every hit echoes twice");
-    // a gap of 0.25 s between dodges while merged
+    // contender-2.7: still just the one dodge while merged
     assert!(w.core.try_dodge(w.f.tick, Point::new(430_000, 500_000)));
-    assert!(w.core.try_dodge(w.f.tick + d::MERGE_DODGE_GAP_TICKS as u64, Point::new(430_000, 500_000)));
+    assert!(!w.core.try_dodge(w.f.tick + 30, Point::new(430_000, 500_000)));
     w.run(d::MERGE_TICKS as u64);
     assert!(!w.core.merged(w.f.tick));
-    assert!(w.core.charges <= d::CHARGES_MAX, "back to five at most");
+    assert!(w.core.charges <= d::CHARGES_MAX, "never more than his one dodge");
 }
 
 #[test]
@@ -414,17 +441,17 @@ fn stepping_out_crosses_the_nearest_enemy_and_slips_away() {
 }
 
 #[test]
-fn a_flurry_cast_while_merged_echoes_every_punch() {
+fn a_flurry_cast_while_merged_no_longer_echoes() {
     let mut w = World::new(vec![champ(FOE, 2, 430_000, 500_000)]);
     w.unit(FOE).hp = 1_000_000;
     w.unit(FOE).max_hp = 1_000_000;
     w.tick(Some(Order::S1 { aim: Point::new(430_000, 500_000) }));
     w.tick(Some(Order::Ult));
-    assert!(w.core.flurry.is_some_and(|fl| fl.echo));
+    assert!(w.core.flurry.is_some_and(|fl| !fl.echo));
+    let before = w.count(|e| matches!(e, Effect::Fx { name, .. } if name == "ct_echo"));
     w.run(d::ULT_TICKS as u64 + d::PACT_DELAY_TICKS as u64 + 2);
-    let punches = w.count(|e| matches!(e, Effect::Fx { name, .. } if name == "ct_flurry"));
     let echoes = w.count(|e| matches!(e, Effect::Fx { name, .. } if name == "ct_echo"));
-    assert!(echoes >= punches, "{punches} punches, {echoes} echoes");
+    assert_eq!(echoes, before, "no flurry echoes");
 }
 
 // ------------------------------------------------------------------ S2 Shadow Cyclone
@@ -495,9 +522,9 @@ fn the_tether_recast_yanks_everyone_toward_him_and_uppercuts() {
 }
 
 #[test]
-fn flurry_punches_copy_onto_tethered_enemies_at_5_percent_and_never_bank() {
+fn flurry_punches_copy_onto_tethered_enemies_and_never_cut_the_ult() {
     let mut w = World::new(vec![champ(FOE, 2, 430_000, 500_000), champ(11, 2, 400_000, 540_000)]);
-    w.f.attack = 1_000; // so a 5% copy is a whole number
+    w.f.attack = 10_000; // so a small copy is a whole number
     for u in w.f.units.iter_mut() {
         u.hp = 1_000_000;
         u.max_hp = 1_000_000;
@@ -506,9 +533,9 @@ fn flurry_punches_copy_onto_tethered_enemies_at_5_percent_and_never_bank() {
     w.unit(11).pos = Point::new(430_000, 560_000); // tethered, but out of the flurry's chain reach
     w.tick(Some(Order::Ult));
     w.run(60);
-    let copy = pct(d::ULT_BASE, d::ULT_AD_RATIO, 1_000) * d::TETHER_FLURRY_COPY_PCT / 100;
-    assert!(w.seen(|e| matches!(e, Effect::Damage { target: 11, amount } if *amount == copy)), "a 5% copy");
-    assert_eq!(w.core.bank, 0);
+    let copy = pct(d::ULT_BASE, d::ULT_AD_RATIO, 10_000) * d::TETHER_FLURRY_COPY_PCT / 100;
+    assert!(w.seen(|e| matches!(e, Effect::Damage { target: 11, amount } if *amount == copy)), "a flurry copy");
+    assert_eq!(w.core.ult_cut_centis, 0, "flurry copies never cut the ult cooldown");
 }
 
 // ------------------------------------------------------------------ Ult Shadow Flurry
@@ -643,7 +670,7 @@ fn the_flurry_ends_early_when_nothing_is_left_in_reach_and_echoes_only_when_merg
 fn ai(units: Vec<Unit>) -> World {
     let mut w = World::new(units);
     w.f.manual = false;
-    w.core.bank = 0;
+    w.core.ult_at = u64::MAX / 4; // the ult on cooldown
     w
 }
 
@@ -665,7 +692,7 @@ fn the_ai_never_dives_a_one_versus_four() {
 }
 
 #[test]
-fn the_ai_farms_a_camp_with_its_skills_when_calm_and_banks_toward_the_ult() {
+fn the_ai_farms_a_camp_with_its_skills_when_calm_and_cuts_the_ult_cooldown() {
     let mut w = ai(vec![creep(30, 420_000, 500_000, 3_000), creep(31, 425_000, 505_000, 3_000), creep(32, 418_000, 495_000, 600)]);
     w.f.ult_unlocked = false;
     let mut used = vec![];
@@ -681,14 +708,14 @@ fn the_ai_farms_a_camp_with_its_skills_when_calm_and_banks_toward_the_ult() {
     for k in ["Farm: Shadow Cyclone", "Farm: tether"] {
         assert!(used.iter().any(|u| u == k), "{k}: {used:?}");
     }
-    assert!(w.core.bank > 0, "farming with his skills banks toward the ult (echoes and copies never do)");
+    assert!(w.core.ult_cut_centis > 0, "farming with his skills cuts the ult cooldown");
 }
 
 #[test]
-fn the_ai_flurries_with_a_full_bank_on_a_group() {
+fn the_ai_flurries_with_the_ult_ready_on_a_group() {
     let mut w = ai(vec![champ(FOE, 2, 430_000, 500_000), champ(11, 2, 440_000, 505_000), champ(ALLY, 1, 420_000, 500_000), champ(3, 1, 425_000, 510_000)]);
     w.core.cd = [u64::MAX / 2; 3];
-    w.core.bank = d::ULT_BANK_MAX;
+    w.core.ult_at = 0;
     w.tick(None);
     assert_eq!(w.core.reason, "Shadow Flurry");
     assert!(w.core.flurrying());
@@ -757,6 +784,40 @@ mod glue {
     }
 
     #[test]
+    fn a_champion_skill_hit_is_never_dodged_but_a_basic_attack_is() {
+        let _guard = crate::walls::TEST_LOCK.lock();
+        let (x, y) = open_spot(90_000);
+        let host = Host::new(vec![champ(0, (x, y), "tfm2_custom_contender"), champ(1, (x + 20_000, y), "fighter")]);
+        let mut c = Contender::default();
+        with_sim(&host, |sim| c.on_spawn(sim, 0, 0));
+        run(&host, &mut c, 100, 2);
+        // the fighter cast its skill 0.5 s ago (600-tick cooldown, 570 left): the hit is a skill and lands
+        host.borrow_mut().cooldowns.push((1, mod_api_stable::SkillSlotV1::Skill.code(), 570, 600));
+        with_sim(&host, |sim| c.on_damaged(sim, 0, 0, 1, 200));
+        assert!(host.borrow().heals.is_empty(), "skills always land");
+        assert_eq!(c.core.charges, crate::contender_shadow_data::CHARGES_MAX);
+        // 3 s later its cooldown has run on: the next hit is a basic attack and is dodged
+        host.borrow_mut().cooldowns = vec![(1, mod_api_stable::SkillSlotV1::Skill.code(), 420, 600)];
+        with_sim(&host, |sim| c.on_damaged(sim, 0, 0, 1, 80));
+        assert!(host.borrow().heals.iter().any(|h| h.2 == 80), "the basic is undone");
+    }
+
+    #[test]
+    fn during_the_flurry_he_is_banished_every_tick_so_enemies_cannot_hit_him() {
+        let _guard = crate::walls::TEST_LOCK.lock();
+        let (x, y) = open_spot(90_000);
+        let host = Host::new(vec![champ(0, (x, y), "tfm2_custom_contender"), champ(1, (x + 20_000, y), "fighter")]);
+        let mut c = Contender::default();
+        with_sim(&host, |sim| c.on_spawn(sim, 0, 0));
+        run(&host, &mut c, 100, 1);
+        let effects = vec![crate::contender_shadow_core::Effect::Vanish { ticks: 3 }];
+        with_sim(&host, |sim| c.apply(sim, 0, effects));
+        let g = host.borrow();
+        assert!(g.banished.iter().any(|b| b.0 == 0 && b.1 == 0 && b.2 == 3), "banished: untargetable and unseen");
+        assert!(g.invisible.iter().any(|i| i.0 == 0));
+    }
+
+    #[test]
     fn a_champion_hit_is_dodged_healed_back_and_he_slips_but_creeps_never_trigger_it() {
         let _guard = crate::walls::TEST_LOCK.lock();
         let (x, y) = open_spot(90_000);
@@ -774,7 +835,7 @@ mod glue {
         assert!(host.borrow().heals.iter().any(|h| h.1 == 0 && h.2 == 120), "the champion's hit is undone");
         assert_eq!(c.core.charges, before - 1, "one dodge spent");
         with_sim(&host, |sim| c.on_damaged(sim, 0, 0, 1, 90));
-        assert_eq!(host.borrow().heals.len(), 1, "the second hit inside the gap lands");
+        assert_eq!(host.borrow().heals.len(), 1, "his one dodge is spent: the next hit lands");
         run(&host, &mut c, 103, 2);
         assert!(c.core.pending_dodge.is_none(), "the slip was played");
     }
