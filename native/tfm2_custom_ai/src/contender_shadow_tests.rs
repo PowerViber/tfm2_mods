@@ -110,22 +110,25 @@ fn a_champion_hit_spends_his_dodge_and_he_slips_aside() {
 }
 
 #[test]
-fn his_one_dodge_recharges_in_12_seconds_and_basics_no_longer_speed_it() {
+fn five_dodges_come_back_one_at_a_time_every_15_seconds_and_basics_dont_speed_them() {
     let mut w = World::new(vec![champ(FOE, 2, 410_000, 500_000)]);
-    assert_eq!(d::CHARGES_MAX, 1);
-    w.f.incoming.push(Point::new(430_000, 500_000));
-    w.tick(None);
+    assert_eq!(d::CHARGES_MAX, 5);
+    for _ in 0..d::CHARGES_MAX {
+        w.f.incoming.push(Point::new(430_000, 500_000));
+        w.run(d::CHARGES_DODGE_GAP_TICKS as u64);
+    }
     assert_eq!(w.core.charges, 0);
-    assert!(!w.core.try_dodge(w.f.tick + 100, Point::new(430_000, 500_000)), "no dodge left: the hit lands");
+    assert!(!w.core.try_dodge(w.f.tick, Point::new(430_000, 500_000)), "none left: the hit lands");
     let due = w.core.charge_at;
-    assert_eq!(due, w.f.tick - 1 + d::CHARGES_RECHARGE_TICKS as u64);
     w.f.basic_hits.push(FOE);
     w.tick(None);
     assert_eq!(w.core.charge_at, due, "basics don't speed the recharge");
     while w.f.tick <= due {
         w.tick(None);
     }
-    assert_eq!(w.core.charges, 1);
+    assert_eq!(w.core.charges, 1, "one back");
+    w.run(d::CHARGES_RECHARGE_TICKS as u64);
+    assert_eq!(w.core.charges, 2, "and another 15 s later");
 }
 
 #[test]
@@ -397,12 +400,12 @@ fn fight_1v2(level: i64) -> (f64, f64) {
 }
 
 #[test]
-fn in_a_1v2_his_damage_stays_under_1_4x_plain_basics_and_he_dodges_at_most_15_percent() {
+fn in_a_1v2_his_damage_stays_under_1_4x_plain_basics_and_he_dodges_at_most_30_percent() {
     for level in [3, 9] {
         let (damage, dodges) = fight_1v2(level);
         println!("level {level}: {damage:.2}x, {:.0}% dodged", dodges * 100.0);
         assert!(damage <= 1.4, "level {level}: {damage:.2}x a plain champion's basics");
-        assert!(dodges <= 0.15, "level {level}: {:.0}% of champion hits dodged", dodges * 100.0);
+        assert!(dodges <= 0.30, "level {level}: {:.0}% of champion hits dodged", dodges * 100.0);
     }
 }
 
@@ -419,12 +422,13 @@ fn merge_doubles_echoes_and_adds_no_dodges() {
     w.tick(None);
     assert_eq!(w.core.stacks_on(FOE, w.f.tick), d::MERGE_STACKS_PER_HIT, "one stack a hit");
     assert_eq!(w.core.echoes.iter().filter(|e| e.target == FOE).count(), 2, "every hit echoes twice");
-    // contender-2.7: still just the one dodge while merged
+    // Merge adds no dodges; the 0.4 s gap between dodges still holds
     assert!(w.core.try_dodge(w.f.tick, Point::new(430_000, 500_000)));
-    assert!(!w.core.try_dodge(w.f.tick + 30, Point::new(430_000, 500_000)));
+    assert!(!w.core.try_dodge(w.f.tick + 1, Point::new(430_000, 500_000)));
+    assert!(w.core.try_dodge(w.f.tick + d::CHARGES_DODGE_GAP_TICKS as u64, Point::new(430_000, 500_000)));
     w.run(d::MERGE_TICKS as u64);
     assert!(!w.core.merged(w.f.tick));
-    assert!(w.core.charges <= d::CHARGES_MAX, "never more than his one dodge");
+    assert!(w.core.charges <= d::CHARGES_MAX, "never more than his five");
 }
 
 #[test]
@@ -630,7 +634,7 @@ fn flurry_visuals_cover_eight_directions_without_changing_punch_count_or_cadence
 }
 
 #[test]
-fn the_flurry_vanishes_him_chains_36_accelerating_punches_and_brings_him_back_by_the_last() {
+fn the_flurry_vanishes_him_chains_72_steady_punches_and_brings_him_back_by_the_last() {
     let mut w = World::new(vec![champ(FOE, 2, 430_000, 500_000), champ(11, 2, 450_000, 500_000), creep(30, 470_000, 500_000, 90_000)]);
     for u in w.f.units.iter_mut() {
         u.hp = 90_000;
@@ -644,7 +648,8 @@ fn the_flurry_vanishes_him_chains_36_accelerating_punches_and_brings_him_back_by
     assert_eq!(w.core.charges, 1, "contender-2.6: the flurry no longer refills his dodges");
     let punches = w.count(|e| matches!(e, Effect::Fx { name, .. } if name == "ct_flurry"));
     assert_eq!(punches, d::ULT_PUNCHES as usize);
-    assert!(Core::flurry_gap(0) > Core::flurry_gap(d::ULT_PUNCHES - 1), "slow at first, fast at the end");
+    assert_eq!(d::ULT_PUNCHES, 72);
+    assert!((0..d::ULT_PUNCHES).all(|k| Core::flurry_gap(k) == d::ULT_FIRST_GAP_TICKS as u64), "a steady pace");
     let ups = w.count(|e| matches!(e, Effect::KnockUp { ticks, .. } if *ticks == d::ULT_KNOCK_TICKS as u64));
     assert!(ups >= 3, "a knock-up every second: {ups}");
     assert!(w.seen(|e| matches!(e, Effect::Teleport { .. })), "he reappears");
@@ -784,20 +789,22 @@ mod glue {
     }
 
     #[test]
-    fn a_champion_skill_hit_is_never_dodged_but_a_basic_attack_is() {
+    fn a_champion_skill_hit_is_dodged_too_and_so_is_a_basic_attack() {
         let _guard = crate::walls::TEST_LOCK.lock();
         let (x, y) = open_spot(90_000);
         let host = Host::new(vec![champ(0, (x, y), "tfm2_custom_contender"), champ(1, (x + 20_000, y), "fighter")]);
         let mut c = Contender::default();
         with_sim(&host, |sim| c.on_spawn(sim, 0, 0));
         run(&host, &mut c, 100, 2);
-        // the fighter cast its skill 0.5 s ago (600-tick cooldown, 570 left): the hit is a skill and lands
+        // contender-2.9 (`basicsOnly` 0): the fighter cast its skill 0.5 s ago, and the skill hit is dodged too
+        assert_eq!(crate::contender_shadow_data::CHARGES_BASICS_ONLY, 0);
         host.borrow_mut().cooldowns.push((1, mod_api_stable::SkillSlotV1::Skill.code(), 570, 600));
         with_sim(&host, |sim| c.on_damaged(sim, 0, 0, 1, 200));
-        assert!(host.borrow().heals.is_empty(), "skills always land");
-        assert_eq!(c.core.charges, crate::contender_shadow_data::CHARGES_MAX);
-        // 3 s later its cooldown has run on: the next hit is a basic attack and is dodged
-        host.borrow_mut().cooldowns = vec![(1, mod_api_stable::SkillSlotV1::Skill.code(), 420, 600)];
+        assert!(host.borrow().heals.iter().any(|h| h.2 == 200), "the skill hit is undone");
+        assert_eq!(c.core.charges, crate::contender_shadow_data::CHARGES_MAX - 1);
+        // after the 0.4 s gap, a basic attack is dodged as well
+        host.borrow_mut().tick = 200;
+        host.borrow_mut().cooldowns.clear();
         with_sim(&host, |sim| c.on_damaged(sim, 0, 0, 1, 80));
         assert!(host.borrow().heals.iter().any(|h| h.2 == 80), "the basic is undone");
     }
