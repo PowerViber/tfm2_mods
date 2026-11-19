@@ -4994,7 +4994,7 @@
      "intents": [
       "Engage"
      ],
-     "summary": "Shadow Flurry (level 2): hold 3 charges and recover one every 16 s. Each landed non-Flurry hit cuts 0.5 s from the next charge. Vanish for up to 1 s and throw up to 10 punches for 1 + 2% Attack each. Prefer a different target on each punch. After reappearing wait 0.75 s to cast again. A successful Flurry primes his next basic for 15 + 20% Attack bonus damage."
+     "summary": "Shadow Flurry (level 2): hold 3 charges and recover one every 16 s. Each landed non-Flurry hit cuts 0.5 s from the next charge. When out of Flurry charges, he can spend one passive dodge on a safe Flurry. Vanish for up to 1 s and throw up to 10 punches for 1 + 2% Attack each. Prefer a different target on each punch. After reappearing wait 0.75 s to cast again. A successful Flurry primes his next basic for 15 + 20% Attack bonus damage."
     },
     {
      "slot": "ult",

@@ -1,4 +1,4 @@
-//! Contender Lab transport (contender-3.1): the game's exact core (`contender_shadow_core.rs`) behind a JSON step for the
+//! Contender Lab transport: the game's exact core (`contender_shadow_core.rs`) behind a JSON step for the
 //! editor page. The page models the host (positions, glides, hits and the champion hits he may dodge); the rules and his AI all come
 //! from the core.
 #[path = "../../tfm2_custom_ai/src/contender_shadow_core.rs"]

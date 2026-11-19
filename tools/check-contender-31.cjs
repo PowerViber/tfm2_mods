@@ -39,6 +39,7 @@ function sample(engine, count, profile) {
     if(tick===32 && !old)f.incoming=[{attacker:10,from:units[0].pos}];
     if(tick===72 && !old)f.incoming=[{attacker:10,from:units[0].pos}];
     if(tick===82)f.basic_hits=[10];
+    if(tick===85 && !old)f.order={kind:'exchange_dodge'};
     if(tick===120 && !old)f.order={kind:'s1'};
     f.landed_hits=credited;
     const begin=performance.now();
@@ -92,7 +93,8 @@ function parity(trace,current,frames,results){
   const blob=spawnSync('rtk',['proxy','git','show',baseline+':editor/contender.wasm'],{maxBuffer:4*1024*1024});
   assert.equal(blob.status,0,blob.stderr?.toString());
   const old=await wasm(blob.stdout,'contender-3.0');
-  const current=await wasm(readFileSync('editor/contender.wasm'),'contender-3.1');
+  const revision=JSON.parse(readFileSync('rules/contender.json','utf8')).revision;
+  const current=await wasm(readFileSync('editor/contender.wasm'),revision);
   const trace=path.resolve('native/contender_shadow_lab/target/release/'+(process.platform==='win32'?'trace.exe':'trace'));
   const matched=[];
   let parityFrames=0;

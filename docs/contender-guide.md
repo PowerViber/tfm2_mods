@@ -1,4 +1,4 @@
-# Contender, the Shadow Boxer (contender-3.1)
+# Contender, the Shadow Boxer (contender-3.1.1)
 
 Contender retaliates when his passive dodges a champion hit, stacks Rhythm with a
 short Flurry and sets up teammates with Shadow Link.
@@ -10,6 +10,11 @@ short Flurry and sets up teammates with Shadow Link.
 | Q. Shadow Merge | Gain movement speed for six seconds. A 30,000-radius cross strikes around his current position once a second for 12 + 15% Attack physical damage. |
 | E. Shadow Flurry | Unlocks at level two. Vanish and throw up to ten alternating punches in one second. Three charges, 16 seconds to recharge one and a 0.75-second gap after reappearing. Each landed non-Flurry hit cuts the active recharge by 0.5 seconds. A successful burst primes a damage-only Haymaker. |
 | R. Shadow Link | 75-second cooldown, 60,000 range, 85,000 radius. Refills all five dodges. After a 0.75-second warning, remaining links are pulled for 0.2 seconds, knocked up for 0.5 seconds, and stunned for 0.4 seconds. Zero damage. |
+
+In the Lab, **Shift+E** or **Exchange dodge** spends one passive dodge to gain
+one Flurry charge. The exchange needs an empty Flurry slot and leaves the
+0.75-second cast gap in effect. When the in-game AI has zero Flurry charges,
+it can spend one dodge as part of an otherwise safe Flurry cast.
 
 Contender's AI checks allied follow-up, enemy numbers, towers and retreat paths
 before committing Flurry. The projected Shadow Link serves a supported group

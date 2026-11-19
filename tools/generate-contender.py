@@ -42,6 +42,7 @@ text = {
     'skill2': (
         f"Shadow Flurry (level 2): hold {fl['maxCharges']} charges and recover one every {sec(fl['rechargeTicks'])}. "
         f"Each landed non-Flurry hit cuts {sec(fl['hitCreditTicks'])} from the next charge. "
+        f"When out of Flurry charges, he can spend one passive dodge on a safe Flurry. "
         f"Vanish for up to {sec(fl['ticks'])} and throw up to {fl['punches']} punches for {fl['base']} + {fl['adRatio']}% Attack each. "
         f"Prefer a different target on each punch. After reappearing wait {sec(fl['castGapTicks'])} to cast again. "
         f"A successful Flurry primes his next basic for {fl['haymakerBase']} + {fl['haymakerAdRatio']}% Attack bonus damage."),

@@ -12,7 +12,7 @@ const base = process.env.CONTENDER_LAB_URL || 'http://127.0.0.1:7311';
     page.on('pageerror', e=>errors.push(e.message));
     await page.goto(base+'/editor/contender.html?demo=shadow-link');
     await page.waitForFunction(()=>window.contenderLab?.units?.length===4 && !document.getElementById('addTargets').disabled);
-    assert.equal(await page.locator('#revision').textContent(),'contender-3.1');
+    assert.equal(await page.locator('#revision').textContent(),'contender-3.1.1');
     assert.equal(await page.locator('[data-key=c]').count(),0);
     assert.equal(await page.evaluate(()=>contenderLab.world.geometry.registration.matching),900);
     await page.locator('[data-key=e]').click();
@@ -27,6 +27,15 @@ const base = process.env.CONTENDER_LAB_URL || 'http://127.0.0.1:7311';
     assert.equal(run.punches[9][0]-run.start,60);
     assert.equal(run.gap-run.punches[9][0],45);
     assert.equal(run.charges,2);
+    await page.locator('#arena').focus();
+    await page.keyboard.press('Shift+E');
+    await page.waitForFunction(()=>contenderLab.state.flurry_charges===3);
+    assert.equal(await page.evaluate(()=>contenderLab.state.charges),4);
+    assert.equal(await page.evaluate(()=>contenderLab.state.flurry_cast_at),run.gap);
+    await page.evaluate(()=>contenderLab.pause());
+    await page.locator('[data-key=exchange]').click();
+    assert.equal(await page.evaluate(()=>contenderLab.state.charges),4);
+    assert.match(await page.locator('#log').textContent(),/Flurry charges are full/);
     await page.evaluate(()=>contenderLab.reset());
     const assassin=await page.evaluate(()=>{
       const lab=contenderLab,u=lab.units.find(u=>u.name==='Assassin');
@@ -70,7 +79,7 @@ const base = process.env.CONTENDER_LAB_URL || 'http://127.0.0.1:7311';
       buffer:Buffer.from(JSON.stringify({version:1,rules_revision:'contender-3.0',records:[{state:{},effects:[]}]}))});
     await page.waitForFunction(()=>document.getElementById('recordingStatus').textContent.includes('Replay requires original rules contender-3.0'));
     assert.deepEqual(errors,[]);
-    console.log(JSON.stringify({mapCells:900,punches:run.punches.length,castGap:45,counter:counter.name,linkTargets:link.air.length,
+    console.log(JSON.stringify({mapCells:900,punches:run.punches.length,castGap:45,exchange:true,counter:counter.name,linkTargets:link.air.length,
       ccTicks:[30,24],olderRecording:true,errors},null,2));
   } finally { await browser.close(); }
 })().catch(error=>{console.error(error);process.exitCode=1;});

@@ -229,11 +229,11 @@ function draw(){if(!me)return;if($('follow').checked)view={...me.pos};ctx.clearR
  $('shadowStatus').textContent=shadowReadout();
  panel?.update(tick);
 }
-const orderFor=k=>({q:{kind:'s1'},e:{kind:'s2'},r:{kind:'ult',aim:round(aim)}})[k];
+const orderFor=k=>({q:{kind:'s1'},e:{kind:'s2'},exchange:{kind:'exchange_dodge'},r:{kind:'ult',aim:round(aim)}})[k];
 function next(){if(loading)return;const o=queued;queued=null;stepWorld(o);}
 function clearHeld(){held.clear();queued=null;clock.reset();}
 canvas.addEventListener('pointerdown',e=>{canvas.focus();const r=canvas.getBoundingClientRect(),x=(e.clientX-r.left)*900/r.width,y=(e.clientY-r.top)*900/r.height;aim={x:Math.max(0,Math.min(960000,view.x+(x-450)/zoom)),y:Math.max(0,Math.min(960000,view.y+(y-450)/zoom))};draw();});
-canvas.addEventListener('keydown',e=>{const k=e.key.toLowerCase();if(!['w','a','s','d','q','e','r',' '].includes(k))return;e.preventDefault();held.add(k);if(!e.repeat&&orderFor(k))queued=orderFor(k);running=true;});
+canvas.addEventListener('keydown',e=>{const k=e.key.toLowerCase();if(!['w','a','s','d','q','e','r',' '].includes(k))return;e.preventDefault();held.add(k);if(!e.repeat){const order=orderFor(k==='e'&&e.shiftKey?'exchange':k);if(order)queued=order;}running=true;});
 addEventListener('keyup',e=>held.delete(e.key.toLowerCase()));canvas.addEventListener('blur',clearHeld);addEventListener('blur',clearHeld);document.addEventListener('visibilitychange',clearHeld);
 canvas.addEventListener('wheel',e=>{e.preventDefault();zoom=Math.max(.0008,Math.min(.006,zoom*Math.exp(-e.deltaY*.001)));draw();},{passive:false});
 for(const b of document.querySelectorAll('[data-key]'))b.onclick=()=>{queued=orderFor(b.dataset.key);if(!running){next();draw();}};

@@ -84,6 +84,7 @@ pub struct Unit {
 pub enum Order {
     S1,
     S2,
+    ExchangeDodge,
     Ult { aim: Point },
 }
 
@@ -125,7 +126,7 @@ pub struct Frame {
     pub stunned: bool,
     #[serde(default)]
     pub ult_unlocked: bool,
-    /// his champion level (0: unknown, everything unlocked); S2 at 2, S3 at 3, the ult at 5 (`unlocks.rs`)
+    /// Champion level (0: unknown); S2 at 2 and the ultimate at 5 (`unlocks.rs`)
     #[serde(default)]
     pub level: i64,
     #[serde(default)]
@@ -435,7 +436,8 @@ impl Core {
     }
 
     pub fn flurry_ready(&self, f: &Frame) -> bool {
-        crate::unlocks::skill_unlocked(f.level, 1) && self.flurry_charges > 0 && f.tick >= self.flurry_cast_at
+        crate::unlocks::skill_unlocked(f.level, 1) && f.tick >= self.flurry_cast_at
+            && (self.flurry_charges > 0 || (!f.manual && self.charges > 0))
     }
 
     pub fn stacks_on(&self, id: usize, tick: u64) -> i64 {
@@ -451,13 +453,32 @@ impl Core {
             || (self.last_dodge > 0 && tick < self.last_dodge + t(d::CHARGES_DODGE_GAP_TICKS)) {
             return false;
         }
+        self.spend_dodge(tick);
+        self.last_dodge = tick.max(1);
+        self.pending_dodge = Some(hit);
+        true
+    }
+
+    fn spend_dodge(&mut self, tick: u64) {
         if self.charges == d::CHARGES_MAX {
             self.charge_at = tick + t(d::CHARGES_RECHARGE_TICKS);
         }
         self.charges -= 1;
-        self.last_dodge = tick.max(1);
-        self.pending_dodge = Some(hit);
-        true
+    }
+
+    fn exchange_dodge(&mut self, tick: u64) -> Result<(), &'static str> {
+        if self.flurry_charges >= d::FLURRY_MAX_CHARGES {
+            return Err("exchange: Flurry charges are full");
+        }
+        if self.charges <= 0 {
+            return Err("exchange: no passive dodge charge");
+        }
+        self.spend_dodge(tick);
+        self.flurry_charges += 1;
+        if self.flurry_charges == d::FLURRY_MAX_CHARGES {
+            self.flurry_charge_at = 0;
+        }
+        Ok(())
     }
 
     pub fn step(&mut self, f: &Frame) -> Vec<Effect> {
@@ -488,6 +509,9 @@ impl Core {
         self.advance_shadow(f, &mut out);
         let was_flurrying = self.flurrying();
         self.run_flurry(f, &mut out);
+        if was_flurrying && f.manual && f.order == Some(Order::ExchangeDodge) {
+            self.reject("exchange: wait for Flurry to end");
+        }
         if !was_flurrying {
             let order = if f.manual { f.order } else { self.decide(f, &mut out) };
             if let Some(order) = order {
@@ -683,6 +707,13 @@ impl Core {
             Order::S2 if !crate::unlocks::skill_unlocked(f.level, 1) => self.reject("s2: locked until level 2"),
             Order::S2 if !self.flurry_ready(f) => self.reject("s2: no Flurry charge or cast gap active"),
             Order::S2 => self.start_flurry(f, out),
+            Order::ExchangeDodge if !crate::unlocks::skill_unlocked(f.level, 1) =>
+                self.reject("exchange: Flurry is locked until level 2"),
+            Order::ExchangeDodge => {
+                if let Err(reason) = self.exchange_dodge(f.tick) {
+                    self.reject(reason);
+                }
+            }
             Order::Ult { aim } if self.ult_ready(f) => self.cast_shadow(f, aim),
             Order::Ult { .. } => self.reject("ult: locked or Shadow Link cooling down"),
         }
@@ -825,6 +856,11 @@ impl Core {
         let Some(first) = Self::targets_near(f, f.pos, d::FLURRY_START_RANGE).first().cloned() else {
             return self.reject("s2: nothing in reach");
         };
+        if self.flurry_charges == 0 {
+            if let Err(reason) = self.exchange_dodge(f.tick) {
+                return self.reject(reason);
+            }
+        }
         if self.flurry_charges == d::FLURRY_MAX_CHARGES {
             self.flurry_charge_at = f.tick + t(d::FLURRY_RECHARGE_TICKS);
         }
@@ -1019,7 +1055,11 @@ impl Core {
                 return None;
             }
             if self.flurry_ready(f) && self.safe_flurry(f) {
-                self.reason = "Commit: supported Shadow Flurry".into();
+                self.reason = if self.flurry_charges == 0 {
+                    "Commit: exchange a dodge for Shadow Flurry"
+                } else {
+                    "Commit: supported Shadow Flurry"
+                }.into();
                 return Some(Order::S2);
             }
             let dist = f.pos.dist(foe.pos) as i64;

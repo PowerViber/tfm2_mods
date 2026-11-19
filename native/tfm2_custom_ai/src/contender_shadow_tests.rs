@@ -384,6 +384,64 @@ fn tenth_punch_at_sixty_ticks_and_cast_gap_is_exactly_forty_five() {
 }
 
 #[test]
+fn trading_a_dodge_grants_one_flurry_charge_without_triggering_a_dodge() {
+    let mut w = World::new(vec![]);
+    w.core.flurry_charges = 1;
+    w.core.flurry_charge_at = 500;
+    w.core.flurry_cast_at = 75;
+    w.core.last_dodge = 1;
+    let effects = w.tick(Some(Order::ExchangeDodge));
+    assert_eq!((w.core.charges, w.core.flurry_charges), (4, 2));
+    assert_eq!((w.core.charge_at, w.core.flurry_charge_at), (901, 500));
+    assert_eq!((w.core.last_dodge, w.core.flurry_cast_at), (1, 75));
+    assert!(!w.core.flurrying() && w.core.pending_dodge.is_none());
+    assert!(!effects.iter().any(|effect| matches!(effect, Effect::Glide { .. } | Effect::Damage { .. })));
+
+    w.tick(Some(Order::ExchangeDodge));
+    assert_eq!((w.core.charges, w.core.flurry_charges), (3, 3));
+    assert_eq!((w.core.charge_at, w.core.flurry_charge_at), (901, 0));
+    w.tick(Some(Order::ExchangeDodge));
+    assert_eq!((w.core.charges, w.core.flurry_charges), (3, 3));
+    assert!(w.core.rejection.contains("full"));
+}
+
+#[test]
+fn dodge_exchange_respects_the_learning_gate_and_requires_a_dodge() {
+    let mut w = World::new(vec![]);
+    w.core.flurry_charges = 2;
+    w.core.flurry_charge_at = 500;
+    w.f.level = 1;
+    w.tick(Some(Order::ExchangeDodge));
+    assert!(w.core.rejection.contains("level 2"));
+    assert_eq!((w.core.charges, w.core.flurry_charges), (5, 2));
+    w.f.level = 2;
+    w.core.charges = 0;
+    w.core.charge_at = 500;
+    w.tick(Some(Order::ExchangeDodge));
+    assert!(w.core.rejection.contains("no passive dodge"));
+    assert_eq!((w.core.charges, w.core.flurry_charges), (0, 2));
+}
+
+#[test]
+fn ai_spends_a_dodge_only_for_a_safe_flurry_when_out_of_charges() {
+    let mut w = ai(vec![champ(FOE, 2, 440_000, 500_000), champ(11, 2, 447_000, 500_000)]);
+    w.f.ult_unlocked = false;
+    w.core.flurry_charges = 0;
+    w.core.flurry_charge_at = 500;
+    w.tick(None);
+    assert_eq!(w.core.charges, 5);
+    assert!(!w.core.flurrying(), "no follow-up");
+    w.f.units.push(champ(ALLY, 1, 435_000, 500_000));
+    w.core.flurry_cast_at = w.f.tick + 1;
+    w.tick(None);
+    assert_eq!(w.core.charges, 5, "the cast gap still applies");
+    w.tick(None);
+    assert!(w.core.flurrying(), "{}", w.core.reason);
+    assert_eq!((w.core.charges, w.core.flurry_charges), (4, 0));
+    assert_eq!(w.core.flurry_charge_at, 500);
+}
+
+#[test]
 fn delayed_independent_echo_counts_even_during_flurry_and_no_credit_banks_at_cap() {
     let mut w = World::new(vec![champ(FOE, 2, 430_000, 500_000)]);
     w.f.landed_hits = 2;
