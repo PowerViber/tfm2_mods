@@ -7,7 +7,7 @@
     "Melee",
     "CC"
   ],
-  "revision": "contender-2.9",
+  "revision": "contender-3.0",
   "stat": {
     "attack": 76,
     "magic_power": 0,
@@ -105,19 +105,16 @@
     "recastPull": 5000,
     "recastPullTicks": 8
   },
-  "tether": {
+  "shadowLink": {
     "cooldownTicks": 600,
+    "range": 50000,
+    "flightTicks": 18,
     "radius": 50000,
-    "max": 5,
+    "slowPct": 25,
+    "slowTicks": 60,
     "ticks": 240,
-    "copyPct": 3,
-    "flurryCopyPct": 2,
-    "breakRange": 90000,
-    "yank": 20000,
-    "yankTicks": 18,
-    "base": 12,
-    "adRatio": 15,
-    "knockTicks": 30
+    "breakRange": 120000,
+    "maxHpDamagePct": 30
   },
   "ult": {
     "cooldownTicks": 3600,
@@ -138,13 +135,21 @@
     "cutCentisPerHit": 1
   },
   "ai": {
-    "engageRange": 160000,
     "fightRange": 80000,
+    "awarenessRange": 160000,
     "calmRange": 90000,
     "towerRange": 85000,
-    "commitHpPct": 35,
     "farmBigHp": 1000,
-    "mergeRange": 60000
+    "mergeRange": 60000,
+    "commitHp": 55,
+    "aggressiveHpDivisor": 10,
+    "chaseRange": 60000,
+    "aggressiveChasePerPoint": 300,
+    "retreatHp": 35,
+    "supportHp": 35,
+    "supportRange": 40000,
+    "threatRange": 70000,
+    "shadowStep": 12000
   },
   "fxTokens": 16
 }

@@ -45,7 +45,7 @@ fn kicker_gets_both_kick_charges_the_moment_s3_unlocks() {
 }
 
 #[test]
-fn contender_rejects_locked_orders_and_his_ai_only_merges_at_level_1() {
+fn contender_rejects_locked_orders_and_only_considers_unlocked_skills_at_level_one() {
     use crate::contender_shadow_core::*;
     let foe = Unit { id: 10, team: 2, pos: Point::new(430_000, 500_000), hp: 1000, max_hp: 1000, radius: 3000, champion: true, tower: false, visible: true, targetable: true, farmable: false };
     let base = |level: i64, tick: u64, order: Option<Order>| Frame {
@@ -62,18 +62,16 @@ fn contender_rejects_locked_orders_and_his_ai_only_merges_at_level_1() {
     assert!(!c.flurrying(), "the ult waits for level 5 even off cooldown");
     c.step(&base(5, 4, Some(Order::Ult)));
     assert!(c.flurrying());
-    // the AI at level 1 beside a champion and a pair: only S1 Merge, never Cyclone or Tether
+    // At level one neither Cyclone nor Shadow Link may start, even when both are enabled for the host.
     let mut c = Core::default();
-    let mut used = vec![];
     for t in 1..400 {
         let mut f = base(1, t, None);
+        f.shadow_link_enabled = true;
         f.units.push(Unit { id: 11, pos: Point::new(435_000, 505_000), ..foe.clone() });
         c.step(&f);
-        if !c.reason.is_empty() && !used.contains(&c.reason) {
-            used.push(c.reason.clone());
-        }
+        assert_eq!(c.cd[1..], [0, 0], "{}", c.reason);
+        assert!(c.shadow_link.is_none() && c.cleaves.is_empty(), "{}", c.reason);
     }
-    assert!(used.iter().all(|r| !r.starts_with("S2") && !r.starts_with("S3")), "{used:?}");
 }
 
 #[test]

@@ -1,26 +1,22 @@
-//! Contender 2.3's bridge (round 178): reads the sim into a `contender_shadow_core::Frame` once per tick and applies the
-//! core's effects. The engine walks him and throws his Jab / Cross (the data basic attack); native code casts everything
-//! else (the data slots are never-cast shells, like Kicker's, Kagami's and Basalt's).
-//!
-//! * Shadow dodges: `on_damaged` asks the core (`try_dodge`) when an enemy champion's hit lands; a dodge heals the hit
-//!   straight back (Kratos's Heimdall's Sight pattern) and the core slips him aside on the next step.
-//! * Shadow Merge: a named move-speed buff (`ct_merge`) for its 6 s; his shadow body is drawn over him.
-//! * Shadow Tether: each tethered enemy carries a drawn shadow while it lasts.
-//! * The ult's vanish: `entity_set_invisible` plus an unhurt, CC-immune buff and a named Bind, renewed as a lease; he
-//!   reappears by `entity_set_pos` (a teleport by design).
-//! * Basic attacks: `on_attack` adds Shadow Rhythm's vulnerability and reports the hit to the core (stacks, Breaks,
-//!   echoes, tether copies, the bank, the dodge recharge, the haymaker).
-//! * The AI's walk (`Effect::Steer`) is a short `ct_go:x:y` buff the shared input AI turns into a move order.
-//!
-//! The old kit (Combination, Slip / Guard, Main Event) is retired: `contender_core.rs` and `contender_arena.rs` stay
-//! for the realm code that shares their types, and no ring is ever opened now.
-use crate::contender_shadow_core::{Core, Effect, Frame, Point, Unit, CELL, CELLS};
+//! Native bridge for Contender and the gated Shadow Link carrier prototype.
+use crate::contender_shadow_core::{Barrier, Core, Effect, Frame, LinkTarget, Point, ShadowObservation, TargetDefence, Unit, CELL, CELLS};
 use crate::contender_shadow_data as d;
 use mod_api_stable::{AttackTypeV1, BuffV1, CcKindV1, CcV1, InputTargetV1, StableEffectType, StablePassive, StableSim, StatV1};
 
 pub(crate) const GO_PREFIX: &str = "ct_go:";
 /// a cleave spot other AIs should avoid: `ctw:x:y:r:until` on him (read by `danger_zones`)
 const ZONE_PREFIX: &str = "ctw:";
+const HOLD_PREFIX: &str = "ct_hold:";
+const SHADOW_ATTACK: &str = "ct_attack_shadow:";
+const CARRIER: &str = "ct_link_carrier";
+const PROBE: bool = cfg!(feature = "contender-shadow-link-probe");
+
+#[derive(Clone, Copy)]
+struct Carrier {
+    cast: u64,
+    id: usize,
+}
+
 
 fn named(kind: CcKindV1, ticks: u64, name: &str) -> CcV1 {
     let mut c = CcV1::of_kind(kind, ticks);
@@ -74,6 +70,44 @@ pub fn steer_of(name: &str) -> Option<(i64, i64)> {
     Some((it.next()?, it.next()?))
 }
 
+/// Adjust only an undecided order or a walk. The engine owns attacks and casts already chosen.
+pub(crate) fn shadow_input(sim: &StableSim<'_>, owner: usize, base: Option<mod_api_stable::InputV1>) -> Option<mod_api_stable::InputV1> {
+    use mod_api_stable::{InputKindV1, InputV1};
+    if base.is_some_and(|input| input.kind != InputKindV1::Move.code()) {
+        return None;
+    }
+    let me = sim.get_entity(owner)?;
+    let (x, y) = me.pos();
+    for buff in (0..me.buff_count()).filter_map(|i| me.buff_at(i)) {
+        let name = buff.name();
+        if let Some(raw) = name.strip_prefix(SHADOW_ATTACK) {
+            let id: usize = raw.parse().ok()?;
+            let target = sim.get_entity(id)?;
+            let (tx, ty) = target.pos();
+            if target.team() != me.team() && target.is_alive() && target.is_targetable()
+                && sim.is_visible(me.team(), id)
+                && Point::new(x as i64, y as i64).within(Point::new(tx as i64, ty as i64), d::BASIC_RANGE)
+                && (0..target.buff_count()).filter_map(|i| target.buff_at(i)).any(|b| b.name() == CARRIER) {
+                return Some(InputV1::action(InputKindV1::Attack, InputTargetV1::target(id)));
+            }
+        }
+    }
+    let movement = base?;
+    for buff in (0..me.buff_count()).filter_map(|i| me.buff_at(i)) {
+        if let Some(raw) = buff.name().strip_prefix(HOLD_PREFIX) {
+            let mut coords = raw.split(':').filter_map(|part| part.parse::<i64>().ok());
+            let (tx, ty, cx, cy) = (coords.next()?, coords.next()?, coords.next()?, coords.next()?);
+            let dx = movement.x as i64 - x as i64;
+            let dy = movement.y as i64 - y as i64;
+            let forward = i128::from(dx) * i128::from(tx - x as i64) + i128::from(dy) * i128::from(ty - y as i64);
+            if forward > 0 {
+                return Some(InputV1::move_to(cx.max(0) as u64, cy.max(0) as u64));
+            }
+        }
+    }
+    None
+}
+
 /// Danger zones for other AIs: the cleave circles his shadows are spinning in.
 pub fn danger_zones(all: &[crate::Champ], me: &crate::Champ, tick: usize) -> Vec<(i64, i64, i64, usize, usize)> {
     let mut zones = vec![];
@@ -124,7 +158,10 @@ pub struct Contender {
     profile: Option<crate::athlete_ai_core::Profile>,
     terrain: Option<(u64, Vec<bool>)>,
     shadow_drawn: u64,
-    tether_drawn: u64,
+    carrier: Option<Carrier>,
+    landing_receipt: Option<ShadowObservation>,
+    hold_hint: Option<String>,
+    shadow_hint: Option<String>,
     shadow_art: bool,
     shadow_directions: bool,
     merge_art: bool,
@@ -168,8 +205,33 @@ impl Contender {
         let realms = crate::realm::realms(sim);
         let farming = crate::farming::Context::new(sim, owner);
         let mut units = vec![];
+        let mut link_excluded = vec![];
+        let mut separated = vec![];
+        let mut defences = vec![];
+        let owner_can_spawn = PROBE && team < 2 && crate::realm::realm_of(&realms, owner).is_none()
+            && snapshot.iter().find(|champ| champ.id == owner).and_then(crate::grimhald_cage::member_of).is_none();
+        let barriers = crate::steve::walls_up(&snapshot, tick as usize).into_iter().map(|wall| {
+            let (bx, by) = wall.built_end(tick as usize);
+            Barrier {
+                from: Point::new(wall.ax, wall.ay), to: Point::new(bx, by), half_width: crate::steve::WALL_HALF,
+            }
+        }).collect();
+        let shadow_observation = self.landing_receipt.take().or_else(|| {
+            let carrier = self.carrier?;
+            let entity = sim.get_entity(carrier.id)?;
+            if entity.is_alive() && !(0..entity.buff_count()).filter_map(|i| entity.buff_at(i)).any(|b| b.name() == CARRIER) {
+                return None;
+            }
+            let hp = entity.hp().0 as i64;
+            if !entity.is_alive() && hp != 0 {
+                return None;
+            }
+            Some(ShadowObservation::Health { cast: carrier.cast, hp })
+        });
         for e in (0..sim.entity_count()).filter_map(|i| sim.entity_at(i)) {
-            if e.id() == owner || !e.is_alive() {
+            if e.id() == owner || !e.is_alive() || (PROBE && self.carrier.is_some_and(|carrier| carrier.id == e.id()))
+                || (PROBE && e.kind() == Some(mod_api_stable::EntityKindV1::Summon)
+                    && (0..e.buff_count()).filter_map(|i| e.buff_at(i)).any(|b| b.name() == CARRIER)) {
                 continue;
             }
             let e_team = e.team();
@@ -180,6 +242,17 @@ impl Contender {
             let kind = e.kind();
             let champion = e.is_champion();
             let targetable = e.is_targetable() && reach;
+            if !reach { separated.push(e.id()); }
+            if visible && champion && e_team != team {
+                defences.push(TargetDefence { id: e.id(), armour: e.stat().defence as i64, shield: e.shield() as i64 });
+            }
+            if owner_can_spawn {
+                use mod_api_stable::EntityKindV1 as K;
+                let eligible = champion || matches!(kind, Some(K::Minion | K::Jungle)) || (kind.is_none() && e.is_minion());
+                let immune = (0..e.buff_count()).filter_map(|i| e.buff_at(i)).any(|b| b.cc_immune);
+                if !eligible || immune { link_excluded.push(e.id()); }
+            }
+            let linked = matches!(&self.core.shadow_link, Some(crate::contender_shadow_core::ShadowLink::Active { linked, .. }) if linked.contains(&e.id()));
             let farmable = farming.calm()
                 && e_team != team
                 && targetable
@@ -189,7 +262,7 @@ impl Contender {
             units.push(Unit {
                 id: e.id(),
                 team: e_team,
-                pos: if visible { Point::new(p.0 as i64, p.1 as i64) } else { Point::default() },
+                pos: if visible || linked { Point::new(p.0 as i64, p.1 as i64) } else { Point::default() },
                 hp: h.0 as i64,
                 max_hp: h.1.max(1) as i64,
                 radius: e.radius().max(1000) as i64,
@@ -222,6 +295,64 @@ impl Contender {
             order: None,
             basic_hits: std::mem::take(&mut self.basic_hits),
             incoming: vec![],
+            shadow_link_enabled: owner_can_spawn,
+            shadow_observation,
+            link_excluded,
+            separated,
+            barriers,
+            defences,
+        }
+    }
+
+    fn clear_carrier(&mut self, sim: &mut StableSim<'_>) {
+        if let Some(carrier) = self.carrier.take() {
+            if sim.get_entity(carrier.id).is_some_and(|e| e.is_alive()
+                && (0..e.buff_count()).filter_map(|i| e.buff_at(i)).any(|b| b.name() == CARRIER)) {
+                sim.entity_set_hp(carrier.id, 0);
+            }
+        }
+        self.landing_receipt = None;
+    }
+
+    fn land_shadow(&mut self, sim: &mut StableSim<'_>, owner: usize, cast: u64, at: Point, candidates: Vec<LinkTarget>) {
+        if !PROBE { return; }
+        let Some(team) = sim.get_entity(owner).map(|e| e.team()).filter(|team| *team < 2) else { return };
+        if self.carrier.is_some() { return; }
+        let mut confirmed = Vec::new();
+        for target in candidates {
+            let eligible = sim.get_entity(target.id).is_some_and(|e| e.is_alive() && e.is_targetable()
+                && !(0..e.buff_count()).filter_map(|i| e.buff_at(i)).any(|b| b.cc_immune));
+            if !eligible { continue; }
+            let name = format!("ct_link_slow:{owner}");
+            let mut slow = crate::timed(&name, d::SHADOW_LINK_SLOW_TICKS as usize);
+            slow.move_speed_mult = -d::SHADOW_LINK_SLOW_PCT as i32;
+            replace_buff(sim, target.id, &slow);
+            if sim.get_entity(target.id).is_some_and(|e| (0..e.buff_count())
+                .filter_map(|i| e.buff_at(i)).any(|b| b.name() == name)) {
+                confirmed.push(target);
+            }
+        }
+        let Some(hp) = confirmed.iter().map(|target| target.max_hp).max() else { return };
+        // Keep the carrier through the terminal observation at logical expiry.
+        let life = d::SHADOW_LINK_TICKS as u64 + 2;
+        let stat = StatV1 { hp: hp as usize, move_speed: 1, ..StatV1::default() };
+        let attack = mod_api_stable::UnitAttackV1 { range: 1, cooltime: 5_184_000, duration: 1, ..Default::default() };
+        let Some(id) = sim.spawn_unit("alchemist", owner, 1 - team, at.x as u64, at.y as u64, life, &stat, &attack) else { return };
+        for kind in [CcKindV1::Bind, CcKindV1::BlockAttack, CcKindV1::BlockSkill] {
+            sim.apply_cc(id, &named(kind, life, "ct_link_idle"));
+        }
+        let mut marker = crate::timed(CARRIER, life as usize);
+        marker.cc_immune = true;
+        sim.add_buff(id, &marker);
+        self.carrier = Some(Carrier { id, cast });
+        self.landing_receipt = Some(ShadowObservation::Landed { cast, targets: confirmed.into_iter().map(|target| target.id).collect() });
+    }
+
+    fn sync_hint(sim: &mut StableSim<'_>, owner: usize, slot: &mut Option<String>, hint: Option<String>) {
+        if *slot != hint {
+            if let Some(old) = slot.take() { sim.entity_remove_buff(owner, &old); }
+            if let Some(next) = &hint { sim.add_buff(owner, &BuffV1::named(next)); }
+            *slot = hint;
         }
     }
 
@@ -245,9 +376,11 @@ impl Contender {
         let realms = crate::realm::realms(sim);
         let reach = |a: usize, b: usize| crate::realm::can_interact(&realms, a, b) && crate::grimhald_cage::can_interact(&all, a, b);
         let not_tower = |sim: &StableSim, id: usize| sim.get_entity(id).is_some_and(|e| !e.is_tower() && e.kind() != Some(mod_api_stable::EntityKindV1::Nexus));
+        let mut hold = None;
+        let mut prefer_shadow = false;
         for e in effects {
             match e {
-                Effect::Damage { target, amount } => {
+                Effect::Damage { target, amount } | Effect::ShadowPayout { target, amount } => {
                     if reach(owner, target) && not_tower(sim, target) {
                         self.in_skill = true;
                         sim.deal_damage(owner, target, amount.max(0) as usize, 0, AttackTypeV1::Skill);
@@ -337,6 +470,26 @@ impl Contender {
                         crate::fx_point(sim, &visual, owner, at.x, at.y, ticks);
                     }
                 }
+                Effect::ShadowLand { cast, at, candidates } => {
+                    let valid = candidates.into_iter().filter(|target| reach(owner, target.id)).collect();
+                    self.land_shadow(sim, owner, cast, at, valid);
+                }
+                Effect::ShadowStrike { cast, amount } => {
+                    if let Some(carrier) = self.carrier.filter(|carrier| carrier.cast == cast) {
+                        if reach(owner, carrier.id) {
+                            self.in_skill = true;
+                            sim.deal_damage(owner, carrier.id, amount.max(0) as usize, 0, AttackTypeV1::Skill);
+                            self.in_skill = false;
+                        }
+                    }
+                }
+                Effect::ShadowEnd { cast, .. } => {
+                    if self.carrier.is_some_and(|carrier| carrier.cast == cast) { self.clear_carrier(sim); }
+                }
+                Effect::PreferShadow => prefer_shadow = true,
+                Effect::HoldForward { threat, cover } => {
+                    hold = Some(format!("{HOLD_PREFIX}{}:{}:{}:{}", threat.x, threat.y, cover.x, cover.y));
+                }
                 Effect::Log { .. } => {}
             }
         }
@@ -355,19 +508,18 @@ impl Contender {
                 self.cyclone_drawn = None;
             }
         }
-        // Shadow Merge: his shadow drawn over him; Shadow Tether: a shadow on each tethered enemy
+        // Legacy definitions keep their separate Merge overlay.
         if !self.merge_art && self.core.merged(tick) && tick >= self.shadow_drawn + 10 {
             let name = if self.shadow_art { "ct_body_idle0" } else { "ct_shadow" };
             crate::fx_unit(sim, name, owner, owner, 10);
             self.shadow_drawn = tick;
         }
-        if !self.core.tethers.is_empty() && tick >= self.tether_drawn + 12 {
-            let name = if self.shadow_art { "ct_echo_t12" } else { "ct_echo" };
-            for (id, _) in self.core.tethers.clone() {
-                crate::fx_unit(sim, name, owner, id, 12);
-            }
-            self.tether_drawn = tick;
+        if hold.is_some() && !self.core.reason.starts_with("Retreat") && !self.core.reason.starts_with("Peel") {
+            remove_prefix(sim, owner, GO_PREFIX);
         }
+        let attack = if prefer_shadow { self.carrier.map(|carrier| format!("{SHADOW_ATTACK}{}", carrier.id)) } else { None };
+        Self::sync_hint(sim, owner, &mut self.hold_hint, hold);
+        Self::sync_hint(sim, owner, &mut self.shadow_hint, attack);
     }
 }
 
@@ -390,6 +542,9 @@ impl StablePassive for Contender {
         self.merge_presenter = crate::contender_merge::Presenter::default();
         self.rhythm_presenter.clear(sim);
         self.rhythm_presenter = crate::contender_rhythm::Presenter::default();
+        self.clear_carrier(sim);
+        Self::sync_hint(sim, id, &mut self.hold_hint, None);
+        Self::sync_hint(sim, id, &mut self.shadow_hint, None);
         self.core.respawn();
         sim.entity_remove_buff(id, "ct_merge");
         remove_prefix(sim, id, GO_PREFIX);
@@ -418,7 +573,8 @@ impl StablePassive for Contender {
     }
     /// His Jab / Cross: never across a cage or a ring; Shadow Rhythm's vulnerability; the hit goes to the core.
     fn on_attack(&mut self, sim: &mut StableSim, _: usize, id: usize, target: usize, damage: &mut usize) {
-        if self.in_skill {
+        if self.in_skill || (PROBE && sim.get_entity(target).is_some_and(|e| (0..e.buff_count())
+            .filter_map(|i| e.buff_at(i)).any(|b| b.name() == CARRIER))) {
             return;
         }
         let all = crate::champions_shared(sim);
@@ -439,6 +595,9 @@ impl StablePassive for Contender {
         if self.merge_art { self.merge_presenter.basic(sim.tick() as u64); }
     }
     fn on_dead(&mut self, sim: &mut StableSim, id: usize) {
+        self.clear_carrier(sim);
+        Self::sync_hint(sim, id, &mut self.hold_hint, None);
+        Self::sync_hint(sim, id, &mut self.shadow_hint, None);
         self.merge_presenter.clear(sim);
         self.rhythm_presenter.clear(sim);
         remove_prefix(sim, id, "ct_bank:");

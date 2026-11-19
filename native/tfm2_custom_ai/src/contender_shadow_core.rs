@@ -1,27 +1,4 @@
-//! Contender 2.3, the elusive Shadow Boxer: a deterministic core (snapshot in, effects out). `contender.rs` builds the
-//! frame from the sim and applies the effects; the Lab (`native/contender_shadow_lab`) runs this same file.
-//!
-//! Reihan's 2.3 ("like a shadow, really hard to hit since he dodges, but his punches don't do a lot, focusing on the
-//! stacks"):
-//!   P1 Shadows: up to 5 dodges (one every 6 s; each basic attack that lands takes 0.5 s off). An enemy champion's hit
-//!      spends one: he slips aside and the hit is undone (one dodge per 0.4 s). Skills cost nothing; each can be recast
-//!      once, free, in its window.
-//!   P2 Shadow Pact: every hit echoes 1 s later for 40%, its crowd control halved (at most 1.5 s more per target every
-//!      6 s). Recast hits and every hit while merged echo twice; the flurry echoes when cast while merged.
-//!   P3 Shadow Rhythm: hits stack their target (10 max, 4 s); +4% damage from him per stack; the most-stacked enemy
-//!      buffs him. At 10 stacks his next hit is a Shadow Break (6% max HP + 30% Attack) and the target drops to 5.
-//!   S1 Shadow Merge: 6 s merged with his shadow: dodges recharge twice as fast, +2 dodges, every hit echoes twice and
-//!      adds 2 stacks, +15% move speed. Recast: he steps out, the shadow's cross knocks the nearest enemy back and he
-//!      slips away.
-//!   S2 Shadow Cyclone: a clone cleaves a circle (it can't be hit). Recast: he cleaves anywhere within 60,000,
-//!      invulnerable, in a bigger circle that pulls enemies in, the last hit knocking up.
-//!   S3 Shadow Tether: a shadow latches onto every enemy within 50,000 (5 at most) for 4 s and copies each of his hits
-//!      onto them (30%; flurry punches 15%). Recast: every tethered enemy is yanked toward him and uppercut.
-//!   Ult Shadow Flurry: a 120 s cooldown that every hit outside the flurry cuts by 0.01 s (contender-2.7); 5 s unseen and unhurt, 36
-//!      accelerating chained punches (each prefers a new enemy), a knock-up every second, an early end when nothing is
-//!      in reach; he reappears by the last enemy hit with a haymaker ready and his dodges full.
-//!
-//! His AI is his own (Kicker's flat list); the 13 athlete values shape it. Nothing of his hits a tower.
+//! Shared Contender combat rules, fight selection and Shadow Link lifecycle.
 use crate::contender_shadow_data as d;
 use serde::{Deserialize, Serialize};
 
@@ -109,7 +86,7 @@ pub enum Order {
     S1 { aim: Point },
     /// S2 Shadow Cyclone: the clone's cleave at the point; recast: he cleaves himself at the point
     S2 { aim: Point },
-    /// S3 Shadow Tether (the point is ignored: every enemy in reach); recast: the yank and uppercut
+    /// S3 Shadow Link: send the shadow toward the aimed point.
     S3 { aim: Point },
     Ult,
     /// older Lab transport: nothing to steer any more (ignored)
@@ -151,6 +128,21 @@ pub struct Frame {
     /// the bridge asks `try_dodge` as the hit lands)
     #[serde(default)]
     pub incoming: Vec<Point>,
+    #[serde(default)]
+    pub shadow_link_enabled: bool,
+    #[serde(default)]
+    pub shadow_observation: Option<ShadowObservation>,
+    /// Immune or otherwise ineligible for the arrival slow.
+    #[serde(default)]
+    pub link_excluded: Vec<usize>,
+    /// Units which cannot interact across the current cage or realm.
+    #[serde(default)]
+    pub separated: Vec<usize>,
+    /// Additional wall segments (player-built walls and cage edges).
+    #[serde(default)]
+    pub barriers: Vec<Barrier>,
+    #[serde(default)]
+    pub defences: Vec<TargetDefence>,
 }
 impl Frame {
     pub fn enemy(&self, u: &Unit) -> bool {
@@ -174,6 +166,36 @@ impl Frame {
     pub fn terrain_at(&self, p: Point) -> bool {
         !p.on_map() || self.terrain.get(((p.y / CELL) * CELLS + p.x / CELL) as usize).copied().unwrap_or(false)
     }
+    fn link_target(&self, unit: &Unit) -> bool {
+        self.enemy(unit) && !unit.tower && !self.link_excluded.contains(&unit.id)
+            && !self.separated.contains(&unit.id)
+    }
+
+    fn path_until(&self, from: Point, to: Point, avoid_towers: bool) -> Point {
+        let steps = (from.dist(to) as i64 / 1_000 + 1).max(1);
+        let origin_tower = self.enemy_tower_at(from);
+        let mut last = from;
+        for i in 1..=steps {
+            let p = Point::new(from.x + (to.x - from.x) * i / steps, from.y + (to.y - from.y) * i / steps);
+            if self.terrain_at(p) || self.barriers.iter().any(|wall| wall.contains(p)) {
+                break;
+            }
+            if avoid_towers && self.units.iter().any(|tower| {
+                tower.tower && tower.team != self.team && tower.hp > 0 && tower.pos.within(p, d::AI_TOWER_RANGE)
+                    && !origin_tower.is_some_and(|origin| origin.id == tower.id && p.d2(tower.pos) > last.d2(tower.pos))
+            }) {
+                break;
+            }
+            last = p;
+        }
+        last
+    }
+
+    fn step_out_destination(&self, away_from: Point) -> Point {
+        let dir = if away_from == self.pos { (1.0, 0.0) } else { unit_dir(away_from, self.pos) };
+        self.nearest_ground(self.clear_path(self.pos, self.pos.along(dir, d::MERGE_SLIP)))
+    }
+
     pub fn enemy_tower_at(&self, p: Point) -> Option<&Unit> {
         self.units.iter().find(|u| u.tower && u.team != self.team && u.hp > 0 && u.pos.within(p, d::AI_TOWER_RANGE))
     }
@@ -244,6 +266,12 @@ pub enum Effect {
         #[serde(default, skip_serializing_if = "Option::is_none")]
         heading: Option<u8>,
     },
+    ShadowLand { cast: u64, at: Point, candidates: Vec<LinkTarget> },
+    ShadowStrike { cast: u64, amount: i64 },
+    ShadowEnd { cast: u64, at: Point, stored: i64, paid: bool },
+    ShadowPayout { target: usize, amount: i64 },
+    PreferShadow,
+    HoldForward { threat: Point, cover: Point },
     Log { text: String },
 }
 
@@ -276,7 +304,7 @@ impl Cc {
     }
 }
 
-/// Where a hit came from (it decides echoes, copies and the bank).
+/// Where a hit came from (it governs echoes and Rhythm).
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Src {
     Basic,
@@ -284,8 +312,7 @@ pub enum Src {
     Recast,
     Echo,
     Flurry,
-    /// a Shadow Tether copy (`true`: of a flurry punch)
-    Copy(bool),
+    FlurryEcho,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
@@ -294,7 +321,7 @@ pub struct Echo {
     pub at: u64,
     pub amount: i64,
     pub cc: Option<Cc>,
-    /// an echo of a flurry punch never banks
+    /// an echo of a flurry punch does not shorten the cooldown
     #[serde(default)]
     pub flurry: bool,
 }
@@ -334,6 +361,54 @@ pub struct Stack {
     pub champion: bool,
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+pub struct LinkTarget {
+    pub id: usize,
+    pub max_hp: i64,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(tag = "kind", rename_all = "snake_case")]
+pub enum ShadowObservation {
+    Landed { cast: u64, targets: Vec<usize> },
+    Health { cast: u64, hp: i64 },
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(tag = "phase", rename_all = "snake_case")]
+pub enum ShadowLink {
+    Flight { cast: u64, from: Point, at: Point, cursor: Point, landing: u64 },
+    Pending { cast: u64, at: Point, landed: u64, candidates: Vec<LinkTarget> },
+    Active { cast: u64, at: Point, until: u64, max_hp: i64, hp: i64, linked: Vec<usize> },
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+pub struct TargetDefence {
+    pub id: usize,
+    pub armour: i64,
+    pub shield: i64,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+pub struct Barrier {
+    pub from: Point,
+    pub to: Point,
+    pub half_width: i64,
+}
+
+impl Barrier {
+    fn contains(self, point: Point) -> bool {
+        let dx = (self.to.x - self.from.x) as f64;
+        let dy = (self.to.y - self.from.y) as f64;
+        let x = (point.x - self.from.x) as f64;
+        let y = (point.y - self.from.y) as f64;
+        let length = dx * dx + dy * dy;
+        let offset = if length > 0.0 { ((x * dx + y * dy) / length).clamp(0.0, 1.0) } else { 0.0 };
+        let distance_sq = (x - offset * dx).powi(2) + (y - offset * dy).powi(2);
+        distance_sq <= (self.half_width as f64).powi(2)
+    }
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Core {
     /// shadow dodges (above the maximum only while merged)
@@ -353,9 +428,8 @@ pub struct Core {
     #[serde(default)]
     pub merge_until: u64,
     pub cleaves: Vec<Cleave>,
-    /// tethered enemies: (id, until)
     #[serde(default)]
-    pub tethers: Vec<(usize, u64)>,
+    pub shadow_link: Option<ShadowLink>,
     /// the ult is ready from this tick, less the cut (contender-2.7: a 120 s cooldown)
     #[serde(default)]
     pub ult_at: u64,
@@ -390,7 +464,7 @@ impl Default for Core {
             used: [false; 3],
             merge_until: 0,
             cleaves: vec![],
-            tethers: vec![],
+            shadow_link: None,
             ult_at: 0,
             ult_cut_centis: 0,
             flurry: None,
@@ -412,7 +486,7 @@ impl Default for Core {
 impl Core {
     pub fn respawn(&mut self) {
         self.cleaves.clear();
-        self.tethers.clear();
+        self.shadow_link = None;
         self.flurry = None;
         self.echoes.clear();
         self.window = [0; 3];
@@ -478,6 +552,7 @@ crate::unlocks::ult_unlocked(f.level, f.ult_unlocked) && f.tick >= self.ult_read
         let mut out = vec![];
         self.rejection.clear();
         if !f.alive {
+            self.cancel_shadow(&mut out);
             self.respawn();
             return out;
         }
@@ -491,7 +566,7 @@ crate::unlocks::ult_unlocked(f.level, f.ult_unlocked) && f.tick >= self.ult_read
             self.merge_until = 0;
             self.charges = self.charges.min(d::CHARGES_MAX);
         }
-        self.tethers.retain(|(id, until)| f.tick < *until && f.unit(*id).is_some_and(|u| f.skill_target(u) && u.pos.within(f.pos, d::TETHER_BREAK_RANGE)));
+        self.advance_shadow(f, &mut out);
         self.slip(f, &mut out);
         for id in f.basic_hits.clone() {
             if let Some(u) = f.unit(id).filter(|u| u.team != f.team && !u.tower).cloned() {
@@ -543,7 +618,7 @@ crate::unlocks::ult_unlocked(f.level, f.ult_unlocked) && f.tick >= self.ult_read
         out.push(Effect::Fx { name: "ct_swap".into(), at: f.pos, ticks: 18, heading: None });
     }
 
-    // -------------------------------------------------------------- hits, echoes, stacks, copies, the bank
+    // -------------------------------------------------------------- hits, echoes and Rhythm
 
     /// One hit of his (or his shadows'). `apply`: deal the damage here (basic attacks are dealt by the engine).
     fn hit(&mut self, f: &Frame, u: &Unit, base: i64, cc: Option<Cc>, src: Src, apply: bool, out: &mut Vec<Effect>) {
@@ -555,17 +630,17 @@ crate::unlocks::ult_unlocked(f.level, f.ult_unlocked) && f.tick >= self.ult_read
             self.cc(f, u.id, c, src == Src::Echo, out);
         }
         // echoes deal damage, carry crowd control and bank, but never add Rhythm stacks (contender-2.5)
-        // contender-2.7: flurry punches (and their copies) still stack, but never set off a Shadow Break
-        let flurryish = matches!(src, Src::Flurry | Src::Copy(true)) || (src == Src::Echo && self.flurry.is_some());
+        // contender-2.7: flurry punches still stack, but never set off a Shadow Break
+        let flurryish = matches!(src, Src::Flurry | Src::FlurryEcho) || (src == Src::Echo && self.flurry.is_some());
         if src != Src::Echo {
             self.add_stacks(f, u, !flurryish, out);
         }
-        // contender-2.7: every hit outside the flurry, echoes and copies included, cuts the ult cooldown by 0.01 s
+        // contender-2.7: every hit outside the flurry, echoes included, cuts the ult cooldown by 0.01 s
         if !flurryish {
             self.ult_cut_centis += d::ULT_CUT_CENTIS_PER_HIT as u64;
         }
         let echoes = match src {
-            Src::Echo | Src::Copy(_) => 0,
+            Src::Echo | Src::FlurryEcho => 0,
             Src::Flurry => i64::from(self.flurry.is_some_and(|fl| fl.echo)),
             Src::Recast => 1, // contender-2.6: recasts echo once, like any hit
             _ if self.merged(f.tick) => 2,
@@ -579,16 +654,6 @@ crate::unlocks::ult_unlocked(f.level, f.ult_unlocked) && f.tick >= self.ult_read
                 cc: cc.map(Cc::halved),
                 flurry: src == Src::Flurry,
             });
-        }
-        // Shadow Tether: every tethered enemy takes a copy (copies and echoes are never copied again; basics copy in
-        // basic_landed, where his Attack is known)
-        if matches!(src, Src::Skill | Src::Recast | Src::Flurry) && !self.tethers.is_empty() {
-            let pct = if src == Src::Flurry { d::TETHER_FLURRY_COPY_PCT } else { d::TETHER_COPY_PCT };
-            let copies: Vec<Unit> = self.tethers.iter().filter(|(id, _)| *id != u.id).filter_map(|(id, _)| f.unit(*id).filter(|v| f.skill_target(v)).cloned()).collect();
-            for v in copies {
-                self.hit(f, &v, base * pct / 100, None, Src::Copy(src == Src::Flurry), true, out);
-                out.push(Effect::Fx { name: "ct_echo".into(), at: v.pos, ticks: 12, heading: None });
-            }
         }
     }
 
@@ -655,8 +720,8 @@ crate::unlocks::ult_unlocked(f.level, f.ult_unlocked) && f.tick >= self.ult_read
         self.echoes.retain(|e| f.tick < e.at);
         for e in due {
             if let Some(u) = f.unit(e.target).filter(|u| f.skill_target(u)).cloned() {
-                let src = if e.flurry { Src::Copy(true) } else { Src::Echo };
-                // a flurry echo counts as flurry damage (never banks), still no echo of its own
+                let src = if e.flurry { Src::FlurryEcho } else { Src::Echo };
+                // a flurry echo counts as flurry damage (does not shorten the cooldown), still no echo of its own
                 self.hit(f, &u, e.amount, e.cc, src, true, out);
                 out.push(Effect::Fx { name: "ct_echo".into(), at: u.pos, ticks: 12, heading: None });
             }
@@ -666,17 +731,10 @@ crate::unlocks::ult_unlocked(f.level, f.ult_unlocked) && f.tick >= self.ult_read
     /// The engine's basic attack (his body's) landed.
     fn basic_landed(&mut self, f: &Frame, u: &Unit, out: &mut Vec<Effect>) {
         self.hit(f, u, 0, None, Src::Basic, false, out);
-        // the echo of a basic is 40% of his Attack; tether copies of it are 30% of his Attack
+        // A basic echo uses Contender\x27s Attack rather than the zero placeholder.
         // (every echo this basic queued: two while merged)
         for e in self.echoes.iter_mut().filter(|e| e.target == u.id && e.amount == 0) {
             e.amount = f.attack * d::PACT_PCT / 100;
-        }
-        if !self.tethers.is_empty() {
-            let copies: Vec<Unit> = self.tethers.iter().filter(|(id, _)| *id != u.id).filter_map(|(id, _)| f.unit(*id).filter(|v| f.skill_target(v)).cloned()).collect();
-            for v in copies {
-                self.hit(f, &v, f.attack * d::TETHER_COPY_PCT / 100, None, Src::Copy(false), true, out);
-                out.push(Effect::Fx { name: "ct_echo".into(), at: v.pos, ticks: 12, heading: None });
-            }
         }
         if f.tick < self.haymaker_until {
             self.haymaker_until = 0;
@@ -748,17 +806,17 @@ crate::unlocks::ult_unlocked(f.level, f.ult_unlocked) && f.tick >= self.ult_read
                 }
                 self.cyclone(f, aim, out)
             }
-            Order::S3 { .. } => {
-                if self.recast_open(2, f) && !self.tethers.is_empty() {
-                    return self.yank(f, out);
-                }
+            Order::S3 { aim } => {
                 if !crate::unlocks::skill_unlocked(f.level, 2) {
                     return self.reject(&crate::unlocks::locked_reason(2));
                 }
-                if !self.ready(2, f) {
-                    return self.reject("s3");
+                if !f.shadow_link_enabled {
+                    return self.reject("s3: Shadow Link host verification pending");
                 }
-                self.tether(f, out)
+                if !self.ready(2, f) || self.shadow_link.is_some() {
+                    return self.reject("s3: not ready");
+                }
+                self.cast_shadow(f, aim)
             }
             Order::Ult => {
                 if !self.ult_ready(f) {
@@ -799,6 +857,7 @@ crate::unlocks::ult_unlocked(f.level, f.ult_unlocked) && f.tick >= self.ult_read
         out.push(Effect::Fx { name: "ct_swap".into(), at: f.pos, ticks: 18, heading: None });
         let near = Self::targets_near(f, f.pos, d::MERGE_CROSS_RADIUS).first().cloned();
         let away_from = near.as_ref().map_or(aim, |u| u.pos);
+        self.strike_shadow(f.pos, d::MERGE_CROSS_RADIUS, pct(d::MERGE_CROSS_BASE, d::MERGE_CROSS_AD_RATIO, f.attack), out);
         if let Some(u) = near {
             let dir = unit_dir(f.pos, u.pos);
             let knock = f.clear_path(u.pos, u.pos.along(dir, d::MERGE_CROSS_KNOCK));
@@ -806,8 +865,7 @@ crate::unlocks::ult_unlocked(f.level, f.ult_unlocked) && f.tick >= self.ult_read
             out.push(Effect::Knock { target: u.id, to: knock, ticks: t(d::MERGE_CROSS_KNOCK_TICKS) });
             out.push(Effect::Fx { name: "ct_cross".into(), at: u.pos, ticks: 18, heading: None });
         }
-        let dir = if away_from == f.pos { (1.0, 0.0) } else { unit_dir(away_from, f.pos) };
-        let to = f.nearest_ground(f.clear_path(f.pos, f.pos.along(dir, d::MERGE_SLIP)));
+        let to = f.step_out_destination(away_from);
         out.push(Effect::Glide { to, ticks: t(d::MERGE_SLIP_TICKS) });
         out.push(Effect::Invulnerable { ticks: t(d::MERGE_SLIP_TICKS) + 7 });
     }
@@ -865,6 +923,7 @@ crate::unlocks::ult_unlocked(f.level, f.ult_unlocked) && f.tick >= self.ult_read
             let last = c.left == 0;
             let radius = if c.radius > 0 { c.radius } else { d::CYCLONE_RADIUS };
             out.push(Effect::Fx { name: "ct_cleave".into(), at: c.at, ticks: c.every + 2, heading: None });
+            self.strike_shadow(c.at, radius, pct(c.base, c.ratio, f.attack), out);
             for u in Self::targets_near(f, c.at, radius) {
                 let cc = if c.recast {
                     last.then_some(Cc::KnockUp(t(d::CYCLONE_RECAST_KNOCK_TICKS)))
@@ -886,38 +945,113 @@ crate::unlocks::ult_unlocked(f.level, f.ult_unlocked) && f.tick >= self.ult_read
         self.cleaves.extend(cleaves);
     }
 
-    // -------------------------------------------------------------- S3 Shadow Tether
+    // -------------------------------------------------------------- S3 Shadow Link
 
-    fn tether(&mut self, f: &Frame, out: &mut Vec<Effect>) {
-        let targets: Vec<Unit> = Self::targets_near(f, f.pos, d::TETHER_RADIUS).into_iter().take(d::TETHER_MAX.max(1) as usize).collect();
-        if targets.is_empty() {
-            return self.reject("s3: nobody in reach");
+    fn cast_shadow(&mut self, f: &Frame, aim: Point) {
+        let destination = f.pos.toward(aim, d::SHADOW_LINK_RANGE);
+        let at = f.path_until(f.pos, destination, false);
+        if at == f.pos {
+            return self.reject("s3: no legal dash");
         }
-        let until = f.tick + t(d::TETHER_TICKS);
-        self.cd[2] = f.tick + t(d::TETHER_COOLDOWN_TICKS);
-        self.window[2] = until;
-        self.used[2] = false;
-        self.tethers = targets.iter().map(|u| (u.id, until)).collect();
-        for u in &targets {
-            out.push(Effect::Fx { name: "ct_echo".into(), at: u.pos, ticks: 12, heading: None });
+        let distance = f.pos.dist(at).ceil() as i64;
+        let ticks = (distance * d::SHADOW_LINK_FLIGHT_TICKS + d::SHADOW_LINK_RANGE - 1) / d::SHADOW_LINK_RANGE;
+        self.cd[2] = f.tick + t(d::SHADOW_LINK_COOLDOWN_TICKS);
+        self.shadow_link = Some(ShadowLink::Flight { cast: f.tick, from: f.pos, at, cursor: f.pos, landing: f.tick + t(ticks.max(1)) });
+    }
+
+    fn advance_shadow(&mut self, f: &Frame, out: &mut Vec<Effect>) {
+        if !f.shadow_link_enabled {
+            self.cancel_shadow(out);
+            return;
+        }
+        let Some(shadow) = self.shadow_link.take() else { return };
+        match shadow {
+            ShadowLink::Flight { cast, from, at, cursor, landing } => {
+                let elapsed = f.tick.saturating_sub(cast).min(landing - cast) as i64;
+                let duration = (landing - cast) as i64;
+                let expected = Point::new(from.x + (at.x - from.x) * elapsed / duration, from.y + (at.y - from.y) * elapsed / duration);
+                let cleared = f.path_until(cursor, expected, false);
+                if f.tick < landing && cleared == expected {
+                    self.shadow_link = Some(ShadowLink::Flight { cast, from, at, cursor: cleared, landing });
+                    return;
+                }
+                let at = cleared;
+                let mut candidates: Vec<_> = f.units.iter()
+                    .filter(|unit| f.link_target(unit) && unit.pos.within(at, d::SHADOW_LINK_RADIUS + unit.radius))
+                    .map(|unit| LinkTarget { id: unit.id, max_hp: unit.max_hp })
+                    .collect();
+                candidates.sort_by_key(|target| target.id);
+                candidates.dedup_by_key(|target| target.id);
+                out.push(Effect::ShadowLand { cast, at, candidates: candidates.clone() });
+                if candidates.is_empty() {
+                    out.push(Effect::ShadowEnd { cast, at, stored: 0, paid: false });
+                } else {
+                    self.shadow_link = Some(ShadowLink::Pending { cast, at, landed: f.tick, candidates });
+                }
+            }
+            ShadowLink::Pending { cast, at, landed, candidates } => {
+                if let Some(ShadowObservation::Landed { cast: observed, targets }) = &f.shadow_observation {
+                    if *observed == cast {
+                        let confirmed: Vec<_> = candidates.iter().filter(|target| targets.contains(&target.id)).collect();
+                        let max_hp = confirmed.iter().map(|target| target.max_hp).max().unwrap_or(0);
+                        if max_hp > 0 {
+                            self.shadow_link = Some(ShadowLink::Active {
+                                cast, at, until: landed + t(d::SHADOW_LINK_TICKS), max_hp, hp: max_hp,
+                                linked: confirmed.iter().map(|target| target.id).collect(),
+                            });
+                            return;
+                        }
+                    }
+                }
+                out.push(Effect::ShadowEnd { cast, at, stored: 0, paid: false });
+            }
+            ShadowLink::Active { cast, at, until, max_hp, hp, mut linked } => {
+                linked.retain(|id| !f.separated.contains(id) && f.unit(*id)
+                    .is_some_and(|unit| unit.hp > 0 && unit.pos.within(at, d::SHADOW_LINK_BREAK_RANGE)));
+                let observed = match f.shadow_observation {
+                    Some(ShadowObservation::Health { cast: observed, hp }) if observed == cast => Some(hp.clamp(0, max_hp)),
+                    _ => None,
+                };
+                if linked.is_empty() || observed.is_none() {
+                    out.push(Effect::ShadowEnd { cast, at, stored: max_hp - hp, paid: false });
+                    return;
+                }
+                let hp = hp.min(observed.unwrap_or(hp));
+                if hp == 0 || f.tick >= until {
+                    let stored = max_hp - hp;
+                    let mut paid = false;
+                    for id in linked {
+                        if let Some(unit) = f.unit(id).filter(|unit| unit.targetable && unit.team != f.team) {
+                            let amount = stored.min(unit.max_hp * d::SHADOW_LINK_MAX_HP_DAMAGE_PCT / 100);
+                            if amount > 0 {
+                                paid = true;
+                                out.push(Effect::ShadowPayout { target: id, amount });
+                            }
+                        }
+                    }
+                    out.push(Effect::ShadowEnd { cast, at, stored, paid });
+                } else {
+                    self.shadow_link = Some(ShadowLink::Active { cast, at, until, max_hp, hp, linked });
+                }
+            }
         }
     }
 
-    /// S3 recast: every tethered enemy is yanked toward him and its shadow uppercuts it.
-    fn yank(&mut self, f: &Frame, out: &mut Vec<Effect>) {
-        self.used[2] = true;
-        self.window[2] = 0;
-        let tethered: Vec<Unit> = self.tethers.iter().filter_map(|(id, _)| f.unit(*id).filter(|u| f.skill_target(u)).cloned()).collect();
-        self.tethers.clear();
-        for u in tethered {
-            let gap = u.pos.dist(f.pos) as i64;
-            let len = d::TETHER_YANK.min((gap - 10_000).max(0));
-            if len > 0 {
-                let to = f.clear_path(u.pos, u.pos.toward(f.pos, len));
-                out.push(Effect::Knock { target: u.id, to, ticks: t(d::TETHER_YANK_TICKS) });
+    fn cancel_shadow(&mut self, out: &mut Vec<Effect>) {
+        if let Some(shadow) = self.shadow_link.take() {
+            let (cast, at, stored) = match shadow {
+                ShadowLink::Flight { cast, at, .. } | ShadowLink::Pending { cast, at, .. } => (cast, at, 0),
+                ShadowLink::Active { cast, at, max_hp, hp, .. } => (cast, at, max_hp - hp),
+            };
+            out.push(Effect::ShadowEnd { cast, at, stored, paid: false });
+        }
+    }
+
+    fn strike_shadow(&self, center: Point, radius: i64, amount: i64, out: &mut Vec<Effect>) {
+        if let Some(ShadowLink::Active { cast, at, .. }) = self.shadow_link {
+            if amount > 0 && center.within(at, radius) {
+                out.push(Effect::ShadowStrike { cast, amount });
             }
-            self.hit(f, &u, pct(d::TETHER_BASE, d::TETHER_AD_RATIO, f.attack), Some(Cc::KnockUp(t(d::TETHER_KNOCK_TICKS))), Src::Recast, true, out);
-            out.push(Effect::Fx { name: "ct_uppercut".into(), at: u.pos, ticks: 20, heading: None });
         }
     }
 
@@ -1013,18 +1147,46 @@ crate::unlocks::ult_unlocked(f.level, f.ult_unlocked) && f.tick >= self.ult_read
     fn hurt_pct(u: &Unit) -> i64 {
         u.hp * 100 / u.max_hp.max(1)
     }
-    fn outnumbered(f: &Frame, p: Point) -> bool {
-        let enemies = f.enemy_champions().filter(|u| u.pos.within(p, 70_000)).count() as i64;
-        let allies = f.allies().filter(|a| a.pos.within(p, 90_000)).count() as i64 + 1;
-        enemies >= allies + 2
+    fn nearby_threats(f: &Frame, at: Point) -> usize {
+        f.units.iter().filter(|unit| unit.champion && unit.team != f.team && unit.hp > 0 && unit.visible
+            && !f.separated.contains(&unit.id) && unit.pos.within(at, d::AI_THREAT_RANGE)).count()
     }
 
-    /// The champion to fight now: nearer, lower, alone better; never under its tower unless low.
+    fn support(f: &Frame, at: Point) -> usize {
+        f.allies().filter(|ally| Self::hurt_pct(ally) >= d::AI_SUPPORT_HP
+            && !f.separated.contains(&ally.id) && ally.pos.within(at, d::AI_SUPPORT_RANGE)
+            && f.path_until(ally.pos, at, true) == at).count()
+    }
+
+    fn cover(f: &Frame, at: Point) -> Option<Point> {
+        f.allies().filter(|ally| Self::hurt_pct(ally) >= d::AI_SUPPORT_HP && !f.separated.contains(&ally.id))
+            .map(|ally| ally.pos).chain(std::iter::once(f.home))
+            .map(|goal| f.path_until(at, at.toward(goal, 24_000), true))
+            .filter(|point| at.dist(*point) >= 8_000.0 && f.enemy_tower_at(*point).is_none())
+            .min_by_key(|point| (Self::nearby_threats(f, *point), point.d2(f.home)))
+    }
+
+    fn solo_finish(&self, f: &Frame, target: &Unit) -> bool {
+        let Some(defence) = f.defences.iter().find(|defence| defence.id == target.id) else { return false };
+        let hit = f.attack * 100 / (100 + defence.armour.max(0));
+        target.pos.within(f.pos, d::BASIC_RANGE + target.radius)
+            && f.path_until(f.pos, target.pos, true) == target.pos
+            && Self::nearby_threats(f, target.pos) == 1
+            && hit >= target.hp.saturating_add(defence.shield.max(0))
+    }
+
+    fn safe_commit(f: &Frame, at: Point) -> bool {
+        let allies = Self::support(f, at);
+        f.hp * 100 >= (d::AI_COMMIT_HP - f.p(6) / d::AI_AGGRESSIVE_HP_DIVISOR) * f.max_hp.max(1)
+            && allies > 0 && allies + 1 >= Self::nearby_threats(f, at)
+            && f.enemy_tower_at(at).is_none() && f.path_until(f.pos, at, true) == at
+            && Self::cover(f, at).is_some()
+    }
+
+    /// Retain the ordering of healthy legal combat targets.
     pub fn pick(&self, f: &Frame) -> Option<Unit> {
-        f.enemy_champions()
-            .filter(|u| u.pos.within(f.pos, d::AI_ENGAGE_RANGE) && !Self::outnumbered(f, u.pos))
-            .filter(|u| f.enemy_tower_at(u.pos).is_none() || Self::hurt_pct(u) < d::AI_COMMIT_HP_PCT)
-            .min_by_key(|u| (Self::hurt_pct(u) + (u.pos.dist(f.pos) as i64 / 2_000), u.id))
+        f.enemy_champions().filter(|unit| unit.pos.within(f.pos, d::AI_AWARENESS_RANGE))
+            .min_by_key(|unit| (Self::hurt_pct(unit) + (unit.pos.dist(f.pos) as i64 / 2_000), unit.id))
             .cloned()
     }
 
@@ -1036,85 +1198,166 @@ crate::unlocks::ult_unlocked(f.level, f.ult_unlocked) && f.tick >= self.ult_read
         out.push(Effect::Steer { to });
     }
 
+    fn hold_forward(&self, f: &Frame, threat: Point, out: &mut Vec<Effect>) {
+        out.push(Effect::HoldForward { threat, cover: Self::cover(f, f.pos).unwrap_or(f.pos) });
+    }
+
+    fn shadow_aim(&self, f: &Frame, peeling: bool) -> Option<Point> {
+        if !f.shadow_link_enabled || !self.ready(2, f) || self.shadow_link.is_some() {
+            return None;
+        }
+        f.units.iter().filter(|unit| f.link_target(unit) && (unit.champion || (!peeling && unit.farmable)))
+            .filter(|unit| unit.pos.within(f.pos, d::SHADOW_LINK_RANGE + d::SHADOW_LINK_RADIUS + unit.radius))
+            // Try close placements too: the shadow can cover opponents from the edge of his punch range.
+            .flat_map(|unit| [d::AI_SHADOW_STEP, d::BASIC_RANGE, d::SHADOW_LINK_RANGE]
+                .map(|range| f.pos.toward(unit.pos, range)))
+            .map(|at| f.path_until(f.pos, at, false))
+            .filter(|at| *at != f.pos)
+            .filter_map(|at| {
+                let champions = f.enemy_champions().filter(|unit| f.link_target(unit)
+                    && unit.pos.within(at, d::SHADOW_LINK_RADIUS + unit.radius)
+                    && (!peeling || unit.pos.within(f.pos, d::AI_THREAT_RANGE))).count();
+                let farm = f.units.iter().filter(|unit| f.link_target(unit) && unit.farmable
+                    && unit.pos.within(at, d::SHADOW_LINK_RADIUS + unit.radius)).count();
+                (champions > 0 || (!peeling && Self::nearby_threats(f, f.pos) == 0 && farm > 0))
+                    .then_some((champions, farm, at))
+            })
+            .max_by_key(|(champions, farm, at)| (*champions, *farm, std::cmp::Reverse(at.d2(f.pos))))
+            .map(|(_, _, at)| at)
+    }
+
+    fn safe_flurry(&self, f: &Frame) -> bool {
+        let Some(first) = Self::targets_near(f, f.pos, d::ULT_START_RANGE).into_iter().next() else { return false };
+        if !first.champion || self.solo_finish(f, &first) {
+            return false;
+        }
+        // Follow the currently visible chain component conservatively. Any member may be the last
+        // strike after deaths or movement. Check each possible landing before committing.
+        let mut candidates = vec![&first];
+        let mut checked = 0;
+        while checked < candidates.len() {
+            let unit = candidates[checked];
+            checked += 1;
+            let land = f.nearest_ground(unit.pos.toward(f.pos, 10_000));
+            if !Self::safe_commit(f, land) {
+                return false;
+            }
+            for next in f.units.iter().filter(|next| f.skill_target(next)
+                && next.pos.within(unit.pos, d::ULT_CHAIN_RANGE + next.radius)) {
+                if !candidates.iter().any(|candidate| candidate.id == next.id) {
+                    candidates.push(next);
+                }
+            }
+        }
+        candidates.iter().filter(|unit| unit.champion).count() >= 2 || Self::hurt_pct(&first) <= 35
+    }
+
     pub fn decide(&mut self, f: &Frame, out: &mut Vec<Effect>) -> Option<Order> {
         if f.stunned || self.flurry.is_some() {
             return None;
         }
-        let me_pct = f.hp * 100 / f.max_hp.max(1);
-        // recasts first: the yank when the tethered group is spread or low, or the tether is about to lapse
-        if self.recast_open(2, f) && !self.tethers.is_empty() {
-            let tethered: Vec<&Unit> = self.tethers.iter().filter_map(|(id, _)| f.unit(*id)).collect();
-            let spread = tethered.iter().any(|u| !u.pos.within(f.pos, 35_000));
-            let low = tethered.iter().any(|u| u.champion && Self::hurt_pct(u) < d::AI_COMMIT_HP_PCT);
-            let lapsing = f.tick + 30 >= self.window[2];
-            if (spread && tethered.iter().any(|u| u.champion)) || low || (lapsing && tethered.len() >= 2) {
-                self.reason = "S3 recast: yank".into();
-                return Some(Order::S3 { aim: f.pos });
+        let target = self.pick(f);
+        if f.hp * 100 < d::AI_RETREAT_HP * f.max_hp.max(1) {
+            if !self.reason.starts_with("Retreat") && !self.reason.starts_with("Peel") {
+                self.steer_at = 0;
             }
-        }
-        // stepping out of the merge: an escape when hurt and pressed
-        if self.merged(f.tick) && self.recast_open(0, f) && me_pct < 30 && f.enemy_champions().any(|u| u.pos.within(f.pos, 25_000)) {
-            self.reason = "S1 recast: step out".into();
-            let threat = f.enemy_champions().min_by_key(|u| (u.pos.d2(f.pos), u.id)).map_or(f.home, |u| u.pos);
-            return Some(Order::S1 { aim: threat });
-        }
-        // the self-cleave onto a champion (or a pack while farming with charges full)
-        if self.recast_open(1, f) {
-            if let Some(u) = f.enemy_champions().filter(|u| u.pos.within(f.pos, d::CYCLONE_RECAST_RANGE)).min_by_key(|u| (Self::hurt_pct(u), u.id)) {
-                self.reason = "S2 recast: cleave on them".into();
-                return Some(Order::S2 { aim: u.pos });
-            }
-        }
-        // the fight
-        if let Some(u) = self.pick(f) {
-            let dist = u.pos.dist(f.pos) as i64;
-            if self.ult_ready(f) && u.pos.within(f.pos, d::ULT_START_RANGE) {
-                let group = f.enemy_champions().filter(|v| v.pos.within(u.pos, d::ULT_CHAIN_RANGE)).count();
-                let tethered = self.tethers.len() >= 2;
-                if group >= 2 || tethered || Self::hurt_pct(&u) < d::AI_COMMIT_HP_PCT || self.merged(f.tick) {
-                    self.reason = "Shadow Flurry".into();
-                    return Some(Order::Ult);
+            self.reason = "Retreat: low HP".into();
+            if let Some(foe) = target.as_ref() {
+                self.hold_forward(f, foe.pos, out);
+                if foe.pos.within(f.pos, 25_000) && self.merged(f.tick) && self.recast_open(0, f) {
+                    let nearest = Self::targets_near(f, f.pos, d::MERGE_CROSS_RADIUS).into_iter().next();
+                    let source = nearest.as_ref().map_or(foe.pos, |unit| unit.pos);
+                    let to = f.step_out_destination(source);
+                    if to.d2(source) > f.pos.d2(source) && f.path_until(f.pos, to, true) == to
+                        && Self::nearby_threats(f, to) <= Self::nearby_threats(f, f.pos) {
+                        self.reason = "Retreat: Merge step-out".into();
+                        return Some(Order::S1 { aim: source });
+                    }
                 }
-            }
-            if !self.merged(f.tick) && self.ready(0, f) && dist <= d::AI_MERGE_RANGE {
-                self.reason = "S1: merge".into();
-                return Some(Order::S1 { aim: u.pos });
-            }
-            if self.ready(2, f) && Self::targets_near(f, f.pos, d::TETHER_RADIUS).len() >= 2 {
-                self.reason = "S3: tether".into();
-                return Some(Order::S3 { aim: u.pos });
-            }
-            if self.ready(1, f) && dist <= d::CYCLONE_RANGE + d::CYCLONE_RADIUS / 2 {
-                self.reason = "S2: Shadow Cyclone".into();
-                return Some(Order::S2 { aim: u.pos });
-            }
-            if !u.pos.within(f.pos, d::BASIC_RANGE) {
-                self.steer(f, u.pos, out);
+                if let Some(cover) = Self::cover(f, f.pos) {
+                    self.steer(f, cover, out);
+                }
+                if let Some(aim) = self.shadow_aim(f, true) {
+                    self.reason = "Peel: Shadow Link".into();
+                    return Some(Order::S3 { aim });
+                }
+            } else if let Some(cover) = Self::cover(f, f.pos) {
+                self.steer(f, cover, out);
             }
             return None;
         }
-        // farming (calm): his skills work on creeps and bank stacks for the ult
-        if f.enemy_champions().all(|u| !u.pos.within(f.pos, d::AI_CALM_RANGE)) {
-            let farm: Vec<Unit> = f.units.iter().filter(|u| u.farmable && f.skill_target(u) && u.pos.within(f.pos, 90_000)).cloned().collect();
-            let big = |u: &Unit| u.max_hp >= d::AI_FARM_BIG_HP;
-            if let Some(m) = farm.iter().min_by_key(|u| (u.pos.d2(f.pos), u.id)).cloned() {
-                let around = farm.iter().filter(|v| v.pos.within(m.pos, d::CYCLONE_RADIUS)).count();
-                let dist = m.pos.dist(f.pos) as i64;
-                if self.recast_open(1, f) && (around >= 3 || big(&m)) {
-                    self.reason = "Farm: S2 recast".into();
-                    return Some(Order::S2 { aim: m.pos });
-                }
-                if self.ready(1, f) && dist <= d::CYCLONE_RANGE && (around >= 2 || big(&m)) {
+
+        if let Some(ShadowLink::Active { at, .. }) = self.shadow_link {
+            if at.within(f.pos, d::BASIC_RANGE) && f.enemy_tower_at(f.pos).is_none()
+                && f.path_until(f.pos, at, false) == at {
+                out.push(Effect::PreferShadow);
+                self.reason = "Hold: attack the shadow".into();
+                if let Some(foe) = &target { self.hold_forward(f, foe.pos, out); }
+                return None;
+            }
+            let step = f.pos.toward(at, d::AI_SHADOW_STEP);
+            if at.within(step, d::BASIC_RANGE) && f.path_until(f.pos, step, true) == step
+                && Self::nearby_threats(f, step) <= Self::nearby_threats(f, f.pos)
+                && f.enemy_champions().all(|enemy| !enemy.pos.within(step, 25_000))
+                && Self::cover(f, step).is_some() {
+                self.reason = "Hold: safe step to the shadow".into();
+                self.steer(f, step, out);
+                return None;
+            }
+        }
+
+        if let Some(aim) = self.shadow_aim(f, false) {
+            self.reason = if target.is_some() { "Poke: Shadow Link" } else { "Farm: Shadow Link" }.into();
+            if let Some(foe) = &target { self.hold_forward(f, foe.pos, out); }
+            return Some(Order::S3 { aim });
+        }
+
+        if let Some(foe) = target {
+            if self.solo_finish(f, &foe) && Self::cover(f, f.pos).is_some() {
+                self.reason = "Commit: basic can finish".into();
+                return None;
+            }
+            let dist = f.pos.dist(foe.pos) as i64;
+            let limit = d::AI_CHASE_RANGE + f.p(6) * d::AI_AGGRESSIVE_CHASE_PER_POINT;
+            let landing = f.nearest_ground(f.clear_path(f.pos, f.pos.toward(foe.pos, d::CYCLONE_RECAST_RANGE)));
+            if self.recast_open(1, f) && dist <= d::CYCLONE_RECAST_RANGE
+                && foe.pos.within(landing, d::CYCLONE_RECAST_RADIUS + foe.radius) && Self::safe_commit(f, landing) {
+                self.reason = "Commit: supported Cyclone recast".into();
+                return Some(Order::S2 { aim: foe.pos });
+            }
+            if self.ult_ready(f) && self.safe_flurry(f) {
+                self.reason = "Commit: supported Shadow Flurry".into();
+                return Some(Order::Ult);
+            }
+            if !self.merged(f.tick) && self.ready(0, f) && dist <= d::AI_MERGE_RANGE && Self::safe_commit(f, foe.pos) {
+                self.reason = "Commit: supported Merge".into();
+                return Some(Order::S1 { aim: foe.pos });
+            }
+            if self.ready(1, f) && dist <= d::CYCLONE_RANGE + d::CYCLONE_RADIUS / 2 {
+                self.reason = "Poke: Shadow Cyclone".into();
+                self.hold_forward(f, foe.pos, out);
+                return Some(Order::S2 { aim: foe.pos });
+            }
+            if dist <= limit && dist > d::BASIC_RANGE && Self::safe_commit(f, foe.pos) {
+                self.reason = "Commit: supported approach".into();
+                self.steer(f, foe.pos, out);
+            } else {
+                self.reason = "Hold: unsafe or unsupported approach".into();
+                self.hold_forward(f, foe.pos, out);
+            }
+            return None;
+        }
+
+        if f.enemy_champions().all(|unit| !unit.pos.within(f.pos, d::AI_CALM_RANGE)) {
+            let farm = f.units.iter().filter(|unit| unit.farmable && f.skill_target(unit)
+                && unit.pos.within(f.pos, 90_000)).min_by_key(|unit| (unit.pos.d2(f.pos), unit.id));
+            if let Some(unit) = farm {
+                let clustered = f.units.iter().filter(|other| other.farmable && f.skill_target(other)
+                    && other.pos.within(unit.pos, d::CYCLONE_RADIUS)).count() >= 2;
+                if self.ready(1, f) && unit.pos.within(f.pos, d::CYCLONE_RANGE)
+                    && (clustered || unit.max_hp >= d::AI_FARM_BIG_HP) {
                     self.reason = "Farm: Shadow Cyclone".into();
-                    return Some(Order::S2 { aim: m.pos });
-                }
-                if self.ready(2, f) && farm.iter().filter(|v| v.pos.within(f.pos, d::TETHER_RADIUS)).count() >= 2 {
-                    self.reason = "Farm: tether".into();
-                    return Some(Order::S3 { aim: m.pos });
-                }
-                if self.ult_ready(f) && m.max_hp >= 2 * d::AI_FARM_BIG_HP && m.pos.within(f.pos, d::ULT_START_RANGE) {
-                    self.reason = "Farm: Shadow Flurry on a big camp".into();
-                    return Some(Order::Ult);
+                    return Some(Order::S2 { aim: unit.pos });
                 }
             }
         }

@@ -9,7 +9,7 @@ import copy, json, re, sys
 ROOT = Path(__file__).resolve().parents[1]
 rules = json.loads((ROOT / 'rules/contender.json').read_text())
 ID = rules['id']
-GROUPS = ['basic', 'charges', 'pact', 'rhythm', 'merge', 'cyclone', 'tether', 'ult', 'ai']
+GROUPS = ['basic', 'charges', 'pact', 'rhythm', 'merge', 'cyclone', 'shadowLink', 'ult', 'ai']
 
 
 def snake(s):
@@ -52,11 +52,12 @@ text = {
                f"Recast: he cleaves himself anywhere within {cy['recastRange']}, invulnerable, in a {cy['recastRadius']} circle: {cy['recastHits']} hits "
                f"of {cy['recastBase']} + {cy['recastAdRatio']}% Attack, each pulling enemies {cy['recastPull']} toward the centre, the last knocking "
                f"up for {sec(cy['recastKnockTicks'])}. "
-               f"Shadow Tether ({sec(te['cooldownTicks'])}): a shadow latches onto every enemy within {te['radius']} (up to {te['max']}) for "
-               f"{sec(te['ticks'])}; each hit he lands is copied onto every tethered enemy at {te['copyPct']}% (flurry punches at "
-               f"{te['flurryCopyPct']}%), with a stack each. A tether breaks past {te['breakRange']}. Recast: every tethered enemy is yanked "
-               f"{te['yank']} toward him and uppercut ({te['base']} + {te['adRatio']}% Attack, {sec(te['knockTicks'])} airborne)."),
-    'ult': (f"Shadow Flurry ({sec(ul['cooldownTicks'])}; every hit of his outside the flurry, echoes and copies included, takes "
+               f"Shadow Link ({sec(te['cooldownTicks'])}): send a shadow up to {te['range']}. On landing it slows enemies within "
+               f"{te['radius']} by {te['slowPct']}% for {sec(te['slowTicks'])} and links those it slows. The shadow has the highest linked max HP. "
+               f"Team damage to the shadow is stored until it breaks or expires after {sec(te['ticks'])}. Each linked enemy takes that much physical "
+               f"damage, capped at {te['maxHpDamagePct']}% of their own maximum HP. Moving more than {te['breakRange']} from the shadow breaks the link. "
+               f"Shadow Link is available in the Lab; native play is pending host verification."),
+    'ult': (f"Shadow Flurry ({sec(ul['cooldownTicks'])}; every hit of his outside the flurry, echoes included, takes "
             f"{ul['cutCentisPerHit'] / 100:g} s off the cooldown). He melts into the ground: banished (untargetable, unseen, unhurt) for "
             f"{sec(ul['ticks'])}. His shadows strike the enemy nearest him (within {ul['startRange']}), then chain {ul['punches']} punches, "
             + ("at a steady pace" if ul['firstGapTicks'] == ul['lastGapTicks'] else "slow at first and faster at the end") + f", each onto an enemy within {ul['chainRange']} of the last one hit ({ul['base']} + "
@@ -106,7 +107,7 @@ roster = dict(id=ID, name=rules['name'], family='original', role='Fighter', nati
               basicAttack=dict(name='Jab / Cross', kind='melee', range=b['range']),
               skills=[dict(slot='skill', name='Shadows / Shadow Pact / Shadow Rhythm / Shadow Merge', kinds=['Dash', 'Buff'],
                            intents=['Engage', 'Escape'], summary=text['skill']),
-                      dict(slot='skill2', name='Shadow Cyclone / Shadow Tether', kinds=['Aoe', 'Cc'],
+                      dict(slot='skill2', name='Shadow Cyclone / Shadow Link', kinds=['Aoe', 'Cc'],
                            intents=['Engage', 'Clear'], summary=text['skill2']),
                       dict(slot='ult', name='Shadow Flurry', kinds=['Aoe', 'Cc'], intents=['Engage'], summary=text['ult'])])
 
