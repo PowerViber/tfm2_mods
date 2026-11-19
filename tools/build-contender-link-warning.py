@@ -32,7 +32,10 @@ for file, data in {
     ASSET / "contender_link_warning#anim.fanim": (json.dumps(animation, indent=2) + "\n").encode(),
 }.items():
     if args.check:
-        if not file.exists() or file.read_bytes() != data:
+        if not file.exists():
+            raise SystemExit(f"Warning asset is missing: {file}")
+        actual = file.read_text(encoding="utf-8").encode() if file.suffix == ".fanim" else file.read_bytes()
+        if actual != data:
             raise SystemExit(f"Warning asset is stale: {file}")
     else:
         file.write_bytes(data)

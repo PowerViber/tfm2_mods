@@ -37,11 +37,13 @@ const base = process.env.CONTENDER_LAB_URL || 'http://127.0.0.1:7311';
     await page.click('#simulateHit');
     const counter=await page.evaluate(()=>{
       const lab=contenderLab;
-      return {hit:lab.records.at(-1).effects.find(e=>e.source==='counter'),name:lab.lastCounter,charges:lab.state.charges};
+      return {hit:lab.records.at(-1).effects.find(e=>e.source==='counter'),name:lab.lastCounter,charges:lab.state.charges,
+        hp:lab.units.find(u=>u.name==='Assassin').hp, armour:lab.units.find(u=>u.name==='Assassin').stats.defence};
     });
     assert.equal(counter.hit.target,assassin.id);
     assert.match(counter.name,/Assassin/);
     assert.equal(counter.charges,4);
+    assert.equal(assassin.hp-counter.hp,Math.floor(counter.hit.amount*100/(100+counter.armour)));
     await page.evaluate(()=>contenderLab.reset());
     await page.locator('[data-key=r]').click();
     const warning=await page.evaluate(()=>{

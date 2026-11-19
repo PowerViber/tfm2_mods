@@ -14,6 +14,12 @@ atlases are untouched. The new 174×174 art adds 121,104 decoded bytes.
 
 ## Automated evidence
 
+- Windows release suite: 1,406 passed, 18 ignored. Lab transport: 3 passed.
+- The isolated Mod Manager candidate comparison checked 908 files with zero
+  differences. The candidate DLL SHA-256 is
+  a662bc4be4067914cba10b1934ba555ccfbe9e8e97497714d60aef816ba4d991.
+  The Lab WASM SHA-256 is
+  c17cb5e98f4dc399de698f7dcf4b7b61a9b4e041274cfbc7c4b6274d9d744c0f.
 - The headless real-map Lab registered 900 map cells. It confirmed ten punches,
   exactly 45 ticks between reappearance and the next cast, Counterpunch aimed
   at the selected Assassin, zero ultimate damage, and 30/24 ticks of sequential
