@@ -7,7 +7,7 @@
     "Melee",
     "CC"
   ],
-  "revision": "contender-2.8",
+  "revision": "contender-2.9",
   "stat": {
     "attack": 76,
     "magic_power": 0,
@@ -41,13 +41,13 @@
     "startTiming": 9
   },
   "charges": {
-    "max": 1,
-    "rechargeTicks": 720,
+    "max": 5,
+    "rechargeTicks": 900,
     "recastWindowTicks": 180,
     "dodgeSlip": 8000,
     "dodgeSlipTicks": 8,
     "dodgeGapTicks": 24,
-    "basicsOnly": 1
+    "basicsOnly": 0
   },
   "pact": {
     "delayTicks": 60,
@@ -120,15 +120,15 @@
     "knockTicks": 30
   },
   "ult": {
-    "cooldownTicks": 7200,
+    "cooldownTicks": 3600,
     "ticks": 300,
     "startRange": 50000,
     "chainRange": 30000,
-    "punches": 36,
-    "firstGapTicks": 14,
-    "lastGapTicks": 2,
-    "base": 3,
-    "adRatio": 4,
+    "punches": 72,
+    "firstGapTicks": 4,
+    "lastGapTicks": 4,
+    "base": 1,
+    "adRatio": 2,
     "knockEveryTicks": 60,
     "knockTicks": 24,
     "haymakerTicks": 120,

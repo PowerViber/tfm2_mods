@@ -4128,3 +4128,12 @@ Native 0.10.112 / custom 0.2.115, art basalt-art-6, gameplay remains basalt-1.4.
   - **Dodge:** unchanged.
   - **Skills:** mostly utility now (echoes 3%, Cyclone 3 + 4% per hit, Flurry punch 3 + 4%, Break 1% + 5%).
   - **Watch for:** is he now too weak in damage.
+
+## Nov 19: round 183 (native 0.10.118, tfm2_custom 0.2.121), `contender-2.9`
+- **Dodges:** 5 dodges again, any champion hit, coming back one every 15 s.
+- **Ult:** 60 s cooldown; 72 steady punches (1 + 2% Attack each, 288 damage at level 9 vs 324 before).
+- **Measured (AI 1v2):** damage 1.26x / 1.33x a plain champion's basics; 27% / 23% of hits dodged.
+- **Watch for:**
+  - is 5 dodges too slippery again;
+  - does the steady flurry read well;
+  - is a 60 s ult too frequent.
