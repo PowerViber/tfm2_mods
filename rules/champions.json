@@ -4973,41 +4973,41 @@
    "skills": [
     {
      "slot": "skill",
-     "name": "Shadows / Shadow Pact / Shadow Rhythm / Shadow Merge",
+     "name": "Shadows / Counterpunch / Shadow Merge",
      "kinds": [
-      "Dash",
+      "Aoe",
       "Buff"
      ],
      "intents": [
       "Engage",
       "Escape"
      ],
-     "summary": "Shadows (passive): 5 shadow dodges, recharging one at a time every 15 s. When an enemy champion's attack or skill hits him, a dodge is spent: he slips 8000 aside and the hit is undone (at most one dodge every 0.4 s). His skills never cost dodges; each can be recast once, free, within 3 s. Shadow Pact (passive): every punch and skill hits again 1 s later for 3%, with its crowd control at 50% (at most 1.5 s more per target every 6 s). Echoes never add Rhythm stacks. Shadow Rhythm (passive): each hit of his (not an echo) stacks on its target (up to 20, 4 s); the most-stacked enemy gives him +0.5% attack speed and +0.4% move speed per stack, and takes +0.5% damage from him per stack. At 20 stacks his next hit is a Shadow Break: 1% of its max HP + 5% Attack, and its stacks reset to 0, but his Rhythm buffs stay at full for 3 s. A max-stacked creep carries 8 stacks onto the next champion he hits; a stacked kill keeps the buffs 3 s longer. S1 Shadow Merge (14 s): he merges with his shadow for 6 s: every hit echoes twice and adds 1 stacks, +10% move speed. Recast: he steps out; the shadow's cross knocks the nearest enemy 20000 back (12 + 15% Attack) and he slips 15000 away. Level unlocks: S2 at level 2, S3 at level 3, the ult at level 5."
+     "summary": "Shadows: 5 passive dodges. Recover one every 15 s. An enemy champion hit can spend one every 0.4 s. Counterpunch: the dodge shadow strikes that attacker for 20 + 30% Attack within 45000. Shadow Pact: a basic echoes after 1 s for 3% damage. It echoes twice while merged. Shadow Rhythm: basics and Flurry build up to 20 stacks for 4 s. Stacks increase his speed and damage against the target. A basic or Counterpunch at full stacks triggers Shadow Break. Shadow Merge (14 s): gain 10% movement for 6 s. Every 1 s, a cross hits within 30000 of his current position for 12 + 15% Attack."
     },
     {
      "slot": "skill2",
-     "name": "Shadow Cyclone / Shadow Link",
+     "name": "Shadow Flurry",
+     "kinds": [
+      "Aoe",
+      "Dash"
+     ],
+     "intents": [
+      "Engage"
+     ],
+     "summary": "Shadow Flurry (level 2): hold 3 charges and recover one every 16 s. Each landed non-Flurry hit cuts 0.5 s from the next charge. Vanish for up to 1 s and throw up to 10 punches for 1 + 2% Attack each. Prefer a different target on each punch. After reappearing wait 0.75 s to cast again. A successful Flurry primes his next basic for 15 + 20% Attack bonus damage."
+    },
+    {
+     "slot": "ult",
+     "name": "Shadow Link",
      "kinds": [
       "Aoe",
       "Cc"
      ],
      "intents": [
       "Engage",
-      "Clear"
+      "Protect"
      ],
-     "summary": "Shadow Cyclone (8 s): a shadow clone goes to a spot within 60000 and cleaves the circle around it (25000): 4 hits of 3 + 4% Attack and a 20% slow; it can't be hit. Recast: he cleaves himself anywhere within 60000, invulnerable, in a 35000 circle: 3 hits of 4 + 5% Attack, each pulling enemies 5000 toward the centre, the last knocking up for 0.4 s. Shadow Link (10 s): send a shadow up to 50000. On landing it slows enemies within 50000 by 25% for 1 s and links those it slows. The shadow has the highest linked max HP. Team damage to the shadow is stored until it breaks or expires after 4 s. Each linked enemy takes that much physical damage, capped at 30% of their own maximum HP. Moving more than 120000 from the shadow breaks the link. Shadow Link is available in the Lab; native play is pending host verification."
-    },
-    {
-     "slot": "ult",
-     "name": "Shadow Flurry",
-     "kinds": [
-      "Aoe",
-      "Cc"
-     ],
-     "intents": [
-      "Engage"
-     ],
-     "summary": "Shadow Flurry (60 s; every hit of his outside the flurry, echoes included, takes 0.01 s off the cooldown). He melts into the ground: banished (untargetable, unseen, unhurt) for 5 s. His shadows strike the enemy nearest him (within 50000), then chain 72 punches, at a steady pace, each onto an enemy within 30000 of the last one hit (1 + 2% Attack). Each punch prefers a different eligible enemy; it repeats the last target only when no alternative is in reach. Flurry punches never echo and never set off a Shadow Break (a full target Breaks on his next hit after). Every second the last enemy hit is knocked up. With nothing left in reach the flurry ends early. He reappears beside the last enemy hit, and his next basic within 2 s is a haymaker (+15 + 20% Attack, a 0.5 s stun). His skills never hit towers."
+     "summary": "Shadow Link (level 5, 75 s): refill all 5 dodges. Send a shadow up to 60000. It marks enemies within 85000 for 0.75 s. Pull remaining linked enemies toward the centre, knock them up for 0.5 s, then stun for 0.4 s. The link deals zero damage."
     }
    ]
   },

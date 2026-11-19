@@ -82,17 +82,33 @@ pub struct Unit {
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "kind", rename_all = "snake_case")]
 pub enum Order {
-    /// S1 Shadow Merge; recast (while merged): step out of the shadow
-    S1 { aim: Point },
-    /// S2 Shadow Cyclone: the clone's cleave at the point; recast: he cleaves himself at the point
-    S2 { aim: Point },
-    /// S3 Shadow Link: send the shadow toward the aimed point.
-    S3 { aim: Point },
-    Ult,
-    /// older Lab transport: nothing to steer any more (ignored)
-    Move { aim: Point },
-    /// end Shadow Merge early (no step-out cross)
-    End,
+    S1,
+    S2,
+    Ult { aim: Point },
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+pub struct IncomingHit {
+    pub attacker: usize,
+    pub from: Point,
+    #[serde(default)]
+    pub counter: bool,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum HitSource {
+    Echo,
+    Merge,
+    Counter,
+    Flurry,
+    Bonus,
+}
+
+impl HitSource {
+    pub fn credits_flurry(self) -> bool {
+        matches!(self, Self::Echo | Self::Merge | Self::Counter)
+    }
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
@@ -124,17 +140,17 @@ pub struct Frame {
     /// enemies his own (engine) basic attacks landed on since the last frame
     #[serde(default)]
     pub basic_hits: Vec<usize>,
-    /// where the enemy champions whose hits landed on him since the last frame stood (the Lab and tests; in the game
-    /// the bridge asks `try_dodge` as the hit lands)
     #[serde(default)]
-    pub incoming: Vec<Point>,
+    pub incoming: Vec<IncomingHit>,
+    /// Confirmed non-basic damage impacts from the adapter's previous step.
     #[serde(default)]
-    pub shadow_link_enabled: bool,
-    #[serde(default)]
-    pub shadow_observation: Option<ShadowObservation>,
-    /// Immune or otherwise ineligible for the arrival slow.
+    pub landed_hits: u16,
+    /// Units that are immune or otherwise ineligible for Link.
     #[serde(default)]
     pub link_excluded: Vec<usize>,
+    /// Targets with this owner's active Shadow Link knock-up.
+    #[serde(default)]
+    pub link_airborne: Vec<usize>,
     /// Units which cannot interact across the current cage or realm.
     #[serde(default)]
     pub separated: Vec<usize>,
@@ -173,7 +189,7 @@ impl Frame {
 
     fn path_until(&self, from: Point, to: Point, avoid_towers: bool) -> Point {
         let steps = (from.dist(to) as i64 / 1_000 + 1).max(1);
-        let origin_tower = self.enemy_tower_at(from);
+        let origin_tower = if avoid_towers { self.enemy_tower_at(from) } else { None };
         let mut last = from;
         for i in 1..=steps {
             let p = Point::new(from.x + (to.x - from.x) * i / steps, from.y + (to.y - from.y) * i / steps);
@@ -189,11 +205,6 @@ impl Frame {
             last = p;
         }
         last
-    }
-
-    fn step_out_destination(&self, away_from: Point) -> Point {
-        let dir = if away_from == self.pos { (1.0, 0.0) } else { unit_dir(away_from, self.pos) };
-        self.nearest_ground(self.clear_path(self.pos, self.pos.along(dir, d::MERGE_SLIP)))
     }
 
     pub fn enemy_tower_at(&self, p: Point) -> Option<&Unit> {
@@ -236,11 +247,10 @@ impl Frame {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "kind", rename_all = "snake_case")]
 pub enum Effect {
-    Damage { target: usize, amount: i64 },
-    Stun { target: usize, ticks: u64 },
-    KnockUp { target: usize, ticks: u64 },
-    Slow { target: usize, pct: i64, ticks: u64 },
-    /// push a unit along open ground (an engine glide)
+    Damage { target: usize, amount: i64, source: HitSource },
+    LinkStun { target: usize, ticks: u64 },
+    LinkAirborne { target: usize, ticks: u64 },
+    /// Pull an enemy along open ground using the host glide.
     Knock { target: usize, to: Point, ticks: u64 },
     /// a deliberate move of his own (an engine glide): dodge slips, the step-out, the self-cleave
     Glide { to: Point, ticks: u64 },
@@ -248,8 +258,6 @@ pub enum Effect {
     Teleport { to: Point },
     /// the ult: unseen, unhurt, rooted and CC immune (a short lease, renewed)
     Vanish { ticks: u64 },
-    /// unhurt for a moment: the self-cleave, the step-out slip
-    Invulnerable { ticks: u64 },
     /// Shadow Merge on him: move speed for `ticks` (`ticks` 1 ends it)
     Merge { ticks: u64, move_pct: i64 },
     /// Shadow Rhythm's buffs on himself
@@ -266,53 +274,10 @@ pub enum Effect {
         #[serde(default, skip_serializing_if = "Option::is_none")]
         heading: Option<u8>,
     },
-    ShadowLand { cast: u64, at: Point, candidates: Vec<LinkTarget> },
-    ShadowStrike { cast: u64, amount: i64 },
-    ShadowEnd { cast: u64, at: Point, stored: i64, paid: bool },
-    ShadowPayout { target: usize, amount: i64 },
-    PreferShadow,
+    LinkWarning { at: Point, until: u64 },
+    LinkEnd,
     HoldForward { threat: Point, cover: Point },
     Log { text: String },
-}
-
-#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
-pub enum Cc {
-    Stun(u64),
-    KnockUp(u64),
-    Slow(i64, u64),
-}
-impl Cc {
-    fn halved(self) -> Cc {
-        let h = |n: u64| n * d::PACT_CC_PCT as u64 / 100;
-        match self {
-            Cc::Stun(n) => Cc::Stun(h(n)),
-            Cc::KnockUp(n) => Cc::KnockUp(h(n)),
-            Cc::Slow(p, n) => Cc::Slow(p, h(n)),
-        }
-    }
-    fn ticks(self) -> u64 {
-        match self {
-            Cc::Stun(n) | Cc::KnockUp(n) | Cc::Slow(_, n) => n,
-        }
-    }
-    fn with_ticks(self, n: u64) -> Cc {
-        match self {
-            Cc::Stun(_) => Cc::Stun(n),
-            Cc::KnockUp(_) => Cc::KnockUp(n),
-            Cc::Slow(p, _) => Cc::Slow(p, n),
-        }
-    }
-}
-
-/// Where a hit came from (it governs echoes and Rhythm).
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub enum Src {
-    Basic,
-    Skill,
-    Recast,
-    Echo,
-    Flurry,
-    FlurryEcho,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
@@ -320,23 +285,6 @@ pub struct Echo {
     pub target: usize,
     pub at: u64,
     pub amount: i64,
-    pub cc: Option<Cc>,
-    /// an echo of a flurry punch does not shorten the cooldown
-    #[serde(default)]
-    pub flurry: bool,
-}
-
-#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
-pub struct Cleave {
-    pub at: Point,
-    pub next: u64,
-    pub left: i64,
-    pub every: u64,
-    pub base: i64,
-    pub ratio: i64,
-    pub recast: bool,
-    #[serde(default)]
-    pub radius: i64,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
@@ -346,11 +294,7 @@ pub struct Flurry {
     pub done: i64,
     pub first: usize,
     pub last: Option<(usize, Point)>,
-    pub knock_next: u64,
     pub vanished_at: Point,
-    /// cast while merged: every punch echoes
-    #[serde(default)]
-    pub echo: bool,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
@@ -362,24 +306,19 @@ pub struct Stack {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
-pub struct LinkTarget {
-    pub id: usize,
-    pub max_hp: i64,
-}
-
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(tag = "kind", rename_all = "snake_case")]
-pub enum ShadowObservation {
-    Landed { cast: u64, targets: Vec<usize> },
-    Health { cast: u64, hp: i64 },
+pub struct LinkPull {
+    pub target: usize,
+    pub from: Point,
+    pub to: Point,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "phase", rename_all = "snake_case")]
 pub enum ShadowLink {
     Flight { cast: u64, from: Point, at: Point, cursor: Point, landing: u64 },
-    Pending { cast: u64, at: Point, landed: u64, candidates: Vec<LinkTarget> },
-    Active { cast: u64, at: Point, until: u64, max_hp: i64, hp: i64, linked: Vec<usize> },
+    Warning { at: Point, until: u64, linked: Vec<usize> },
+    Pull { at: Point, until: u64, pulled: Vec<LinkPull> },
+    Airborne { until: u64, targets: Vec<usize>, confirmed: Vec<usize> },
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
@@ -411,36 +350,22 @@ impl Barrier {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Core {
-    /// shadow dodges (above the maximum only while merged)
     pub charges: i64,
     pub charge_at: u64,
     pub last_dodge: u64,
-    /// a dodge to show and slip on the next step: where the hit came from
-    #[serde(default)]
-    pub pending_dodge: Option<Point>,
-    /// S1-S3 ready ticks
-    pub cd: [u64; 3],
-    /// recast windows (end ticks) and whether each recast was used
-    pub window: [u64; 3],
-    #[serde(default)]
-    pub used: [bool; 3],
-    /// Shadow Merge until this tick
-    #[serde(default)]
+    pub pending_dodge: Option<IncomingHit>,
+    pub merge_at: u64,
     pub merge_until: u64,
-    pub cleaves: Vec<Cleave>,
-    #[serde(default)]
+    pub merge_cross_at: u64,
     pub shadow_link: Option<ShadowLink>,
-    /// the ult is ready from this tick, less the cut (contender-2.7: a 120 s cooldown)
-    #[serde(default)]
     pub ult_at: u64,
-    /// hundredths of a second cut off the ult cooldown by his hits since the last cast
-    #[serde(default)]
-    pub ult_cut_centis: u64,
+    pub flurry_charges: i64,
+    pub flurry_charge_at: u64,
+    pub flurry_cast_at: u64,
+    pub flurry_credited_ticks: u64,
     pub flurry: Option<Flurry>,
     pub haymaker_until: u64,
     pub echoes: Vec<Echo>,
-    /// echoed crowd control per target: (target, window start, ticks used)
-    pub cc_budget: Vec<(usize, u64, u64)>,
     pub stacks: Vec<Stack>,
     pub focus: Option<(usize, i64)>,
     pub linger: Option<(i64, u64)>,
@@ -459,18 +384,18 @@ impl Default for Core {
             charge_at: 0,
             last_dodge: 0,
             pending_dodge: None,
-            cd: [0; 3],
-            window: [0; 3],
-            used: [false; 3],
+            merge_at: 0,
             merge_until: 0,
-            cleaves: vec![],
+            merge_cross_at: 0,
             shadow_link: None,
             ult_at: 0,
-            ult_cut_centis: 0,
+            flurry_charges: d::FLURRY_MAX_CHARGES,
+            flurry_charge_at: 0,
+            flurry_cast_at: 0,
+            flurry_credited_ticks: 0,
             flurry: None,
             haymaker_until: 0,
             echoes: vec![],
-            cc_budget: vec![],
             stacks: vec![],
             focus: None,
             linger: None,
@@ -485,225 +410,178 @@ impl Default for Core {
 
 impl Core {
     pub fn respawn(&mut self) {
-        self.cleaves.clear();
-        self.shadow_link = None;
         self.flurry = None;
         self.echoes.clear();
-        self.window = [0; 3];
-        self.used = [false; 3];
         self.merge_until = 0;
+        self.merge_cross_at = 0;
+        self.shadow_link = None;
         self.pending_dodge = None;
         self.haymaker_until = 0;
+        self.stacks.clear();
         self.linger = None;
         self.focus = None;
     }
+
     pub fn merged(&self, tick: u64) -> bool {
         tick < self.merge_until
     }
+
     pub fn flurrying(&self) -> bool {
         self.flurry.is_some()
     }
+
     pub fn ult_ready(&self, f: &Frame) -> bool {
-crate::unlocks::ult_unlocked(f.level, f.ult_unlocked) && f.tick >= self.ult_ready_at() && self.flurry.is_none()
+        crate::unlocks::ult_unlocked(f.level, f.ult_unlocked) && f.tick >= self.ult_at && self.shadow_link.is_none()
     }
-    /// the tick the ult is ready from: its cooldown less 0.01 s per hit since the last cast
-    pub fn ult_ready_at(&self) -> u64 {
-        self.ult_at.saturating_sub(self.ult_cut_centis * 60 / 100)
+
+    pub fn flurry_ready(&self, f: &Frame) -> bool {
+        crate::unlocks::skill_unlocked(f.level, 1) && self.flurry_charges > 0 && f.tick >= self.flurry_cast_at
     }
-    pub fn ready(&self, slot: usize, f: &Frame) -> bool {
-        f.tick >= self.cd[slot] && crate::unlocks::skill_unlocked(f.level, slot)
-    }
-    /// a free recast is open for this slot
-    pub fn recast_open(&self, slot: usize, f: &Frame) -> bool {
-        f.tick < self.window[slot] && !self.used[slot]
-    }
+
     pub fn stacks_on(&self, id: usize, tick: u64) -> i64 {
         self.stacks.iter().find(|s| s.id == id && tick < s.until).map_or(0, |s| s.count)
     }
-    /// extra damage he deals to `id`, in permille (Shadow Rhythm's vulnerability)
+
     pub fn vuln_permille(&self, id: usize, tick: u64) -> i64 {
         self.stacks_on(id, tick) * d::RHYTHM_VULNERABILITY_PERMILLE_PER_STACK
     }
-    fn dodge_gap(&self, tick: u64) -> u64 {
-        t(if self.merged(tick) { d::MERGE_DODGE_GAP_TICKS } else { d::CHARGES_DODGE_GAP_TICKS })
-    }
-    fn recharge_ticks(&self, tick: u64) -> u64 {
-        t(d::CHARGES_RECHARGE_TICKS / if self.merged(tick) { d::MERGE_RECHARGE_MULT.max(1) } else { 1 })
-    }
 
-    /// An enemy champion's hit (from `from`) is landing on him now: spend a dodge if one is ready. The bridge undoes the
-    /// damage when this says yes; the slip and its shadow are drawn on the next step.
-    pub fn try_dodge(&mut self, tick: u64, from: Point) -> bool {
-        if self.flurry.is_some() || self.charges <= 0 || (self.last_dodge > 0 && tick < self.last_dodge + self.dodge_gap(tick)) {
+    pub fn try_dodge(&mut self, tick: u64, hit: IncomingHit) -> bool {
+        if self.flurrying() || self.charges <= 0
+            || (self.last_dodge > 0 && tick < self.last_dodge + t(d::CHARGES_DODGE_GAP_TICKS)) {
             return false;
         }
         if self.charges == d::CHARGES_MAX {
-            self.charge_at = tick + self.recharge_ticks(tick);
+            self.charge_at = tick + t(d::CHARGES_RECHARGE_TICKS);
         }
         self.charges -= 1;
         self.last_dodge = tick.max(1);
-        self.pending_dodge = Some(from);
+        self.pending_dodge = Some(hit);
         true
     }
 
-    // -------------------------------------------------------------- step
-
     pub fn step(&mut self, f: &Frame) -> Vec<Effect> {
-        let mut out = vec![];
+        let mut out = Vec::new();
         self.rejection.clear();
         if !f.alive {
-            self.cancel_shadow(&mut out);
+            if self.shadow_link.is_some() {
+                out.push(Effect::LinkEnd);
+            }
             self.respawn();
             return out;
         }
-        for from in f.incoming.clone() {
-            self.try_dodge(f.tick, from);
+        for &hit in &f.incoming {
+            self.try_dodge(f.tick, hit);
         }
-        self.recharge(f);
+        self.recharge(f.tick);
+        self.credit_flurry(f.tick, f.landed_hits);
         self.stacks.retain(|s| f.tick < s.until);
-        self.cc_budget.retain(|b| f.tick < b.1 + t(d::PACT_CC_WINDOW_TICKS));
-        if self.merge_until > 0 && f.tick >= self.merge_until {
-            self.merge_until = 0;
-            self.charges = self.charges.min(d::CHARGES_MAX);
-        }
-        self.advance_shadow(f, &mut out);
         self.slip(f, &mut out);
-        for id in f.basic_hits.clone() {
-            if let Some(u) = f.unit(id).filter(|u| u.team != f.team && !u.tower).cloned() {
-                self.basic_landed(f, &u, &mut out);
+        for &id in &f.basic_hits {
+            self.credit_flurry(f.tick, 1);
+            if let Some(u) = f.unit(id).filter(|u| !u.tower && u.team != f.team) {
+                self.basic_landed(f, u, &mut out);
             }
         }
-        self.run_cleaves(f, &mut out);
-        self.run_flurry(f, &mut out);
         self.run_echoes(f, &mut out);
-        self.rhythm(f, &mut out);
-        let order = if self.flurry.is_some() { None } else if f.manual { f.order } else { self.decide(f, &mut out) };
-        if let Some(o) = order {
-            if !f.stunned || matches!(o, Order::End) {
-                self.execute(f, o, &mut out);
+        self.run_merge(f, &mut out);
+        self.advance_shadow(f, &mut out);
+        let was_flurrying = self.flurrying();
+        self.run_flurry(f, &mut out);
+        if !was_flurrying {
+            let order = if f.manual { f.order } else { self.decide(f, &mut out) };
+            if let Some(order) = order {
+                if f.stunned {
+                    self.reject("controlled");
+                } else {
+                    self.execute(f, order, &mut out);
+                }
             }
         }
-        if self.charges != self.charges_shown {
+        self.rhythm(f, &mut out);
+        if self.charges_shown != self.charges {
             self.charges_shown = self.charges;
             out.push(Effect::Charges { count: self.charges });
         }
         out
     }
 
-    fn recharge(&mut self, f: &Frame) {
-        if self.charges >= d::CHARGES_MAX {
-            self.charge_at = 0;
-            return;
-        }
-        if self.charge_at == 0 {
-            self.charge_at = f.tick + self.recharge_ticks(f.tick);
-        }
-        if f.tick >= self.charge_at {
+    fn recharge(&mut self, tick: u64) {
+        while self.charges < d::CHARGES_MAX && tick >= self.charge_at {
             self.charges += 1;
-            self.charge_at = if self.charges < d::CHARGES_MAX { f.tick + self.recharge_ticks(f.tick) } else { 0 };
+            self.charge_at += t(d::CHARGES_RECHARGE_TICKS);
+        }
+        while self.flurry_charges < d::FLURRY_MAX_CHARGES && tick >= self.flurry_charge_at {
+            self.flurry_charges += 1;
+            self.flurry_charge_at += t(d::FLURRY_RECHARGE_TICKS);
+        }
+        if self.flurry_charges == d::FLURRY_MAX_CHARGES {
+            self.flurry_charge_at = 0;
         }
     }
+
+    fn credit_flurry(&mut self, tick: u64, hits: u16) {
+        for _ in 0..hits {
+            if self.flurry_charges == d::FLURRY_MAX_CHARGES {
+                break;
+            }
+            let cut = t(d::FLURRY_HIT_CREDIT_TICKS).min(self.flurry_charge_at.saturating_sub(tick));
+            self.flurry_credited_ticks += cut;
+            self.flurry_charge_at -= cut;
+            self.recharge(tick);
+        }
+    }
+
     fn reject(&mut self, why: &str) {
         self.rejection = why.into();
     }
 
-    /// a dodge that landed: he slips aside, away from the hit, and a shadow stays where he stood
     fn slip(&mut self, f: &Frame, out: &mut Vec<Effect>) {
-        let Some(from) = self.pending_dodge.take() else { return };
-        let away = unit_dir(from, f.pos);
+        let Some(hit) = self.pending_dodge.take() else { return };
+        let away = unit_dir(hit.from, f.pos);
         let side = if (f.tick / 7) % 2 == 0 { (-away.1, away.0) } else { (away.1, -away.0) };
         let dir = ((away.0 + side.0) * 0.7071, (away.1 + side.1) * 0.7071);
-        let to = f.nearest_ground(f.clear_path(f.pos, f.pos.along(dir, d::CHARGES_DODGE_SLIP)));
+        let to = f.path_until(f.pos, f.pos.along(dir, d::CHARGES_DODGE_SLIP).clamp_map(), false);
         out.push(Effect::Glide { to, ticks: t(d::CHARGES_DODGE_SLIP_TICKS) });
         out.push(Effect::Fx { name: "ct_swap".into(), at: f.pos, ticks: 18, heading: None });
-    }
-
-    // -------------------------------------------------------------- hits, echoes and Rhythm
-
-    /// One hit of his (or his shadows'). `apply`: deal the damage here (basic attacks are dealt by the engine).
-    fn hit(&mut self, f: &Frame, u: &Unit, base: i64, cc: Option<Cc>, src: Src, apply: bool, out: &mut Vec<Effect>) {
-        let amount = base * (1_000 + self.vuln_permille(u.id, f.tick)) / 1_000;
-        if apply && amount > 0 {
-            out.push(Effect::Damage { target: u.id, amount });
-        }
-        if let Some(c) = cc {
-            self.cc(f, u.id, c, src == Src::Echo, out);
-        }
-        // echoes deal damage, carry crowd control and bank, but never add Rhythm stacks (contender-2.5)
-        // contender-2.7: flurry punches still stack, but never set off a Shadow Break
-        let flurryish = matches!(src, Src::Flurry | Src::FlurryEcho) || (src == Src::Echo && self.flurry.is_some());
-        if src != Src::Echo {
-            self.add_stacks(f, u, !flurryish, out);
-        }
-        // contender-2.7: every hit outside the flurry, echoes included, cuts the ult cooldown by 0.01 s
-        if !flurryish {
-            self.ult_cut_centis += d::ULT_CUT_CENTIS_PER_HIT as u64;
-        }
-        let echoes = match src {
-            Src::Echo | Src::FlurryEcho => 0,
-            Src::Flurry => i64::from(self.flurry.is_some_and(|fl| fl.echo)),
-            Src::Recast => 1, // contender-2.6: recasts echo once, like any hit
-            _ if self.merged(f.tick) => 2,
-            _ => 1,
-        };
-        for k in 1..=echoes {
-            self.echoes.push(Echo {
-                target: u.id,
-                at: f.tick + t(d::PACT_DELAY_TICKS) * k as u64,
-                amount: base * d::PACT_PCT / 100,
-                cc: cc.map(Cc::halved),
-                flurry: src == Src::Flurry,
-            });
-        }
-    }
-
-    fn cc(&mut self, f: &Frame, target: usize, c: Cc, echo: bool, out: &mut Vec<Effect>) {
-        let mut c = c;
-        if echo {
-            let cap = t(d::PACT_CC_CAP_TICKS);
-            let i = match self.cc_budget.iter().position(|b| b.0 == target) {
-                Some(i) => i,
-                None => {
-                    self.cc_budget.push((target, f.tick, 0));
-                    self.cc_budget.len() - 1
-                }
-            };
-            let left = cap.saturating_sub(self.cc_budget[i].2);
-            let n = c.ticks().min(left);
-            if n == 0 {
+        let reason = match f.unit(hit.attacker) {
+            _ if hit.counter => "a Counterpunch cannot trigger another counter",
+            Some(u) if !u.champion || u.team == f.team || u.hp <= 0 || !u.targetable
+                || f.separated.contains(&u.id) => "attacker ineligible",
+            Some(u) if !u.pos.within(f.pos, d::COUNTER_RANGE) => "attacker out of range",
+            Some(u) if f.path_until(f.pos, u.pos, false) != u.pos => "path blocked",
+            Some(u) => {
+                let amount = self.scaled_hit(f, u, pct(d::COUNTER_BASE, d::COUNTER_AD_RATIO, f.attack))
+                    + self.take_break(f, u, out);
+                out.push(Effect::Damage { target: u.id, amount, source: HitSource::Counter });
+                out.push(Effect::Fx { name: "ct_cross".into(), at: u.pos, ticks: 18, heading: None });
+                out.push(Effect::Log { text: format!("Counterpunch: attacker #{}", u.id) });
                 return;
             }
-            self.cc_budget[i].2 += n;
-            c = c.with_ticks(n);
-        }
-        out.push(match c {
-            Cc::Stun(n) => Effect::Stun { target, ticks: n },
-            Cc::KnockUp(n) => Effect::KnockUp { target, ticks: n },
-            Cc::Slow(p, n) => Effect::Slow { target, pct: p, ticks: n },
-        });
+            None => "attacker missing",
+        };
+        out.push(Effect::Log { text: format!("Counterpunch: attacker #{} — {reason}", hit.attacker) });
     }
 
-    /// Shadow Rhythm: a hit on a full target is a Shadow Break; otherwise it stacks (2 while merged).
-    fn add_stacks(&mut self, f: &Frame, u: &Unit, can_break: bool, out: &mut Vec<Effect>) {
+    fn scaled_hit(&self, f: &Frame, u: &Unit, base: i64) -> i64 {
+        base * (1_000 + self.vuln_permille(u.id, f.tick)) / 1_000
+    }
+
+    fn take_break(&mut self, f: &Frame, u: &Unit, out: &mut Vec<Effect>) -> i64 {
+        let max = d::RHYTHM_MAX_STACKS;
+        if self.stacks_on(u.id, f.tick) < max {
+            return 0;
+        }
+        self.stacks.retain(|s| s.id != u.id);
+        let end = f.tick + t(d::RHYTHM_BREAK_BUFF_TICKS);
+        self.linger = Some((max, self.linger.filter(|l| l.0 >= max).map_or(end, |l| l.1.max(end))));
+        out.push(Effect::Fx { name: "ct_break".into(), at: u.pos, ticks: 18, heading: None });
+        u.max_hp * d::RHYTHM_BREAK_PERMILLE_MAX_HP / 1_000 + d::RHYTHM_BREAK_AD_RATIO * f.attack / 100
+    }
+
+    fn add_stack(&mut self, f: &Frame, u: &Unit) {
         let max = d::RHYTHM_MAX_STACKS;
         let until = f.tick + t(d::RHYTHM_STACK_TICKS);
-        if self.stacks_on(u.id, f.tick) >= max {
-            if !can_break {
-                // a flurry punch on a full target: it holds at full; his next normal hit Breaks
-                if let Some(s) = self.stacks.iter_mut().find(|s| s.id == u.id) {
-                    s.until = until;
-                }
-                return;
-            }
-            let burst = u.max_hp * d::RHYTHM_BREAK_PERMILLE_MAX_HP / 1_000 + d::RHYTHM_BREAK_AD_RATIO * f.attack / 100;
-            out.push(Effect::Damage { target: u.id, amount: burst });
-            out.push(Effect::Fx { name: "ct_break".into(), at: u.pos, ticks: 18, heading: None });
-            // the target's stacks reset to 0, but his Rhythm buffs stay at full for a while (the kill-linger path)
-            self.stacks.retain(|s| s.id != u.id);
-            let end = f.tick + t(d::RHYTHM_BREAK_BUFF_TICKS);
-            self.linger = Some((max, self.linger.filter(|l| l.0 >= max).map_or(end, |l| l.1.max(end))));
-            return;
-        }
         let gain = if self.merged(f.tick) { d::MERGE_STACKS_PER_HIT } else { 1 };
         let carry = u.champion && self.stacks.iter().any(|s| !s.champion && s.count >= max && f.tick < s.until);
         match self.stacks.iter_mut().find(|s| s.id == u.id) {
@@ -716,31 +594,45 @@ crate::unlocks::ult_unlocked(f.level, f.ult_unlocked) && f.tick >= self.ult_read
     }
 
     fn run_echoes(&mut self, f: &Frame, out: &mut Vec<Effect>) {
-        let due: Vec<Echo> = self.echoes.iter().filter(|e| f.tick >= e.at).copied().collect();
-        self.echoes.retain(|e| f.tick < e.at);
-        for e in due {
-            if let Some(u) = f.unit(e.target).filter(|u| f.skill_target(u)).cloned() {
-                let src = if e.flurry { Src::FlurryEcho } else { Src::Echo };
-                // a flurry echo counts as flurry damage (does not shorten the cooldown), still no echo of its own
-                self.hit(f, &u, e.amount, e.cc, src, true, out);
-                out.push(Effect::Fx { name: "ct_echo".into(), at: u.pos, ticks: 12, heading: None });
+        let mut echoes = std::mem::take(&mut self.echoes);
+        echoes.retain(|e| {
+            if f.tick < e.at {
+                return true;
             }
-        }
+            if e.amount > 0 {
+                if let Some(u) = f.unit(e.target).filter(|u| f.skill_target(u)) {
+                    out.push(Effect::Damage { target: u.id, amount: self.scaled_hit(f, u, e.amount), source: HitSource::Echo });
+                    out.push(Effect::Fx { name: "ct_echo".into(), at: u.pos, ticks: 12, heading: None });
+                }
+            }
+            false
+        });
+        self.echoes = echoes;
     }
 
-    /// The engine's basic attack (his body's) landed.
     fn basic_landed(&mut self, f: &Frame, u: &Unit, out: &mut Vec<Effect>) {
-        self.hit(f, u, 0, None, Src::Basic, false, out);
-        // A basic echo uses Contender\x27s Attack rather than the zero placeholder.
-        // (every echo this basic queued: two while merged)
-        for e in self.echoes.iter_mut().filter(|e| e.target == u.id && e.amount == 0) {
-            e.amount = f.attack * d::PACT_PCT / 100;
-        }
-        if f.tick < self.haymaker_until {
+        let haymaker = f.tick < self.haymaker_until;
+        let mut bonus = 0;
+        if haymaker {
             self.haymaker_until = 0;
-            let amount = pct(d::ULT_HAYMAKER_BASE, d::ULT_HAYMAKER_AD_RATIO, f.attack);
-            self.hit(f, u, amount, Some(Cc::Stun(t(d::ULT_HAYMAKER_STUN_TICKS))), Src::Skill, true, out);
+            bonus = self.scaled_hit(f, u, pct(d::FLURRY_HAYMAKER_BASE, d::FLURRY_HAYMAKER_AD_RATIO, f.attack));
             out.push(Effect::Fx { name: "ct_haymaker".into(), at: u.pos, ticks: 18, heading: None });
+        }
+        if self.stacks_on(u.id, f.tick) >= d::RHYTHM_MAX_STACKS {
+            bonus += self.take_break(f, u, out);
+        } else {
+            self.add_stack(f, u);
+        }
+        if bonus > 0 {
+            out.push(Effect::Damage { target: u.id, amount: bonus, source: HitSource::Bonus });
+        }
+        let echoes = if self.merged(f.tick) { 2 } else { 1 };
+        for i in 1..=echoes {
+            self.echoes.push(Echo {
+                target: u.id,
+                at: f.tick + t(d::PACT_DELAY_TICKS) * i,
+                amount: f.attack * d::PACT_PCT / 100,
+            });
         }
     }
 
@@ -770,376 +662,224 @@ crate::unlocks::ult_unlocked(f.level, f.ult_unlocked) && f.tick >= self.ult_read
 
     /// enemies (never towers) near `p`, champions first then nearest
     fn targets_near(f: &Frame, p: Point, r: i64) -> Vec<Unit> {
-        let mut v: Vec<Unit> = f.units.iter().filter(|u| f.skill_target(u) && u.pos.within(p, r + u.radius)).cloned().collect();
+        let mut v: Vec<Unit> = f.units.iter().filter(|u| f.skill_target(u) && !f.separated.contains(&u.id)
+            && u.pos.within(p, r + u.radius) && f.path_until(p, u.pos, false) == u.pos).cloned().collect();
         v.sort_by_key(|u| (!u.champion, u.pos.d2(p), u.id));
         v
     }
 
     // -------------------------------------------------------------- orders
 
-    pub fn execute(&mut self, f: &Frame, o: Order, out: &mut Vec<Effect>) {
-        match o {
-            Order::S1 { aim } => {
-                if self.merged(f.tick) {
-                    if !self.recast_open(0, f) {
-                        return self.reject("s1 recast: used");
-                    }
-                    return self.step_out(f, aim, out);
-                }
-                if !crate::unlocks::skill_unlocked(f.level, 0) {
-                    return self.reject(&crate::unlocks::locked_reason(0));
-                }
-                if !self.ready(0, f) {
-                    return self.reject("s1");
-                }
-                self.merge(f, out)
+    pub fn execute(&mut self, f: &Frame, order: Order, out: &mut Vec<Effect>) {
+        match order {
+            Order::S1 if f.tick >= self.merge_at => {
+                self.merge_at = f.tick + t(d::MERGE_COOLDOWN_TICKS);
+                self.merge_until = f.tick + t(d::MERGE_TICKS);
+                self.merge_cross_at = f.tick + t(d::MERGE_CROSS_EVERY_TICKS);
+                out.push(Effect::Merge { ticks: t(d::MERGE_TICKS), move_pct: d::MERGE_MOVE_SPEED_PCT });
+                out.push(Effect::Fx { name: "ct_launch".into(), at: f.pos, ticks: 18, heading: None });
             }
-            Order::S2 { aim } => {
-                if self.recast_open(1, f) {
-                    return self.cyclone_recast(f, aim, out);
-                }
-                if !crate::unlocks::skill_unlocked(f.level, 1) {
-                    return self.reject(&crate::unlocks::locked_reason(1));
-                }
-                if !self.ready(1, f) {
-                    return self.reject("s2");
-                }
-                self.cyclone(f, aim, out)
-            }
-            Order::S3 { aim } => {
-                if !crate::unlocks::skill_unlocked(f.level, 2) {
-                    return self.reject(&crate::unlocks::locked_reason(2));
-                }
-                if !f.shadow_link_enabled {
-                    return self.reject("s3: Shadow Link host verification pending");
-                }
-                if !self.ready(2, f) || self.shadow_link.is_some() {
-                    return self.reject("s3: not ready");
-                }
-                self.cast_shadow(f, aim)
-            }
-            Order::Ult => {
-                if !self.ult_ready(f) {
-                    return self.reject("ult");
-                }
-                self.vanish(f, out)
-            }
-            Order::Move { .. } => self.reject("move: nothing to steer"),
-            Order::End => {
-                if self.merged(f.tick) {
-                    self.merge_until = 0;
-                    self.charges = self.charges.min(d::CHARGES_MAX);
-                    out.push(Effect::Merge { ticks: 1, move_pct: 0 });
-                }
-            }
+            Order::S1 => self.reject("s1: Shadow Merge cooling down"),
+            Order::S2 if !crate::unlocks::skill_unlocked(f.level, 1) => self.reject("s2: locked until level 2"),
+            Order::S2 if !self.flurry_ready(f) => self.reject("s2: no Flurry charge or cast gap active"),
+            Order::S2 => self.start_flurry(f, out),
+            Order::Ult { aim } if self.ult_ready(f) => self.cast_shadow(f, aim),
+            Order::Ult { .. } => self.reject("ult: locked or Shadow Link cooling down"),
         }
     }
 
-    // -------------------------------------------------------------- S1 Shadow Merge
-
-    fn merge(&mut self, f: &Frame, out: &mut Vec<Effect>) {
-        let ticks = t(d::MERGE_TICKS);
-        self.cd[0] = f.tick + t(d::MERGE_COOLDOWN_TICKS);
-        self.merge_until = f.tick + ticks;
-        self.window[0] = f.tick + ticks;
-        self.used[0] = false;
-        self.charges += d::MERGE_BONUS_DODGES;
-        out.push(Effect::Merge { ticks, move_pct: d::MERGE_MOVE_SPEED_PCT });
-        out.push(Effect::Fx { name: "ct_launch".into(), at: f.pos, ticks: 18, heading: None });
-    }
-
-    /// S1 recast: he steps out of the shadow; the shadow's cross knocks the nearest enemy back and he slips away.
-    fn step_out(&mut self, f: &Frame, aim: Point, out: &mut Vec<Effect>) {
-        self.used[0] = true;
-        self.merge_until = 0;
-        self.charges = self.charges.min(d::CHARGES_MAX);
-        out.push(Effect::Merge { ticks: 1, move_pct: 0 });
-        out.push(Effect::Fx { name: "ct_swap".into(), at: f.pos, ticks: 18, heading: None });
-        let near = Self::targets_near(f, f.pos, d::MERGE_CROSS_RADIUS).first().cloned();
-        let away_from = near.as_ref().map_or(aim, |u| u.pos);
-        self.strike_shadow(f.pos, d::MERGE_CROSS_RADIUS, pct(d::MERGE_CROSS_BASE, d::MERGE_CROSS_AD_RATIO, f.attack), out);
-        if let Some(u) = near {
-            let dir = unit_dir(f.pos, u.pos);
-            let knock = f.clear_path(u.pos, u.pos.along(dir, d::MERGE_CROSS_KNOCK));
-            self.hit(f, &u, pct(d::MERGE_CROSS_BASE, d::MERGE_CROSS_AD_RATIO, f.attack), None, Src::Recast, true, out);
-            out.push(Effect::Knock { target: u.id, to: knock, ticks: t(d::MERGE_CROSS_KNOCK_TICKS) });
-            out.push(Effect::Fx { name: "ct_cross".into(), at: u.pos, ticks: 18, heading: None });
-        }
-        let to = f.step_out_destination(away_from);
-        out.push(Effect::Glide { to, ticks: t(d::MERGE_SLIP_TICKS) });
-        out.push(Effect::Invulnerable { ticks: t(d::MERGE_SLIP_TICKS) + 7 });
-    }
-
-    // -------------------------------------------------------------- S2 Shadow Cyclone
-
-    fn cyclone(&mut self, f: &Frame, aim: Point, out: &mut Vec<Effect>) {
-        let spot = f.nearest_ground(f.clear_path(f.pos, f.pos.toward(aim, d::CYCLONE_RANGE)));
-        self.cd[1] = f.tick + t(d::CYCLONE_COOLDOWN_TICKS);
-        self.window[1] = f.tick + t(d::CHARGES_RECAST_WINDOW_TICKS);
-        self.used[1] = false;
-        self.cleaves.push(Cleave {
-            at: spot,
-            next: f.tick + t(d::CYCLONE_EVERY_TICKS),
-            left: d::CYCLONE_HITS,
-            every: t(d::CYCLONE_EVERY_TICKS),
-            base: d::CYCLONE_BASE,
-            ratio: d::CYCLONE_AD_RATIO,
-            recast: false,
-            radius: d::CYCLONE_RADIUS,
-        });
-        out.push(Effect::Fx { name: "ct_shadow".into(), at: spot, ticks: t(d::CYCLONE_HITS * d::CYCLONE_EVERY_TICKS) + 6, heading: None });
-    }
-
-    /// S2 recast: he cleaves himself anywhere within reach, invulnerable, in a bigger circle that pulls enemies in.
-    fn cyclone_recast(&mut self, f: &Frame, aim: Point, out: &mut Vec<Effect>) {
-        self.used[1] = true;
-        self.window[1] = 0;
-        // the clone stops: his own cleave takes over
-        self.cleaves.retain(|c| c.recast);
-        let spot = f.nearest_ground(f.clear_path(f.pos, f.pos.toward(aim, d::CYCLONE_RECAST_RANGE)));
-        let span = t(d::CYCLONE_RECAST_HITS * d::CYCLONE_RECAST_EVERY_TICKS);
-        out.push(Effect::Glide { to: spot, ticks: 8 });
-        out.push(Effect::Invulnerable { ticks: span + 12 });
-        self.cleaves.push(Cleave {
-            at: spot,
-            next: f.tick + 8 + t(d::CYCLONE_RECAST_EVERY_TICKS),
-            left: d::CYCLONE_RECAST_HITS,
-            every: t(d::CYCLONE_RECAST_EVERY_TICKS),
-            base: d::CYCLONE_RECAST_BASE,
-            ratio: d::CYCLONE_RECAST_AD_RATIO,
-            recast: true,
-            radius: d::CYCLONE_RECAST_RADIUS,
-        });
-    }
-
-    fn run_cleaves(&mut self, f: &Frame, out: &mut Vec<Effect>) {
-        let mut cleaves = std::mem::take(&mut self.cleaves);
-        for c in cleaves.iter_mut() {
-            if f.tick < c.next || c.left <= 0 {
-                continue;
-            }
-            c.left -= 1;
-            c.next = f.tick + c.every;
-            let last = c.left == 0;
-            let radius = if c.radius > 0 { c.radius } else { d::CYCLONE_RADIUS };
-            out.push(Effect::Fx { name: "ct_cleave".into(), at: c.at, ticks: c.every + 2, heading: None });
-            self.strike_shadow(c.at, radius, pct(c.base, c.ratio, f.attack), out);
-            for u in Self::targets_near(f, c.at, radius) {
-                let cc = if c.recast {
-                    last.then_some(Cc::KnockUp(t(d::CYCLONE_RECAST_KNOCK_TICKS)))
-                } else {
-                    Some(Cc::Slow(d::CYCLONE_SLOW_PCT, t(d::CYCLONE_SLOW_TICKS)))
-                };
-                self.hit(f, &u, pct(c.base, c.ratio, f.attack), cc, if c.recast { Src::Recast } else { Src::Skill }, true, out);
-                // the self-cleave drags them toward its centre
-                if c.recast && !last {
-                    let gap = u.pos.dist(c.at) as i64;
-                    if gap > 3_000 {
-                        let to = f.clear_path(u.pos, u.pos.toward(c.at, d::CYCLONE_RECAST_PULL.min(gap - 2_000)));
-                        out.push(Effect::Knock { target: u.id, to, ticks: t(d::CYCLONE_RECAST_PULL_TICKS) });
-                    }
-                }
+    fn run_merge(&mut self, f: &Frame, out: &mut Vec<Effect>) {
+        if self.merge_cross_at != 0 && f.tick >= self.merge_cross_at
+            && f.tick <= self.merge_until {
+            self.merge_cross_at += t(d::MERGE_CROSS_EVERY_TICKS);
+            out.push(Effect::Fx { name: "ct_cross".into(), at: f.pos, ticks: 18, heading: None });
+            for u in f.units.iter().filter(|u| f.skill_target(u) && !f.separated.contains(&u.id)
+                && u.pos.within(f.pos, d::MERGE_CROSS_RADIUS) && f.path_until(f.pos, u.pos, false) == u.pos) {
+                let amount = self.scaled_hit(f, u, pct(d::MERGE_CROSS_BASE, d::MERGE_CROSS_AD_RATIO, f.attack));
+                out.push(Effect::Damage { target: u.id, amount, source: HitSource::Merge });
             }
         }
-        cleaves.retain(|c| c.left > 0);
-        self.cleaves.extend(cleaves);
+        if self.merge_until > 0 && f.tick >= self.merge_until {
+            self.merge_until = 0;
+            self.merge_cross_at = 0;
+        }
     }
-
-    // -------------------------------------------------------------- S3 Shadow Link
 
     fn cast_shadow(&mut self, f: &Frame, aim: Point) {
-        let destination = f.pos.toward(aim, d::SHADOW_LINK_RANGE);
+        let cast = f.tick;
+        let destination = f.pos.toward(aim.clamp_map(), d::SHADOW_LINK_RANGE);
         let at = f.path_until(f.pos, destination, false);
-        if at == f.pos {
-            return self.reject("s3: no legal dash");
+        if at == f.pos && destination != f.pos {
+            self.reject("ult: path blocked");
+            return;
         }
         let distance = f.pos.dist(at).ceil() as i64;
         let ticks = (distance * d::SHADOW_LINK_FLIGHT_TICKS + d::SHADOW_LINK_RANGE - 1) / d::SHADOW_LINK_RANGE;
-        self.cd[2] = f.tick + t(d::SHADOW_LINK_COOLDOWN_TICKS);
-        self.shadow_link = Some(ShadowLink::Flight { cast: f.tick, from: f.pos, at, cursor: f.pos, landing: f.tick + t(ticks.max(1)) });
+        self.ult_at = cast + t(d::SHADOW_LINK_COOLDOWN_TICKS);
+        self.charges = d::CHARGES_MAX;
+        self.charge_at = 0;
+        self.shadow_link = Some(ShadowLink::Flight { cast, from: f.pos, at, cursor: f.pos, landing: cast + t(ticks).max(1) });
     }
 
     fn advance_shadow(&mut self, f: &Frame, out: &mut Vec<Effect>) {
-        if !f.shadow_link_enabled {
-            self.cancel_shadow(out);
-            return;
-        }
-        let Some(shadow) = self.shadow_link.take() else { return };
-        match shadow {
+        let Some(phase) = self.shadow_link.take() else { return };
+        match phase {
             ShadowLink::Flight { cast, from, at, cursor, landing } => {
                 let elapsed = f.tick.saturating_sub(cast).min(landing - cast) as i64;
-                let duration = (landing - cast) as i64;
-                let expected = Point::new(from.x + (at.x - from.x) * elapsed / duration, from.y + (at.y - from.y) * elapsed / duration);
-                let cleared = f.path_until(cursor, expected, false);
-                if f.tick < landing && cleared == expected {
-                    self.shadow_link = Some(ShadowLink::Flight { cast, from, at, cursor: cleared, landing });
+                let total = (landing - cast) as i64;
+                let step = Point::new(from.x + (at.x - from.x) * elapsed / total, from.y + (at.y - from.y) * elapsed / total);
+                let next = f.path_until(cursor, step, false);
+                if next == step && f.tick < landing {
+                    self.shadow_link = Some(ShadowLink::Flight { cast, from, at, cursor: next, landing });
                     return;
                 }
-                let at = cleared;
-                let mut candidates: Vec<_> = f.units.iter()
-                    .filter(|unit| f.link_target(unit) && unit.pos.within(at, d::SHADOW_LINK_RADIUS + unit.radius))
-                    .map(|unit| LinkTarget { id: unit.id, max_hp: unit.max_hp })
-                    .collect();
-                candidates.sort_by_key(|target| target.id);
-                candidates.dedup_by_key(|target| target.id);
-                out.push(Effect::ShadowLand { cast, at, candidates: candidates.clone() });
-                if candidates.is_empty() {
-                    out.push(Effect::ShadowEnd { cast, at, stored: 0, paid: false });
-                } else {
-                    self.shadow_link = Some(ShadowLink::Pending { cast, at, landed: f.tick, candidates });
-                }
+                let mut linked: Vec<_> = f.units.iter().filter(|u| f.link_target(u)
+                    && u.pos.within(next, d::SHADOW_LINK_RADIUS) && f.path_until(next, u.pos, false) == u.pos)
+                    .map(|u| u.id).collect();
+                linked.sort_unstable();
+                let until = f.tick + t(d::SHADOW_LINK_WARNING_TICKS);
+                out.push(Effect::LinkWarning { at: next, until });
+                self.shadow_link = Some(ShadowLink::Warning { at: next, until, linked });
             }
-            ShadowLink::Pending { cast, at, landed, candidates } => {
-                if let Some(ShadowObservation::Landed { cast: observed, targets }) = &f.shadow_observation {
-                    if *observed == cast {
-                        let confirmed: Vec<_> = candidates.iter().filter(|target| targets.contains(&target.id)).collect();
-                        let max_hp = confirmed.iter().map(|target| target.max_hp).max().unwrap_or(0);
-                        if max_hp > 0 {
-                            self.shadow_link = Some(ShadowLink::Active {
-                                cast, at, until: landed + t(d::SHADOW_LINK_TICKS), max_hp, hp: max_hp,
-                                linked: confirmed.iter().map(|target| target.id).collect(),
-                            });
-                            return;
-                        }
+            ShadowLink::Warning { at, until, mut linked } => {
+                linked.retain(|&id| f.unit(id).is_some_and(|u| f.link_target(u)
+                    && u.pos.within(at, d::SHADOW_LINK_RADIUS)));
+                if f.tick < until {
+                    self.shadow_link = Some(ShadowLink::Warning { at, until, linked });
+                    return;
+                }
+                let ticks = t(d::SHADOW_LINK_PULL_TICKS);
+                let mut pulled = Vec::new();
+                for id in linked {
+                    let Some(u) = f.unit(id) else { continue };
+                    let to = f.path_until(u.pos, at, false);
+                    if to != u.pos || u.pos == at {
+                        pulled.push(LinkPull { target: id, from: u.pos, to });
                     }
                 }
-                out.push(Effect::ShadowEnd { cast, at, stored: 0, paid: false });
-            }
-            ShadowLink::Active { cast, at, until, max_hp, hp, mut linked } => {
-                linked.retain(|id| !f.separated.contains(id) && f.unit(*id)
-                    .is_some_and(|unit| unit.hp > 0 && unit.pos.within(at, d::SHADOW_LINK_BREAK_RANGE)));
-                let observed = match f.shadow_observation {
-                    Some(ShadowObservation::Health { cast: observed, hp }) if observed == cast => Some(hp.clamp(0, max_hp)),
-                    _ => None,
-                };
-                if linked.is_empty() || observed.is_none() {
-                    out.push(Effect::ShadowEnd { cast, at, stored: max_hp - hp, paid: false });
-                    return;
+                out.push(Effect::LinkEnd);
+                if !pulled.is_empty() {
+                    self.shadow_link = Some(ShadowLink::Pull { at, until: f.tick + ticks, pulled });
+                    self.advance_shadow(f, out);
                 }
-                let hp = hp.min(observed.unwrap_or(hp));
-                if hp == 0 || f.tick >= until {
-                    let stored = max_hp - hp;
-                    let mut paid = false;
-                    for id in linked {
-                        if let Some(unit) = f.unit(id).filter(|unit| unit.targetable && unit.team != f.team) {
-                            let amount = stored.min(unit.max_hp * d::SHADOW_LINK_MAX_HP_DAMAGE_PCT / 100);
-                            if amount > 0 {
-                                paid = true;
-                                out.push(Effect::ShadowPayout { target: id, amount });
+            }
+            ShadowLink::Pull { at, until, mut pulled } => {
+                pulled.retain(|p| f.unit(p.target).is_some_and(|u| f.link_target(u)));
+                if f.tick <= until && !pulled.is_empty() {
+                    let total = d::SHADOW_LINK_PULL_TICKS;
+                    let elapsed = total - (until - f.tick) as i64 + 1;
+                    if elapsed <= total {
+                        for pull in &pulled {
+                            if let Some(u) = f.unit(pull.target) {
+                                let step = Point::new(pull.from.x + (pull.to.x - pull.from.x) * elapsed / total,
+                                    pull.from.y + (pull.to.y - pull.from.y) * elapsed / total);
+                                let to = f.path_until(u.pos, step, false);
+                                if to != u.pos && to.d2(at) < u.pos.d2(at) {
+                                    out.push(Effect::Knock { target: u.id, to, ticks: 1 });
+                                }
                             }
                         }
+                        self.shadow_link = Some(ShadowLink::Pull { at, until, pulled });
+                        return;
                     }
-                    out.push(Effect::ShadowEnd { cast, at, stored, paid });
+                }
+                let mut targets = Vec::new();
+                let ticks = t(d::SHADOW_LINK_KNOCK_TICKS);
+                for pull in pulled {
+                    if f.unit(pull.target).is_some_and(|u| u.pos.within(pull.to, 2_000)
+                        && (pull.from == pull.to || u.pos.d2(at) < pull.from.d2(at))) {
+                        out.push(Effect::LinkAirborne { target: pull.target, ticks });
+                        targets.push(pull.target);
+                    }
+                }
+                if !targets.is_empty() {
+                    self.shadow_link = Some(ShadowLink::Airborne { until: f.tick + ticks, targets, confirmed: vec![] });
+                }
+            }
+            ShadowLink::Airborne { until, mut targets, mut confirmed } => {
+                targets.retain(|&id| f.unit(id).is_some_and(|u| f.link_target(u)));
+                if f.tick < until && !targets.is_empty() {
+                    for &id in &targets {
+                        if f.link_airborne.contains(&id) && !confirmed.contains(&id) {
+                            confirmed.push(id);
+                        }
+                    }
+                    self.shadow_link = Some(ShadowLink::Airborne { until, targets, confirmed });
                 } else {
-                    self.shadow_link = Some(ShadowLink::Active { cast, at, until, max_hp, hp, linked });
+                    // The host can expire a CC after this update. Wait until it has actually ended.
+                    targets.retain(|id| confirmed.contains(id));
+                    let (waiting, ready): (Vec<_>, Vec<_>) =
+                        targets.into_iter().partition(|id| f.link_airborne.contains(id));
+                    for id in ready {
+                        out.push(Effect::LinkStun { target: id, ticks: t(d::SHADOW_LINK_STUN_TICKS) });
+                    }
+                    if !waiting.is_empty() {
+                        self.shadow_link = Some(ShadowLink::Airborne { until, targets: waiting, confirmed });
+                    }
                 }
             }
         }
     }
 
-    fn cancel_shadow(&mut self, out: &mut Vec<Effect>) {
-        if let Some(shadow) = self.shadow_link.take() {
-            let (cast, at, stored) = match shadow {
-                ShadowLink::Flight { cast, at, .. } | ShadowLink::Pending { cast, at, .. } => (cast, at, 0),
-                ShadowLink::Active { cast, at, max_hp, hp, .. } => (cast, at, max_hp - hp),
-            };
-            out.push(Effect::ShadowEnd { cast, at, stored, paid: false });
-        }
-    }
-
-    fn strike_shadow(&self, center: Point, radius: i64, amount: i64, out: &mut Vec<Effect>) {
-        if let Some(ShadowLink::Active { cast, at, .. }) = self.shadow_link {
-            if amount > 0 && center.within(at, radius) {
-                out.push(Effect::ShadowStrike { cast, amount });
-            }
-        }
-    }
-
-    // -------------------------------------------------------------- Ult Shadow Flurry
-
-    fn vanish(&mut self, f: &Frame, out: &mut Vec<Effect>) {
-        let Some(first) = Self::targets_near(f, f.pos, d::ULT_START_RANGE).first().cloned() else {
-            return self.reject("ult: nothing in reach");
+    fn start_flurry(&mut self, f: &Frame, out: &mut Vec<Effect>) {
+        let Some(first) = Self::targets_near(f, f.pos, d::FLURRY_START_RANGE).first().cloned() else {
+            return self.reject("s2: nothing in reach");
         };
-        // contender-2.7: a merged cast no longer echoes; the cooldown starts and the cut resets
-        let echo = false;
-        self.ult_at = f.tick + t(d::ULT_COOLDOWN_TICKS);
-        self.ult_cut_centis = 0;
+        if self.flurry_charges == d::FLURRY_MAX_CHARGES {
+            self.flurry_charge_at = f.tick + t(d::FLURRY_RECHARGE_TICKS);
+        }
+        self.flurry_charges -= 1;
         self.flurry = Some(Flurry {
-            start: f.tick,
-            next: f.tick + 6,
-            done: 0,
-            first: first.id,
-            last: None,
-            knock_next: f.tick + t(d::ULT_KNOCK_EVERY_TICKS),
-            vanished_at: f.pos,
-            echo,
+            start: f.tick, next: f.tick + t(d::FLURRY_GAP_TICKS), done: 0,
+            first: first.id, last: None, vanished_at: f.pos,
         });
-        out.push(Effect::Vanish { ticks: 3 });
+        out.push(Effect::Vanish { ticks: 2 });
         out.push(Effect::Fx { name: "ct_vanish".into(), at: f.pos, ticks: 24, heading: None });
     }
 
-    /// Read-only visual sequence: covers every direction without combat RNG.
     pub fn flurry_heading(owner: usize, punch: i64) -> u8 {
         ((owner % 8 + 3 * punch.rem_euclid(8) as usize) % 8) as u8
     }
 
-    /// the gap before punch `k` (0-based): slow at first, fast at the end
-    pub fn flurry_gap(k: i64) -> u64 {
-        let n = (d::ULT_PUNCHES - 1).max(1);
-        let span = d::ULT_FIRST_GAP_TICKS - d::ULT_LAST_GAP_TICKS;
-        t(d::ULT_FIRST_GAP_TICKS - (span * k.min(n) + n / 2) / n)
-    }
-
     fn run_flurry(&mut self, f: &Frame, out: &mut Vec<Effect>) {
-        let Some(mut fl) = self.flurry else { return };
-        let end = fl.start + t(d::ULT_TICKS);
-        let mut over = f.tick >= end || fl.done >= d::ULT_PUNCHES;
-        while !over && f.tick >= fl.next && fl.done < d::ULT_PUNCHES {
-            let pick = match fl.last {
-                None => f.unit(fl.first).filter(|u| f.skill_target(u)).cloned(),
-                Some((last, at)) => {
-                    let nearby = Self::targets_near(f, at, d::ULT_CHAIN_RANGE);
-                    // The last victim is usually distance zero. Prefer another
-                    // eligible enemy before applying the existing deterministic
-                    // champion/distance/id ordering; retain the solo-target fallback.
-                    nearby.iter().find(|u| u.id != last).or_else(|| nearby.first()).cloned()
-                }
+        let Some(mut fl) = self.flurry.take() else { return };
+        let end = fl.start + t(d::FLURRY_TICKS);
+        if f.tick >= fl.next && fl.next <= end && fl.done < d::FLURRY_PUNCHES {
+            let candidates = fl.last.map_or_else(
+                || Self::targets_near(f, fl.vanished_at, d::FLURRY_START_RANGE),
+                |(_, at)| Self::targets_near(f, at, d::FLURRY_CHAIN_RANGE),
+            );
+            let victim = match fl.last {
+                None => candidates.iter().find(|u| u.id == fl.first),
+                Some((previous, _)) => candidates.iter().find(|u| u.id != previous).or_else(|| candidates.first()),
             };
-            let Some(u) = pick else {
-                over = true;
-                break;
-            };
+            if let Some(u) = victim {
+                let amount = self.scaled_hit(f, u, pct(d::FLURRY_BASE, d::FLURRY_AD_RATIO, f.attack));
+                out.push(Effect::Damage { target: u.id, amount, source: HitSource::Flurry });
+                self.add_stack(f, u);
+                out.push(Effect::Fx { name: "ct_flurry".into(), at: u.pos, ticks: 8, heading: Some(Self::flurry_heading(f.owner, fl.done)) });
+                fl.last = Some((u.id, u.pos));
+                fl.next += t(d::FLURRY_GAP_TICKS);
+                fl.done += 1;
+            } else {
+                fl.next = 0;
+            }
+        }
+        if f.tick >= end || fl.next == 0 {
+            if let Some((_, at)) = fl.last {
+                let land = f.path_until(fl.vanished_at, at.toward(fl.vanished_at, 10_000), false);
+                let landing = if f.manual || Self::safe_commit(f, land) { land } else {
+                    f.path_until(fl.vanished_at, Self::cover(f, fl.vanished_at).unwrap_or(fl.vanished_at), true)
+                };
+                out.push(Effect::Teleport { to: landing });
+                out.push(Effect::Fx { name: "ct_appear".into(), at: landing, ticks: 18, heading: None });
+                self.haymaker_until = f.tick + t(d::FLURRY_HAYMAKER_TICKS);
+            }
+            self.flurry_cast_at = f.tick + t(d::FLURRY_CAST_GAP_TICKS);
+        } else {
+            out.push(Effect::Vanish { ticks: (end - f.tick).min(2) });
             self.flurry = Some(fl);
-            self.hit(f, &u, pct(d::ULT_BASE, d::ULT_AD_RATIO, f.attack), None, Src::Flurry, true, out);
-            fl = self.flurry.unwrap_or(fl);
-            out.push(Effect::Fx { name: "ct_flurry".into(), at: u.pos, ticks: 8, heading: Some(Self::flurry_heading(f.owner, fl.done)) });
-            fl.last = Some((u.id, u.pos));
-            fl.next += Self::flurry_gap(fl.done);
-            fl.done += 1;
         }
-        if !over && f.tick >= fl.knock_next {
-            fl.knock_next += t(d::ULT_KNOCK_EVERY_TICKS);
-            if let Some((id, _)) = fl.last {
-                if f.unit(id).is_some_and(|u| f.skill_target(u)) {
-                    out.push(Effect::KnockUp { target: id, ticks: t(d::ULT_KNOCK_TICKS) });
-                }
-            }
-        }
-        if over || fl.done >= d::ULT_PUNCHES {
-            self.flurry = None;
-            let back = fl.last.and_then(|(id, at)| f.unit(id).map(|u| u.pos).or(Some(at)));
-            if let Some(p) = back {
-                let to = f.nearest_ground(p.toward(fl.vanished_at, 10_000));
-                out.push(Effect::Teleport { to });
-                out.push(Effect::Fx { name: "ct_appear".into(), at: to, ticks: 18, heading: None });
-            }
-            // contender-2.6: his dodges no longer refill when he comes back
-            self.haymaker_until = f.tick + t(d::ULT_HAYMAKER_TICKS);
-            return;
-        }
-        out.push(Effect::Vanish { ticks: 3 });
-        self.flurry = Some(fl);
     }
 
     // -------------------------------------------------------------- AI
@@ -1202,48 +942,44 @@ crate::unlocks::ult_unlocked(f.level, f.ult_unlocked) && f.tick >= self.ult_read
         out.push(Effect::HoldForward { threat, cover: Self::cover(f, f.pos).unwrap_or(f.pos) });
     }
 
-    fn shadow_aim(&self, f: &Frame, peeling: bool) -> Option<Point> {
-        if !f.shadow_link_enabled || !self.ready(2, f) || self.shadow_link.is_some() {
+    fn shadow_aim(&self, f: &Frame) -> Option<(Point, bool)> {
+        if !self.ult_ready(f) || !f.allies().any(|ally| ally.pos.within(f.pos, d::SHADOW_LINK_RANGE + d::AI_SUPPORT_RANGE + d::SHADOW_LINK_RADIUS)) {
             return None;
         }
-        f.units.iter().filter(|unit| f.link_target(unit) && (unit.champion || (!peeling && unit.farmable)))
-            .filter(|unit| unit.pos.within(f.pos, d::SHADOW_LINK_RANGE + d::SHADOW_LINK_RADIUS + unit.radius))
-            // Try close placements too: the shadow can cover opponents from the edge of his punch range.
-            .flat_map(|unit| [d::AI_SHADOW_STEP, d::BASIC_RANGE, d::SHADOW_LINK_RANGE]
-                .map(|range| f.pos.toward(unit.pos, range)))
-            .map(|at| f.path_until(f.pos, at, false))
-            .filter(|at| *at != f.pos)
+        f.enemy_champions()
+            .filter(|enemy| f.link_target(enemy) && enemy.pos.within(f.pos, d::SHADOW_LINK_RANGE + d::SHADOW_LINK_RADIUS))
+            .map(|enemy| f.path_until(f.pos, f.pos.toward(enemy.pos, d::SHADOW_LINK_RANGE), false))
             .filter_map(|at| {
-                let champions = f.enemy_champions().filter(|unit| f.link_target(unit)
-                    && unit.pos.within(at, d::SHADOW_LINK_RADIUS + unit.radius)
-                    && (!peeling || unit.pos.within(f.pos, d::AI_THREAT_RANGE))).count();
-                let farm = f.units.iter().filter(|unit| f.link_target(unit) && unit.farmable
-                    && unit.pos.within(at, d::SHADOW_LINK_RADIUS + unit.radius)).count();
-                (champions > 0 || (!peeling && Self::nearby_threats(f, f.pos) == 0 && farm > 0))
-                    .then_some((champions, farm, at))
+                let trapped: Vec<_> = f.enemy_champions().filter(|enemy| f.link_target(enemy)
+                    && enemy.pos.within(at, d::SHADOW_LINK_RADIUS)
+                    && f.path_until(at, enemy.pos, false) == enemy.pos).collect();
+                let peel = f.allies().any(|ally| Self::hurt_pct(ally) < 45
+                    && trapped.iter().any(|enemy| enemy.pos.within(ally.pos, 30_000)));
+                let supported_group = Self::support(f, at) > 0 && trapped.len() >= 2
+                    && f.hp * 100 >= d::AI_RETREAT_HP * f.max_hp.max(1);
+                (peel || supported_group).then_some((at, peel, trapped.len()))
             })
-            .max_by_key(|(champions, farm, at)| (*champions, *farm, std::cmp::Reverse(at.d2(f.pos))))
-            .map(|(_, _, at)| at)
+            .max_by_key(|(at, peel, count)| (*peel, *count, std::cmp::Reverse(at.d2(f.pos))))
+            .map(|(at, peel, _)| (at, peel))
     }
 
     fn safe_flurry(&self, f: &Frame) -> bool {
-        let Some(first) = Self::targets_near(f, f.pos, d::ULT_START_RANGE).into_iter().next() else { return false };
+        let Some(first) = Self::targets_near(f, f.pos, d::FLURRY_START_RANGE).into_iter().next() else { return false };
         if !first.champion || self.solo_finish(f, &first) {
             return false;
         }
         // Follow the currently visible chain component conservatively. Any member may be the last
         // strike after deaths or movement. Check each possible landing before committing.
-        let mut candidates = vec![&first];
+        let mut candidates = vec![first.clone()];
         let mut checked = 0;
         while checked < candidates.len() {
-            let unit = candidates[checked];
+            let unit = candidates[checked].clone();
             checked += 1;
-            let land = f.nearest_ground(unit.pos.toward(f.pos, 10_000));
+            let land = f.path_until(f.pos, unit.pos.toward(f.pos, 10_000), false);
             if !Self::safe_commit(f, land) {
                 return false;
             }
-            for next in f.units.iter().filter(|next| f.skill_target(next)
-                && next.pos.within(unit.pos, d::ULT_CHAIN_RANGE + next.radius)) {
+            for next in Self::targets_near(f, unit.pos, d::FLURRY_CHAIN_RANGE) {
                 if !candidates.iter().any(|candidate| candidate.id == next.id) {
                     candidates.push(next);
                 }
@@ -1253,115 +989,62 @@ crate::unlocks::ult_unlocked(f.level, f.ult_unlocked) && f.tick >= self.ult_read
     }
 
     pub fn decide(&mut self, f: &Frame, out: &mut Vec<Effect>) -> Option<Order> {
-        if f.stunned || self.flurry.is_some() {
+        if f.stunned || self.flurrying() {
             return None;
         }
         let target = self.pick(f);
+        if let Some((aim, peel)) = self.shadow_aim(f) {
+            self.reason = if peel { "Peel: Shadow Link" } else { "Hold: supported Shadow Link" }.into();
+            if let Some(foe) = &target {
+                self.hold_forward(f, foe.pos, out);
+            }
+            return Some(Order::Ult { aim });
+        }
         if f.hp * 100 < d::AI_RETREAT_HP * f.max_hp.max(1) {
-            if !self.reason.starts_with("Retreat") && !self.reason.starts_with("Peel") {
+            if !self.reason.starts_with("Retreat") {
                 self.steer_at = 0;
             }
             self.reason = "Retreat: low HP".into();
-            if let Some(foe) = target.as_ref() {
+            if let Some(foe) = &target {
                 self.hold_forward(f, foe.pos, out);
-                if foe.pos.within(f.pos, 25_000) && self.merged(f.tick) && self.recast_open(0, f) {
-                    let nearest = Self::targets_near(f, f.pos, d::MERGE_CROSS_RADIUS).into_iter().next();
-                    let source = nearest.as_ref().map_or(foe.pos, |unit| unit.pos);
-                    let to = f.step_out_destination(source);
-                    if to.d2(source) > f.pos.d2(source) && f.path_until(f.pos, to, true) == to
-                        && Self::nearby_threats(f, to) <= Self::nearby_threats(f, f.pos) {
-                        self.reason = "Retreat: Merge step-out".into();
-                        return Some(Order::S1 { aim: source });
-                    }
-                }
-                if let Some(cover) = Self::cover(f, f.pos) {
-                    self.steer(f, cover, out);
-                }
-                if let Some(aim) = self.shadow_aim(f, true) {
-                    self.reason = "Peel: Shadow Link".into();
-                    return Some(Order::S3 { aim });
-                }
-            } else if let Some(cover) = Self::cover(f, f.pos) {
+            }
+            if let Some(cover) = Self::cover(f, f.pos) {
                 self.steer(f, cover, out);
             }
-            return None;
+            return (target.is_some() && f.tick >= self.merge_at && !self.merged(f.tick)).then_some(Order::S1);
         }
-
-        if let Some(ShadowLink::Active { at, .. }) = self.shadow_link {
-            if at.within(f.pos, d::BASIC_RANGE) && f.enemy_tower_at(f.pos).is_none()
-                && f.path_until(f.pos, at, false) == at {
-                out.push(Effect::PreferShadow);
-                self.reason = "Hold: attack the shadow".into();
-                if let Some(foe) = &target { self.hold_forward(f, foe.pos, out); }
-                return None;
-            }
-            let step = f.pos.toward(at, d::AI_SHADOW_STEP);
-            if at.within(step, d::BASIC_RANGE) && f.path_until(f.pos, step, true) == step
-                && Self::nearby_threats(f, step) <= Self::nearby_threats(f, f.pos)
-                && f.enemy_champions().all(|enemy| !enemy.pos.within(step, 25_000))
-                && Self::cover(f, step).is_some() {
-                self.reason = "Hold: safe step to the shadow".into();
-                self.steer(f, step, out);
-                return None;
-            }
-        }
-
-        if let Some(aim) = self.shadow_aim(f, false) {
-            self.reason = if target.is_some() { "Poke: Shadow Link" } else { "Farm: Shadow Link" }.into();
-            if let Some(foe) = &target { self.hold_forward(f, foe.pos, out); }
-            return Some(Order::S3 { aim });
-        }
-
         if let Some(foe) = target {
             if self.solo_finish(f, &foe) && Self::cover(f, f.pos).is_some() {
                 self.reason = "Commit: basic can finish".into();
                 return None;
             }
+            if self.flurry_ready(f) && self.safe_flurry(f) {
+                self.reason = "Commit: supported Shadow Flurry".into();
+                return Some(Order::S2);
+            }
             let dist = f.pos.dist(foe.pos) as i64;
             let limit = d::AI_CHASE_RANGE + f.p(6) * d::AI_AGGRESSIVE_CHASE_PER_POINT;
-            let landing = f.nearest_ground(f.clear_path(f.pos, f.pos.toward(foe.pos, d::CYCLONE_RECAST_RANGE)));
-            if self.recast_open(1, f) && dist <= d::CYCLONE_RECAST_RANGE
-                && foe.pos.within(landing, d::CYCLONE_RECAST_RADIUS + foe.radius) && Self::safe_commit(f, landing) {
-                self.reason = "Commit: supported Cyclone recast".into();
-                return Some(Order::S2 { aim: foe.pos });
-            }
-            if self.ult_ready(f) && self.safe_flurry(f) {
-                self.reason = "Commit: supported Shadow Flurry".into();
-                return Some(Order::Ult);
-            }
-            if !self.merged(f.tick) && self.ready(0, f) && dist <= d::AI_MERGE_RANGE && Self::safe_commit(f, foe.pos) {
-                self.reason = "Commit: supported Merge".into();
-                return Some(Order::S1 { aim: foe.pos });
-            }
-            if self.ready(1, f) && dist <= d::CYCLONE_RANGE + d::CYCLONE_RADIUS / 2 {
-                self.reason = "Poke: Shadow Cyclone".into();
-                self.hold_forward(f, foe.pos, out);
-                return Some(Order::S2 { aim: foe.pos });
-            }
             if dist <= limit && dist > d::BASIC_RANGE && Self::safe_commit(f, foe.pos) {
                 self.reason = "Commit: supported approach".into();
                 self.steer(f, foe.pos, out);
+                if f.tick >= self.merge_at && dist <= d::AI_MERGE_RANGE {
+                    return Some(Order::S1);
+                }
             } else {
                 self.reason = "Hold: unsafe or unsupported approach".into();
                 self.hold_forward(f, foe.pos, out);
             }
+            if f.tick >= self.merge_at && dist <= d::MERGE_CROSS_RADIUS {
+                return Some(Order::S1);
+            }
             return None;
         }
-
-        if f.enemy_champions().all(|unit| !unit.pos.within(f.pos, d::AI_CALM_RANGE)) {
-            let farm = f.units.iter().filter(|unit| unit.farmable && f.skill_target(unit)
-                && unit.pos.within(f.pos, 90_000)).min_by_key(|unit| (unit.pos.d2(f.pos), unit.id));
-            if let Some(unit) = farm {
-                let clustered = f.units.iter().filter(|other| other.farmable && f.skill_target(other)
-                    && other.pos.within(unit.pos, d::CYCLONE_RADIUS)).count() >= 2;
-                if self.ready(1, f) && unit.pos.within(f.pos, d::CYCLONE_RANGE)
-                    && (clustered || unit.max_hp >= d::AI_FARM_BIG_HP) {
-                    self.reason = "Farm: Shadow Cyclone".into();
-                    return Some(Order::S2 { aim: unit.pos });
-                }
-            }
-        }
         self.reason.clear();
+        if f.tick >= self.merge_at && f.units.iter().filter(|unit| unit.farmable && f.skill_target(unit)
+            && unit.pos.within(f.pos, d::MERGE_CROSS_RADIUS)).count() >= 2 {
+            self.reason = "Farm: Shadow Merge".into();
+            return Some(Order::S1);
+        }
         None
     }
 }

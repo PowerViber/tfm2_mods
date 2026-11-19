@@ -54,23 +54,23 @@ fn contender_rejects_locked_orders_and_only_considers_unlocked_skills_at_level_o
         ..Frame::default()
     };
     let mut c = Core::default();
-    c.step(&base(1, 1, Some(Order::S2 { aim: foe.pos })));
+    c.step(&base(1, 1, Some(Order::S2)));
     assert_eq!(c.rejection, "s2: locked until level 2");
-    c.step(&base(2, 2, Some(Order::S3 { aim: foe.pos })));
-    assert_eq!(c.rejection, "s3: locked until level 3");
-    c.step(&base(4, 3, Some(Order::Ult)));
-    assert!(!c.flurrying(), "the ult waits for level 5 even off cooldown");
-    c.step(&base(5, 4, Some(Order::Ult)));
-    assert!(c.flurrying());
-    // At level one neither Cyclone nor Shadow Link may start, even when both are enabled for the host.
+    c.step(&base(2, 2, Some(Order::S2)));
+    assert!(c.flurrying(), "Flurry unlocks in S2");
+    let mut c = Core::default();
+    c.step(&base(4, 3, Some(Order::Ult { aim: foe.pos })));
+    assert!(c.shadow_link.is_none(), "the ult waits for level 5 even off cooldown");
+    c.step(&base(5, 4, Some(Order::Ult { aim: foe.pos })));
+    assert!(c.shadow_link.is_some());
+    // A level-one AI cannot spend Flurry or the ultimate.
     let mut c = Core::default();
     for t in 1..400 {
         let mut f = base(1, t, None);
-        f.shadow_link_enabled = true;
         f.units.push(Unit { id: 11, pos: Point::new(435_000, 505_000), ..foe.clone() });
         c.step(&f);
-        assert_eq!(c.cd[1..], [0, 0], "{}", c.reason);
-        assert!(c.shadow_link.is_none() && c.cleaves.is_empty(), "{}", c.reason);
+        assert_eq!(c.flurry_charges, crate::contender_shadow_data::FLURRY_MAX_CHARGES);
+        assert!(c.shadow_link.is_none());
     }
 }
 

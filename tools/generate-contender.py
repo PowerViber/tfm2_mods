@@ -1,6 +1,6 @@
 """Generate Contender's Rust tables, champion data, tooltips, editor data and roster entry from rules/contender.json.
 
-Contender 2.9, the elusive Shadow Boxer (round 178). Change numbers in the rules file and rerun; never edit the outputs by hand.
+Contender 3.1, the Shadow Boxer. Change numbers in the rules file and rerun; never edit the outputs by hand.
 `--check` only verifies.
 """
 from pathlib import Path
@@ -9,7 +9,7 @@ import copy, json, re, sys
 ROOT = Path(__file__).resolve().parents[1]
 rules = json.loads((ROOT / 'rules/contender.json').read_text())
 ID = rules['id']
-GROUPS = ['basic', 'charges', 'pact', 'rhythm', 'merge', 'cyclone', 'shadowLink', 'ult', 'ai']
+GROUPS = ['basic', 'charges', 'pact', 'rhythm', 'merge', 'counter', 'flurry', 'shadowLink', 'ai']
 
 
 def snake(s):
@@ -25,48 +25,32 @@ for group in GROUPS:
 lines.append(f'pub const FX_TOKENS: usize = {rules["fxTokens"]};')
 rust = '\n'.join(lines) + '\n'
 
-b, ch, pa, rh, me, cy, te, ul, _ = (rules[k] for k in GROUPS)
+b, ch, pa, rh, me, co, fl, link, _ = (rules[k] for k in GROUPS)
 sec = lambda n: f'{n / 60:g} s'
 text = {
     'name': rules['name'],
-    'skill': (f"Shadows (passive): {ch['max']} shadow dodge{'s' if ch['max'] != 1 else ''}, recharging one at a time every {sec(ch['rechargeTicks'])}. When an enemy "
-              + (f"champion's basic attack hits him, a dodge is spent: he slips {ch['dodgeSlip']} aside and the hit is undone (skills and ults "
-                 f"always land). " if ch['basicsOnly'] else f"champion's attack or skill hits him, a dodge is spent: he slips {ch['dodgeSlip']} aside and the hit "
-                 f"is undone (at most one dodge every {sec(ch['dodgeGapTicks'])}). ") + f"His skills never cost dodges; each can be recast "
-              f"once, free, within {sec(ch['recastWindowTicks'])}. "
-              f"Shadow Pact (passive): every punch and skill hits again {sec(pa['delayTicks'])} later for {pa['pct']}%, with its crowd control at "
-              f"{pa['ccPct']}% (at most {sec(pa['ccCapTicks'])} more per target every {sec(pa['ccWindowTicks'])}). Echoes never add Rhythm stacks. "
-              f"Shadow Rhythm (passive): each hit of his (not an echo) stacks on its target (up to {rh['maxStacks']}, {sec(rh['stackTicks'])}); the most-stacked enemy "
-              f"gives him +{rh['attackSpeedPermillePerStack'] / 10:g}% attack speed"
-              + (f", +{rh['attackPermillePerStack'] / 10:g}% Attack" if rh['attackPermillePerStack'] else '') + f" and "
-              f"+{rh['moveSpeedPermillePerStack'] / 10:g}% move speed per stack, and takes +{rh['vulnerabilityPermillePerStack'] / 10:g}% damage "
-              f"from him per stack. At {rh['maxStacks']} stacks his next hit is a Shadow Break: {rh['breakPermilleMaxHp'] / 10:g}% of its max HP + "
-              f"{rh['breakAdRatio']}% Attack, and its stacks reset to 0, but his Rhythm buffs stay at full for {sec(rh['breakBuffTicks'])}. A max-stacked creep carries {rh['carryStacks']} stacks "
-              f"onto the next champion he hits; a stacked kill keeps the buffs {sec(rh['lingerTicks'])} longer. "
-              f"S1 Shadow Merge ({sec(me['cooldownTicks'])}): he merges with his shadow for {sec(me['ticks'])}: "
-              + (f"dodges recharge {me['rechargeMult']}x as fast, " if me['rechargeMult'] > 1 else '') + (f"+{me['bonusDodges']} dodge{'s' if me['bonusDodges'] != 1 else ''} at once, " if me['bonusDodges'] else '') + f"every hit echoes twice and adds {me['stacksPerHit']} stacks, +{me['moveSpeedPct']}% "
-              f"move speed. Recast: he steps out; the shadow's cross knocks the nearest enemy {me['crossKnock']} back ({me['crossBase']} + "
-              f"{me['crossAdRatio']}% Attack) and he slips {me['slip']} away."),
-    'skill2': (f"Shadow Cyclone ({sec(cy['cooldownTicks'])}): a shadow clone goes to a spot within {cy['range']} and cleaves the circle around "
-               f"it ({cy['radius']}): {cy['hits']} hits of {cy['base']} + {cy['adRatio']}% Attack and a {cy['slowPct']}% slow; it can't be hit. "
-               f"Recast: he cleaves himself anywhere within {cy['recastRange']}, invulnerable, in a {cy['recastRadius']} circle: {cy['recastHits']} hits "
-               f"of {cy['recastBase']} + {cy['recastAdRatio']}% Attack, each pulling enemies {cy['recastPull']} toward the centre, the last knocking "
-               f"up for {sec(cy['recastKnockTicks'])}. "
-               f"Shadow Link ({sec(te['cooldownTicks'])}): send a shadow up to {te['range']}. On landing it slows enemies within "
-               f"{te['radius']} by {te['slowPct']}% for {sec(te['slowTicks'])} and links those it slows. The shadow has the highest linked max HP. "
-               f"Team damage to the shadow is stored until it breaks or expires after {sec(te['ticks'])}. Each linked enemy takes that much physical "
-               f"damage, capped at {te['maxHpDamagePct']}% of their own maximum HP. Moving more than {te['breakRange']} from the shadow breaks the link. "
-               f"Shadow Link is available in the Lab; native play is pending host verification."),
-    'ult': (f"Shadow Flurry ({sec(ul['cooldownTicks'])}; every hit of his outside the flurry, echoes included, takes "
-            f"{ul['cutCentisPerHit'] / 100:g} s off the cooldown). He melts into the ground: banished (untargetable, unseen, unhurt) for "
-            f"{sec(ul['ticks'])}. His shadows strike the enemy nearest him (within {ul['startRange']}), then chain {ul['punches']} punches, "
-            + ("at a steady pace" if ul['firstGapTicks'] == ul['lastGapTicks'] else "slow at first and faster at the end") + f", each onto an enemy within {ul['chainRange']} of the last one hit ({ul['base']} + "
-            f"{ul['adRatio']}% Attack). Each punch prefers a different eligible enemy; it repeats the last target only when no alternative is in reach. "
-            f"Flurry punches never echo and never set off a Shadow Break (a full target Breaks on his next hit after). Every second the last enemy hit is knocked up. With nothing left in reach the flurry ends early. He "
-            f"reappears beside the last enemy hit, and his next basic within {sec(ul['haymakerTicks'])} is a haymaker "
-            f"(+{ul['haymakerBase']} + {ul['haymakerAdRatio']}% Attack, a {sec(ul['haymakerStunTicks'])} stun). His skills never hit towers."),
+    'skill': (
+        f"Shadows: {ch['max']} passive dodges. Recover one every {sec(ch['rechargeTicks'])}. "
+        f"An enemy champion hit can spend one every {sec(ch['dodgeGapTicks'])}. Counterpunch: the dodge shadow strikes that attacker "
+        f"for {co['base']} + {co['adRatio']}% Attack within {co['range']}. "
+        f"Shadow Pact: a basic echoes after {sec(pa['delayTicks'])} for {pa['pct']}% damage. It echoes twice while merged. "
+        f"Shadow Rhythm: basics and Flurry build up to {rh['maxStacks']} stacks for {sec(rh['stackTicks'])}. "
+        f"Stacks increase his speed and damage against the target. A basic or Counterpunch at full stacks triggers Shadow Break. "
+        f"Shadow Merge ({sec(me['cooldownTicks'])}): gain {me['moveSpeedPct']}% movement for {sec(me['ticks'])}. "
+        f"Every {sec(me['crossEveryTicks'])}, a cross hits within {me['crossRadius']} of his current position for "
+        f"{me['crossBase']} + {me['crossAdRatio']}% Attack."),
+    'skill2': (
+        f"Shadow Flurry (level 2): hold {fl['maxCharges']} charges and recover one every {sec(fl['rechargeTicks'])}. "
+        f"Each landed non-Flurry hit cuts {sec(fl['hitCreditTicks'])} from the next charge. "
+        f"Vanish for up to {sec(fl['ticks'])} and throw up to {fl['punches']} punches for {fl['base']} + {fl['adRatio']}% Attack each. "
+        f"Prefer a different target on each punch. After reappearing wait {sec(fl['castGapTicks'])} to cast again. "
+        f"A successful Flurry primes his next basic for {fl['haymakerBase']} + {fl['haymakerAdRatio']}% Attack bonus damage."),
+    'ult': (
+        f"Shadow Link (level 5, {sec(link['cooldownTicks'])}): refill all {ch['max']} dodges. Send a shadow up to {link['range']}. "
+        f"It marks enemies within {link['radius']} for {sec(link['warningTicks'])}. "
+        f"Pull remaining linked enemies toward the centre, knock them up for {sec(link['knockTicks'])}, "
+        f"then stun for {sec(link['stunTicks'])}. The link deals zero damage."),
 }
-text['skill'] += ' Level unlocks: S2 at level 2, S3 at level 3, the ult at level 5.'  # round 180 (tools: unlocks.rs)
 
 champ = copy.deepcopy(json.loads((ROOT / 'tools/native-champion-template.json').read_text()))
 champ.update(id=ID, category=rules['category'], tags=rules['tags'], sprite='asset/tfm2_custom/champions/' + ID, anim_prefix='')
@@ -74,10 +58,10 @@ for key in ['stat', 'growth']:
     champ[key] = {k: 0 for k in champ[key]}
     champ[key].update(rules[key])
 champ['attack'].update(duration=b['duration'], cooltime=b['cooldownTicks'], start_timing=b['startTiming'], range=b['range'],
-                       effect={'type': 'Attack', 'damage': 0, 'attack_ratio': 100})
+                       effect={'type': 'Native', 'effect_ref': 'tfm2_custom_ai:contender_basic'})
 for slot in ['skill', 'skill2', 'ult']:
     champ[slot]['description'] = '#asset/base/text/champion?description.' + ID + '.' + slot
-champ['passive'] = {'passive_ref': 'tfm2_custom_ai:contender', 'params': {'shadow_art_v1': 1, 'shadow_directions_v1': 1, 'shadow_merge_art_v1': 1, 'shadow_rhythm_art_v1': 1}}
+champ['passive'] = {'passive_ref': 'tfm2_custom_ai:contender', 'params': {'shadow_art_v1': 1, 'shadow_directions_v1': 1, 'shadow_merge_art_v1': 1, 'shadow_rhythm_art_v1': 1, 'shadow_receipts_v1': 1}}
 champ['passive_ult'] = {'passive_ref': 'tfm2_custom_ai:ult_learned', 'params': {}}
 # his shadow effects arrive with Codex's art (`docs/contender-shadow-art-handoff.md`); until then every name he plays is
 # bound to existing effects so the shadow, its cleaves, slams and the flurry are visible in a playtest
@@ -101,15 +85,18 @@ champ['view_effects'] += [dict(type='Animation', name=e['name'], anim='asset/tfm
 champ['view_buffs'] += [dict(type='Animated', name=e['name'], anim='asset/tfm2_custom/vfx/contender_rhythm',
                            tag=e['tag'], z=e['z']) for e in art['rhythm_buffs']]
 
+champ['view_effects'].append(dict(type='Animation', name='ct_link_warning',
+    anim='asset/tfm2_custom/vfx/contender_link_warning', tag='warning', z=-2, is_follow=False))
+
 data = json.dumps(champ, indent=2) + '\n'
 
 roster = dict(id=ID, name=rules['name'], family='original', role='Fighter', native=True,
               basicAttack=dict(name='Jab / Cross', kind='melee', range=b['range']),
-              skills=[dict(slot='skill', name='Shadows / Shadow Pact / Shadow Rhythm / Shadow Merge', kinds=['Dash', 'Buff'],
+              skills=[dict(slot='skill', name='Shadows / Counterpunch / Shadow Merge', kinds=['Aoe', 'Buff'],
                            intents=['Engage', 'Escape'], summary=text['skill']),
-                      dict(slot='skill2', name='Shadow Cyclone / Shadow Link', kinds=['Aoe', 'Cc'],
-                           intents=['Engage', 'Clear'], summary=text['skill2']),
-                      dict(slot='ult', name='Shadow Flurry', kinds=['Aoe', 'Cc'], intents=['Engage'], summary=text['ult'])])
+                      dict(slot='skill2', name='Shadow Flurry', kinds=['Aoe', 'Dash'],
+                           intents=['Engage'], summary=text['skill2']),
+                      dict(slot='ult', name='Shadow Link', kinds=['Aoe', 'Cc'], intents=['Engage', 'Protect'], summary=text['ult'])])
 
 outputs = {
     ROOT / 'editor/contender-data.js': 'window.CONTENDER_RULES = ' + json.dumps(rules, separators=(',', ':')) + ';\n',
