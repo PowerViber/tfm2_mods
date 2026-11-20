@@ -123,6 +123,29 @@ fn rhythm_vulnerability_and_break_use_current_rules() {
 }
 
 #[test]
+fn shadow_break_knocks_up_once_per_cooldown_on_each_enemy() {
+    // contender-3.6 (Reihan): "at shadow break it knocks up the enemy 1s but with a cd on that enemy"
+    let mut w = World::new(vec![champ(FOE, 2, 410_000, 500_000)]);
+    w.unit(FOE).hp = 1_000_000;
+    w.unit(FOE).max_hp = 1_000_000;
+    let knocks = |w: &World| w.count(|e| matches!(e, Effect::BreakAirborne { target: FOE, ticks } if *ticks == d::RHYTHM_BREAK_KNOCK_TICKS as u64));
+    let breaks = |w: &World| w.count(|e| matches!(e, Effect::Fx { name, .. } if name == "ct_break"));
+    let break_once = |w: &mut World| for _ in 0..=d::RHYTHM_MAX_STACKS {
+        w.f.basic_hits.push(FOE);
+        w.tick(None);
+    };
+    break_once(&mut w);
+    let first = w.f.tick;
+    assert_eq!((breaks(&w), knocks(&w)), (1, 1), "a Break knocks up");
+    break_once(&mut w);
+    assert!(w.f.tick < first + d::RHYTHM_BREAK_KNOCK_COOLDOWN_TICKS as u64);
+    assert_eq!((breaks(&w), knocks(&w)), (2, 1), "a second Break inside the cooldown still breaks, without the knock-up");
+    while w.f.tick < first + d::RHYTHM_BREAK_KNOCK_COOLDOWN_TICKS as u64 { w.tick(None); }
+    break_once(&mut w);
+    assert_eq!((breaks(&w), knocks(&w)), (3, 2), "after the cooldown it knocks up again");
+}
+
+#[test]
 fn after_a_shadow_break_his_rhythm_buffs_linger_for_the_canonical_duration() {
     let mut w = World::new(vec![champ(FOE, 2, 410_000, 500_000)]);
     w.unit(FOE).hp = 100_000;
@@ -301,7 +324,7 @@ fn aggressive_values_change_supported_chase_without_relaxing_tower_safety() {
 fn basic_finish_checks_hp_shield_and_retains_flurry() {
     let mut w = ai(vec![champ(FOE, 2, 420_000, 500_000)]);
     w.core.merge_at = 500;
-    w.core.ult_at = 0;
+    w.core.ult_at = 500;
     w.unit(FOE).hp = 70;
     w.f.defences = vec![TargetDefence { id: FOE, armour: 25, shield: 20 }];
     w.tick(None);
@@ -320,13 +343,13 @@ fn counterpunch_follows_the_confirmed_attacker_and_does_not_recurse() {
     let out = w.tick(None);
     assert!(out.contains(&Effect::Damage { target: FOE, amount: 50, source: HitSource::Counter }));
     assert!(out.iter().any(|e| matches!(e, Effect::Glide { .. })));
-    assert_eq!(w.core.charges, 4);
+    assert_eq!(w.core.charges, d::CHARGES_MAX - 1);
     assert!(w.core.stacks.is_empty() && w.core.echoes.is_empty());
     assert_eq!(w.unit(11).hp, 1000);
     w.run(24);
     w.f.incoming.push(IncomingHit { counter: true, ..hit });
     assert!(!w.tick(None).iter().any(|e| matches!(e, Effect::Damage { .. })));
-    assert_eq!(w.core.charges, 3, "incoming Counterpunch may still be dodged");
+    assert_eq!(w.core.charges, d::CHARGES_MAX - 2, "incoming Counterpunch may still be dodged");
 }
 
 #[test]
@@ -347,7 +370,11 @@ fn counterpunch_rejects_a_wall_or_range_and_can_break_at_full_stacks() {
     w.core.stacks.push(Stack { id: FOE, count: 20, until: 1000, champion: true });
     w.f.incoming.push(hit);
     let out = w.tick(None);
-    assert!(out.contains(&Effect::Damage { target: FOE, amount: 70, source: HitSource::Counter }));
+    let counter = (d::COUNTER_BASE + d::COUNTER_AD_RATIO * w.f.attack / 100)
+        * (1_000 + d::RHYTHM_MAX_STACKS * d::RHYTHM_VULNERABILITY_PERMILLE_PER_STACK) / 1_000;
+    let burst = w.unit(FOE).max_hp * d::RHYTHM_BREAK_PERMILLE_MAX_HP / 1_000 + d::RHYTHM_BREAK_AD_RATIO * w.f.attack / 100;
+    assert!(out.contains(&Effect::Damage { target: FOE, amount: counter + burst, source: HitSource::Counter }), "{out:?}");
+    assert!(out.iter().any(|e| matches!(e, Effect::BreakAirborne { target: FOE, .. })), "the Counterpunch Break knocks up too");
     assert_eq!(w.core.stacks_on(FOE, w.f.tick), 0);
 }
 
@@ -357,8 +384,8 @@ fn moving_merge_cross_checks_the_50k_boundary_and_credits_each_target_once() {
         champ(FOE, 2, 440_000, 500_000), champ(11, 2, 493_000, 500_000),
         creep(30, 402_000, 500_000, 1000), champ(12, 2, 493_001, 500_000),
     ]);
-    w.core.flurry_charges = 2;
-    w.core.flurry_charge_at = 500;
+    w.core.charges = 4;
+    w.core.charge_at = 500;
     w.tick(Some(Order::S1));
     w.f.pos.x = 443_000;
     w.run(59);
@@ -369,9 +396,10 @@ fn moving_merge_cross_checks_the_50k_boundary_and_credits_each_target_once() {
         _ => None,
     }).collect();
     assert_eq!(targets, [FOE, 11, 30]);
-    let cds = w.core.flurry_charge_at;
+    // contender-3.6: each cross hit refunds the shared shadow clock by the missing-shadow rate
+    let cds = w.core.charge_at;
     w.tick(None);
-    assert_eq!(w.core.flurry_charge_at, cds - 135);
+    assert_eq!(w.core.charge_at, cds - 3 * ((d::CHARGES_MAX - 4) * d::CHARGES_HIT_REFUND_TICKS_PER_MISSING) as u64);
     assert!(w.core.stacks.is_empty() && w.core.echoes.is_empty());
 }
 
@@ -384,8 +412,8 @@ fn the_final_flurry_punch_and_reappearance_use_separate_positions() {
     let start = w.f.tick;
     let final_tick = start + d::FLURRY_TICKS as u64;
     w.tick(Some(Order::S2));
-    let recharge = start + d::FLURRY_RECHARGE_TICKS as u64;
-    assert_eq!(w.core.flurry_charges, d::FLURRY_MAX_CHARGES - 1);
+    let recharge = start + d::CHARGES_RECHARGE_TICKS as u64;
+    assert_eq!(w.core.charges, d::CHARGES_MAX - d::CHARGES_FLURRY_COST, "a Flurry costs two shadows");
     w.run((d::FLURRY_TICKS - 1) as u64);
     assert_eq!(flurry_targets(&w).len(), (d::FLURRY_PUNCHES - 1) as usize);
 
@@ -398,8 +426,7 @@ fn the_final_flurry_punch_and_reappearance_use_separate_positions() {
     assert!(end.iter().any(|e| matches!(e, Effect::Fx { name, at, .. } if name == "ct_appear" && *at == current_pos)));
     assert_eq!(w.f.pos, current_pos);
     assert_eq!(w.core.flurry_cast_at, final_tick);
-    assert_eq!(w.core.flurry_charge_at, recharge);
-    assert_eq!(w.core.flurry_credited_ticks, 0);
+    assert_eq!(w.core.charge_at, recharge, "flurry punches never refund shadows");
     assert!(w.core.echoes.is_empty());
     assert_eq!(w.core.haymaker_until, final_tick + d::FLURRY_HAYMAKER_TICKS as u64);
     w.tick(Some(Order::S2));
@@ -425,130 +452,91 @@ fn early_flurry_end_reappears_in_place_with_haymaker_only_after_a_punch() {
         assert!(!w.core.flurrying());
         assert_eq!(flurry_targets(&w).len(), usize::from(lands_first_punch));
         assert_eq!(w.core.haymaker_until > w.f.tick, lands_first_punch);
-        assert_eq!(w.core.flurry_charges, d::FLURRY_MAX_CHARGES - 1);
+        assert_eq!(w.core.charges, d::CHARGES_MAX - d::CHARGES_FLURRY_COST);
     }
 }
 
 #[test]
-fn trading_a_dodge_grants_one_flurry_charge_without_triggering_a_dodge() {
-    let mut w = World::new(vec![]);
-    let start = d::FLURRY_MAX_CHARGES - 2;
-    w.core.flurry_charges = start;
-    w.core.flurry_charge_at = 500;
-    w.core.flurry_cast_at = 75;
-    w.core.last_dodge = 1;
-    let effects = w.tick(Some(Order::ExchangeDodge));
-    assert_eq!((w.core.charges, w.core.flurry_charges), (4, start + 1));
-    assert_eq!((w.core.charge_at, w.core.flurry_charge_at), (1 + d::CHARGES_RECHARGE_TICKS as u64, 500));
-    assert_eq!((w.core.last_dodge, w.core.flurry_cast_at), (1, 75));
-    assert!(!w.core.flurrying() && w.core.pending_dodge.is_none());
-    assert!(!effects.iter().any(|effect| matches!(effect, Effect::Glide { .. } | Effect::Damage { .. })));
-
-    w.tick(Some(Order::ExchangeDodge));
-    assert_eq!((w.core.charges, w.core.flurry_charges), (3, d::FLURRY_MAX_CHARGES));
-    assert_eq!((w.core.charge_at, w.core.flurry_charge_at), (1 + d::CHARGES_RECHARGE_TICKS as u64, 0));
-    w.tick(Some(Order::ExchangeDodge));
-    assert_eq!((w.core.charges, w.core.flurry_charges), (3, d::FLURRY_MAX_CHARGES));
-    assert!(w.core.rejection.contains("full"));
-}
-
-#[test]
-fn dodge_exchange_respects_the_learning_gate_and_requires_a_dodge() {
-    let mut w = World::new(vec![]);
-    w.core.flurry_charges = 2;
-    w.core.flurry_charge_at = 500;
-    w.f.level = 1;
-    w.tick(Some(Order::ExchangeDodge));
-    assert!(w.core.rejection.contains("level 2"));
-    assert_eq!((w.core.charges, w.core.flurry_charges), (5, 2));
-    w.f.level = 2;
-    w.core.charges = 0;
-    w.core.charge_at = 500;
-    w.tick(Some(Order::ExchangeDodge));
-    assert!(w.core.rejection.contains("no passive dodge"));
-    assert_eq!((w.core.charges, w.core.flurry_charges), (0, 2));
-}
-
-#[test]
-fn ai_spends_a_dodge_only_for_a_safe_flurry_when_out_of_charges() {
-    let mut w = ai(vec![champ(FOE, 2, 440_000, 500_000), champ(11, 2, 447_000, 500_000)]);
-    w.f.ult_unlocked = false;
-    w.core.flurry_charges = 0;
-    w.core.flurry_charge_at = 500;
-    w.tick(None);
-    assert_eq!(w.core.charges, 5);
-    assert!(!w.core.flurrying(), "no follow-up");
-    w.f.units.push(champ(ALLY, 1, 435_000, 500_000));
-    w.core.flurry_cast_at = w.f.tick + 1;
-    w.tick(None);
-    assert_eq!(w.core.charges, 5, "the cast gap still applies");
-    w.tick(None);
-    assert!(w.core.flurrying(), "{}", w.core.reason);
-    assert_eq!((w.core.charges, w.core.flurry_charges), (4, 0));
-    assert_eq!(w.core.flurry_charge_at, 500);
-}
-
-#[test]
-fn delayed_independent_echo_counts_even_during_flurry_and_no_credit_banks_at_cap() {
+fn dodges_and_flurry_share_one_pool_of_shadows() {
+    // contender-3.6 (Reihan): a dodge costs 1 shadow, a Flurry 2; with fewer than 2 the Flurry is refused
     let mut w = World::new(vec![champ(FOE, 2, 430_000, 500_000)]);
-    w.f.landed_hits = 2;
+    assert_eq!(w.core.charges, d::CHARGES_MAX);
+    w.f.incoming.push(IncomingHit { attacker: FOE, from: Point::new(430_000, 500_000), counter: false });
     w.tick(None);
-    assert_eq!(w.core.flurry_credited_ticks, 0);
-    w.f.basic_hits.push(FOE);
-    w.tick(None);
+    assert_eq!(w.core.charges, d::CHARGES_MAX - 1, "a dodge costs one");
+    w.core.charges = d::CHARGES_FLURRY_COST - 1;
     w.tick(Some(Order::S2));
-    w.run(60);
-    assert_eq!(w.core.flurry_charge_at, (3 + d::FLURRY_RECHARGE_TICKS - d::FLURRY_HIT_CREDIT_TICKS) as u64);
-    w.core.flurry_charges = 1;
-    w.core.flurry_charge_at = w.f.tick + 8;
-    w.f.landed_hits = 2;
-    let tick = w.f.tick;
-    w.tick(None);
-    assert_eq!(w.core.flurry_charges, 2);
-    assert_eq!(w.core.flurry_charge_at, tick + (d::FLURRY_RECHARGE_TICKS - d::FLURRY_HIT_CREDIT_TICKS) as u64);
+    assert!(!w.core.flurrying());
+    assert_eq!(w.core.rejection, "s2: not enough shadows");
+    w.core.charges = d::CHARGES_FLURRY_COST;
+    w.tick(Some(Order::S2));
+    assert!(w.core.flurrying());
+    assert_eq!(w.core.charges, 0);
 }
 
 #[test]
-fn link_refills_dodges_permanently_drops_escapes_then_pulls_and_chains_control() {
-    let mut w = World::new(vec![champ(FOE, 2, 440_000, 500_000), champ(11, 2, 460_000, 500_000),
-        creep(30, 420_000, 510_000, 1000)]);
+fn each_landed_hit_refunds_more_the_fewer_shadows_he_has() {
+    // contender-3.6 (Reihan): "the lower the shadow the faster it recharges per hit"
+    for left in [d::CHARGES_MAX - 1, 0] {
+        let mut w = World::new(vec![champ(FOE, 2, 430_000, 500_000)]);
+        w.core.charges = left;
+        w.core.charge_at = 10_000;
+        w.f.landed_hits = 1;
+        w.tick(None);
+        let refund = ((d::CHARGES_MAX - left) * d::CHARGES_HIT_REFUND_TICKS_PER_MISSING) as u64;
+        assert_eq!(w.core.charge_at, 10_000 - refund, "{left} shadows left");
+    }
+    // full: nothing to refund
+    let mut w = World::new(vec![champ(FOE, 2, 430_000, 500_000)]);
+    w.core.charge_at = 10_000;
+    w.f.landed_hits = 3;
+    w.tick(None);
+    assert_eq!(w.core.charge_at, 10_000);
+}
+
+#[test]
+fn shadow_grab_hooks_the_first_enemy_in_line_drags_it_to_him_and_knocks_it_up() {
+    // contender-3.6 (Reihan): "a long shadow grab and knock up ... using the same shadow as before but with a cd"
+    let near = 400_000 + d::SHADOW_GRAB_RANGE * 2 / 3;
+    let mut w = World::new(vec![champ(FOE, 2, near, 500_000), champ(11, 2, near + 5_000, 500_000)]);
     w.core.charges = 0;
-    w.core.charge_at = 500;
-    w.core.last_dodge = 1;
-    w.core.flurry_charges = 2;
-    w.core.flurry_charge_at = 550;
-    let aim = Point::new(436_000, 500_000);
-    w.tick(Some(Order::Ult { aim }));
-    assert_eq!(w.core.charges, 5);
-    assert_eq!(w.core.last_dodge, 1);
-    assert_eq!(w.core.flurry_charges, 2);
-    assert_eq!(w.core.flurry_charge_at, 550);
-    w.run(11);
-    let Some(ShadowLink::Warning { until, linked, .. }) = &w.core.shadow_link else { panic!("warning phase") };
-    assert_eq!(linked, &[10, 11, 30]);
-    let until = *until;
-    w.unit(11).pos.x = aim.x + 85_001;
-    w.tick(None);
-    w.unit(11).pos.x = aim.x + 1_000;
-    while w.f.tick <= until + 42 { w.tick(None); }
-    assert!(w.log.iter().any(|(tick,e)| *tick==until+12 && matches!(e, Effect::LinkAirborne { target: FOE, ticks: 30 })));
-    assert!(w.log.iter().any(|(tick,e)| *tick==until+42 && matches!(e, Effect::LinkStun { target: FOE, ticks: 24 })));
-    assert!(w.seen(|e| matches!(e, Effect::LinkStun { target: 30, .. })));
-    assert!(!w.seen(|e| matches!(e, Effect::LinkStun { target: 11, .. } | Effect::Damage { .. })));
-    assert_eq!(w.f.pos, Point::new(400_000, 500_000));
+    w.core.charge_at = 100_000;
+    w.tick(Some(Order::Ult { aim: Point::new(near + 5_000, 500_000) }));
+    assert_eq!(w.core.ult_at, w.f.tick - 1 + d::SHADOW_GRAB_COOLDOWN_TICKS as u64);
+    assert_eq!(w.core.charges, 0, "the grab no longer refills shadows");
+    let mut guard = 0;
+    while !matches!(w.core.shadow_link, Some(ShadowLink::Airborne { .. })) {
+        w.tick(None);
+        guard += 1;
+        assert!(guard < 200, "the grab never landed");
+    }
+    assert!(w.seen(|e| matches!(e, Effect::Damage { target: FOE, source: HitSource::Grab, .. })));
+    assert!(!w.seen(|e| matches!(e, Effect::Damage { target: 11, .. })), "only the first enemy in line");
+    assert!(w.seen(|e| matches!(e, Effect::LinkAirborne { target: FOE, ticks } if *ticks == d::SHADOW_GRAB_KNOCK_TICKS as u64)));
+    assert!(!w.seen(|e| matches!(e, Effect::LinkAirborne { target: 11, .. })));
+    // round 190: Codex's latch flashes on contact and the burst marks the knock-up, once each
+    assert_eq!(w.count(|e| matches!(e, Effect::Fx { name, ticks, .. } if name == "ct_grab_latch" && *ticks == GRAB_LATCH_TICKS)), 1);
+    assert_eq!(w.count(|e| matches!(e, Effect::Fx { name, ticks, .. } if name == "ct_grab_burst" && *ticks == GRAB_BURST_TICKS)), 1);
+    let x = w.unit(FOE).pos.x;
+    assert!(x - 400_000 <= d::SHADOW_GRAB_PULL_STOP + 2_000, "dragged to him (x {x})");
+    assert_eq!(w.core.stacks_on(FOE, w.f.tick), 1, "the grab builds Rhythm");
+    w.run(d::SHADOW_GRAB_KNOCK_TICKS as u64 + 2);
+    assert!(w.core.shadow_link.is_none());
+    w.tick(Some(Order::Ult { aim: Point::new(near, 500_000) }));
+    assert!(w.core.shadow_link.is_none(), "cooling down");
+    assert_eq!(w.core.rejection, "ult: locked or Shadow Grab cooling down");
 }
 
 #[test]
-fn link_drops_immune_targets_and_stops_a_pull_at_new_boundaries() {
-    let mut w = World::new(vec![champ(FOE, 2, 450_000, 500_000), champ(11, 2, 453_000, 500_000)]);
-    let aim = Point::new(425_000, 500_000);
-    w.tick(Some(Order::Ult { aim }));
-    while !matches!(w.core.shadow_link, Some(ShadowLink::Pull { .. })) { w.tick(None); }
+fn shadow_grab_misses_cleanly_at_max_range_and_skips_immune_targets() {
+    let far = 400_000 + d::SHADOW_GRAB_RANGE + d::SHADOW_GRAB_WIDTH + 10_000;
+    let mut w = World::new(vec![champ(FOE, 2, far, 500_000), champ(11, 2, 430_000, 500_000)]);
     w.f.link_excluded.push(11);
-    w.f.barriers.push(Barrier { from: Point::new(435_000, 480_000), to: Point::new(435_000, 520_000), half_width: 1000 });
-    w.run(45);
-    assert!(w.unit(FOE).pos.x >= 436_000);
-    assert!(!w.seen(|e| matches!(e, Effect::LinkAirborne { target: 11, .. } | Effect::LinkStun { .. })));
+    w.tick(Some(Order::Ult { aim: Point::new(far, 500_000) }));
+    w.run(d::SHADOW_GRAB_FLIGHT_TICKS as u64 + 5);
+    assert!(w.core.shadow_link.is_none(), "the shadow returns empty-handed");
+    assert!(!w.seen(|e| matches!(e, Effect::Damage { .. } | Effect::LinkAirborne { .. } | Effect::Knock { .. })));
+    assert!(!w.seen(|e| matches!(e, Effect::Fx { name, .. } if name.starts_with("ct_grab_"))), "a miss shows no latch or burst");
 }
 
 #[test]
@@ -580,6 +568,7 @@ fn ai_rejects_the_low_hp_chase_and_tower_flurry_but_commits_with_support() {
 
 mod glue {
     use crate::contender::Contender;
+    use crate::contender_shadow_data as d;
     use crate::contender_shadow_core::{Effect, Point};
     use crate::glue_tests::{open_spot, with_sim, Host, Unit as HostUnit};
     use mod_api_stable::{AttackTypeV1, EntityKindV1 as K, StablePassive};
@@ -713,7 +702,7 @@ mod glue {
             }
         }
         assert!(c.core.stacks_on(1, 104) >= 3);
-        let effects = vec![Effect::Damage { target: 2, amount: 50, source: crate::contender_shadow_core::HitSource::Counter }, Effect::LinkStun { target: 2, ticks: 30 }];
+        let effects = vec![Effect::Damage { target: 2, amount: 50, source: crate::contender_shadow_core::HitSource::Counter }, Effect::BreakAirborne { target: 2, ticks: 30 }];
         with_sim(&host, |sim| c.apply(sim, 0, effects));
         let g = host.borrow();
         assert!(!g.damage.iter().any(|d| d.1 == 2 && d.3 == AttackTypeV1::Skill.code()) && g.ccs[2].is_empty(), "never a tower");
@@ -729,8 +718,8 @@ mod glue {
         let host = Host::new(vec![champ(0, (x, y), "tfm2_custom_contender"), champ(1, (x + 20_000, y), "fighter")]);
         let mut c = Contender::default();
         c.configure(r#"{"shadow_receipts_v1":1}"#);
-        c.core.flurry_charges = 1;
-        c.core.flurry_charge_at = 800;
+        c.core.charges = 4;
+        c.core.charge_at = 800;
         host.borrow_mut().tick = 100;
         with_sim(&host, |sim| {
             BasicImpact.apply(sim, 0, 0, InputTargetV1::target(1));
@@ -742,11 +731,13 @@ mod glue {
             ]);
         });
         run(&host, &mut c, 101, 1);
-        assert_eq!(c.core.flurry_charge_at, 695);
+        // contender-3.6: the counter, the real merge hit and the basic each refund the shadow clock; flurry and zero hits don't
+        let per_hit = ((d::CHARGES_MAX - 4) * d::CHARGES_HIT_REFUND_TICKS_PER_MISSING) as u64;
+        assert_eq!(c.core.charge_at, 800 - 3 * per_hit);
         assert_eq!(c.core.stacks_on(1, 101), 1);
         assert_eq!(host.borrow().damage.iter().filter(|d|d.3 == AttackTypeV1::BaseAttack.code()).count(),1);
         run(&host, &mut c, 102, 1);
-        assert_eq!(c.core.flurry_charge_at, 695, "consumed receipt counts once");
+        assert_eq!(c.core.charge_at, 800 - 3 * per_hit, "consumed receipt counts once");
     }
 
     #[test]
@@ -779,21 +770,21 @@ mod glue {
         run(&host, &mut c, 102, 1);
         assert!(c.core.merged(103), "Shadow Merge started: {}", c.core.rejection);
         assert!(!host.borrow().buffs[0].iter().any(|b| b.name().starts_with("ct_cast:")), "the marker is consumed");
-        // then S2: a Flurry charge is spent
-        let before = c.core.flurry_charges;
+        // then S2: two shadows are spent
+        let before = c.core.charges;
         host.borrow_mut().tick = 110;
         with_sim(&host, |sim| crate::contender::CastFlurry.apply(sim, 0, 0, InputTargetV1::target(1)));
         run(&host, &mut c, 110, 1);
-        assert!(c.core.flurrying() || c.core.flurry_charges < before, "Flurry started: {}", c.core.rejection);
-        // a press with no charge left is refused without a panic
+        assert!(c.core.flurrying() && c.core.charges == before - d::CHARGES_FLURRY_COST, "Flurry started: {}", c.core.rejection);
+        // a press without enough shadows is refused without a panic
         c.core.flurry = None;
-        c.core.flurry_charges = 0;
-        c.core.charges = 5;
+        c.core.charges = d::CHARGES_FLURRY_COST - 1;
+        c.core.charge_at = 10_000;
         host.borrow_mut().tick = 200;
         with_sim(&host, |sim| crate::contender::CastFlurry.apply(sim, 0, 0, InputTargetV1::target(1)));
         run(&host, &mut c, 200, 1);
         assert!(!c.core.flurrying());
-        assert_eq!(c.core.charges, 5, "the engine's press never trades a dodge");
+        assert_eq!(c.core.charges, d::CHARGES_FLURRY_COST - 1, "a refused press spends nothing");
     }
 
     #[test]
@@ -880,14 +871,78 @@ mod glue {
         with_sim(&host, |sim| c.on_spawn(sim, 0, 0));
         run(&host, &mut c, 100, 1);
         assert_ne!(crate::press::get(11, 0, 100).unwrap() & crate::press::S2, 0, "a charge is ready: the press is wanted");
-        c.core.flurry_charges = 0;
-        c.core.flurry_charge_at = 10_000;
+        c.core.charges = d::CHARGES_FLURRY_COST - 1;
+        c.core.charge_at = 10_000;
         run(&host, &mut c, 101, 1);
         assert_eq!(crate::press::get(11, 0, 101).unwrap() & crate::press::S2, 0, "no charge: not wanted");
     }
 
     #[test]
-    fn a_shadow_link_marker_carries_the_engines_aim() {
+    fn the_five_pips_each_show_two_shadows_and_body_shots_shred_armour_per_stack() {
+        // contender-3.6 (Reihan): "same art but remove a charge for each shadow, so each charge is 2 shadows"
+        use crate::contender_shadow_core::Stack;
+        let _guard = crate::walls::TEST_LOCK.lock();
+        let (x, y) = open_spot(120_000);
+        let host = Host::new(vec![champ(0, (x, y), "tfm2_custom_contender"), champ(1, (x + 30_000, y), "fighter")]);
+        let mut c = Contender::default();
+        with_sim(&host, |sim| c.on_spawn(sim, 0, 0));
+        let pips = d::CHARGES_MAX / d::CHARGES_PIP_SHADOWS;
+        for (count, shown) in [(d::CHARGES_MAX, pips), (d::CHARGES_MAX - 1, pips), (1, 1), (0, 0)] {
+            with_sim(&host, |sim| c.apply(sim, 0, vec![Effect::Charges { count }]));
+            let names: Vec<_> = host.borrow().buffs[0].iter().filter(|b| b.name().starts_with("ct_charges:")).map(|b| b.name().to_string()).collect();
+            assert_eq!(names, vec![format!("ct_charges:{shown}")], "{count} shadows");
+        }
+        // Body Shots: a stacked enemy loses Armour per stack, and the debuff goes with the stacks
+        let stacks = d::RHYTHM_MAX_STACKS / 2;
+        c.core.stacks.push(Stack { id: 1, count: stacks, until: 400, champion: true });
+        run(&host, &mut c, 101, 1);
+        let shred = host.borrow().buffs[1].iter().find(|b| b.name() == "ct_body_shots").map(|b| b.defence_mult);
+        assert_eq!(shred, Some(-((stacks * d::RHYTHM_ARMOUR_SHRED_PERMILLE_PER_STACK / 10) as i32)));
+        c.core.stacks.clear();
+        run(&host, &mut c, 102, 1);
+        assert!(!host.borrow().buffs[1].iter().any(|b| b.name() == "ct_body_shots"), "no stacks, no shred");
+    }
+
+    #[test]
+    fn a_shadow_break_knock_up_is_an_airborne_cc_but_never_on_a_tower() {
+        let _guard = crate::walls::TEST_LOCK.lock();
+        let (x, y) = open_spot(120_000);
+        let host = Host::new(vec![champ(0, (x, y), "tfm2_custom_contender"), champ(1, (x + 30_000, y), "fighter")]);
+        let mut c = Contender::default();
+        with_sim(&host, |sim| c.on_spawn(sim, 0, 0));
+        host.borrow_mut().tick = 100;
+        with_sim(&host, |sim| c.apply(sim, 0, vec![Effect::BreakAirborne { target: 1, ticks: d::RHYTHM_BREAK_KNOCK_TICKS as u64 }]));
+        assert!(!host.borrow().ccs[1].is_empty(), "the Break knocked him up");
+    }
+
+    #[test]
+    fn a_real_shadow_grab_plays_codexs_hand_latch_ribbon_and_burst_in_order() {
+        // round 190: Codex's approved Shadow Grab art, end to end through the engine cast marker
+        use mod_api_stable::{InputTargetV1, StableEffectType};
+        let _guard = crate::walls::TEST_LOCK.lock();
+        let (x, y) = open_spot(120_000);
+        let host = Host::new(vec![champ(0, (x, y), "tfm2_custom_contender"), champ(1, (x + 60_000, y), "fighter")]);
+        host.borrow_mut().record_view_effects = true;
+        let mut c = Contender::default();
+        c.configure(r#"{"shadow_art_v1":1,"shadow_directions_v1":1}"#);
+        with_sim(&host, |sim| c.on_spawn(sim, 0, 0));
+        with_sim(&host, |sim| { sim.add_buff(0, &mod_api_stable::BuffV1::named(crate::ULT_LEARNED)); });
+        run(&host, &mut c, 100, 1);
+        host.borrow_mut().tick = 101;
+        with_sim(&host, |sim| crate::contender::CastLink.apply(sim, 0, 0, InputTargetV1::target(1)));
+        run(&host, &mut c, 101, 120);
+        let names: Vec<String> = host.borrow().view_effects.iter().map(|e| e.0.clone()).filter(|n| n.starts_with("ct_grab_")).collect();
+        assert!(!names.is_empty(), "no grab art: {} / {:?}", c.core.rejection, c.core.shadow_link);
+        let first = |p: &str| names.iter().position(|n| n.starts_with(p)).unwrap_or_else(|| panic!("no {p} in {names:?}"));
+        let (hand, latch, ribbon, burst) = (first("ct_grab_hand_d0"), first("ct_grab_latch"), first("ct_grab_ribbon_L"), first("ct_grab_burst"));
+        assert!(hand < latch && latch < ribbon && ribbon < burst, "{names:?}");
+        assert_eq!(names.iter().filter(|n| *n == "ct_grab_latch").count(), 1);
+        assert_eq!(names.iter().filter(|n| *n == "ct_grab_burst").count(), 1);
+        assert!(names.iter().filter(|n| n.starts_with("ct_grab_ribbon_L")).count() >= 2, "the ribbon is renewed during the pull");
+    }
+
+    #[test]
+    fn a_shadow_grab_marker_carries_the_engines_aim() {
         use crate::contender_shadow_core::Order;
         assert_eq!(crate::contender::cast_order("ct_cast:ult:410000:520000:77"), Some(Order::Ult { aim: Point::new(410_000, 520_000) }));
         assert_eq!(crate::contender::cast_order("ct_cast:s1:5"), Some(Order::S1));
@@ -896,11 +951,47 @@ mod glue {
     }
 }
 
+/// Round 190: every Shadow Grab name the bridge or core can play is bound to Codex's packed art, and the ribbon keeps
+/// joining Contender and the target as the distance and direction change.
+#[test]
+fn every_shadow_grab_art_name_is_bound_and_the_ribbon_follows_the_target() {
+    use crate::contender::{grab_heading, grab_ribbon};
+    let data: serde_json::Value = serde_json::from_str(include_str!("../../../mods/tfm2_custom/champion/tfm2_custom_contender.data_champion")).unwrap();
+    let bound: std::collections::HashSet<String> = data["view_effects"].as_array().unwrap().iter()
+        .map(|e| e["name"].as_str().unwrap().to_string()).collect();
+    let fanim: serde_json::Value = serde_json::from_str(include_str!("../../../mods/tfm2_custom/vfx/contender_grab#anim.fanim")).unwrap();
+    let seconds = |tag: &str| fanim["anims"][tag]["frames"].as_array().unwrap().iter().map(|f| f["duration"].as_f64().unwrap()).sum::<f64>();
+    assert!((seconds("latch") * 60.0 - GRAB_LATCH_TICKS as f64).abs() < 0.5, "the latch fade lasts GRAB_LATCH_TICKS");
+    assert!((seconds("burst") * 60.0 - GRAB_BURST_TICKS as f64).abs() < 0.5, "the burst fade lasts GRAB_BURST_TICKS");
+    for name in ["ct_grab_latch", "ct_grab_burst"] { assert!(bound.contains(name), "{name}"); }
+    let me = Point::new(400_000, 400_000);
+    for h in 0..8u8 { assert!(bound.contains(&format!("ct_grab_hand_d{h}")), "hand {h}"); }
+    // sweep distances and directions: every ribbon chosen is bound
+    for step in 0..32 {
+        let angle = step as f64 * std::f64::consts::TAU / 32.0;
+        for gap in (0..=d::SHADOW_GRAB_RANGE + 20_000).step_by(2_500) {
+            let them = Point::new(me.x + (angle.cos() * gap as f64) as i64, me.y + (angle.sin() * gap as f64) as i64);
+            let (name, _) = grab_ribbon(me, them);
+            assert!(bound.contains(&name), "{name} for gap {gap}");
+        }
+    }
+    // as the target is dragged in, the ribbon shortens and its middle follows the target
+    let far = Point::new(me.x + d::SHADOW_GRAB_RANGE, me.y);
+    let near = Point::new(me.x + d::SHADOW_GRAB_PULL_STOP, me.y);
+    let (far_name, far_mid) = grab_ribbon(me, far);
+    let (near_name, near_mid) = grab_ribbon(me, near);
+    assert_ne!(far_name, near_name);
+    assert!(far_mid.x > near_mid.x && near_mid.x > me.x);
+    assert!(near_name.ends_with("_d0") && grab_ribbon(me, Point::new(me.x - 50_000, me.y)).0.ends_with("_d4"));
+    // headings: east 0, south (screen down) 2, west 4, north 6
+    assert_eq!([(1, 0), (0, 1), (-1, 0), (0, -1)].map(|(x, y)| grab_heading(me, Point::new(me.x + x * 10_000, me.y + y * 10_000))), [0, 2, 4, 6]);
+}
+
 /// contender-3.2: his three slots are real engine skills (the game's own AI casts them), each a Native cast marker.
 #[test]
 fn his_slots_are_real_engine_skills_the_game_ai_can_cast() {
     let data: serde_json::Value = serde_json::from_str(include_str!("../../../mods/tfm2_custom/champion/tfm2_custom_contender.data_champion")).unwrap();
-    for (slot, cooltime, effect) in [("skill", d::MERGE_COOLDOWN_TICKS, "contender_s1"), ("skill2", d::FLURRY_CAST_GAP_TICKS.max(1), "contender_s2"), ("ult", d::SHADOW_LINK_COOLDOWN_TICKS, "contender_ult")] {
+    for (slot, cooltime, effect) in [("skill", d::MERGE_COOLDOWN_TICKS, "contender_s1"), ("skill2", d::FLURRY_CAST_GAP_TICKS.max(1), "contender_s2"), ("ult", d::SHADOW_GRAB_COOLDOWN_TICKS, "contender_ult")] {
         let s = &data[slot];
         assert_eq!(s["cooltime"].as_i64(), Some(cooltime), "{slot}");
         assert!(s["range"].as_i64().unwrap() > 1_000, "{slot} has a real range");

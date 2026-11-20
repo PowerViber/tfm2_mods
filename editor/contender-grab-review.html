@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Contender · Shadow Grab art review</title>
+<style>
+:root { color-scheme: dark; font: 16px system-ui, sans-serif; background: #151321; color: #f1eafa; }
+body { max-width: 1040px; margin: auto; padding: 28px 20px; }
+h1 { margin: 0; font-size: clamp(1.8rem, 5vw, 3rem); }
+h2 { font-size: 1.2rem; margin: 0 0 12px; }
+p { line-height: 1.5; color: #c9bfda; }
+header { margin-bottom: 24px; }
+section, figure { background: #211b30; border: 1px solid #3b2f53; border-radius: 9px; padding: 16px; margin: 0; }
+section { margin-bottom: 16px; }
+canvas { display: block; image-rendering: pixelated; max-width: 100%; height: auto; border-radius: 4px; }
+.controls, .stages { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }
+.stages { align-items: start; margin-top: 12px; }
+small { display: block; margin-bottom: 6px; color: #d7c9eb; }
+button, select { font: inherit; color: inherit; background: #3b2b51; border: 1px solid #755d95; border-radius: 5px; padding: 7px 11px; }
+label { display: flex; align-items: center; gap: 8px; }
+.timeline { margin: 12px 0; }
+input { accent-color: #be93ff; width: min(320px, 55vw); }
+output { color: #e0c5ff; font-variant-numeric: tabular-nums; }
+.parts { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+figcaption { margin-bottom: 8px; }
+#error { color: #ffb4c7; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Shadow Grab</h1>
+  <p>Contender 3.6 · Recorded cast preview</p>
+</header>
+<main>
+  <section aria-labelledby="motion-title">
+    <h2 id="motion-title">Cast preview</h2>
+    <div class="controls">
+      <button id="replay" disabled>Replay</button>
+      <button id="pause" disabled>Pause</button>
+      <label>Facing <select id="facing" disabled><option value="1">Right</option><option value="-1">Left</option></select></label>
+      <label>Cast <select id="cast" disabled><option value="hit">Hit</option><option value="miss">Miss</option></select></label>
+    </div>
+    <div class="timeline"><label>Timeline <input id="timeline" type="range" min="0" value="0" disabled>
+      <output id="phase">Loading preview</output></label></div>
+    <div class="stages">
+      <div><small>Game size · 1×</small><canvas id="small" width="230" height="106" aria-label="Shadow Grab at game size"></canvas></div>
+      <div><small>Enlarged · 3×</small><canvas id="large" width="690" height="318" aria-label="Enlarged Shadow Grab"></canvas></div>
+    </div>
+    <p id="metrics"></p>
+    <p id="error" role="alert" hidden></p>
+  </section>
+  <div class="parts">
+    <figure><figcaption>Reaching hand</figcaption><canvas width="192" height="174" aria-label="Reaching hand at 1× and 3×"></canvas></figure>
+    <figure><figcaption>Latch</figcaption><canvas width="192" height="174" aria-label="Latch at 1× and 3×"></canvas></figure>
+    <figure><figcaption>Pull ribbon</figcaption><canvas width="192" height="174" aria-label="Pull ribbon at 1× and 3×"></canvas></figure>
+    <figure><figcaption>Knock-up</figcaption><canvas width="192" height="174" aria-label="Knock-up at 1× and 3×"></canvas></figure>
+  </div>
+</main>
+<script src="contender-presentation.js"></script>
+<script src="contender-painter.js"></script>
+<script>
+(async () => {
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const source = new Image();
+  source.src = '../docs/contender-grab-art-preview/shadow-grab-source.png';
+  const painter = new ContenderPainter();
+  const trace = fetch('../docs/contender-grab-art-preview/shadow-grab-trace.json').then(response => {
+    if (!response.ok) throw new Error('The recorded Shadow Grab cast could not be loaded.');
+    return response.json();
+  });
+  const [recording] = await Promise.all([trace, source.decode(), painter.ready]);
+  const grab = recording.rules;
+  const parts = [
+    { crop: [127, 239, 424, 215], width: 32, height: 16 },
+    { crop: [768, 215, 312, 254], width: 24, height: 20 },
+    { crop: [99, 855, 463, 144], width: 58, height: 17 },
+    { crop: [816, 684, 214, 398], width: 21, height: 39 },
+  ];
+  const stages = [$('small').getContext('2d'), $('large').getContext('2d')];
+  const floor = 85;
+  const side = 230;
+  const origin = recording.origin;
+  function effect(ctx, index, x, y, direction = 1, width = parts[index].width, height = parts[index].height, opacity = 1) {
+    ctx.save();
+    ctx.globalAlpha = opacity;
+    ctx.translate(Math.round(x), Math.round(y));
+    ctx.scale(direction, 1);
+    ctx.drawImage(source, ...parts[index].crop, -Math.floor(width / 2), -Math.floor(height / 2), width, height);
+    ctx.restore();
+  }
+  function terrain(ctx, width, height, light) {
+    ctx.fillStyle = light ? '#b9c5a9' : '#273b48';
+    ctx.fillRect(0, 0, width, height);
+    ctx.fillStyle = light ? '#a7b69b' : '#314952';
+    ctx.fillRect(0, height - 21, width, 21);
+    ctx.fillStyle = light ? '#c4ceb5' : '#3f5660';
+    ctx.fillRect(0, height - 21, width, 1);
+  }
+  const directions = new Map(Object.entries(recording.traces));
+  let frames;
+  let started = performance.now();
+  let playing = true;
+  let current = 0;
+  function draw(frame, dir) {
+    const casterX = dir === 1 ? 57 : side - 57;
+    const project = p => ({ x: Math.round(casterX + (p.x - origin.x) / 1000), y: Math.round(floor - 20 + (p.y - origin.y) / 1000) });
+    const worldSize = n => n / 1000;
+    const victim = project(frame.pos);
+    const face = dir === 1 ? '' : '_l';
+    const hit = frame.latch === null ? -1 : frame.tick - frame.latch;
+    const airborne = frame.lift === null ? -1 : frame.tick - frame.lift;
+    const raise = airborne >= 0 && airborne < grab.knockTicks
+      ? Math.round(18 * Math.sin(Math.PI * airborne / grab.knockTicks)) : 0;
+    for (const [i, ctx] of stages.entries()) {
+      ctx.setTransform(i === 0 ? 1 : 3, 0, 0, i === 0 ? 1 : 3, 0, 0);
+      ctx.imageSmoothingEnabled = false;
+      terrain(ctx, side, 106, i === 1);
+      painter.draw(ctx, 'body', (frame.tick < 8 && frame.tick > 0 ? 'projection' : 'idle') + face,
+        origin, frame.tick, project, worldSize, true);
+      if (frame.phase?.phase === 'flight') {
+        const shadow = frame.phase.cursor;
+        const screen = project(shadow);
+        const flightElapsed = frame.tick - frame.phase.cast;
+        painter.draw(ctx, 'effects', 'body_run' + Math.floor(flightElapsed / 4) % 6 + face,
+          shadow, 0, project, worldSize);
+        effect(ctx, 0, screen.x + 14 * dir, screen.y - 3, dir);
+      }
+      if (frame.phase?.phase === 'pull') {
+        const start = casterX + dir * 10;
+        effect(ctx, 2, (start + victim.x) / 2, victim.y - 3, dir, Math.abs(victim.x - start) + 6, 13);
+      }
+      const target = { x: frame.pos.x, y: frame.pos.y - 1000 * raise };
+      painter.draw(ctx, 'body', (raise > 0 ? 'hit' : 'idle') + (dir === 1 ? '_l' : ''),
+        target, 0, project, worldSize, true, .7);
+      ctx.fillStyle = '#e59a91';
+      ctx.fillRect(victim.x - 10, victim.y - 27 - raise, 20, 2);
+      if (hit >= 0 && hit < 8) effect(ctx, 1, victim.x, victim.y - 4, dir, 24, 20, 1 - hit / 12);
+      if (airborne >= 0 && airborne < 18) effect(ctx, 3, victim.x, victim.y + 1, dir, 21, 39, 1 - airborne / 21);
+    }
+    const phase = frame.phase?.phase;
+    $('phase').value = phase === 'flight' ? 'Flight' : phase === 'pull' ? (hit < 4 ? 'Latch' : 'Pull')
+      : phase === 'airborne' ? 'Knock-up' : frame.tick > grab.flightTicks && frame.latch === null ? 'Miss' : 'Ready';
+    $('timeline').value = frame.tick;
+  }
+  const selects = [$('facing'), $('cast')];
+  function select() {
+    frames = directions.get($('facing').value + ':' + ($('cast').value === 'hit'));
+    $('timeline').max = frames.length - 1;
+  }
+  function replay() {
+    current = 0;
+    started = performance.now();
+    playing = true;
+    $('pause').textContent = 'Pause';
+    draw(frames[0], +$('facing').value);
+  }
+  function togglePause() {
+    playing = !playing;
+    $('pause').textContent = playing ? 'Pause' : 'Play';
+    if (playing) started = performance.now() - current * 1000 / 60;
+  }
+  $('replay').onclick = replay;
+  $('pause').onclick = togglePause;
+  for (const selectBox of selects) selectBox.onchange = () => { select(); replay(); };
+  $('timeline').oninput = () => {
+    if (playing) togglePause();
+    current = +$('timeline').value;
+    draw(frames[current], +$('facing').value);
+  };
+  for (const [i, canvas] of [...document.querySelectorAll('.parts canvas')].entries()) {
+    const ctx = canvas.getContext('2d');
+    ctx.imageSmoothingEnabled = false;
+    const { width, height } = parts[i];
+    terrain(ctx, canvas.width, canvas.height, i % 2 === 1);
+    effect(ctx, i, 96, 22);
+    effect(ctx, i, 96, 106, 1, width * 3, height * 3);
+  }
+  $('metrics').textContent = grab.range.toLocaleString() + ' range · ' + grab.pullTicks / 60
+    + 's pull · ' + grab.knockTicks / 60 + 's knock-up';
+  select();
+  replay();
+  for (const input of [...selects, $('replay'), $('pause'), $('timeline')]) input.disabled = false;
+  function animate(now) {
+    if (playing) {
+      const frame = Math.max(0, Math.floor((now - started) * 60 / 1000)) % (frames.length + 55);
+      current = Math.min(frame, frames.length - 1);
+      draw(frames[current], +$('facing').value);
+    }
+    requestAnimationFrame(animate);
+  }
+  requestAnimationFrame(animate);
+})().catch(error => {
+  document.getElementById('error').hidden = false;
+  document.getElementById('error').textContent = error.message;
+  throw error;
+});
+</script>
+</body>
+</html>

@@ -69,7 +69,7 @@ fn contender_rejects_locked_orders_and_only_considers_unlocked_skills_at_level_o
         let mut f = base(1, t, None);
         f.units.push(Unit { id: 11, pos: Point::new(435_000, 505_000), ..foe.clone() });
         c.step(&f);
-        assert_eq!(c.flurry_charges, crate::contender_shadow_data::FLURRY_MAX_CHARGES);
+        assert_eq!(c.charges, crate::contender_shadow_data::CHARGES_MAX);
         assert!(c.shadow_link.is_none());
     }
 }
