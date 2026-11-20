@@ -4159,3 +4159,9 @@ Native 0.10.112 / custom 0.2.115, art basalt-art-6, gameplay remains basalt-1.4.
 - **Flurry charges:** 4 charges, one every 12 s (was 3 every 16 s).
 - **Flurry:** 15 punches over 1.5 s, and no wait before the next Flurry. He still reappears beside the last enemy hit.
 - **Install:** Mod Manager -> Update everything -> Check; log.log shows native 0.10.121.
+
+## Nov 20 · Round 187 · Contender 3.4 (native 0.10.122, champion pack 0.2.125)
+
+- Flurry now delivers up to 30 punches in 1.5 seconds, each dealing 2 + 2% Attack physical damage. Contender reappears at his current position.
+- In matched Lab fixtures, the full combo dealt 115 → 175 HP damage against one unlimited-HP Knight and 108 → 153 against three or five. The single-target follow-up triggers Shadow Break from full Rhythm.
+- Native and WASM matched across 5,508 frames. The isolated Mod Manager prebuilt install passed. Actual-game acceptance is pending. [Round 187 review](main-review-round-187.md)

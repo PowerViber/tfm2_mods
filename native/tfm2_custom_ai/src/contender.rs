@@ -386,12 +386,6 @@ impl Contender {
                 Effect::Glide { to, ticks } => {
                     crate::motion::glide(sim, owner, (to.x, to.y), ticks, crate::motion::Kind::SelfMove);
                 }
-                Effect::Teleport { to } => {
-                    // the projection swap and the ult's reappearance (teleports by design), onto open ground
-                    sim.entity_set_pos(owner, to.x.max(0) as u64, to.y.max(0) as u64);
-                    crate::steve::note_placed(sim, owner, to.x, to.y);
-                    replace_buff(sim, owner, &crate::timed(crate::place::MOVED, 2));
-                }
                 Effect::Vanish { ticks } => {
                     // contender-2.7: banished for the whole flurry (untargetable, unseen, input-locked; renewed every
                     // flurry tick), so enemies can't target or hit him; the unhurt, CC-immune lease stays as a backstop

@@ -76,7 +76,7 @@ impl World {
                         u.pos = *to;
                     }
                 }
-                Effect::Glide { to, .. } | Effect::Teleport { to } => self.f.pos = *to,
+                Effect::Glide { to, .. } => self.f.pos = *to,
                 _ => {}
             }
         }
@@ -376,25 +376,57 @@ fn moving_merge_cross_checks_the_50k_boundary_and_credits_each_target_once() {
 }
 
 #[test]
-fn fifteenth_punch_at_ninety_ticks_and_he_can_cast_again_at_once() {
-    // contender-3.3 (Reihan): 15 hits over 1.5 s, he reappears beside the last enemy hit, and no wait before the next cast
-    assert_eq!((d::FLURRY_PUNCHES, d::FLURRY_TICKS), (15, 90));
-    let mut w = World::new(vec![champ(FOE, 2, 430_000, 500_000)]);
+fn the_final_flurry_punch_and_reappearance_use_separate_positions() {
+    // Reihan approved 30 hits in 1.5 seconds, without an extra recast gap.
+    assert_eq!((d::FLURRY_PUNCHES, d::FLURRY_TICKS, d::FLURRY_CAST_GAP_TICKS), (30, 90, 0));
+    let foe_pos = Point::new(430_000, 500_000);
+    let mut w = World::new(vec![champ(FOE, 2, foe_pos.x, foe_pos.y)]);
+    let start = w.f.tick;
+    let final_tick = start + d::FLURRY_TICKS as u64;
     w.tick(Some(Order::S2));
+    let recharge = start + d::FLURRY_RECHARGE_TICKS as u64;
     assert_eq!(w.core.flurry_charges, d::FLURRY_MAX_CHARGES - 1);
-    assert_eq!(w.core.flurry_charge_at, 1 + d::FLURRY_RECHARGE_TICKS as u64);
-    w.run(89);
-    assert_eq!(w.count(|e| matches!(e, Effect::Damage { source: HitSource::Flurry, .. })), 14);
+    w.run((d::FLURRY_TICKS - 1) as u64);
+    assert_eq!(flurry_targets(&w).len(), (d::FLURRY_PUNCHES - 1) as usize);
+
+    // Use the engine's latest position even if it changed after takeoff.
+    let current_pos = Point::new(402_000, 498_000);
+    w.f.pos = current_pos;
     let end = w.tick(None);
-    assert!(end.iter().any(|e| matches!(e, Effect::Damage { source: HitSource::Flurry, .. })));
-    assert!(end.iter().any(|e| matches!(e, Effect::Teleport { .. })), "he reappears beside the last enemy hit");
-    assert_eq!(d::FLURRY_CAST_GAP_TICKS, 0);
-    assert_eq!(w.core.flurry_cast_at, 91);
+    assert_eq!(flurry_targets(&w).len(), d::FLURRY_PUNCHES as usize);
+    assert!(end.iter().any(|e| matches!(e, Effect::Fx { name, at, .. } if name == "ct_flurry" && *at == foe_pos)));
+    assert!(end.iter().any(|e| matches!(e, Effect::Fx { name, at, .. } if name == "ct_appear" && *at == current_pos)));
+    assert_eq!(w.f.pos, current_pos);
+    assert_eq!(w.core.flurry_cast_at, final_tick);
+    assert_eq!(w.core.flurry_charge_at, recharge);
     assert_eq!(w.core.flurry_credited_ticks, 0);
     assert!(w.core.echoes.is_empty());
-    // no cast gap: the very next tick can start another Flurry
+    assert_eq!(w.core.haymaker_until, final_tick + d::FLURRY_HAYMAKER_TICKS as u64);
     w.tick(Some(Order::S2));
     assert!(w.core.flurrying(), "{}", w.core.rejection);
+}
+
+#[test]
+fn early_flurry_end_reappears_in_place_with_haymaker_only_after_a_punch() {
+    for lands_first_punch in [false, true] {
+        let mut w = World::new(vec![champ(FOE, 2, 430_000, 500_000)]);
+        w.tick(Some(Order::S2));
+        let cadence = d::FLURRY_GAP_TICKS as u64;
+        if lands_first_punch {
+            w.run(cadence);
+        }
+        w.unit(FOE).targetable = false;
+        w.run(cadence - 1);
+        let pos = w.f.pos;
+        let effects = w.tick(None);
+        assert!(effects.iter().any(|e| matches!(e, Effect::Fx { name, at, .. } if name == "ct_appear" && *at == pos)));
+        assert!(!effects.iter().any(|e| matches!(e, Effect::Vanish { .. })));
+        assert_eq!(w.f.pos, pos);
+        assert!(!w.core.flurrying());
+        assert_eq!(flurry_targets(&w).len(), usize::from(lands_first_punch));
+        assert_eq!(w.core.haymaker_until > w.f.tick, lands_first_punch);
+        assert_eq!(w.core.flurry_charges, d::FLURRY_MAX_CHARGES - 1);
+    }
 }
 
 #[test]
@@ -762,6 +794,52 @@ mod glue {
         run(&host, &mut c, 200, 1);
         assert!(!c.core.flurrying());
         assert_eq!(c.core.charges, 5, "the engine's press never trades a dodge");
+    }
+
+    #[test]
+    #[ignore = "native Flurry microbenchmark on the deterministic mock host"]
+    fn measure_native_flurry_ticks() {
+        use mod_api_stable::{InputTargetV1, StableEffectType};
+        use std::time::Instant;
+        let _guard = crate::walls::TEST_LOCK.lock();
+        let (x, y) = open_spot(90_000);
+        let ticks = crate::contender_shadow_data::FLURRY_TICKS as usize + 1;
+        let expected = crate::contender_shadow_data::FLURRY_PUNCHES as usize;
+        const SAMPLES: usize = 7;
+        const CASTS: usize = 30;
+        for targets in [0, 1, 3, 5] {
+            let mut samples = Vec::with_capacity(SAMPLES);
+            for sample in 0..=SAMPLES {
+                let mut elapsed = std::time::Duration::ZERO;
+                for cast in 0..CASTS {
+                    let mut units = vec![champ(0, (x, y), "tfm2_custom_contender")];
+                    units.extend((0..targets).map(|i| champ(1, (x + 20_000 + i * 3_000, y), "fighter")));
+                    let host = Host::new(units);
+                    let mut c = Contender::default();
+                    c.configure(r#"{"shadow_art_v1":1,"shadow_directions_v1":1,"shadow_merge_art_v1":1,"shadow_rhythm_art_v1":1,"shadow_receipts_v1":1}"#);
+                    let start = 100 + (sample * CASTS + cast) * ticks;
+                    host.borrow_mut().tick = start;
+                    with_sim(&host, |sim| {
+                        c.on_spawn(sim, 0, 0);
+                        if targets != 0 {
+                            crate::contender::CastFlurry.apply(sim, 0, 0, InputTargetV1::target(1));
+                        }
+                    });
+                    let timer = Instant::now();
+                    run(&host, &mut c, start, ticks);
+                    elapsed += timer.elapsed();
+                    assert_eq!(host.borrow().damage.len(), if targets == 0 { 0 } else { expected });
+                }
+                if sample != 0 {
+                    samples.push(elapsed.as_secs_f64() * 1e6 / (ticks * CASTS) as f64);
+                }
+            }
+            samples.sort_by(f64::total_cmp);
+            println!(
+                "FLURRY_NATIVE targets={targets} median_us_per_tick={:.3} max_sample_us_per_tick={:.3}",
+                samples[SAMPLES / 2], samples[SAMPLES - 1]
+            );
+        }
     }
 
     #[test]

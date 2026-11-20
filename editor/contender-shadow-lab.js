@@ -99,11 +99,10 @@ function apply(e){const u=actor(e.target);switch(e.kind){
   log(lastCounter);
   break;
  case 'knock':glide(e.target,e.to,e.ticks);break;case 'glide':glide(1,e.to,e.ticks);break;
- case 'teleport':me.pos={...e.to};glides.delete(1);flags.vanish=tick;break;
  case 'vanish':flags.vanish=tick+e.ticks;break;
  case 'merge':flags.merge=e.ticks>1?{until:tick+e.ticks,pct:e.move_pct}:null;flags.mergeCast=e.ticks>1?{pose:'projection',start:tick,end:tick+18}:null;break;
  case 'rhythm':flags.rhythm=e;flags.rhythmUntil=tick+e.ticks;break;case 'charges':flags.charges=e.count;break;case 'steer':flags.walk=e.to;flags.walkUntil=tick+6;flags.steered=true;break;
-  case 'fx':{if(e.name==='ct_shadow')break;const group=e.name==='ct_break'?'rhythm':'effects';if(e.name==='ct_break')flags.breakAt=tick;const tag=e.name==='ct_flurry'&&e.heading!==undefined?`flurry_d${e.heading%8}_t${e.ticks}`:e.name.replace('ct_','')+'_t'+e.ticks+(me.pos.x>e.at.x?'_l':'');if(!painter.data[group].anims[tag])throw Error('Unbound cue '+tag);fx.push({group,tag,at:{...e.at},start:tick,until:tick+e.ticks});break;}
+  case 'fx':{if(e.name==='ct_shadow')break;if(e.name==='ct_appear')flags.vanish=tick;const group=e.name==='ct_break'?'rhythm':'effects';if(e.name==='ct_break')flags.breakAt=tick;const tag=e.name==='ct_flurry'&&e.heading!==undefined?`flurry_d${e.heading%8}_t${e.ticks}`:e.name.replace('ct_','')+'_t'+e.ticks+(me.pos.x>e.at.x?'_l':'');if(!painter.data[group].anims[tag])throw Error('Unbound cue '+tag);fx.push({group,tag,at:{...e.at},start:tick,until:tick+e.ticks});break;}
 }}
 function stepWorld(order){
  scene.refreshVisibility(me,units);if(tick>=flags.rhythmUntil)flags.rhythm=null;

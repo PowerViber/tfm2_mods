@@ -259,7 +259,6 @@ pub enum Effect {
     /// a deliberate move of his own (an engine glide): dodge slips, the step-out, the self-cleave
     Glide { to: Point, ticks: u64 },
     /// set him there at once (the ult's reappearance)
-    Teleport { to: Point },
     /// the ult: unseen, unhurt, rooted and CC immune (a short lease, renewed)
     Vanish { ticks: u64 },
     /// Shadow Merge on him: move speed for `ticks` (`ticks` 1 ends it)
@@ -906,13 +905,8 @@ impl Core {
             }
         }
         if f.tick >= end || fl.next == 0 {
-            if let Some((_, at)) = fl.last {
-                let land = f.path_until(fl.vanished_at, at.toward(fl.vanished_at, 10_000), false);
-                let landing = if f.manual || Self::safe_commit(f, land) { land } else {
-                    f.path_until(fl.vanished_at, Self::cover(f, fl.vanished_at).unwrap_or(fl.vanished_at), true)
-                };
-                out.push(Effect::Teleport { to: landing });
-                out.push(Effect::Fx { name: "ct_appear".into(), at: landing, ticks: 18, heading: None });
+            out.push(Effect::Fx { name: "ct_appear".into(), at: f.pos, ticks: 18, heading: None });
+            if fl.last.is_some() {
                 self.haymaker_until = f.tick + t(d::FLURRY_HAYMAKER_TICKS);
             }
             self.flurry_cast_at = f.tick + t(d::FLURRY_CAST_GAP_TICKS);
