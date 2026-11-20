@@ -395,9 +395,13 @@ impl Contender {
                     sim.apply_cc(owner, &named(CcKindV1::BlockAttack, ticks, "ct_vanish_attack"));
                     replace_buff(sim, owner, &unhurt("ct_vanish", ticks, true));
                 }
-                Effect::Merge { ticks, move_pct } => {
+                Effect::Merge { ticks, move_pct, attack_speed_pct, attack_pct, cc_immune } => {
+                    // contender-3.5: Shadow Merge is a self-buff
                     let mut b = crate::timed("ct_merge", ticks as usize);
                     b.move_speed_mult = move_pct as i32;
+                    b.attack_speed_mult = attack_speed_pct as i32;
+                    b.attack_mult = attack_pct as i32;
+                    b.cc_immune = cc_immune && ticks > 1;
                     replace_buff(sim, owner, &b);
                     self.shadow_drawn = 0;
                 }
@@ -515,6 +519,13 @@ impl StablePassive for Contender {
             return;
         }
         let team = sim.get_entity(id).map(|e| e.team());
+        // contender-3.5: any enemy (never a tower) that damages him while he's merged is slowed
+        let tick = sim.tick() as u64;
+        if self.core.merged(tick) && sim.get_entity(attacker).is_some_and(|a| Some(a.team()) != team && !a.is_tower()) {
+            let mut slow = crate::timed("ct_merge_slow", d::MERGE_ATTACKER_SLOW_TICKS as usize);
+            slow.move_speed_mult = -(d::MERGE_ATTACKER_SLOW_PCT as i32);
+            replace_buff(sim, attacker, &slow);
+        }
         let Some(from) = sim.get_entity(attacker).filter(|a| a.is_champion() && Some(a.team()) != team).map(|a| a.pos()) else { return };
         let counter = COUNTER_PACKET.with(|packet| packet.get() == Some((sim.instance(), attacker, id)));
         let hit = IncomingHit { attacker, from: Point::new(from.0 as i64, from.1 as i64), counter };
@@ -583,6 +594,12 @@ impl StablePassive for Contender {
         f.manual = true;
         f.order = engine_order;
         let effects = self.core.step(&f);
+        // contender-3.5: tell the input AI which presses his kit can honour next tick. A Shadow Flurry press with no
+        // charge left (or mid-Flurry) becomes a basic attack instead of a wasted cast the game AI keeps chasing for.
+        let tick = sim.tick();
+        let s1 = tick as u64 >= self.core.merge_at;
+        let s2 = self.core.flurry_charges > 0 && !self.core.flurrying() && self.core.flurry_ready(&f);
+        crate::press::note(sim.seed(), player, tick, if s1 { crate::press::S1 } else { 0 } | if s2 { crate::press::S2 } else { 0 });
         if self.merge_art {
             let cd = sim.get_player(player).and_then(|p| p.cooldowns()).map(|c| c.0);
             self.merge_presenter.sync(sim, id, &f, &self.core, &effects, cd);

@@ -4165,3 +4165,9 @@ Native 0.10.112 / custom 0.2.115, art basalt-art-6, gameplay remains basalt-1.4.
 - Flurry now delivers up to 30 punches in 1.5 seconds, each dealing 2 + 2% Attack physical damage. Contender reappears at his current position.
 - In matched Lab fixtures, the full combo dealt 115 → 175 HP damage against one unlimited-HP Knight and 108 → 153 against three or five. The single-target follow-up triggers Shadow Break from full Rhythm.
 - Native and WASM matched across 5,508 frames. The isolated Mod Manager prebuilt install passed. Actual-game acceptance is pending. [Round 187 review](main-review-round-187.md)
+
+## Nov 20: round 188 (native 0.10.123, tfm2_custom 0.2.126), `contender-3.5`
+- **S1 Merge (6 s):** +20% move speed, +30% attack speed, +15% Attack, CC immune; enemies that hit him while merged are slowed 30% for 1.5 s. The cross stays.
+- **Flurry:** a whole Flurry is about 2.5x Attack (2 + 7% per punch, 30 punches).
+- **Wasted casts:** with no Flurry charge, the game AI's Flurry press becomes a basic attack instead of a wasted cast.
+- **Watch for:** does he still dive at low HP (that is the game's own AI; tell Claude what you see).

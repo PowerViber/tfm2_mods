@@ -262,7 +262,8 @@ pub enum Effect {
     /// the ult: unseen, unhurt, rooted and CC immune (a short lease, renewed)
     Vanish { ticks: u64 },
     /// Shadow Merge on him: move speed for `ticks` (`ticks` 1 ends it)
-    Merge { ticks: u64, move_pct: i64 },
+    /// contender-3.5: Merge is a self-buff (move speed, attack speed, Attack, CC immunity)
+    Merge { ticks: u64, move_pct: i64, #[serde(default)] attack_speed_pct: i64, #[serde(default)] attack_pct: i64, #[serde(default)] cc_immune: bool },
     /// Shadow Rhythm's buffs on himself
     Rhythm { attack_speed: i64, attack_permille: i64, move_permille: i64, ticks: u64 },
     /// his shadow dodges (for the pips)
@@ -703,7 +704,7 @@ impl Core {
                 self.merge_at = f.tick + t(d::MERGE_COOLDOWN_TICKS);
                 self.merge_until = f.tick + t(d::MERGE_TICKS);
                 self.merge_cross_at = f.tick + t(d::MERGE_CROSS_EVERY_TICKS);
-                out.push(Effect::Merge { ticks: t(d::MERGE_TICKS), move_pct: d::MERGE_MOVE_SPEED_PCT });
+                out.push(Effect::Merge { ticks: t(d::MERGE_TICKS), move_pct: d::MERGE_MOVE_SPEED_PCT, attack_speed_pct: d::MERGE_ATTACK_SPEED_PCT, attack_pct: d::MERGE_ATTACK_PCT, cc_immune: d::MERGE_CC_IMMUNE != 0 });
                 out.push(Effect::Fx { name: "ct_launch".into(), at: f.pos, ticks: 18, heading: None });
             }
             Order::S1 => self.reject("s1: Shadow Merge cooling down"),

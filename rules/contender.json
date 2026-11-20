@@ -7,7 +7,7 @@
     "Melee",
     "CC"
   ],
-  "revision": "contender-3.4",
+  "revision": "contender-3.5",
   "stat": {
     "attack": 76,
     "magic_power": 0,
@@ -68,12 +68,17 @@
     "cooldownTicks": 840,
     "ticks": 360,
     "stacksPerHit": 1,
-    "moveSpeedPct": 10,
+    "moveSpeedPct": 20,
     "crossRadius": 50000,
     "crossRechargeCreditTicks": 45,
     "crossBase": 12,
     "crossAdRatio": 15,
-    "crossEveryTicks": 60
+    "crossEveryTicks": 60,
+    "attackSpeedPct": 30,
+    "attackPct": 15,
+    "ccImmune": 1,
+    "attackerSlowPct": 30,
+    "attackerSlowTicks": 90
   },
   "shadowLink": {
     "cooldownTicks": 4500,
@@ -119,7 +124,7 @@
     "startRange": 50000,
     "chainRange": 30000,
     "base": 2,
-    "adRatio": 2,
+    "adRatio": 7,
     "haymakerTicks": 120,
     "haymakerBase": 15,
     "haymakerAdRatio": 20

@@ -843,6 +843,50 @@ mod glue {
     }
 
     #[test]
+    fn shadow_merge_buffs_him_makes_him_cc_immune_and_slows_whoever_hits_him() {
+        // contender-3.5 (Reihan): S1 is a self-buff; any enemy that damages him while merged is slowed
+        use crate::contender_shadow_data as d;
+        use mod_api_stable::{InputTargetV1, StableEffectType};
+        let _guard = crate::walls::TEST_LOCK.lock();
+        let (x, y) = open_spot(120_000);
+        let host = Host::new(vec![champ(0, (x, y), "tfm2_custom_contender"), champ(1, (x + 30_000, y), "fighter")]);
+        let mut c = Contender::default();
+        with_sim(&host, |sim| c.on_spawn(sim, 0, 0));
+        run(&host, &mut c, 100, 2);
+        // not merged yet: a hit never slows the attacker
+        with_sim(&host, |sim| c.on_damaged(sim, 0, 0, 1, 50));
+        assert!(!host.borrow().buffs[1].iter().any(|b| b.name() == "ct_merge_slow"));
+        host.borrow_mut().tick = 102;
+        with_sim(&host, |sim| crate::contender::CastMerge.apply(sim, 0, 0, InputTargetV1::target(1)));
+        run(&host, &mut c, 102, 1);
+        let g = host.borrow();
+        let merge = g.buffs[0].iter().find(|b| b.name() == "ct_merge").expect("the Merge buff");
+        assert_eq!((merge.move_speed_mult, merge.attack_speed_mult, merge.attack_mult), (d::MERGE_MOVE_SPEED_PCT as i32, d::MERGE_ATTACK_SPEED_PCT as i32, d::MERGE_ATTACK_PCT as i32));
+        assert_eq!(merge.cc_immune, d::MERGE_CC_IMMUNE != 0);
+        drop(g);
+        host.borrow_mut().tick = 110;
+        with_sim(&host, |sim| c.on_damaged(sim, 0, 0, 1, 50));
+        let g = host.borrow();
+        let slow = g.buffs[1].iter().find(|b| b.name() == "ct_merge_slow").expect("the attacker is slowed");
+        assert_eq!(slow.move_speed_mult, -(d::MERGE_ATTACKER_SLOW_PCT as i32));
+    }
+
+    #[test]
+    fn a_flurry_press_with_no_charge_is_not_wanted_so_the_input_ai_basic_attacks_instead() {
+        let _guard = crate::walls::TEST_LOCK.lock();
+        let (x, y) = open_spot(120_000);
+        let host = Host::new(vec![champ(0, (x, y), "tfm2_custom_contender"), champ(1, (x + 30_000, y), "fighter")]);
+        let mut c = Contender::default();
+        with_sim(&host, |sim| c.on_spawn(sim, 0, 0));
+        run(&host, &mut c, 100, 1);
+        assert_ne!(crate::press::get(11, 0, 100).unwrap() & crate::press::S2, 0, "a charge is ready: the press is wanted");
+        c.core.flurry_charges = 0;
+        c.core.flurry_charge_at = 10_000;
+        run(&host, &mut c, 101, 1);
+        assert_eq!(crate::press::get(11, 0, 101).unwrap() & crate::press::S2, 0, "no charge: not wanted");
+    }
+
+    #[test]
     fn a_shadow_link_marker_carries_the_engines_aim() {
         use crate::contender_shadow_core::Order;
         assert_eq!(crate::contender::cast_order("ct_cast:ult:410000:520000:77"), Some(Order::Ult { aim: Point::new(410_000, 520_000) }));
@@ -863,4 +907,18 @@ fn his_slots_are_real_engine_skills_the_game_ai_can_cast() {
         assert_eq!(s["effect"]["type"], "Native", "{slot}");
         assert_eq!(s["effect"]["effect_ref"], format!("tfm2_custom_ai:{effect}"), "{slot}");
     }
+}
+
+/// contender-3.5 (Reihan): a whole Shadow Flurry is a real skill, about 2.5x his Attack in total.
+#[test]
+fn a_full_flurry_deals_about_two_and_a_half_times_his_attack() {
+    let mut w = World::new(vec![champ(FOE, 2, 430_000, 500_000)]);
+    w.unit(FOE).hp = 1_000_000;
+    w.unit(FOE).max_hp = 1_000_000;
+    w.f.attack = 161;
+    w.tick(Some(Order::S2));
+    w.run(d::FLURRY_TICKS as u64 + 2);
+    let flurry: i64 = w.log.iter().filter_map(|(_, e)| match e { Effect::Damage { source: HitSource::Flurry, amount, .. } => Some(*amount), _ => None }).sum();
+    let ratio = flurry as f64 / w.f.attack as f64;
+    assert!((2.2..=3.2).contains(&ratio), "{flurry} = {ratio:.2}x Attack");
 }
