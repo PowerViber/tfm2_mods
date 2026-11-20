@@ -4153,3 +4153,9 @@ Native 0.10.112 / custom 0.2.115, art basalt-art-6, gameplay remains basalt-1.4.
 - **Flurry:** unlocks at level 3.
 - **Install:** Mod Manager -> 1 Update everything -> 2 Check; log.log must show native 0.10.120. Use a new career.
 - **Watch for:** does the game AI cast Merge, Flurry and Shadow Link at sensible moments.
+
+## Nov 20: round 186 (native 0.10.121, tfm2_custom 0.2.124), `contender-3.3` buff
+- **Dodges:** recharge one every 10 s (was 15 s).
+- **Flurry charges:** 4 charges, one every 12 s (was 3 every 16 s).
+- **Flurry:** 15 punches over 1.5 s, and no wait before the next Flurry. He still reappears beside the last enemy hit.
+- **Install:** Mod Manager -> Update everything -> Check; log.log shows native 0.10.121.

@@ -376,45 +376,47 @@ fn moving_merge_cross_checks_the_50k_boundary_and_credits_each_target_once() {
 }
 
 #[test]
-fn tenth_punch_at_sixty_ticks_and_cast_gap_is_exactly_forty_five() {
+fn fifteenth_punch_at_ninety_ticks_and_he_can_cast_again_at_once() {
+    // contender-3.3 (Reihan): 15 hits over 1.5 s, he reappears beside the last enemy hit, and no wait before the next cast
+    assert_eq!((d::FLURRY_PUNCHES, d::FLURRY_TICKS), (15, 90));
     let mut w = World::new(vec![champ(FOE, 2, 430_000, 500_000)]);
     w.tick(Some(Order::S2));
-    assert_eq!(w.core.flurry_charges, 2);
-    assert_eq!(w.core.flurry_charge_at, 961);
-    w.run(59);
-    assert_eq!(w.count(|e| matches!(e, Effect::Damage { source: HitSource::Flurry, .. })), 9);
+    assert_eq!(w.core.flurry_charges, d::FLURRY_MAX_CHARGES - 1);
+    assert_eq!(w.core.flurry_charge_at, 1 + d::FLURRY_RECHARGE_TICKS as u64);
+    w.run(89);
+    assert_eq!(w.count(|e| matches!(e, Effect::Damage { source: HitSource::Flurry, .. })), 14);
     let end = w.tick(None);
     assert!(end.iter().any(|e| matches!(e, Effect::Damage { source: HitSource::Flurry, .. })));
-    assert!(end.iter().any(|e| matches!(e, Effect::Teleport { .. })));
-    assert_eq!(w.core.flurry_cast_at, 106);
+    assert!(end.iter().any(|e| matches!(e, Effect::Teleport { .. })), "he reappears beside the last enemy hit");
+    assert_eq!(d::FLURRY_CAST_GAP_TICKS, 0);
+    assert_eq!(w.core.flurry_cast_at, 91);
     assert_eq!(w.core.flurry_credited_ticks, 0);
     assert!(w.core.echoes.is_empty());
-    w.run(43);
+    // no cast gap: the very next tick can start another Flurry
     w.tick(Some(Order::S2));
-    assert!(!w.core.flurrying());
-    w.tick(Some(Order::S2));
-    assert!(w.core.flurrying());
+    assert!(w.core.flurrying(), "{}", w.core.rejection);
 }
 
 #[test]
 fn trading_a_dodge_grants_one_flurry_charge_without_triggering_a_dodge() {
     let mut w = World::new(vec![]);
-    w.core.flurry_charges = 1;
+    let start = d::FLURRY_MAX_CHARGES - 2;
+    w.core.flurry_charges = start;
     w.core.flurry_charge_at = 500;
     w.core.flurry_cast_at = 75;
     w.core.last_dodge = 1;
     let effects = w.tick(Some(Order::ExchangeDodge));
-    assert_eq!((w.core.charges, w.core.flurry_charges), (4, 2));
-    assert_eq!((w.core.charge_at, w.core.flurry_charge_at), (901, 500));
+    assert_eq!((w.core.charges, w.core.flurry_charges), (4, start + 1));
+    assert_eq!((w.core.charge_at, w.core.flurry_charge_at), (1 + d::CHARGES_RECHARGE_TICKS as u64, 500));
     assert_eq!((w.core.last_dodge, w.core.flurry_cast_at), (1, 75));
     assert!(!w.core.flurrying() && w.core.pending_dodge.is_none());
     assert!(!effects.iter().any(|effect| matches!(effect, Effect::Glide { .. } | Effect::Damage { .. })));
 
     w.tick(Some(Order::ExchangeDodge));
-    assert_eq!((w.core.charges, w.core.flurry_charges), (3, 3));
-    assert_eq!((w.core.charge_at, w.core.flurry_charge_at), (901, 0));
+    assert_eq!((w.core.charges, w.core.flurry_charges), (3, d::FLURRY_MAX_CHARGES));
+    assert_eq!((w.core.charge_at, w.core.flurry_charge_at), (1 + d::CHARGES_RECHARGE_TICKS as u64, 0));
     w.tick(Some(Order::ExchangeDodge));
-    assert_eq!((w.core.charges, w.core.flurry_charges), (3, 3));
+    assert_eq!((w.core.charges, w.core.flurry_charges), (3, d::FLURRY_MAX_CHARGES));
     assert!(w.core.rejection.contains("full"));
 }
 
@@ -464,14 +466,14 @@ fn delayed_independent_echo_counts_even_during_flurry_and_no_credit_banks_at_cap
     w.tick(None);
     w.tick(Some(Order::S2));
     w.run(60);
-    assert_eq!(w.core.flurry_charge_at, 933);
+    assert_eq!(w.core.flurry_charge_at, (3 + d::FLURRY_RECHARGE_TICKS - d::FLURRY_HIT_CREDIT_TICKS) as u64);
     w.core.flurry_charges = 1;
     w.core.flurry_charge_at = w.f.tick + 8;
     w.f.landed_hits = 2;
     let tick = w.f.tick;
     w.tick(None);
     assert_eq!(w.core.flurry_charges, 2);
-    assert_eq!(w.core.flurry_charge_at, tick + 930);
+    assert_eq!(w.core.flurry_charge_at, tick + (d::FLURRY_RECHARGE_TICKS - d::FLURRY_HIT_CREDIT_TICKS) as u64);
 }
 
 #[test]
@@ -776,7 +778,7 @@ mod glue {
 #[test]
 fn his_slots_are_real_engine_skills_the_game_ai_can_cast() {
     let data: serde_json::Value = serde_json::from_str(include_str!("../../../mods/tfm2_custom/champion/tfm2_custom_contender.data_champion")).unwrap();
-    for (slot, cooltime, effect) in [("skill", d::MERGE_COOLDOWN_TICKS, "contender_s1"), ("skill2", d::FLURRY_CAST_GAP_TICKS, "contender_s2"), ("ult", d::SHADOW_LINK_COOLDOWN_TICKS, "contender_ult")] {
+    for (slot, cooltime, effect) in [("skill", d::MERGE_COOLDOWN_TICKS, "contender_s1"), ("skill2", d::FLURRY_CAST_GAP_TICKS.max(1), "contender_s2"), ("ult", d::SHADOW_LINK_COOLDOWN_TICKS, "contender_ult")] {
         let s = &data[slot];
         assert_eq!(s["cooltime"].as_i64(), Some(cooltime), "{slot}");
         assert!(s["range"].as_i64().unwrap() > 1_000, "{slot} has a real range");

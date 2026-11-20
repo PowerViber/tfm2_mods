@@ -44,7 +44,8 @@ text = {
         f"Each landed non-Flurry hit cuts {sec(fl['hitCreditTicks'])} from the next charge, or {sec(me['crossRechargeCreditTicks'])} for Shadow Cross. "
         f"When out of Flurry charges, he can spend one passive dodge on a safe Flurry. "
         f"Vanish for up to {sec(fl['ticks'])} and throw up to {fl['punches']} punches for {fl['base']} + {fl['adRatio']}% Attack each. "
-        f"Prefer a different target on each punch. After reappearing wait {sec(fl['castGapTicks'])} to cast again. "
+        f"Prefer a different target on each punch. He reappears beside the last enemy hit and "
+        + (f"after {sec(fl['castGapTicks'])} " if fl['castGapTicks'] else "") + "can cast it again at once if a charge is left. "
         f"A successful Flurry primes his next basic for {fl['haymakerBase']} + {fl['haymakerAdRatio']}% Attack bonus damage."),
     'ult': (
         f"Shadow Link (level 5, {sec(link['cooldownTicks'])}): refill all {ch['max']} dodges. Send a shadow up to {link['range']}. "
@@ -68,7 +69,7 @@ for slot in ['skill', 'skill2', 'ult']:
 mg, fl, link_r = rules['merge'], rules['flurry'], rules['shadowLink']
 for slot, cooltime, rng, target, ref in [
         ('skill', mg['cooldownTicks'], rules['ai']['mergeRange'], 'EnemyWithoutTower', 'contender_s1'),
-        ('skill2', fl['castGapTicks'], fl['startRange'], 'EnemyWithoutTower', 'contender_s2'),
+        ('skill2', max(1, fl['castGapTicks']), fl['startRange'], 'EnemyWithoutTower', 'contender_s2'),
         ('ult', link_r['cooldownTicks'], link_r['range'], 'EnemyChampion', 'contender_ult')]:
     champ[slot].update(cooltime=cooltime, range=rng, casting_type='Targeting', casting_target=target, can_use_with_move=True,
                        effect={'type': 'Native', 'effect_ref': 'tfm2_custom_ai:' + ref})
