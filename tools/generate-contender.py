@@ -42,9 +42,8 @@ text = {
     'skill2': (
         f"Shadow Flurry (level 3; the game AI decides when): hold {fl['maxCharges']} charges and recover one every {sec(fl['rechargeTicks'])}. "
         f"Each landed non-Flurry hit cuts {sec(fl['hitCreditTicks'])} from the next charge, or {sec(me['crossRechargeCreditTicks'])} for Shadow Cross. "
-        f"When out of Flurry charges, he can spend one passive dodge on a safe Flurry. "
         f"Vanish for up to {sec(fl['ticks'])} and throw up to {fl['punches']} punches for {fl['base']} + {fl['adRatio']}% Attack each. "
-        f"Prefer a different target on each punch. He reappears beside the last enemy hit and "
+        f"Prefer a different target on each punch. He reappears where he is and "
         + (f"after {sec(fl['castGapTicks'])} " if fl['castGapTicks'] else "") + "can cast it again at once if a charge is left. "
         f"A successful Flurry primes his next basic for {fl['haymakerBase']} + {fl['haymakerAdRatio']}% Attack bonus damage."),
     'ult': (

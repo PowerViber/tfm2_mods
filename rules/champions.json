@@ -4994,7 +4994,7 @@
      "intents": [
       "Engage"
      ],
-     "summary": "Shadow Flurry (level 3; the game AI decides when): hold 4 charges and recover one every 12 s. Each landed non-Flurry hit cuts 0.5 s from the next charge, or 0.75 s for Shadow Cross. When out of Flurry charges, he can spend one passive dodge on a safe Flurry. Vanish for up to 1.5 s and throw up to 15 punches for 1 + 2% Attack each. Prefer a different target on each punch. He reappears beside the last enemy hit and can cast it again at once if a charge is left. A successful Flurry primes his next basic for 15 + 20% Attack bonus damage."
+     "summary": "Shadow Flurry (level 3; the game AI decides when): hold 4 charges and recover one every 12 s. Each landed non-Flurry hit cuts 0.5 s from the next charge, or 0.75 s for Shadow Cross. Vanish for up to 1.5 s and throw up to 30 punches for 2 + 2% Attack each. Prefer a different target on each punch. He reappears where he is and can cast it again at once if a charge is left. A successful Flurry primes his next basic for 15 + 20% Attack bonus damage."
     },
     {
      "slot": "ult",

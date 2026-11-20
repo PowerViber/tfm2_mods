@@ -7,7 +7,7 @@
     "Melee",
     "CC"
   ],
-  "revision": "contender-3.3",
+  "revision": "contender-3.4",
   "stat": {
     "attack": 76,
     "magic_power": 0,
@@ -114,11 +114,11 @@
     "hitCreditTicks": 30,
     "castGapTicks": 0,
     "ticks": 90,
-    "punches": 15,
-    "gapTicks": 6,
+    "punches": 30,
+    "gapTicks": 3,
     "startRange": 50000,
     "chainRange": 30000,
-    "base": 1,
+    "base": 2,
     "adRatio": 2,
     "haymakerTicks": 120,
     "haymakerBase": 15,
