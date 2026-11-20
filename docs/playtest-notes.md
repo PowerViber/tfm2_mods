@@ -4171,3 +4171,8 @@ Native 0.10.112 / custom 0.2.115, art basalt-art-6, gameplay remains basalt-1.4.
 - **Flurry:** a whole Flurry is about 2.5x Attack (2 + 7% per punch, 30 punches).
 - **Wasted casts:** with no Flurry charge, the game AI's Flurry press becomes a basic attack instead of a wasted cast.
 - **Watch for:** does he still dive at low HP (that is the game's own AI; tell Claude what you see).
+
+## Nov 20 · Round 189 reverted (native 0.10.125, champion pack 0.2.127 → 0.2.128)
+- Reihan asked to revert Contender 3.6 (PR #105) and wait for Codex to make the Shadow Grab (S3) art. Contender is back to **3.5** exactly.
+- The versions move forward rather than back so the Mod Manager installs it over 0.10.124: run 1 Update everything, and `log.log` should show 0.10.125.
+- The 3.6 work stays in git history (merge `c522b41`) to bring back once the art exists.
