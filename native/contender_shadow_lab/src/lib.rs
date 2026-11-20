@@ -121,7 +121,7 @@ mod transport_tests {
             let out = run(&mut s, &i.to_string());
             assert!(!out.contains("\"error\""), "{out}");
         }
-        assert_eq!(s.core.flurry_charges, contender_shadow_data::FLURRY_MAX_CHARGES - 1);
+        assert_eq!(s.core.charges, contender_shadow_data::CHARGES_MAX - contender_shadow_data::CHARGES_FLURRY_COST);
         assert!(s.core.shadow_link.is_some());
     }
     #[test]
