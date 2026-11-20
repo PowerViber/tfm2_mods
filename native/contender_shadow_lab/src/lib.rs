@@ -112,15 +112,16 @@ mod transport_tests {
         for (t, o) in [
             (1, json!({"kind":"s1"})),
             (2, json!({"kind":"s2"})),
-            (64, serde_json::Value::Null),
-            (65, json!({"kind":"ult","aim":{"x":445000,"y":500000}})),
+            // the Flurry (cast at 2) lasts `FLURRY_TICKS`; the ult goes in once it's over
+            (94, serde_json::Value::Null),
+            (95, json!({"kind":"ult","aim":{"x":445000,"y":500000}})),
         ] {
             let mut i = input(t);
             i["frame"]["order"] = o;
             let out = run(&mut s, &i.to_string());
             assert!(!out.contains("\"error\""), "{out}");
         }
-        assert_eq!(s.core.flurry_charges, 2);
+        assert_eq!(s.core.flurry_charges, contender_shadow_data::FLURRY_MAX_CHARGES - 1);
         assert!(s.core.shadow_link.is_some());
     }
     #[test]

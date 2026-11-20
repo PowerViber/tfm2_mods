@@ -7,7 +7,7 @@
     "Melee",
     "CC"
   ],
-  "revision": "contender-3.2",
+  "revision": "contender-3.3",
   "stat": {
     "attack": 76,
     "magic_power": 0,
@@ -42,7 +42,7 @@
   },
   "charges": {
     "max": 5,
-    "rechargeTicks": 900,
+    "rechargeTicks": 600,
     "dodgeSlip": 8000,
     "dodgeSlipTicks": 8,
     "dodgeGapTicks": 24
@@ -109,12 +109,12 @@
     "adRatio": 30
   },
   "flurry": {
-    "maxCharges": 3,
-    "rechargeTicks": 960,
+    "maxCharges": 4,
+    "rechargeTicks": 720,
     "hitCreditTicks": 30,
-    "castGapTicks": 45,
-    "ticks": 60,
-    "punches": 10,
+    "castGapTicks": 0,
+    "ticks": 90,
+    "punches": 15,
     "gapTicks": 6,
     "startRange": 50000,
     "chainRange": 30000,
