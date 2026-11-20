@@ -1032,8 +1032,9 @@ impl StablePlayerAi for WallAi {
                 return Some(swap);
             }
         }
-        // round 88: Aegis Zero mid-ult and Isliid between plans turn presses they wouldn't use into basic attacks
-        let swap_reach = cname.as_deref().and_then(|n| if n.ends_with("_aegis_zero") { Some(36_000) } else if n.ends_with("_emperor") { Some(75_000) } else { None });
+        // round 88: Aegis Zero mid-ult and Isliid between plans turn presses they wouldn't use into basic attacks (and, since
+        // contender-3.5, Contender's Flurry presses with no charge)
+        let swap_reach = cname.as_deref().and_then(|n| if n.ends_with("_aegis_zero") { Some(36_000) } else if n.ends_with("_emperor") { Some(75_000) } else if n.ends_with("_contender") { Some(crate::contender_shadow_data::BASIC_RANGE + 10_000) } else { None });
         if let (Some(reach), Some(inp)) = (swap_reach, base) {
             let pid = ctx.player_id();
             if let Some(att) = press_swap(ctx, pid, &inp, reach) {

@@ -36,7 +36,9 @@ text = {
         f"Shadow Pact: a basic echoes after {sec(pa['delayTicks'])} for {pa['pct']}% damage. It echoes twice while merged. "
         f"Shadow Rhythm: basics and Flurry build up to {rh['maxStacks']} stacks for {sec(rh['stackTicks'])}. "
         f"Stacks increase his speed and damage against the target. A basic or Counterpunch at full stacks triggers Shadow Break. "
-        f"Shadow Merge ({sec(me['cooldownTicks'])}): gain {me['moveSpeedPct']}% movement for {sec(me['ticks'])}. "
+        f"Shadow Merge ({sec(me['cooldownTicks'])}): for {sec(me['ticks'])} he gains {me['moveSpeedPct']}% move speed, "
+        f"{me['attackSpeedPct']}% attack speed and {me['attackPct']}% Attack" + (" and can't be crowd-controlled" if me['ccImmune'] else "") + ". "
+        f"Any enemy that damages him while merged is slowed {me['attackerSlowPct']}% for {sec(me['attackerSlowTicks'])}. "
         f"Every {sec(me['crossEveryTicks'])}, a cross hits within {me['crossRadius']} of his current position for "
         f"{me['crossBase']} + {me['crossAdRatio']}% Attack. Each enemy hit cuts {sec(me['crossRechargeCreditTicks'])} from Flurry recharge."),
     'skill2': (
