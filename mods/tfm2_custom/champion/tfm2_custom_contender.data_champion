@@ -91,7 +91,7 @@
     "duration": 6,
     "cooltime": 720,
     "start_timing": 3,
-    "range": 90000,
+    "range": 150000,
     "casting_type": "Targeting",
     "casting_target": "EnemyChampion",
     "attack_type": "Skill",
@@ -2901,326 +2901,6 @@
     },
     {
       "type": "Animation",
-      "name": "ct_grab_ribbon_L2_d0",
-      "anim": "asset/tfm2_custom/vfx/contender_grab",
-      "tag": "ribbon_L2_d0",
-      "z": 6,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "ct_grab_ribbon_L2_d1",
-      "anim": "asset/tfm2_custom/vfx/contender_grab",
-      "tag": "ribbon_L2_d1",
-      "z": 6,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "ct_grab_ribbon_L2_d2",
-      "anim": "asset/tfm2_custom/vfx/contender_grab",
-      "tag": "ribbon_L2_d2",
-      "z": 6,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "ct_grab_ribbon_L2_d3",
-      "anim": "asset/tfm2_custom/vfx/contender_grab",
-      "tag": "ribbon_L2_d3",
-      "z": 6,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "ct_grab_ribbon_L2_d4",
-      "anim": "asset/tfm2_custom/vfx/contender_grab",
-      "tag": "ribbon_L2_d4",
-      "z": 6,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "ct_grab_ribbon_L2_d5",
-      "anim": "asset/tfm2_custom/vfx/contender_grab",
-      "tag": "ribbon_L2_d5",
-      "z": 6,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "ct_grab_ribbon_L2_d6",
-      "anim": "asset/tfm2_custom/vfx/contender_grab",
-      "tag": "ribbon_L2_d6",
-      "z": 6,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "ct_grab_ribbon_L2_d7",
-      "anim": "asset/tfm2_custom/vfx/contender_grab",
-      "tag": "ribbon_L2_d7",
-      "z": 6,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "ct_grab_ribbon_L3_d0",
-      "anim": "asset/tfm2_custom/vfx/contender_grab",
-      "tag": "ribbon_L3_d0",
-      "z": 6,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "ct_grab_ribbon_L3_d1",
-      "anim": "asset/tfm2_custom/vfx/contender_grab",
-      "tag": "ribbon_L3_d1",
-      "z": 6,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "ct_grab_ribbon_L3_d2",
-      "anim": "asset/tfm2_custom/vfx/contender_grab",
-      "tag": "ribbon_L3_d2",
-      "z": 6,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "ct_grab_ribbon_L3_d3",
-      "anim": "asset/tfm2_custom/vfx/contender_grab",
-      "tag": "ribbon_L3_d3",
-      "z": 6,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "ct_grab_ribbon_L3_d4",
-      "anim": "asset/tfm2_custom/vfx/contender_grab",
-      "tag": "ribbon_L3_d4",
-      "z": 6,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "ct_grab_ribbon_L3_d5",
-      "anim": "asset/tfm2_custom/vfx/contender_grab",
-      "tag": "ribbon_L3_d5",
-      "z": 6,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "ct_grab_ribbon_L3_d6",
-      "anim": "asset/tfm2_custom/vfx/contender_grab",
-      "tag": "ribbon_L3_d6",
-      "z": 6,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "ct_grab_ribbon_L3_d7",
-      "anim": "asset/tfm2_custom/vfx/contender_grab",
-      "tag": "ribbon_L3_d7",
-      "z": 6,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "ct_grab_ribbon_L4_d0",
-      "anim": "asset/tfm2_custom/vfx/contender_grab",
-      "tag": "ribbon_L4_d0",
-      "z": 6,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "ct_grab_ribbon_L4_d1",
-      "anim": "asset/tfm2_custom/vfx/contender_grab",
-      "tag": "ribbon_L4_d1",
-      "z": 6,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "ct_grab_ribbon_L4_d2",
-      "anim": "asset/tfm2_custom/vfx/contender_grab",
-      "tag": "ribbon_L4_d2",
-      "z": 6,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "ct_grab_ribbon_L4_d3",
-      "anim": "asset/tfm2_custom/vfx/contender_grab",
-      "tag": "ribbon_L4_d3",
-      "z": 6,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "ct_grab_ribbon_L4_d4",
-      "anim": "asset/tfm2_custom/vfx/contender_grab",
-      "tag": "ribbon_L4_d4",
-      "z": 6,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "ct_grab_ribbon_L4_d5",
-      "anim": "asset/tfm2_custom/vfx/contender_grab",
-      "tag": "ribbon_L4_d5",
-      "z": 6,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "ct_grab_ribbon_L4_d6",
-      "anim": "asset/tfm2_custom/vfx/contender_grab",
-      "tag": "ribbon_L4_d6",
-      "z": 6,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "ct_grab_ribbon_L4_d7",
-      "anim": "asset/tfm2_custom/vfx/contender_grab",
-      "tag": "ribbon_L4_d7",
-      "z": 6,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "ct_grab_ribbon_L5_d0",
-      "anim": "asset/tfm2_custom/vfx/contender_grab",
-      "tag": "ribbon_L5_d0",
-      "z": 6,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "ct_grab_ribbon_L5_d1",
-      "anim": "asset/tfm2_custom/vfx/contender_grab",
-      "tag": "ribbon_L5_d1",
-      "z": 6,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "ct_grab_ribbon_L5_d2",
-      "anim": "asset/tfm2_custom/vfx/contender_grab",
-      "tag": "ribbon_L5_d2",
-      "z": 6,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "ct_grab_ribbon_L5_d3",
-      "anim": "asset/tfm2_custom/vfx/contender_grab",
-      "tag": "ribbon_L5_d3",
-      "z": 6,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "ct_grab_ribbon_L5_d4",
-      "anim": "asset/tfm2_custom/vfx/contender_grab",
-      "tag": "ribbon_L5_d4",
-      "z": 6,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "ct_grab_ribbon_L5_d5",
-      "anim": "asset/tfm2_custom/vfx/contender_grab",
-      "tag": "ribbon_L5_d5",
-      "z": 6,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "ct_grab_ribbon_L5_d6",
-      "anim": "asset/tfm2_custom/vfx/contender_grab",
-      "tag": "ribbon_L5_d6",
-      "z": 6,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "ct_grab_ribbon_L5_d7",
-      "anim": "asset/tfm2_custom/vfx/contender_grab",
-      "tag": "ribbon_L5_d7",
-      "z": 6,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "ct_grab_ribbon_L6_d0",
-      "anim": "asset/tfm2_custom/vfx/contender_grab",
-      "tag": "ribbon_L6_d0",
-      "z": 6,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "ct_grab_ribbon_L6_d1",
-      "anim": "asset/tfm2_custom/vfx/contender_grab",
-      "tag": "ribbon_L6_d1",
-      "z": 6,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "ct_grab_ribbon_L6_d2",
-      "anim": "asset/tfm2_custom/vfx/contender_grab",
-      "tag": "ribbon_L6_d2",
-      "z": 6,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "ct_grab_ribbon_L6_d3",
-      "anim": "asset/tfm2_custom/vfx/contender_grab",
-      "tag": "ribbon_L6_d3",
-      "z": 6,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "ct_grab_ribbon_L6_d4",
-      "anim": "asset/tfm2_custom/vfx/contender_grab",
-      "tag": "ribbon_L6_d4",
-      "z": 6,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "ct_grab_ribbon_L6_d5",
-      "anim": "asset/tfm2_custom/vfx/contender_grab",
-      "tag": "ribbon_L6_d5",
-      "z": 6,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "ct_grab_ribbon_L6_d6",
-      "anim": "asset/tfm2_custom/vfx/contender_grab",
-      "tag": "ribbon_L6_d6",
-      "z": 6,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
-      "name": "ct_grab_ribbon_L6_d7",
-      "anim": "asset/tfm2_custom/vfx/contender_grab",
-      "tag": "ribbon_L6_d7",
-      "z": 6,
-      "is_follow": false
-    },
-    {
-      "type": "Animation",
       "name": "ct_grab_ribbon_L7_d0",
       "anim": "asset/tfm2_custom/vfx/contender_grab",
       "tag": "ribbon_L7_d0",
@@ -3408,6 +3088,390 @@
       "name": "ct_grab_ribbon_L9_d7",
       "anim": "asset/tfm2_custom/vfx/contender_grab",
       "tag": "ribbon_L9_d7",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_grab_ribbon_L10_d0",
+      "anim": "asset/tfm2_custom/vfx/contender_grab",
+      "tag": "ribbon_L10_d0",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_grab_ribbon_L10_d1",
+      "anim": "asset/tfm2_custom/vfx/contender_grab",
+      "tag": "ribbon_L10_d1",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_grab_ribbon_L10_d2",
+      "anim": "asset/tfm2_custom/vfx/contender_grab",
+      "tag": "ribbon_L10_d2",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_grab_ribbon_L10_d3",
+      "anim": "asset/tfm2_custom/vfx/contender_grab",
+      "tag": "ribbon_L10_d3",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_grab_ribbon_L10_d4",
+      "anim": "asset/tfm2_custom/vfx/contender_grab",
+      "tag": "ribbon_L10_d4",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_grab_ribbon_L10_d5",
+      "anim": "asset/tfm2_custom/vfx/contender_grab",
+      "tag": "ribbon_L10_d5",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_grab_ribbon_L10_d6",
+      "anim": "asset/tfm2_custom/vfx/contender_grab",
+      "tag": "ribbon_L10_d6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_grab_ribbon_L10_d7",
+      "anim": "asset/tfm2_custom/vfx/contender_grab",
+      "tag": "ribbon_L10_d7",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_grab_ribbon_L11_d0",
+      "anim": "asset/tfm2_custom/vfx/contender_grab",
+      "tag": "ribbon_L11_d0",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_grab_ribbon_L11_d1",
+      "anim": "asset/tfm2_custom/vfx/contender_grab",
+      "tag": "ribbon_L11_d1",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_grab_ribbon_L11_d2",
+      "anim": "asset/tfm2_custom/vfx/contender_grab",
+      "tag": "ribbon_L11_d2",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_grab_ribbon_L11_d3",
+      "anim": "asset/tfm2_custom/vfx/contender_grab",
+      "tag": "ribbon_L11_d3",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_grab_ribbon_L11_d4",
+      "anim": "asset/tfm2_custom/vfx/contender_grab",
+      "tag": "ribbon_L11_d4",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_grab_ribbon_L11_d5",
+      "anim": "asset/tfm2_custom/vfx/contender_grab",
+      "tag": "ribbon_L11_d5",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_grab_ribbon_L11_d6",
+      "anim": "asset/tfm2_custom/vfx/contender_grab",
+      "tag": "ribbon_L11_d6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_grab_ribbon_L11_d7",
+      "anim": "asset/tfm2_custom/vfx/contender_grab",
+      "tag": "ribbon_L11_d7",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_grab_ribbon_L12_d0",
+      "anim": "asset/tfm2_custom/vfx/contender_grab",
+      "tag": "ribbon_L12_d0",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_grab_ribbon_L12_d1",
+      "anim": "asset/tfm2_custom/vfx/contender_grab",
+      "tag": "ribbon_L12_d1",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_grab_ribbon_L12_d2",
+      "anim": "asset/tfm2_custom/vfx/contender_grab",
+      "tag": "ribbon_L12_d2",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_grab_ribbon_L12_d3",
+      "anim": "asset/tfm2_custom/vfx/contender_grab",
+      "tag": "ribbon_L12_d3",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_grab_ribbon_L12_d4",
+      "anim": "asset/tfm2_custom/vfx/contender_grab",
+      "tag": "ribbon_L12_d4",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_grab_ribbon_L12_d5",
+      "anim": "asset/tfm2_custom/vfx/contender_grab",
+      "tag": "ribbon_L12_d5",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_grab_ribbon_L12_d6",
+      "anim": "asset/tfm2_custom/vfx/contender_grab",
+      "tag": "ribbon_L12_d6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_grab_ribbon_L12_d7",
+      "anim": "asset/tfm2_custom/vfx/contender_grab",
+      "tag": "ribbon_L12_d7",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_grab_ribbon_L13_d0",
+      "anim": "asset/tfm2_custom/vfx/contender_grab",
+      "tag": "ribbon_L13_d0",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_grab_ribbon_L13_d1",
+      "anim": "asset/tfm2_custom/vfx/contender_grab",
+      "tag": "ribbon_L13_d1",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_grab_ribbon_L13_d2",
+      "anim": "asset/tfm2_custom/vfx/contender_grab",
+      "tag": "ribbon_L13_d2",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_grab_ribbon_L13_d3",
+      "anim": "asset/tfm2_custom/vfx/contender_grab",
+      "tag": "ribbon_L13_d3",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_grab_ribbon_L13_d4",
+      "anim": "asset/tfm2_custom/vfx/contender_grab",
+      "tag": "ribbon_L13_d4",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_grab_ribbon_L13_d5",
+      "anim": "asset/tfm2_custom/vfx/contender_grab",
+      "tag": "ribbon_L13_d5",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_grab_ribbon_L13_d6",
+      "anim": "asset/tfm2_custom/vfx/contender_grab",
+      "tag": "ribbon_L13_d6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_grab_ribbon_L13_d7",
+      "anim": "asset/tfm2_custom/vfx/contender_grab",
+      "tag": "ribbon_L13_d7",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_grab_ribbon_L14_d0",
+      "anim": "asset/tfm2_custom/vfx/contender_grab",
+      "tag": "ribbon_L14_d0",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_grab_ribbon_L14_d1",
+      "anim": "asset/tfm2_custom/vfx/contender_grab",
+      "tag": "ribbon_L14_d1",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_grab_ribbon_L14_d2",
+      "anim": "asset/tfm2_custom/vfx/contender_grab",
+      "tag": "ribbon_L14_d2",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_grab_ribbon_L14_d3",
+      "anim": "asset/tfm2_custom/vfx/contender_grab",
+      "tag": "ribbon_L14_d3",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_grab_ribbon_L14_d4",
+      "anim": "asset/tfm2_custom/vfx/contender_grab",
+      "tag": "ribbon_L14_d4",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_grab_ribbon_L14_d5",
+      "anim": "asset/tfm2_custom/vfx/contender_grab",
+      "tag": "ribbon_L14_d5",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_grab_ribbon_L14_d6",
+      "anim": "asset/tfm2_custom/vfx/contender_grab",
+      "tag": "ribbon_L14_d6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_grab_ribbon_L14_d7",
+      "anim": "asset/tfm2_custom/vfx/contender_grab",
+      "tag": "ribbon_L14_d7",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_grab_ribbon_L15_d0",
+      "anim": "asset/tfm2_custom/vfx/contender_grab",
+      "tag": "ribbon_L15_d0",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_grab_ribbon_L15_d1",
+      "anim": "asset/tfm2_custom/vfx/contender_grab",
+      "tag": "ribbon_L15_d1",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_grab_ribbon_L15_d2",
+      "anim": "asset/tfm2_custom/vfx/contender_grab",
+      "tag": "ribbon_L15_d2",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_grab_ribbon_L15_d3",
+      "anim": "asset/tfm2_custom/vfx/contender_grab",
+      "tag": "ribbon_L15_d3",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_grab_ribbon_L15_d4",
+      "anim": "asset/tfm2_custom/vfx/contender_grab",
+      "tag": "ribbon_L15_d4",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_grab_ribbon_L15_d5",
+      "anim": "asset/tfm2_custom/vfx/contender_grab",
+      "tag": "ribbon_L15_d5",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_grab_ribbon_L15_d6",
+      "anim": "asset/tfm2_custom/vfx/contender_grab",
+      "tag": "ribbon_L15_d6",
+      "z": 6,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_grab_ribbon_L15_d7",
+      "anim": "asset/tfm2_custom/vfx/contender_grab",
+      "tag": "ribbon_L15_d7",
       "z": 6,
       "is_follow": false
     },

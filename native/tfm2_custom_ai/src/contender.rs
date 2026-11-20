@@ -51,6 +51,35 @@ fn hard_cc(sim: &StableSim, id: usize) -> bool {
 }
 const BODY_SHOTS: &str = "ct_body_shots";
 
+/// contender-3.7 Overflow: heal him by `amount`; whatever his missing HP can't take becomes a shield, topped up to at
+/// most `OVERHEAL_CAP_PERMILLE_MAX_HP` of his max HP (counting the shield he already has).
+pub(crate) fn overflow_heal(sim: &mut StableSim, owner: usize, amount: i64) {
+    let Some(e) = sim.get_entity(owner) else { return };
+    let (hp, max) = e.hp();
+    let shield = e.shield() as i64;
+    let (hp, max) = (hp as i64, max as i64);
+    let healed = amount.min(max - hp).max(0);
+    if healed > 0 {
+        sim.heal(owner, owner, healed as usize);
+    }
+    overflow_shield(sim, owner, amount - healed, max, shield);
+}
+
+/// The part of a lifesteal heal past max HP, as Overflow's capped shield.
+pub(crate) fn overflow_shield(sim: &mut StableSim, owner: usize, overflow: i64, max_hp: i64, shield: i64) {
+    let room = max_hp * d::OVERHEAL_CAP_PERMILLE_MAX_HP / 1_000 - shield;
+    let add = overflow.min(room);
+    if add > 0 {
+        sim.entity_add_shield(owner, add as usize, d::OVERHEAL_SHIELD_TICKS as usize);
+    }
+}
+
+/// His lifesteal % from items and buffs (the engine heals it; Overflow keeps what spills over).
+fn vamp_pct(sim: &StableSim, owner: usize) -> i64 {
+    let buffs = sim.get_entity(owner).map_or(0, |e| (0..e.buff_count()).filter_map(|i| e.buff_at(i)).map(|b| b.vamp as i64).sum());
+    crate::batch2::item_vamp(sim, owner) as i64 + buffs
+}
+
 /// Clockwise eighth-turns from east (screen y down) from `from` toward `to`, as the baked grab art.
 pub(crate) fn grab_heading(from: Point, to: Point) -> u8 {
     let (dx, dy) = ((to.x - from.x) as f64, (to.y - from.y) as f64);
@@ -424,6 +453,20 @@ impl Contender {
                         }
                     }
                 }
+                Effect::Drag { target, to } => {
+                    // contender-3.7: the grab drags straight through walls: placed each tick, like motion's legacy mode
+                    if reach(owner, target) && not_tower(sim, target) {
+                        sim.add_buff(target, &crate::timed(crate::place::MOVED, 2));
+                        sim.entity_set_pos(target, to.x.max(0) as u64, to.y.max(0) as u64);
+                        crate::steve::note_placed(sim, target, to.x, to.y);
+                    }
+                }
+                Effect::Hold { target, ticks } => {
+                    if reach(owner, target) && not_tower(sim, target) {
+                        sim.apply_cc(target, &named(CcKindV1::Stun, ticks, &format!("ct_grab_hold_{owner}")));
+                    }
+                }
+                Effect::Lifesteal { amount } => overflow_heal(sim, owner, amount),
                 Effect::BreakAirborne { target, ticks } => {
                     if reach(owner, target) && not_tower(sim, target) {
                         sim.apply_cc(target, &named(CcKindV1::Airborne, ticks, &format!("ct_break_air_{owner}")));
@@ -510,6 +553,11 @@ impl Contender {
                     // round 190 (Codex's art): the reaching hand opens ahead of the flying shadow
                     let (hx, hy) = grab_hand_at(from, at, cursor);
                     crate::fx_point(sim, &format!("ct_grab_hand_d{}", grab_heading(from, at)), owner, hx, hy, 4);
+                    self.link_drawn_at = tick + 4;
+                }
+                Some(ShadowLink::Flurry { at, .. }) => {
+                    // contender-3.7: the missed grab's shadow stands where it landed while it throws its Flurry
+                    crate::fx_point(sim, "ct_body_idle0", owner, at.x, at.y, 4);
                     self.link_drawn_at = tick + 4;
                 }
                 Some(ShadowLink::Pull { ref pulled, .. }) => {
@@ -607,6 +655,17 @@ impl StablePassive for Contender {
         let vuln = self.core.vuln_permille(target, sim.tick() as u64);
         if vuln > 0 {
             *damage = (*damage as i64 * (1_000 + vuln) / 1_000).max(0) as usize;
+        }
+        // contender-3.7 Overflow: the engine's item/buff lifesteal on this hit heals what fits; the spill becomes a shield
+        let vamp = vamp_pct(sim, id);
+        if vamp > 0 && *damage > 0 {
+            if let Some(e) = sim.get_entity(id) {
+                let ((hp, max), shield) = (e.hp(), e.shield() as i64);
+                let spill = *damage as i64 * vamp / 100 - (max as i64 - hp as i64);
+                if spill > 0 {
+                    overflow_shield(sim, id, spill, max as i64, shield);
+                }
+            }
         }
         // Embedded definitions can still have a stock Attack effect and no delivery receipt.
         if !self.receipt_basic && *damage > 0 && self.basic_hits.len() < 16

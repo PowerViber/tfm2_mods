@@ -7,7 +7,7 @@
     "Melee",
     "CC"
   ],
-  "revision": "contender-3.6",
+  "revision": "contender-3.7",
   "stat": {
     "attack": 76,
     "magic_power": 0,
@@ -87,14 +87,17 @@
   },
   "shadowGrab": {
     "cooldownTicks": 720,
-    "range": 90000,
-    "flightTicks": 24,
+    "range": 150000,
+    "flightTicks": 40,
     "width": 8000,
     "pullTicks": 12,
-    "knockTicks": 60,
     "base": 20,
     "adRatio": 60,
-    "pullStop": 20000
+    "pullStop": 71250,
+    "dashPermille": 375,
+    "haymakerReach": 15000,
+    "dashTicks": 8,
+    "haymakerKnockTicks": 120
   },
   "ai": {
     "fightRange": 80000,
@@ -130,6 +133,11 @@
     "adRatio": 7,
     "haymakerTicks": 120,
     "haymakerBase": 15,
-    "haymakerAdRatio": 20
+    "haymakerAdRatio": 20,
+    "lifestealPct": 25
+  },
+  "overheal": {
+    "capPermilleMaxHp": 150,
+    "shieldTicks": 240
   }
 }

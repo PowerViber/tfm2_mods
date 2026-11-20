@@ -77,6 +77,11 @@ impl World {
                     }
                 }
                 Effect::Glide { to, .. } => self.f.pos = *to,
+                Effect::Drag { target, to } => {
+                    if let Some(u) = self.f.units.iter_mut().find(|u| u.id == *target) {
+                        u.pos = *to;
+                    }
+                }
                 _ => {}
             }
         }
@@ -494,49 +499,110 @@ fn each_landed_hit_refunds_more_the_fewer_shadows_he_has() {
     assert_eq!(w.core.charge_at, 10_000);
 }
 
-#[test]
-fn shadow_grab_hooks_the_first_enemy_in_line_drags_it_to_him_and_knocks_it_up() {
-    // contender-3.6 (Reihan): "a long shadow grab and knock up ... using the same shadow as before but with a cd"
-    let near = 400_000 + d::SHADOW_GRAB_RANGE * 2 / 3;
-    let mut w = World::new(vec![champ(FOE, 2, near, 500_000), champ(11, 2, near + 5_000, 500_000)]);
-    w.core.charges = 0;
-    w.core.charge_at = 100_000;
-    w.tick(Some(Order::Ult { aim: Point::new(near + 5_000, 500_000) }));
-    assert_eq!(w.core.ult_at, w.f.tick - 1 + d::SHADOW_GRAB_COOLDOWN_TICKS as u64);
-    assert_eq!(w.core.charges, 0, "the grab no longer refills shadows");
+fn grab_until_airborne(w: &mut World, aim: Point) {
+    w.tick(Some(Order::Ult { aim }));
     let mut guard = 0;
     while !matches!(w.core.shadow_link, Some(ShadowLink::Airborne { .. })) {
         w.tick(None);
         guard += 1;
-        assert!(guard < 200, "the grab never landed");
+        assert!(guard < 300, "the grab never finished: {:?}", w.core.shadow_link);
     }
-    assert!(w.seen(|e| matches!(e, Effect::Damage { target: FOE, source: HitSource::Grab, .. })));
+}
+
+#[test]
+fn shadow_grab_reaches_through_a_wall_pulls_to_the_meeting_point_then_dashes_in_for_a_haymaker() {
+    // contender-3.7 (Reihan): "buff his pull range greatly ... can pass through wall ... after a pull he dashes a little
+    // (3/8 of the pull range) to the pulled champ delivering a haymaker knock up for 2s"
+    assert_eq!(GRAB_DASH, d::SHADOW_GRAB_RANGE * 3 / 8);
+    assert_eq!(d::SHADOW_GRAB_PULL_STOP, GRAB_MEET, "the art's shortest ribbon is the meeting distance");
+    let me = Point::new(400_000, 500_000);
+    let far = me.x + d::SHADOW_GRAB_RANGE - 10_000;
+    let mut w = World::new(vec![champ(FOE, 2, far, 500_000), champ(11, 2, far + 5_000, 500_000)]);
+    let wall = me.x + GRAB_MEET - 5_000;
+    w.f.barriers.push(Barrier { from: Point::new(wall, 450_000), to: Point::new(wall, 550_000), half_width: 1_000 });
+    w.core.charges = 0;
+    w.core.charge_at = 100_000;
+    grab_until_airborne(&mut w, Point::new(far, 500_000));
+    assert_eq!(w.core.charges, 0, "the grab doesn't refill shadows");
+    assert_eq!(w.count(|e| matches!(e, Effect::Damage { target: FOE, source: HitSource::Grab, .. })), 2, "the hook and the Haymaker");
     assert!(!w.seen(|e| matches!(e, Effect::Damage { target: 11, .. })), "only the first enemy in line");
-    assert!(w.seen(|e| matches!(e, Effect::LinkAirborne { target: FOE, ticks } if *ticks == d::SHADOW_GRAB_KNOCK_TICKS as u64)));
-    assert!(!w.seen(|e| matches!(e, Effect::LinkAirborne { target: 11, .. })));
-    // round 190: Codex's latch flashes on contact and the burst marks the knock-up, once each
+    assert!(w.seen(|e| matches!(e, Effect::Drag { target: FOE, .. })), "dragged through the wall");
+    assert!(w.unit(FOE).pos.x < wall, "the target ends on his side of the wall");
+    let dash = w.log.iter().find_map(|(_, e)| if let Effect::Glide { to, .. } = e { Some(*to) } else { None }).expect("he dashes");
+    assert!(dash.x - me.x <= GRAB_DASH && dash.x > me.x);
+    assert!(w.seen(|e| matches!(e, Effect::Hold { target: FOE, ticks } if *ticks == d::SHADOW_GRAB_DASH_TICKS as u64)));
+    let knocks: Vec<u64> = w.log.iter().filter_map(|(_, e)| if let Effect::LinkAirborne { target: FOE, ticks } = e { Some(*ticks) } else { None }).collect();
+    assert_eq!(knocks, vec![d::SHADOW_GRAB_HAYMAKER_KNOCK_TICKS as u64], "only the Haymaker's knock-up (no 1 s knock-up)");
     assert_eq!(w.count(|e| matches!(e, Effect::Fx { name, ticks, .. } if name == "ct_grab_latch" && *ticks == GRAB_LATCH_TICKS)), 1);
     assert_eq!(w.count(|e| matches!(e, Effect::Fx { name, ticks, .. } if name == "ct_grab_burst" && *ticks == GRAB_BURST_TICKS)), 1);
-    let x = w.unit(FOE).pos.x;
-    assert!(x - 400_000 <= d::SHADOW_GRAB_PULL_STOP + 2_000, "dragged to him (x {x})");
-    assert_eq!(w.core.stacks_on(FOE, w.f.tick), 1, "the grab builds Rhythm");
-    w.run(d::SHADOW_GRAB_KNOCK_TICKS as u64 + 2);
+    assert_eq!(w.core.stacks_on(FOE, w.f.tick), 2, "the hook and the Haymaker each build Rhythm");
+    w.run(d::SHADOW_GRAB_HAYMAKER_KNOCK_TICKS as u64 + 2);
     assert!(w.core.shadow_link.is_none());
-    w.tick(Some(Order::Ult { aim: Point::new(near, 500_000) }));
+    w.tick(Some(Order::Ult { aim: Point::new(far, 500_000) }));
     assert!(w.core.shadow_link.is_none(), "cooling down");
     assert_eq!(w.core.rejection, "ult: locked or Shadow Grab cooling down");
 }
 
 #[test]
-fn shadow_grab_misses_cleanly_at_max_range_and_skips_immune_targets() {
-    let far = 400_000 + d::SHADOW_GRAB_RANGE + d::SHADOW_GRAB_WIDTH + 10_000;
-    let mut w = World::new(vec![champ(FOE, 2, far, 500_000), champ(11, 2, 430_000, 500_000)]);
+fn a_close_grab_skips_the_pull_and_dashes_only_the_gap() {
+    let near = 400_000 + GRAB_MEET / 2;
+    let mut w = World::new(vec![champ(FOE, 2, near, 500_000)]);
+    grab_until_airborne(&mut w, Point::new(near, 500_000));
+    assert!(!w.seen(|e| matches!(e, Effect::Drag { .. })), "nothing to pull");
+    let dash = w.log.iter().find_map(|(_, e)| if let Effect::Glide { to, .. } = e { Some(*to) } else { None }).expect("he dashes");
+    assert_eq!(dash.x, near - d::SHADOW_GRAB_HAYMAKER_REACH);
+    assert!(w.seen(|e| matches!(e, Effect::LinkAirborne { target: FOE, ticks } if *ticks == d::SHADOW_GRAB_HAYMAKER_KNOCK_TICKS as u64)));
+}
+
+#[test]
+fn a_missed_grab_leaves_a_shadow_that_throws_one_flurry_where_it_lands() {
+    // contender-3.7 (Reihan): "if [the grab] don't hit, it spawns a shadow there and does 1 flurry"
+    let landing = 400_000 + d::SHADOW_GRAB_RANGE;
+    let beside = landing + d::SHADOW_GRAB_WIDTH + 10_000;
+    let mut w = World::new(vec![champ(FOE, 2, beside, 500_000), champ(11, 2, 430_000, 500_000)]);
     w.f.link_excluded.push(11);
-    w.tick(Some(Order::Ult { aim: Point::new(far, 500_000) }));
-    w.run(d::SHADOW_GRAB_FLIGHT_TICKS as u64 + 5);
-    assert!(w.core.shadow_link.is_none(), "the shadow returns empty-handed");
-    assert!(!w.seen(|e| matches!(e, Effect::Damage { .. } | Effect::LinkAirborne { .. } | Effect::Knock { .. })));
+    let (pos, charges) = (w.f.pos, w.core.charges);
+    w.tick(Some(Order::Ult { aim: Point::new(beside, 500_000) }));
+    w.run((d::SHADOW_GRAB_FLIGHT_TICKS + d::FLURRY_TICKS) as u64 + 5);
+    assert!(w.core.shadow_link.is_none());
+    let punches = w.count(|e| matches!(e, Effect::Damage { target: FOE, source: HitSource::ShadowFlurry, .. }));
+    assert!(punches >= 2 && punches <= d::FLURRY_PUNCHES as usize, "the shadow's Flurry ({punches} punches)");
+    assert!(!w.seen(|e| matches!(e, Effect::Damage { target: 11, .. } | Effect::LinkAirborne { .. } | Effect::Drag { .. } | Effect::Hold { .. })));
+    assert!(!w.seen(|e| matches!(e, Effect::Vanish { .. } | Effect::Glide { .. } | Effect::Lifesteal { .. })), "he stays put, no lifesteal");
     assert!(!w.seen(|e| matches!(e, Effect::Fx { name, .. } if name.starts_with("ct_grab_"))), "a miss shows no latch or burst");
+    assert_eq!((w.f.pos, w.core.charges), (pos, charges), "no move, no shadows spent");
+    assert!(!HitSource::ShadowFlurry.credits_flurry());
+    // nobody near where it lands: nothing, and the grab still cools down
+    let mut w = World::new(vec![champ(FOE, 2, 400_000, 700_000)]);
+    w.tick(Some(Order::Ult { aim: Point::new(600_000, 500_000) }));
+    w.run(d::SHADOW_GRAB_FLIGHT_TICKS as u64 + 3);
+    assert!(w.core.shadow_link.is_none() && !w.seen(|e| matches!(e, Effect::Damage { .. })));
+    assert!(w.core.ult_at > w.f.tick);
+}
+
+#[test]
+fn a_wall_that_stops_his_dash_short_means_no_haymaker() {
+    let target = 400_000 + GRAB_MEET - 5_000;
+    let mut w = World::new(vec![champ(FOE, 2, target, 500_000)]);
+    let wall = 400_000 + 10_000;
+    w.f.barriers.push(Barrier { from: Point::new(wall, 450_000), to: Point::new(wall, 550_000), half_width: 1_000 });
+    w.tick(Some(Order::Ult { aim: Point::new(target, 500_000) }));
+    w.run(d::SHADOW_GRAB_FLIGHT_TICKS as u64 + d::SHADOW_GRAB_DASH_TICKS as u64 + 5);
+    assert_eq!(w.count(|e| matches!(e, Effect::Damage { source: HitSource::Grab, .. })), 1, "the hook lands, the Haymaker doesn't");
+    assert!(!w.seen(|e| matches!(e, Effect::LinkAirborne { .. })));
+    assert!(w.seen(|e| matches!(e, Effect::Log { text } if text.contains("out of reach"))));
+}
+
+#[test]
+fn every_flurry_punch_steals_life() {
+    // contender-3.7 (Reihan): "flurry lifesteal"
+    let mut w = World::new(vec![champ(FOE, 2, 430_000, 500_000)]);
+    w.tick(Some(Order::S2));
+    w.run(d::FLURRY_TICKS as u64 + 2);
+    let hits: Vec<i64> = w.log.iter().filter_map(|(_, e)| if let Effect::Damage { amount, source: HitSource::Flurry, .. } = e { Some(*amount) } else { None }).collect();
+    let steals: Vec<i64> = w.log.iter().filter_map(|(_, e)| if let Effect::Lifesteal { amount } = e { Some(*amount) } else { None }).collect();
+    assert!(!hits.is_empty());
+    assert_eq!(steals, hits.iter().map(|h| h * d::FLURRY_LIFESTEAL_PCT / 100).collect::<Vec<_>>());
 }
 
 #[test]
@@ -920,8 +986,8 @@ mod glue {
         // round 190: Codex's approved Shadow Grab art, end to end through the engine cast marker
         use mod_api_stable::{InputTargetV1, StableEffectType};
         let _guard = crate::walls::TEST_LOCK.lock();
-        let (x, y) = open_spot(120_000);
-        let host = Host::new(vec![champ(0, (x, y), "tfm2_custom_contender"), champ(1, (x + 60_000, y), "fighter")]);
+        let (x, y) = open_spot(160_000);
+        let host = Host::new(vec![champ(0, (x, y), "tfm2_custom_contender"), champ(1, (x + 120_000, y), "fighter")]);
         host.borrow_mut().record_view_effects = true;
         let mut c = Contender::default();
         c.configure(r#"{"shadow_art_v1":1,"shadow_directions_v1":1}"#);
@@ -939,6 +1005,47 @@ mod glue {
         assert_eq!(names.iter().filter(|n| *n == "ct_grab_latch").count(), 1);
         assert_eq!(names.iter().filter(|n| *n == "ct_grab_burst").count(), 1);
         assert!(names.iter().filter(|n| n.starts_with("ct_grab_ribbon_L")).count() >= 2, "the ribbon is renewed during the pull");
+    }
+
+    #[test]
+    fn overflow_turns_lifesteal_past_max_hp_into_a_shield_capped_at_15_percent() {
+        // contender-3.7 (Reihan): "a passive where he can overheal from any lifesteal with max 15%"
+        let _guard = crate::walls::TEST_LOCK.lock();
+        let (x, y) = open_spot(60_000);
+        let host = Host::new(vec![champ(0, (x, y), "tfm2_custom_contender"), champ(1, (x + 30_000, y), "fighter")]);
+        let max = 2_000i64; // the mock host's max HP
+        let cap = max * d::OVERHEAL_CAP_PERMILLE_MAX_HP / 1_000;
+        // hurt: the heal fills HP first; only the spill becomes a shield
+        host.borrow_mut().units[0].hp = (max - 50) as usize;
+        with_sim(&host, |sim| crate::contender::overflow_heal(sim, 0, 80));
+        assert_eq!(host.borrow().heals.last().map(|h| h.2), Some(50));
+        assert_eq!(host.borrow().shields.iter().map(|s| s.1 as i64).sum::<i64>(), 30);
+        assert!(host.borrow().shields.iter().all(|s| s.2 == d::OVERHEAL_SHIELD_TICKS as usize));
+        // at full HP: all of it is shield, never above the cap
+        host.borrow_mut().shields.clear();
+        with_sim(&host, |sim| crate::contender::overflow_heal(sim, 0, cap * 3));
+        assert_eq!(host.borrow().shields.iter().map(|s| s.1 as i64).sum::<i64>(), cap);
+        // a Flurry punch's lifesteal goes through the same rule
+        host.borrow_mut().shields.clear();
+        let mut c = Contender::default();
+        with_sim(&host, |sim| c.apply(sim, 0, vec![Effect::Lifesteal { amount: 40 }]));
+        assert_eq!(host.borrow().shields.iter().map(|s| s.1 as i64).sum::<i64>(), 40);
+    }
+
+    #[test]
+    fn the_tower_guard_stops_him_outside_an_uncovered_enemy_tower() {
+        // contender-3.7 (Reihan: "his AI tends to push anywhere he goes even in turret")
+        use crate::steve::tower_guard;
+        let r = d::AI_TOWER_RANGE;
+        let (me, tower) = ((300_000, 500_000), (500_000, 500_000));
+        let inside = (tower.0 - r / 2, 500_000);
+        assert_eq!(tower_guard(me, inside, &[(tower, false)], r), Some((tower.0 - r - 5_000, 500_000)), "stop outside its range");
+        assert_eq!(tower_guard(me, inside, &[(tower, true)], r), None, "his minions are tanking: go");
+        assert_eq!(tower_guard(me, (tower.0 - r - 20_000, 500_000), &[(tower, false)], r), None, "outside the range: untouched");
+        // already inside: the walk leads out
+        let deep = (tower.0 - 10_000, 500_000);
+        let out = tower_guard(deep, deep, &[(tower, false)], r).unwrap();
+        assert!(((out.0 - tower.0) as f64).hypot((out.1 - tower.1) as f64) > r as f64);
     }
 
     #[test]

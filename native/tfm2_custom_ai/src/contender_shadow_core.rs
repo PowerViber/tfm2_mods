@@ -55,6 +55,10 @@ pub fn unit_dir(a: Point, b: Point) -> (f64, f64) {
 /// Round 190: how long Codex's Shadow Grab latch and burst play (their fades are baked by
 /// tools/build-contender-grab-art.py; a test checks these match the packed `.fanim`).
 pub const GRAB_LATCH_TICKS: u64 = 8;
+/// contender-3.7: his dash after the pull, 3/8 of the grab's range
+pub const GRAB_DASH: i64 = d::SHADOW_GRAB_RANGE * d::SHADOW_GRAB_DASH_PERMILLE / 1_000;
+/// where the pull leaves the target: one dash plus the Haymaker's reach away from him
+pub const GRAB_MEET: i64 = GRAB_DASH + d::SHADOW_GRAB_HAYMAKER_REACH;
 pub const GRAB_BURST_TICKS: u64 = 18;
 
 fn pct(base: i64, ratio: i64, ad: i64) -> i64 {
@@ -108,8 +112,10 @@ pub enum HitSource {
     Counter,
     Flurry,
     Bonus,
-    /// contender-3.6: Shadow Grab's hit
+    /// contender-3.6: Shadow Grab's hit (3.7: and the Haymaker after it)
     Grab,
+    /// contender-3.7: a missed grab's shadow Flurry (no lifesteal, not a landed hit)
+    ShadowFlurry,
 }
 
 impl HitSource {
@@ -262,6 +268,12 @@ pub enum Effect {
     LinkAirborne { target: usize, ticks: u64 },
     /// contender-3.6: Shadow Break's knock-up (`ct_break_air_{owner}`)
     BreakAirborne { target: usize, ticks: u64 },
+    /// contender-3.7: the grab drags its target straight through walls (placed each tick, not a force-move)
+    Drag { target: usize, to: Point },
+    /// contender-3.7: the grabbed target is held while he dashes in (`ct_grab_hold_{owner}`)
+    Hold { target: usize, ticks: u64 },
+    /// contender-3.7: lifesteal for him; what overflows his max HP becomes a capped shield (Overflow)
+    Lifesteal { amount: i64 },
     /// Pull an enemy along open ground using the host glide.
     Knock { target: usize, to: Point, ticks: u64 },
     /// a deliberate move of his own (an engine glide): dodge slips, the step-out, the self-cleave
@@ -329,7 +341,11 @@ pub struct LinkPull {
 pub enum ShadowLink {
     Flight { cast: u64, from: Point, at: Point, cursor: Point, landing: u64 },
     Pull { at: Point, until: u64, pulled: Vec<LinkPull> },
+    /// contender-3.7: after the pull he dashes at the target and throws the Haymaker on arrival
+    Dash { target: usize, until: u64, #[serde(default)] to: Point },
     Airborne { until: u64, targets: Vec<usize> },
+    /// contender-3.7: a missed grab's shadow throws one Flurry where it landed
+    Flurry { at: Point, start: u64, next: u64, done: i64, last: Option<(usize, Point)> },
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
@@ -727,10 +743,10 @@ impl Core {
     /// contender-3.6: Shadow Grab. The shadow flies in a line toward the aim, up to its range.
     fn cast_grab(&mut self, f: &Frame, aim: Point) {
         let cast = f.tick;
-        let destination = f.pos.toward(aim.clamp_map(), d::SHADOW_GRAB_RANGE);
-        let at = f.path_until(f.pos, destination, false);
-        if at == f.pos && destination != f.pos {
-            self.reject("ult: path blocked");
+        // contender-3.7: the shadow flies through walls
+        let at = f.pos.toward(aim.clamp_map(), d::SHADOW_GRAB_RANGE).clamp_map();
+        if at == f.pos {
+            self.reject("ult: no direction");
             return;
         }
         let distance = f.pos.dist(at).ceil() as i64;
@@ -753,61 +769,127 @@ impl Core {
             ShadowLink::Flight { cast, from, at, cursor, landing } => {
                 let elapsed = f.tick.saturating_sub(cast).min(landing - cast) as i64;
                 let total = (landing - cast) as i64;
-                let step = Point::new(from.x + (at.x - from.x) * elapsed / total, from.y + (at.y - from.y) * elapsed / total);
-                let next = f.path_until(cursor, step, false);
+                let next = Point::new(from.x + (at.x - from.x) * elapsed / total, from.y + (at.y - from.y) * elapsed / total);
                 if let Some(u) = Self::grab_victim(f, cursor, next) {
                     let amount = self.scaled_hit(f, u, pct(d::SHADOW_GRAB_BASE, d::SHADOW_GRAB_AD_RATIO, f.attack));
                     out.push(Effect::Damage { target: u.id, amount, source: HitSource::Grab });
                     out.push(Effect::Fx { name: "ct_grab_latch".into(), at: u.pos, ticks: GRAB_LATCH_TICKS, heading: None });
                     out.push(Effect::Log { text: format!("Shadow Grab: #{}", u.id) });
                     self.add_stack(f, u);
-                    let to = f.path_until(u.pos, f.pos.toward(u.pos, d::SHADOW_GRAB_PULL_STOP), false);
-                    let pulled = vec![LinkPull { target: u.id, from: u.pos, to }];
-                    self.shadow_link = Some(ShadowLink::Pull { at: f.pos, until: f.tick + t(d::SHADOW_GRAB_PULL_TICKS), pulled });
+                    if u.pos.dist(f.pos) > GRAB_MEET as f64 {
+                        // the meeting point must be open ground he can reach; the drag itself ignores walls
+                        let to = f.path_until(f.pos, f.pos.toward(u.pos, GRAB_MEET), false);
+                        let pulled = vec![LinkPull { target: u.id, from: u.pos, to }];
+                        self.shadow_link = Some(ShadowLink::Pull { at: f.pos, until: f.tick + t(d::SHADOW_GRAB_PULL_TICKS), pulled });
+                    } else {
+                        self.start_dash(f, u.id, out);
+                    }
                     return;
                 }
-                if next == step && f.tick < landing {
+                if f.tick < landing {
                     self.shadow_link = Some(ShadowLink::Flight { cast, from, at, cursor: next, landing });
+                } else {
+                    // contender-3.7 (Reihan): a missed grab spawns a shadow there that throws one Flurry
+                    self.shadow_link = Some(ShadowLink::Flurry { at: next, start: f.tick, next: f.tick, done: 0, last: None });
+                    out.push(Effect::Log { text: "Shadow Grab missed: shadow Flurry".into() });
+                    self.advance_shadow(f, out);
                 }
             }
             ShadowLink::Pull { at, until, mut pulled } => {
                 pulled.retain(|p| f.unit(p.target).is_some_and(|u| f.link_target(u)));
-                if f.tick <= until && !pulled.is_empty() {
-                    let total = d::SHADOW_GRAB_PULL_TICKS;
-                    let elapsed = total - (until - f.tick) as i64 + 1;
-                    if elapsed <= total {
-                        for pull in &pulled {
-                            if let Some(u) = f.unit(pull.target) {
-                                let step = Point::new(pull.from.x + (pull.to.x - pull.from.x) * elapsed / total,
-                                    pull.from.y + (pull.to.y - pull.from.y) * elapsed / total);
-                                let to = f.path_until(u.pos, step, false);
-                                if to != u.pos && to.d2(at) < u.pos.d2(at) {
-                                    out.push(Effect::Knock { target: u.id, to, ticks: 1 });
-                                }
-                            }
-                        }
-                        self.shadow_link = Some(ShadowLink::Pull { at, until, pulled });
-                        return;
-                    }
+                if pulled.is_empty() {
+                    return;
                 }
-                let ticks = t(d::SHADOW_GRAB_KNOCK_TICKS);
-                let targets: Vec<_> = pulled.iter().map(|p| p.target).collect();
-                for &target in &targets {
-                    out.push(Effect::LinkAirborne { target, ticks });
-                    if let Some(u) = f.unit(target) {
-                        out.push(Effect::Fx { name: "ct_grab_burst".into(), at: u.pos, ticks: GRAB_BURST_TICKS, heading: None });
-                    }
+                let total = d::SHADOW_GRAB_PULL_TICKS;
+                let elapsed = (total - until.saturating_sub(f.tick) as i64 + 1).clamp(1, total);
+                for pull in &pulled {
+                    let step = Point::new(pull.from.x + (pull.to.x - pull.from.x) * elapsed / total,
+                        pull.from.y + (pull.to.y - pull.from.y) * elapsed / total);
+                    out.push(Effect::Drag { target: pull.target, to: step });
                 }
-                if !targets.is_empty() {
-                    self.shadow_link = Some(ShadowLink::Airborne { until: f.tick + ticks, targets });
+                if f.tick < until {
+                    self.shadow_link = Some(ShadowLink::Pull { at, until, pulled });
+                } else {
+                    self.start_dash(f, pulled[0].target, out);
                 }
+            }
+            ShadowLink::Dash { target, until, to } => {
+                let Some(u) = f.unit(target).filter(|u| f.link_target(u)).cloned() else { return };
+                if f.tick < until {
+                    self.shadow_link = Some(ShadowLink::Dash { target, until, to });
+                    return;
+                }
+                // reach from where he is or where the dash was aimed (the engine's glide can land a tick late)
+                let reach = d::SHADOW_GRAB_HAYMAKER_REACH + u.radius + d::BASIC_RANGE / 2;
+                if !u.pos.within(f.pos, reach) && !u.pos.within(to, reach) {
+                    out.push(Effect::Log { text: format!("Haymaker: #{} out of reach", u.id) });
+                    return;
+                }
+                let amount = self.scaled_hit(f, &u, pct(d::FLURRY_HAYMAKER_BASE, d::FLURRY_HAYMAKER_AD_RATIO, f.attack));
+                out.push(Effect::Damage { target: u.id, amount, source: HitSource::Grab });
+                self.add_stack(f, &u);
+                let ticks = t(d::SHADOW_GRAB_HAYMAKER_KNOCK_TICKS);
+                out.push(Effect::LinkAirborne { target: u.id, ticks });
+                out.push(Effect::Fx { name: "ct_grab_burst".into(), at: u.pos, ticks: GRAB_BURST_TICKS, heading: None });
+                out.push(Effect::Log { text: format!("Haymaker: #{}", u.id) });
+                self.shadow_link = Some(ShadowLink::Airborne { until: f.tick + ticks, targets: vec![u.id] });
             }
             ShadowLink::Airborne { until, targets } => {
                 if f.tick < until {
                     self.shadow_link = Some(ShadowLink::Airborne { until, targets });
                 }
             }
+            ShadowLink::Flurry { at, start, mut next, mut done, mut last } => {
+                let end = start + t(d::FLURRY_TICKS);
+                if f.tick >= next && done < d::FLURRY_PUNCHES {
+                    let candidates = last.map_or_else(
+                        || Self::targets_around(f, at, d::FLURRY_START_RANGE),
+                        |(_, p)| Self::targets_around(f, p, d::FLURRY_CHAIN_RANGE));
+                    let victim = match last {
+                        None => candidates.first(),
+                        Some((previous, _)) => candidates.iter().find(|u| u.id != previous).or_else(|| candidates.first()),
+                    };
+                    let Some(u) = victim else {
+                        if last.is_none() {
+                            out.push(Effect::Log { text: "Shadow Flurry: nobody near the shadow".into() });
+                        }
+                        return;
+                    };
+                    let amount = self.scaled_hit(f, u, pct(d::FLURRY_BASE, d::FLURRY_AD_RATIO, f.attack));
+                    out.push(Effect::Damage { target: u.id, amount, source: HitSource::ShadowFlurry });
+                    self.add_stack(f, u);
+                    out.push(Effect::Fx { name: "ct_flurry".into(), at: u.pos, ticks: 8, heading: Some(Self::flurry_heading(f.owner, done)) });
+                    last = Some((u.id, u.pos));
+                    next = f.tick + t(d::FLURRY_GAP_TICKS);
+                    done += 1;
+                }
+                if f.tick < end && done < d::FLURRY_PUNCHES {
+                    self.shadow_link = Some(ShadowLink::Flurry { at, start, next, done, last });
+                }
+            }
         }
+    }
+
+    /// contender-3.7: he dashes at the grabbed target (3/8 of the grab's range at most, stopping at Haymaker reach and
+    /// at walls) while the target is held, then throws the Haymaker.
+    fn start_dash(&mut self, f: &Frame, target: usize, out: &mut Vec<Effect>) {
+        let Some(u) = f.unit(target) else { return };
+        let gap = (u.pos.dist(f.pos).round() as i64 - d::SHADOW_GRAB_HAYMAKER_REACH).clamp(0, GRAB_DASH);
+        let ticks = t(d::SHADOW_GRAB_DASH_TICKS);
+        let to = if gap > 0 { f.path_until(f.pos, f.pos.toward(u.pos, gap), false) } else { f.pos };
+        if to != f.pos {
+            out.push(Effect::Glide { to, ticks });
+        }
+        out.push(Effect::Hold { target, ticks });
+        self.shadow_link = Some(ShadowLink::Dash { target, until: f.tick + ticks, to });
+    }
+
+    /// Flurry targets around a point, ignoring walls (the missed grab's shadow stands wherever it landed).
+    fn targets_around(f: &Frame, p: Point, r: i64) -> Vec<Unit> {
+        let mut v: Vec<Unit> = f.units.iter().filter(|u| f.skill_target(u) && !f.separated.contains(&u.id)
+            && u.pos.within(p, r + u.radius)).cloned().collect();
+        v.sort_by_key(|u| (!u.champion, u.pos.d2(p), u.id));
+        v
     }
 
     fn start_flurry(&mut self, f: &Frame, out: &mut Vec<Effect>) {
@@ -845,6 +927,8 @@ impl Core {
             if let Some(u) = victim {
                 let amount = self.scaled_hit(f, u, pct(d::FLURRY_BASE, d::FLURRY_AD_RATIO, f.attack));
                 out.push(Effect::Damage { target: u.id, amount, source: HitSource::Flurry });
+                // contender-3.7: Flurry lifesteal (its overflow becomes his Overflow shield)
+                out.push(Effect::Lifesteal { amount: amount * d::FLURRY_LIFESTEAL_PCT / 100 });
                 self.add_stack(f, u);
                 out.push(Effect::Fx { name: "ct_flurry".into(), at: u.pos, ticks: 8, heading: Some(Self::flurry_heading(f.owner, fl.done)) });
                 fl.last = Some((u.id, u.pos));
@@ -933,7 +1017,6 @@ impl Core {
         }
         f.enemy_champions()
             .filter(|enemy| f.link_target(enemy) && enemy.pos.within(f.pos, d::SHADOW_GRAB_RANGE)
-                && f.path_until(f.pos, enemy.pos, false) == enemy.pos
                 && Self::grab_victim(f, f.pos, enemy.pos).is_some_and(|u| u.id == enemy.id))
             .map(|enemy| (enemy.pos, f.allies().any(|ally| Self::hurt_pct(ally) < 45 && enemy.pos.within(ally.pos, 30_000))))
             .min_by_key(|(at, peel)| (!*peel, at.d2(f.pos)))

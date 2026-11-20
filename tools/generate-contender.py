@@ -1,6 +1,6 @@
 """Generate Contender's Rust tables, champion data, tooltips, editor data and roster entry from rules/contender.json.
 
-Contender 3.6, the Shadow Boxer. Change numbers in the rules file and rerun; never edit the outputs by hand.
+Contender 3.7, the Shadow Boxer. Change numbers in the rules file and rerun; never edit the outputs by hand.
 `--check` only verifies.
 """
 from pathlib import Path
@@ -9,7 +9,7 @@ import copy, json, re, sys
 ROOT = Path(__file__).resolve().parents[1]
 rules = json.loads((ROOT / 'rules/contender.json').read_text())
 ID = rules['id']
-GROUPS = ['basic', 'charges', 'pact', 'rhythm', 'merge', 'counter', 'flurry', 'shadowGrab', 'ai']
+GROUPS = ['basic', 'charges', 'pact', 'rhythm', 'merge', 'counter', 'flurry', 'shadowGrab', 'overheal', 'ai']
 
 
 def snake(s):
@@ -25,7 +25,7 @@ for group in GROUPS:
 lines.append(f'pub const FX_TOKENS: usize = {rules["fxTokens"]};')
 rust = '\n'.join(lines) + '\n'
 
-b, ch, pa, rh, me, co, fl, grab, _ = (rules[k] for k in GROUPS)
+b, ch, pa, rh, me, co, fl, grab, oh, _ = (rules[k] for k in GROUPS)
 sec = lambda n: f'{n / 60:g} s'
 text = {
     'name': rules['name'],
@@ -42,6 +42,8 @@ text = {
         f"Footwork: per stack on the enemy he's fighting, +{rh['attackSpeedPermillePerStack'] / 10:g}% attack speed and "
         f"+{rh['moveSpeedPermillePerStack'] / 10:g}% move speed. "
         f"Body Shots: a stacked enemy loses {rh['armourShredPermillePerStack'] / 10:g}% Armour per stack. "
+        f"Overflow: lifesteal past his max HP becomes a shield of up to {oh['capPermilleMaxHp'] / 10:g}% of his max HP "
+        f"(each layer lasts {sec(oh['shieldTicks'])}). "
         f"Shadow Merge ({sec(me['cooldownTicks'])}): for {sec(me['ticks'])} he gains {me['moveSpeedPct']}% move speed, "
         f"{me['attackSpeedPct']}% attack speed and {me['attackPct']}% Attack" + (" and can't be crowd-controlled" if me['ccImmune'] else "") + ". "
         f"Any enemy that damages him while merged is slowed {me['attackerSlowPct']}% for {sec(me['attackerSlowTicks'])}. "
@@ -52,11 +54,14 @@ text = {
         f"Vanish for up to {sec(fl['ticks'])} and throw up to {fl['punches']} punches for {fl['base']} + {fl['adRatio']}% Attack each. "
         f"Prefer a different target on each punch. He reappears where he is and "
         + (f"after {sec(fl['castGapTicks'])} " if fl['castGapTicks'] else "") + "can cast it again at once if he has the shadows. "
+        f"Each punch heals him {fl['lifestealPct']}% of its damage. "
         f"A successful Flurry primes his next basic for {fl['haymakerBase']} + {fl['haymakerAdRatio']}% Attack bonus damage."),
     'ult': (
         f"Shadow Grab (level 5, {sec(grab['cooldownTicks'])}): throw his shadow in a line up to {grab['range']}. "
-        f"The first enemy it touches takes {grab['base']} + {grab['adRatio']}% Attack, is dragged to him "
-        f"and knocked up for {sec(grab['knockTicks'])}."),
+        f"It passes through walls. The first enemy it touches takes {grab['base']} + {grab['adRatio']}% Attack and is dragged "
+        f"toward him; he then dashes up to {grab['range'] * grab['dashPermille'] // 1000} at it and throws a Haymaker "
+        f"({fl['haymakerBase']} + {fl['haymakerAdRatio']}% Attack) that knocks it up for {sec(grab['haymakerKnockTicks'])}. "
+        f"If the grab hooks nobody, the shadow throws one Shadow Flurry where it lands."),
 }
 
 champ = copy.deepcopy(json.loads((ROOT / 'tools/native-champion-template.json').read_text()))

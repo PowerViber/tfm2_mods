@@ -90,6 +90,7 @@ function apply(e){const u=actor(e.target);switch(e.kind){
   if(damage(u,e.amount)){
    if(e.source==='merge')landedMergeHits++;
    else if(e.source==='echo'||e.source==='counter'||e.source==='grab')landedHits++;
+  if(e.source==='flurry'||e.source==='shadow_flurry')flags.flurryHit=tick;
   }
   break;
  case 'hold_forward':flags.holdForward=true;break;
@@ -103,6 +104,9 @@ function apply(e){const u=actor(e.target);switch(e.kind){
   lastCounter=e.text.replace(/attacker #(\d+)/,(_,id)=>actor(+id)?.name||'attacker #'+id);
   log(lastCounter);
   break;
+ case 'drag':if(u){u.pos={...e.to};}break;
+ case 'hold':if(u&&!u.ccImmune)u.stunUntil=Math.max(u.stunUntil||0,tick+e.ticks);break;
+ case 'lifesteal':{const heal=Math.min(e.amount,me.max_hp-me.hp);me.hp+=heal;const cap=me.max_hp*R.overheal.capPermilleMaxHp/1000;me.shield=Math.min(cap,Math.max(me.shield||0,(me.shield||0)+e.amount-heal));if(e.amount-heal>0)me.shieldUntil=tick+R.overheal.shieldTicks;break;}
  case 'knock':glide(e.target,e.to,e.ticks);break;case 'glide':glide(1,e.to,e.ticks);break;
  case 'vanish':flags.vanish=tick+e.ticks;break;
  case 'merge':flags.merge=e.ticks>1?{until:tick+e.ticks,pct:e.move_pct}:null;flags.mergeCast=e.ticks>1?{pose:'projection',start:tick,end:tick+18}:null;break;
@@ -184,6 +188,7 @@ function drawShadow(){
   let ahead=toward(link.cursor,link.at,14000);if(dist(ahead,link.cursor)<1)ahead=toward(link.cursor,{x:link.cursor.x+Math.sign(link.at.x-link.from.x||1),y:link.cursor.y},14000);
   grabDraw('hand_d'+grabHeading(link.from,link.at),{x:ahead.x,y:ahead.y-3000},0);
  }
+ if(link?.phase==='flurry'&&$('showArt').checked)painter.draw(ctx,'effects','body_idle0',link.at,0,P,W);
  if(link?.phase==='pull'&&$('showArt').checked){
   const victim=actor(link.pulled[0]?.target);
   if(victim){const rb=grabRibbon(me.pos,victim.pos);grabDraw(rb.tag,rb.at,0);}
@@ -194,6 +199,8 @@ function shadowReadout(){
  const who=id=>actor(id)?.name||'#'+id;
  const phase=link?.phase;
  const message=phase==='flight'?'Shadow Grab travelling'
+  :phase==='dash'?'Dash → Haymaker · '+who(link.target)
+  :phase==='flurry'?'Missed: shadow Flurry · '+(link.done||0)+' punches'
   :phase==='pull'?'Pull · '+link.pulled.map(unit=>who(unit.target)).join(', ')
   :phase==='airborne'?'Knock-up · '+link.targets.map(who).join(', ')
   :'Shadow Grab idle';
@@ -215,7 +222,7 @@ function draw(){if(!me)return;if($('follow').checked)view={...me.pos};ctx.clearR
   'Tick '+tick+' · HP '+Math.round(me.hp)+'/'+me.max_hp,
   'Merge '+seconds(state.merge_at)+' s · Ultimate '+seconds(state.ult_at)+' s',
   'Shadows '+dodges+'/'+R.charges.max+' · next shadow '+seconds(state.charge_at)+' s · cast gap '+seconds(state.flurry_cast_at)+' s',
-  'Punches '+(state.flurry?.done||0)+' · Rhythm '+(state.focus?.[1]||0),
+  'Overflow shield '+Math.round(tick<(me.shieldUntil||0)?me.shield||0:0)+'/'+Math.round(me.max_hp*R.overheal.capPermilleMaxHp/1000)+' · Punches '+(state.flurry?.done||0)+' · Rhythm '+(state.focus?.[1]||0),
   state.reason||'Manual controls',
   'Requested '+scene.metrics.requested+' · HP '+scene.metrics.hp_damage+' · shields '+scene.metrics.shield_damage,
   'Map '+world.geometry.registration.matching+'/900 cells · 1,000 units/pixel · FX alive '+fx.length
