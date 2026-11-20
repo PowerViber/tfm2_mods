@@ -1,4 +1,4 @@
-# Contender, the Shadow Boxer (contender-3.6)
+# Contender, the Shadow Boxer (contender-3.7)
 
 Contender dodges with a shared pool of shadows, stacks Rhythm on one enemy until every passive is roaring, bursts with
 Shadow Flurry and drags a target in with Shadow Grab. All numbers live in `rules/contender.json`.
@@ -10,7 +10,9 @@ Shadow Flurry and drags a target in with Shadow Grab. All numbers live in `rules
 | Shadow Break | A basic or Counterpunch on 20 stacks deals 4% max HP + 20% Attack and knocks the enemy up for 1 s (at most once every 5 s per enemy). |
 | Q. Shadow Merge | 14 s cooldown. For 6 s: +20% move speed, +30% attack speed, +15% Attack, CC immune; enemies that damage him are slowed 30% for 1.5 s. Every second a cross hits within 50,000 for 12 + 15% Attack. |
 | E. Shadow Flurry | Unlocks at level 3. Costs 2 shadows. Vanish and throw up to 30 punches over 1.5 s for 2 + 7% Attack each, reappearing in place. Recast at once if he has the shadows. A successful burst primes a Haymaker. |
-| R. Shadow Grab | Unlocks at level 5. 12 s cooldown. The shadow flies up to 90,000 in a line (8,000 wide). The first enemy it touches takes 20 + 60% Attack, is dragged to him and knocked up for 1 s. |
+| R. Shadow Grab | Unlocks at level 5. 12 s cooldown. The shadow flies up to 150,000 in a line (8,000 wide) and through walls. The first enemy it touches takes 20 + 60% Attack and is dragged (through walls) to one dash + Haymaker reach from him. He dashes up to 3/8 of the range at it and throws a Haymaker (15 + 20% Attack) that knocks it up for 2 s. A missed grab leaves a shadow that throws one Flurry where it lands. |
+| Flurry lifesteal and Overflow | Each Flurry punch heals 25% of its damage. Lifesteal past his max HP (the Flurry's, and item or buff vamp on his basics) becomes a shield of up to 15% of his max HP, each layer lasting 4 s. |
+| Towers | His engine orders never walk him under an enemy tower unless his minions are inside its range. |
 
 **Shadow Grab art** (Codex, round 190): a reaching hand, a latch, a pull ribbon and an upward burst, packed by `tools/build-contender-grab-art.py` from `docs/contender-grab-art-preview/`. See `docs/main-review-round-190.md` for how the ribbon is baked per length and heading.
 

@@ -933,6 +933,45 @@ const LEVI_SWAP_R: i64 = 32_000;
 /// this tick becomes a basic attack on the press's target (or, for a cast at a point, the enemy nearest that point)
 /// when it's within `reach` of him. Anything else passes through unchanged (never dropped: a missing input once made
 /// the game's planner panic).
+/// contender-3.7 (Reihan: "his AI pushes anywhere, even in turret"): where to walk instead when an order would take
+/// him into an enemy tower's range that has no allied minion inside to tank it. `towers` are (position, covered);
+/// the answer is the point just outside that tower's range on its line to him, or None to let the order through.
+pub(crate) fn tower_guard(me: (i64, i64), dest: (i64, i64), towers: &[((i64, i64), bool)], range: i64) -> Option<(i64, i64)> {
+    let (t, _) = towers.iter().filter(|(t, covered)| !covered && d2(t.0, t.1, dest.0, dest.1) <= sq(range))
+        .min_by_key(|(t, _)| d2(t.0, t.1, me.0, me.1))?;
+    let (dx, dy) = ((me.0 - t.0) as f64, (me.1 - t.1) as f64);
+    let len = dx.hypot(dy);
+    let (ux, uy) = if len < 1.0 { (0.0, 1.0) } else { (dx / len, dy / len) };
+    let out = (range + 5_000) as f64;
+    Some(((t.0 as f64 + ux * out).round() as i64, (t.1 as f64 + uy * out).round() as i64))
+}
+
+/// The engine order's destination and, when it walks him under an uncovered enemy tower, the walk that replaces it.
+fn contender_tower_guard(ctx: &mut StableAiContext<'_>, pid: usize, inp: &InputV1) -> Option<InputV1> {
+    let guarded = [InputKindV1::Move, InputKindV1::Attack, InputKindV1::Skill, InputKindV1::Skill2];
+    if !guarded.iter().any(|k| k.code() == inp.kind) { return None; }
+    let sim = ctx.sim()?;
+    let me = sim.get_player(pid)?.champion()?;
+    let (team, (mx, my)) = (me.team(), me.pos());
+    let dest = if inp.target.kind == mod_api_stable::InputTargetKindV1::Target.code() {
+        let (x, y) = sim.get_entity(inp.target.target_id)?.pos();
+        (x as i64, y as i64)
+    } else if inp.target.kind == mod_api_stable::InputTargetKindV1::Pos.code() {
+        (inp.target.x as i64, inp.target.y as i64)
+    } else { return None };
+    let range = crate::contender_shadow_data::AI_TOWER_RANGE;
+    let entities: Vec<_> = (0..sim.entity_count()).filter_map(|i| sim.entity_at(i)).filter(|e| e.is_alive()).collect();
+    let towers: Vec<_> = entities.iter().filter(|e| e.is_tower() && e.team() != team).map(|t| {
+        let (tx, ty) = t.pos();
+        let (tx, ty) = (tx as i64, ty as i64);
+        let covered = entities.iter().any(|m| m.team() == team && m.is_minion() && !m.is_champion()
+            && { let (x, y) = m.pos(); d2(x as i64, y as i64, tx, ty) <= sq(range) });
+        ((tx, ty), covered)
+    }).collect();
+    let (x, y) = tower_guard((mx as i64, my as i64), dest, &towers, range)?;
+    Some(InputV1::move_to(x.max(0) as u64, y.max(0) as u64))
+}
+
 fn press_swap(ctx: &mut StableAiContext<'_>, pid: usize, inp: &InputV1, reach: i64) -> Option<InputV1> {
     let need = if inp.kind == InputKindV1::Skill.code() { crate::press::S1 }
         else if inp.kind == InputKindV1::Skill2.code() { crate::press::S2 } else { return None };
@@ -1030,6 +1069,13 @@ impl StablePlayerAi for WallAi {
             });
             if let Some(swap) = swap {
                 return Some(swap);
+            }
+        }
+        // contender-3.7: no tower dives without minion cover (the grab, his ult, is never blocked)
+        if let (true, Some(inp)) = (cname.as_deref().is_some_and(|n| n.ends_with("_contender")), base) {
+            let pid = ctx.player_id();
+            if let Some(walk) = contender_tower_guard(ctx, pid, &inp) {
+                if ctx.is_valid_input(&walk) { return Some(walk); }
             }
         }
         // round 88: Aegis Zero mid-ult and Isliid between plans turn presses they wouldn't use into basic attacks (and, since

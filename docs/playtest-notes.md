@@ -4193,3 +4193,17 @@ Native 0.10.112 / custom 0.2.115, art basalt-art-6, gameplay remains basalt-1.4.
   - the burst plays once;
   - a miss shows no latch or ribbon;
   - `log.log` shows 0.10.126.
+
+## Nov 21 · Round 191 · Contender 3.7 (native 0.10.127, champion pack 0.2.130)
+- **Towers:** he no longer walks under enemy towers unless his minions are tanking.
+- **Shadow Grab:**
+  - it reaches 150,000 and goes through walls;
+  - after the pull he dashes in (up to 3/8 of the range) and throws a Haymaker that knocks up for 2 s;
+  - a missed grab leaves a shadow that throws one Flurry there.
+- **Lifesteal:** the Flurry heals 25% of its damage. **Overflow:** lifesteal past max HP becomes a shield of up to 15% of his max HP.
+- **Check live:**
+  - he waits at the tower's edge;
+  - grabbed enemies are dragged through walls;
+  - the dash and Haymaker land;
+  - the shield appears when he's at full HP;
+  - `log.log` shows 0.10.127.

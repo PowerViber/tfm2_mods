@@ -550,7 +550,7 @@ const DIO_USE: [&str; 4] = ["dio_c1in", "dio_c1out", "dio_c2in", "dio_c2out"];
 const DASH_DELAY: usize = MARK_DELAY;
 
 /// Lifesteal from a champion's items (the base items that carry vamp).
-fn item_vamp(sim: &StableSim<'_>, entity: usize) -> i32 {
+pub(crate) fn item_vamp(sim: &StableSim<'_>, entity: usize) -> i32 {
     let mut v = 0;
     for i in 0..sim.player_count() {
         let Some(p) = sim.player_at(i) else { continue };
