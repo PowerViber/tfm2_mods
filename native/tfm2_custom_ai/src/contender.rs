@@ -49,6 +49,30 @@ fn hard_cc(sim: &StableSim, id: usize) -> bool {
             .any(|c| !matches!(c.name(), "ct_vanish" | "ct_vanish_attack") && !crate::motion::is_self_motion(&c) && HARD.iter().any(|k| k.code() == c.kind))
     })
 }
+const BODY_SHOTS: &str = "ct_body_shots";
+
+impl Contender {
+    /// contender-3.6 Body Shots: every enemy carrying his Rhythm stacks loses Armour for each stack (shown to every
+    /// attacker, not just him), refreshed when its stack count changes and removed when the stacks are gone.
+    fn body_shots(&mut self, sim: &mut StableSim, tick: u64) {
+        let now: Vec<(usize, i64, u64)> = self.core.stacks.iter().filter(|s| tick < s.until && s.count > 0).map(|s| (s.id, s.count, s.until)).collect();
+        for &(id, _) in &self.body_shots {
+            if !now.iter().any(|n| n.0 == id) {
+                sim.entity_remove_buff(id, BODY_SHOTS);
+            }
+        }
+        for &(id, count, until) in &now {
+            if self.body_shots.iter().any(|&(i, c)| i == id && c == count) {
+                continue;
+            }
+            let mut b = crate::timed(BODY_SHOTS, (until - tick).max(1) as usize);
+            b.defence_mult = -((count * d::RHYTHM_ARMOUR_SHRED_PERMILLE_PER_STACK / 10) as i32);
+            replace_buff(sim, id, &b);
+        }
+        self.body_shots = now.into_iter().map(|(id, count, _)| (id, count)).collect();
+    }
+}
+
 fn unhurt(name: &str, ticks: u64, cc_immune: bool) -> BuffV1 {
     let mut b = crate::timed(name, ticks as usize);
     b.damaged_reduce = 100;
@@ -193,6 +217,8 @@ pub struct Contender {
     receipt_basic: bool,
     landed_hits: u16,
     landed_merge_hits: u16,
+    /// contender-3.6 Body Shots: the Armour shred last applied to each stacked enemy (id, stacks)
+    body_shots: Vec<(usize, i64)>,
     /// enemies his basic attacks landed on since the last frame
     basic_hits: Vec<usize>,
     in_skill: bool,
@@ -368,9 +394,9 @@ impl Contender {
                         }
                     }
                 }
-                Effect::LinkStun { target, ticks } => {
+                Effect::BreakAirborne { target, ticks } => {
                     if reach(owner, target) && not_tower(sim, target) {
-                        sim.apply_cc(target, &named(CcKindV1::Stun, ticks, &format!("ct_link_stun_{owner}")));
+                        sim.apply_cc(target, &named(CcKindV1::Airborne, ticks, &format!("ct_break_air_{owner}")));
                     }
                 }
                 Effect::LinkAirborne { target, ticks } => {
@@ -415,7 +441,10 @@ impl Contender {
                 Effect::Charges { count } => {
                     // the pips show up to five (Merge's extra dodges ride on top)
                     remove_prefix(sim, owner, "ct_charges:");
-                    sim.add_buff(owner, &BuffV1::named(&format!("ct_charges:{}", count.clamp(0, d::CHARGES_MAX))));
+                    // contender-3.6: the same 5 pips, each now worth `CHARGES_PIP_SHADOWS` shadows (a pip shows while
+                    // any of its shadows is left)
+                    let pips = (count.max(0) + d::CHARGES_PIP_SHADOWS - 1) / d::CHARGES_PIP_SHADOWS;
+                    sim.add_buff(owner, &BuffV1::named(&format!("ct_charges:{}", pips.clamp(0, d::CHARGES_MAX / d::CHARGES_PIP_SHADOWS))));
                 }
                 Effect::Steer { to } => {
                     remove_prefix(sim, owner, GO_PREFIX);
@@ -433,14 +462,6 @@ impl Contender {
                         crate::fx_point(sim, &visual, owner, at.x, at.y, ticks);
                     }
                 }
-                Effect::LinkWarning { at, until } => {
-                    self.link_drawn_at = 0;
-                    remove_prefix(sim, owner, ZONE_PREFIX);
-                    let radius = d::SHADOW_LINK_RADIUS;
-                    sim.add_buff(owner, &crate::timed(&format!("{ZONE_PREFIX}{}:{}:{radius}:{until}", at.x, at.y),
-                        until.saturating_sub(tick) as usize));
-                }
-                Effect::LinkEnd => remove_prefix(sim, owner, ZONE_PREFIX),
                 Effect::HoldForward { threat, cover } => {
                     hold = Some(format!("{HOLD_PREFIX}{}:{}:{}:{}", threat.x, threat.y, cover.x, cover.y));
                 }
@@ -454,13 +475,6 @@ impl Contender {
                     let name = format!("ct_body_run{}{facing}", (tick / 10) % 6);
                     crate::fx_point(sim, &name, owner, cursor.x, cursor.y, 4);
                     self.link_drawn_at = tick + 4;
-                }
-                Some(ShadowLink::Warning { at, until, .. }) => {
-                    let lease = (until.saturating_sub(tick)).min(6);
-                    if lease > 0 {
-                        crate::fx_point(sim, "ct_link_warning", owner, at.x, at.y, lease);
-                    }
-                    self.link_drawn_at = tick + 6;
                 }
                 _ => {}
             }
@@ -598,13 +612,14 @@ impl StablePassive for Contender {
         // charge left (or mid-Flurry) becomes a basic attack instead of a wasted cast the game AI keeps chasing for.
         let tick = sim.tick();
         let s1 = tick as u64 >= self.core.merge_at;
-        let s2 = self.core.flurry_charges > 0 && !self.core.flurrying() && self.core.flurry_ready(&f);
+        let s2 = !self.core.flurrying() && self.core.flurry_ready(&f);
         crate::press::note(sim.seed(), player, tick, if s1 { crate::press::S1 } else { 0 } | if s2 { crate::press::S2 } else { 0 });
         if self.merge_art {
             let cd = sim.get_player(player).and_then(|p| p.cooldowns()).map(|c| c.0);
             self.merge_presenter.sync(sim, id, &f, &self.core, &effects, cd);
         }
         if self.rhythm_art { self.rhythm_presenter.sync(sim, id, player, &f, &self.core, &effects); }
+        self.body_shots(sim, tick as u64);
         self.apply(sim, id, effects);
     }
 }
