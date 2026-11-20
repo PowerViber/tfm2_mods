@@ -89,9 +89,9 @@
     "growth_range": 0,
     "can_use_with_move": true,
     "duration": 6,
-    "cooltime": 720,
+    "cooltime": 4500,
     "start_timing": 3,
-    "range": 90000,
+    "range": 60000,
     "casting_type": "Targeting",
     "casting_target": "EnemyChampion",
     "attack_type": "Skill",
@@ -2833,6 +2833,14 @@
       "anim": "asset/tfm2_custom/vfx/contender_rhythm",
       "tag": "ring35_t6",
       "z": -1,
+      "is_follow": false
+    },
+    {
+      "type": "Animation",
+      "name": "ct_link_warning",
+      "anim": "asset/tfm2_custom/vfx/contender_link_warning",
+      "tag": "warning",
+      "z": -2,
       "is_follow": false
     }
   ],

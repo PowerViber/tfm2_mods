@@ -7,7 +7,7 @@
     "Melee",
     "CC"
   ],
-  "revision": "contender-3.6",
+  "revision": "contender-3.5",
   "stat": {
     "attack": 76,
     "magic_power": 0,
@@ -41,14 +41,11 @@
     "startTiming": 9
   },
   "charges": {
-    "max": 10,
-    "rechargeTicks": 240,
+    "max": 5,
+    "rechargeTicks": 600,
     "dodgeSlip": 8000,
     "dodgeSlipTicks": 8,
-    "dodgeGapTicks": 24,
-    "flurryCost": 2,
-    "pipShadows": 2,
-    "hitRefundTicksPerMissing": 6
+    "dodgeGapTicks": 24
   },
   "pact": {
     "delayTicks": 60,
@@ -57,18 +54,15 @@
   "rhythm": {
     "maxStacks": 20,
     "stackTicks": 240,
-    "attackSpeedPermillePerStack": 15,
+    "attackSpeedPermillePerStack": 5,
     "attackPermillePerStack": 0,
-    "moveSpeedPermillePerStack": 5,
-    "vulnerabilityPermillePerStack": 15,
+    "moveSpeedPermillePerStack": 4,
+    "vulnerabilityPermillePerStack": 5,
     "carryStacks": 8,
     "lingerTicks": 180,
-    "breakPermilleMaxHp": 40,
-    "breakAdRatio": 20,
-    "breakBuffTicks": 180,
-    "armourShredPermillePerStack": 15,
-    "breakKnockTicks": 60,
-    "breakKnockCooldownTicks": 300
+    "breakPermilleMaxHp": 10,
+    "breakAdRatio": 5,
+    "breakBuffTicks": 180
   },
   "merge": {
     "cooldownTicks": 840,
@@ -76,6 +70,7 @@
     "stacksPerHit": 1,
     "moveSpeedPct": 20,
     "crossRadius": 50000,
+    "crossRechargeCreditTicks": 45,
     "crossBase": 12,
     "crossAdRatio": 15,
     "crossEveryTicks": 60,
@@ -85,16 +80,15 @@
     "attackerSlowPct": 30,
     "attackerSlowTicks": 90
   },
-  "shadowGrab": {
-    "cooldownTicks": 720,
-    "range": 90000,
-    "flightTicks": 24,
-    "width": 8000,
+  "shadowLink": {
+    "cooldownTicks": 4500,
+    "range": 60000,
+    "flightTicks": 18,
+    "radius": 85000,
+    "warningTicks": 45,
     "pullTicks": 12,
-    "knockTicks": 60,
-    "base": 20,
-    "adRatio": 60,
-    "pullStop": 20000
+    "knockTicks": 30,
+    "stunTicks": 24
   },
   "ai": {
     "fightRange": 80000,
@@ -120,6 +114,9 @@
     "adRatio": 30
   },
   "flurry": {
+    "maxCharges": 4,
+    "rechargeTicks": 720,
+    "hitCreditTicks": 30,
     "castGapTicks": 0,
     "ticks": 90,
     "punches": 30,
