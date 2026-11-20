@@ -12,6 +12,8 @@ Shadow Flurry and drags a target in with Shadow Grab. All numbers live in `rules
 | E. Shadow Flurry | Unlocks at level 3. Costs 2 shadows. Vanish and throw up to 30 punches over 1.5 s for 2 + 7% Attack each, reappearing in place. Recast at once if he has the shadows. A successful burst primes a Haymaker. |
 | R. Shadow Grab | Unlocks at level 5. 12 s cooldown. The shadow flies up to 90,000 in a line (8,000 wide). The first enemy it touches takes 20 + 60% Attack, is dragged to him and knocked up for 1 s. |
 
+**Shadow Grab art** (Codex, round 190): a reaching hand, a latch, a pull ribbon and an upward burst, packed by `tools/build-contender-grab-art.py` from `docs/contender-grab-art-preview/`. See `docs/main-review-round-190.md` for how the ribbon is baked per length and heading.
+
 [Contender 3.1 review and verification](contender-31-review.md)
 
 

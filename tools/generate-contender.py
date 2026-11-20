@@ -103,6 +103,12 @@ champ['view_buffs'] += [dict(type='Animated', name=e['name'], anim='asset/tfm2_c
                            tag=e['tag'], z=e['z']) for e in art['rhythm_buffs']]
 
 
+# round 190: Codex's approved Shadow Grab art, baked by tools/build-contender-grab-art.py (hand and ribbon per heading,
+# ribbon per length bucket, latch and burst as one fading sequence each). Every packed tag is bound.
+grab_anims = json.loads((ROOT / 'mods/tfm2_custom/vfx/contender_grab#anim.fanim').read_text())['anims']
+champ['view_effects'] += [dict(type='Animation', name='ct_grab_' + tag, anim='asset/tfm2_custom/vfx/contender_grab',
+                               tag=tag, z=6, is_follow=False) for tag in grab_anims]
+
 data = json.dumps(champ, indent=2) + '\n'
 
 roster = dict(id=ID, name=rules['name'], family='original', role='Fighter', native=True,

@@ -514,6 +514,9 @@ fn shadow_grab_hooks_the_first_enemy_in_line_drags_it_to_him_and_knocks_it_up() 
     assert!(!w.seen(|e| matches!(e, Effect::Damage { target: 11, .. })), "only the first enemy in line");
     assert!(w.seen(|e| matches!(e, Effect::LinkAirborne { target: FOE, ticks } if *ticks == d::SHADOW_GRAB_KNOCK_TICKS as u64)));
     assert!(!w.seen(|e| matches!(e, Effect::LinkAirborne { target: 11, .. })));
+    // round 190: Codex's latch flashes on contact and the burst marks the knock-up, once each
+    assert_eq!(w.count(|e| matches!(e, Effect::Fx { name, ticks, .. } if name == "ct_grab_latch" && *ticks == GRAB_LATCH_TICKS)), 1);
+    assert_eq!(w.count(|e| matches!(e, Effect::Fx { name, ticks, .. } if name == "ct_grab_burst" && *ticks == GRAB_BURST_TICKS)), 1);
     let x = w.unit(FOE).pos.x;
     assert!(x - 400_000 <= d::SHADOW_GRAB_PULL_STOP + 2_000, "dragged to him (x {x})");
     assert_eq!(w.core.stacks_on(FOE, w.f.tick), 1, "the grab builds Rhythm");
@@ -533,6 +536,7 @@ fn shadow_grab_misses_cleanly_at_max_range_and_skips_immune_targets() {
     w.run(d::SHADOW_GRAB_FLIGHT_TICKS as u64 + 5);
     assert!(w.core.shadow_link.is_none(), "the shadow returns empty-handed");
     assert!(!w.seen(|e| matches!(e, Effect::Damage { .. } | Effect::LinkAirborne { .. } | Effect::Knock { .. })));
+    assert!(!w.seen(|e| matches!(e, Effect::Fx { name, .. } if name.starts_with("ct_grab_"))), "a miss shows no latch or burst");
 }
 
 #[test]
@@ -912,6 +916,32 @@ mod glue {
     }
 
     #[test]
+    fn a_real_shadow_grab_plays_codexs_hand_latch_ribbon_and_burst_in_order() {
+        // round 190: Codex's approved Shadow Grab art, end to end through the engine cast marker
+        use mod_api_stable::{InputTargetV1, StableEffectType};
+        let _guard = crate::walls::TEST_LOCK.lock();
+        let (x, y) = open_spot(120_000);
+        let host = Host::new(vec![champ(0, (x, y), "tfm2_custom_contender"), champ(1, (x + 60_000, y), "fighter")]);
+        host.borrow_mut().record_view_effects = true;
+        let mut c = Contender::default();
+        c.configure(r#"{"shadow_art_v1":1,"shadow_directions_v1":1}"#);
+        with_sim(&host, |sim| c.on_spawn(sim, 0, 0));
+        with_sim(&host, |sim| { sim.add_buff(0, &mod_api_stable::BuffV1::named(crate::ULT_LEARNED)); });
+        run(&host, &mut c, 100, 1);
+        host.borrow_mut().tick = 101;
+        with_sim(&host, |sim| crate::contender::CastLink.apply(sim, 0, 0, InputTargetV1::target(1)));
+        run(&host, &mut c, 101, 120);
+        let names: Vec<String> = host.borrow().view_effects.iter().map(|e| e.0.clone()).filter(|n| n.starts_with("ct_grab_")).collect();
+        assert!(!names.is_empty(), "no grab art: {} / {:?}", c.core.rejection, c.core.shadow_link);
+        let first = |p: &str| names.iter().position(|n| n.starts_with(p)).unwrap_or_else(|| panic!("no {p} in {names:?}"));
+        let (hand, latch, ribbon, burst) = (first("ct_grab_hand_d0"), first("ct_grab_latch"), first("ct_grab_ribbon_L"), first("ct_grab_burst"));
+        assert!(hand < latch && latch < ribbon && ribbon < burst, "{names:?}");
+        assert_eq!(names.iter().filter(|n| *n == "ct_grab_latch").count(), 1);
+        assert_eq!(names.iter().filter(|n| *n == "ct_grab_burst").count(), 1);
+        assert!(names.iter().filter(|n| n.starts_with("ct_grab_ribbon_L")).count() >= 2, "the ribbon is renewed during the pull");
+    }
+
+    #[test]
     fn a_shadow_grab_marker_carries_the_engines_aim() {
         use crate::contender_shadow_core::Order;
         assert_eq!(crate::contender::cast_order("ct_cast:ult:410000:520000:77"), Some(Order::Ult { aim: Point::new(410_000, 520_000) }));
@@ -919,6 +949,42 @@ mod glue {
         assert_eq!(crate::contender::cast_order("ct_cast:s2:5"), Some(Order::S2));
         assert_eq!(crate::contender::cast_order("ct_go:1:2"), None);
     }
+}
+
+/// Round 190: every Shadow Grab name the bridge or core can play is bound to Codex's packed art, and the ribbon keeps
+/// joining Contender and the target as the distance and direction change.
+#[test]
+fn every_shadow_grab_art_name_is_bound_and_the_ribbon_follows_the_target() {
+    use crate::contender::{grab_heading, grab_ribbon};
+    let data: serde_json::Value = serde_json::from_str(include_str!("../../../mods/tfm2_custom/champion/tfm2_custom_contender.data_champion")).unwrap();
+    let bound: std::collections::HashSet<String> = data["view_effects"].as_array().unwrap().iter()
+        .map(|e| e["name"].as_str().unwrap().to_string()).collect();
+    let fanim: serde_json::Value = serde_json::from_str(include_str!("../../../mods/tfm2_custom/vfx/contender_grab#anim.fanim")).unwrap();
+    let seconds = |tag: &str| fanim["anims"][tag]["frames"].as_array().unwrap().iter().map(|f| f["duration"].as_f64().unwrap()).sum::<f64>();
+    assert!((seconds("latch") * 60.0 - GRAB_LATCH_TICKS as f64).abs() < 0.5, "the latch fade lasts GRAB_LATCH_TICKS");
+    assert!((seconds("burst") * 60.0 - GRAB_BURST_TICKS as f64).abs() < 0.5, "the burst fade lasts GRAB_BURST_TICKS");
+    for name in ["ct_grab_latch", "ct_grab_burst"] { assert!(bound.contains(name), "{name}"); }
+    let me = Point::new(400_000, 400_000);
+    for h in 0..8u8 { assert!(bound.contains(&format!("ct_grab_hand_d{h}")), "hand {h}"); }
+    // sweep distances and directions: every ribbon chosen is bound
+    for step in 0..32 {
+        let angle = step as f64 * std::f64::consts::TAU / 32.0;
+        for gap in (0..=d::SHADOW_GRAB_RANGE + 20_000).step_by(2_500) {
+            let them = Point::new(me.x + (angle.cos() * gap as f64) as i64, me.y + (angle.sin() * gap as f64) as i64);
+            let (name, _) = grab_ribbon(me, them);
+            assert!(bound.contains(&name), "{name} for gap {gap}");
+        }
+    }
+    // as the target is dragged in, the ribbon shortens and its middle follows the target
+    let far = Point::new(me.x + d::SHADOW_GRAB_RANGE, me.y);
+    let near = Point::new(me.x + d::SHADOW_GRAB_PULL_STOP, me.y);
+    let (far_name, far_mid) = grab_ribbon(me, far);
+    let (near_name, near_mid) = grab_ribbon(me, near);
+    assert_ne!(far_name, near_name);
+    assert!(far_mid.x > near_mid.x && near_mid.x > me.x);
+    assert!(near_name.ends_with("_d0") && grab_ribbon(me, Point::new(me.x - 50_000, me.y)).0.ends_with("_d4"));
+    // headings: east 0, south (screen down) 2, west 4, north 6
+    assert_eq!([(1, 0), (0, 1), (-1, 0), (0, -1)].map(|(x, y)| grab_heading(me, Point::new(me.x + x * 10_000, me.y + y * 10_000))), [0, 2, 4, 6]);
 }
 
 /// contender-3.2: his three slots are real engine skills (the game's own AI casts them), each a Native cast marker.

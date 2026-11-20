@@ -51,6 +51,36 @@ fn hard_cc(sim: &StableSim, id: usize) -> bool {
 }
 const BODY_SHOTS: &str = "ct_body_shots";
 
+/// Clockwise eighth-turns from east (screen y down) from `from` toward `to`, as the baked grab art.
+pub(crate) fn grab_heading(from: Point, to: Point) -> u8 {
+    let (dx, dy) = ((to.x - from.x) as f64, (to.y - from.y) as f64);
+    if dx == 0.0 && dy == 0.0 {
+        return 0;
+    }
+    ((dy.atan2(dx).to_degrees() / 45.0).round() as i64).rem_euclid(8) as u8
+}
+
+/// Where the reaching hand sits: 14 px ahead of the flying shadow and 3 px up (Codex's review page).
+pub(crate) fn grab_hand_at(from: Point, at: Point, cursor: Point) -> (i64, i64) {
+    let ahead = cursor.toward(at, 14_000);
+    let ahead = if ahead == cursor { cursor.toward(Point::new(cursor.x + (at.x - from.x).signum(), cursor.y), 14_000) } else { ahead };
+    (ahead.x, ahead.y - 3_000)
+}
+
+/// The baked pull ribbon for Contender at `me` and the target at `them`: the length bucket closest to their distance
+/// (pullStop..range in 10,000 steps, as tools/build-contender-grab-art.py), the heading toward the target, and the
+/// point to draw it at (the middle of the ribbon, which starts 10 px in front of him, 3 px up).
+pub(crate) fn grab_ribbon(me: Point, them: Point) -> (String, Point) {
+    const STEP: i64 = 10_000;
+    let lo = d::SHADOW_GRAB_PULL_STOP / STEP;
+    let hi = (d::SHADOW_GRAB_RANGE + STEP - 1) / STEP;
+    let gap = me.dist(them).round() as i64;
+    let bucket = ((gap + STEP / 2) / STEP).clamp(lo, hi);
+    let start = me.toward(them, 10_000);
+    let mid = Point::new((start.x + them.x) / 2, (start.y + them.y) / 2 - 3_000);
+    (format!("ct_grab_ribbon_L{bucket}_d{}", grab_heading(me, them)), mid)
+}
+
 impl Contender {
     /// contender-3.6 Body Shots: every enemy carrying his Rhythm stacks loses Armour for each stack (shown to every
     /// attacker, not just him), refreshed when its stack count changes and removed when the stacks are gone.
@@ -453,7 +483,10 @@ impl Contender {
                 Effect::Fx { name, at, ticks, heading } => {
                     let name = if name == "ct_break" && !self.rhythm_art { "ct_haymaker".into() } else { name };
                     if self.fx_ok(tick) {
-                        let visual = if self.shadow_art && self.shadow_directions && name == "ct_flurry" && heading.is_some() {
+                        // round 190: the Shadow Grab art carries its own names (no `_t`/`_l` variants)
+                        let visual = if name.starts_with("ct_grab_") {
+                            name
+                        } else if self.shadow_art && self.shadow_directions && name == "ct_flurry" && heading.is_some() {
                             format!("ct_flurry_d{}_t{ticks}", heading.unwrap_or(0) % 8)
                         } else if self.shadow_art {
                             let left = sim.get_entity(owner).is_some_and(|e| (e.pos().0 as i64) > at.x);
@@ -474,7 +507,20 @@ impl Contender {
                     let facing = if at.x < from.x { "_l" } else { "" };
                     let name = format!("ct_body_run{}{facing}", (tick / 10) % 6);
                     crate::fx_point(sim, &name, owner, cursor.x, cursor.y, 4);
+                    // round 190 (Codex's art): the reaching hand opens ahead of the flying shadow
+                    let (hx, hy) = grab_hand_at(from, at, cursor);
+                    crate::fx_point(sim, &format!("ct_grab_hand_d{}", grab_heading(from, at)), owner, hx, hy, 4);
                     self.link_drawn_at = tick + 4;
+                }
+                Some(ShadowLink::Pull { ref pulled, .. }) => {
+                    // the pull ribbon joins Contender and the target where they are now, re-picked every 2 ticks
+                    let me = sim.get_entity(owner).map(|e| { let p = e.pos(); Point::new(p.0 as i64, p.1 as i64) });
+                    let them = pulled.first().and_then(|p| sim.get_entity(p.target)).map(|e| { let p = e.pos(); Point::new(p.0 as i64, p.1 as i64) });
+                    if let (Some(me), Some(them)) = (me, them) {
+                        let (name, mid) = grab_ribbon(me, them);
+                        crate::fx_point(sim, &name, owner, mid.x, mid.y, 2);
+                    }
+                    self.link_drawn_at = tick + 2;
                 }
                 _ => {}
             }

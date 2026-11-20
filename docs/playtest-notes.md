@@ -4183,3 +4183,13 @@ Native 0.10.112 / custom 0.2.115, art basalt-art-6, gameplay remains basalt-1.4.
   - grabbed enemies land in front of him;
   - Break knock-ups don't chain on one enemy;
   - `log.log` shows 0.10.124.
+
+## Nov 21 · Round 190 · Contender 3.6 restored with Codex's Shadow Grab art (native 0.10.126, champion pack 0.2.129)
+- **Contender 3.6 is back** (see round 189): the 10-shadow pool, Footwork, Body Shots, the Break knock-up and Shadow Grab.
+- **Codex's Shadow Grab art is in.** A violet hand reaches ahead of the flying shadow, latches onto the target, a shadow ribbon pulls them in, and an upward burst marks the 1 s knock-up.
+- **Check live:**
+  - the hand points the way the grab flies;
+  - the ribbon joins Contender and the target during the drag;
+  - the burst plays once;
+  - a miss shows no latch or ribbon;
+  - `log.log` shows 0.10.126.

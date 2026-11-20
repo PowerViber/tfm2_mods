@@ -52,6 +52,11 @@ pub fn unit_dir(a: Point, b: Point) -> (f64, f64) {
         (dx / l, dy / l)
     }
 }
+/// Round 190: how long Codex's Shadow Grab latch and burst play (their fades are baked by
+/// tools/build-contender-grab-art.py; a test checks these match the packed `.fanim`).
+pub const GRAB_LATCH_TICKS: u64 = 8;
+pub const GRAB_BURST_TICKS: u64 = 18;
+
 fn pct(base: i64, ratio: i64, ad: i64) -> i64 {
     base + ratio * ad / 100
 }
@@ -753,7 +758,7 @@ impl Core {
                 if let Some(u) = Self::grab_victim(f, cursor, next) {
                     let amount = self.scaled_hit(f, u, pct(d::SHADOW_GRAB_BASE, d::SHADOW_GRAB_AD_RATIO, f.attack));
                     out.push(Effect::Damage { target: u.id, amount, source: HitSource::Grab });
-                    out.push(Effect::Fx { name: "ct_cross".into(), at: u.pos, ticks: 18, heading: None });
+                    out.push(Effect::Fx { name: "ct_grab_latch".into(), at: u.pos, ticks: GRAB_LATCH_TICKS, heading: None });
                     out.push(Effect::Log { text: format!("Shadow Grab: #{}", u.id) });
                     self.add_stack(f, u);
                     let to = f.path_until(u.pos, f.pos.toward(u.pos, d::SHADOW_GRAB_PULL_STOP), false);
@@ -789,6 +794,9 @@ impl Core {
                 let targets: Vec<_> = pulled.iter().map(|p| p.target).collect();
                 for &target in &targets {
                     out.push(Effect::LinkAirborne { target, ticks });
+                    if let Some(u) = f.unit(target) {
+                        out.push(Effect::Fx { name: "ct_grab_burst".into(), at: u.pos, ticks: GRAB_BURST_TICKS, heading: None });
+                    }
                 }
                 if !targets.is_empty() {
                     self.shadow_link = Some(ShadowLink::Airborne { until: f.tick + ticks, targets });
