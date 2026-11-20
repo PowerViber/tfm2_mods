@@ -716,158 +716,71 @@ mod glue {
     }
 
     #[test]
-    fn the_native_ai_holds_an_unsupported_opening() {
+    fn the_game_ai_owns_his_casts_and_movement_the_native_ai_never_acts_in_game() {
+        // contender-3.2 (Reihan: "revert back to the basics, since its own game already has an ai")
         let _guard = crate::walls::TEST_LOCK.lock();
         let (x, y) = open_spot(120_000);
         let host = Host::new(vec![champ(0, (x, y), "tfm2_custom_contender"), champ(1, (x + 40_000, y), "fighter"), champ(1, (x + 45_000, y + 8_000), "fighter")]);
         let mut c = Contender::default();
         with_sim(&host, |sim| c.on_spawn(sim, 0, 0));
         run(&host, &mut c, 100, 120);
-        assert!(c.core.reason.starts_with("Hold:"), "{}", c.core.reason);
-        // Shadow Cross may reach enemies from here. A hold still forbids a body commit.
-        assert_eq!(host.borrow().units[0].pos, (x, y));
-        assert!(!c.core.flurrying() && c.core.shadow_link.is_none());
+        assert!(c.core.reason.is_empty(), "no native decision: {}", c.core.reason);
+        assert!(!c.core.merged(220) && !c.core.flurrying() && c.core.shadow_link.is_none(), "nothing cast without the engine");
+        assert!(!host.borrow().buffs[0].iter().any(|b| b.name().starts_with("ct_go:") || b.name().starts_with("ct_hold:")), "no steering");
+    }
+
+    #[test]
+    fn an_engine_cast_of_s1_and_s2_runs_the_kit_on_the_next_update() {
+        use mod_api_stable::{InputTargetV1, StableEffectType};
+        let _guard = crate::walls::TEST_LOCK.lock();
+        let (x, y) = open_spot(120_000);
+        let host = Host::new(vec![champ(0, (x, y), "tfm2_custom_contender"), champ(1, (x + 30_000, y), "fighter")]);
+        let mut c = Contender::default();
+        with_sim(&host, |sim| c.on_spawn(sim, 0, 0));
+        run(&host, &mut c, 100, 2);
+        // the engine casts S1: the native effect only drops a marker
+        host.borrow_mut().tick = 102;
+        with_sim(&host, |sim| crate::contender::CastMerge.apply(sim, 0, 0, InputTargetV1::target(1)));
+        assert!(host.borrow().buffs[0].iter().any(|b| b.name().starts_with("ct_cast:s1:")));
+        run(&host, &mut c, 102, 1);
+        assert!(c.core.merged(103), "Shadow Merge started: {}", c.core.rejection);
+        assert!(!host.borrow().buffs[0].iter().any(|b| b.name().starts_with("ct_cast:")), "the marker is consumed");
+        // then S2: a Flurry charge is spent
+        let before = c.core.flurry_charges;
+        host.borrow_mut().tick = 110;
+        with_sim(&host, |sim| crate::contender::CastFlurry.apply(sim, 0, 0, InputTargetV1::target(1)));
+        run(&host, &mut c, 110, 1);
+        assert!(c.core.flurrying() || c.core.flurry_charges < before, "Flurry started: {}", c.core.rejection);
+        // a press with no charge left is refused without a panic
+        c.core.flurry = None;
+        c.core.flurry_charges = 0;
+        c.core.charges = 5;
+        host.borrow_mut().tick = 200;
+        with_sim(&host, |sim| crate::contender::CastFlurry.apply(sim, 0, 0, InputTargetV1::target(1)));
+        run(&host, &mut c, 200, 1);
+        assert!(!c.core.flurrying());
+        assert_eq!(c.core.charges, 5, "the engine's press never trades a dodge");
+    }
+
+    #[test]
+    fn a_shadow_link_marker_carries_the_engines_aim() {
+        use crate::contender_shadow_core::Order;
+        assert_eq!(crate::contender::cast_order("ct_cast:ult:410000:520000:77"), Some(Order::Ult { aim: Point::new(410_000, 520_000) }));
+        assert_eq!(crate::contender::cast_order("ct_cast:s1:5"), Some(Order::S1));
+        assert_eq!(crate::contender::cast_order("ct_cast:s2:5"), Some(Order::S2));
+        assert_eq!(crate::contender::cast_order("ct_go:1:2"), None);
     }
 }
 
-// ------------------------------------------------------------------ athlete stats shape his AI (contender-3.1.3)
-
-fn exchange_fight(micro: i64, dodges: i64) -> World {
-    let mut w = ai(vec![champ(FOE, 2, 440_000, 500_000), champ(11, 2, 447_000, 500_000), champ(ALLY, 1, 435_000, 500_000)]);
-    w.f.ult_unlocked = false;
-    w.f.profile[10] = micro;
-    w.core.flurry_charges = 0;
-    w.core.flurry_charge_at = 500;
-    w.core.charges = dodges;
-    w.core.charge_at = 10_000; // no recharge during the test
-    w.tick(None);
-    w
-}
-
+/// contender-3.2: his three slots are real engine skills (the game's own AI casts them), each a Native cast marker.
 #[test]
-fn micro_decides_how_many_dodges_he_keeps_before_trading_one_for_a_flurry() {
-    // high Micro keeps two dodges in reserve, so with two left it doesn't trade
-    let w = exchange_fight(80, 2);
-    assert!(!w.core.flurrying(), "{}", w.core.reason);
-    assert_eq!(w.core.charges, 2);
-    // low Micro trades the last one
-    let w = exchange_fight(20, 1);
-    assert!(w.core.flurrying(), "{}", w.core.reason);
-    assert_eq!(w.core.charges, 0);
-}
-
-#[test]
-fn control_speed_delays_a_slow_athletes_first_commit_to_a_new_target() {
-    for (speed, delay) in [(80, 0u64), (0, d::AI_REACTION_MAX_TICKS as u64)] {
-        let mut w = ai(vec![champ(FOE, 2, 440_000, 500_000), champ(11, 2, 447_000, 500_000), champ(ALLY, 1, 435_000, 500_000)]);
-        w.f.ult_unlocked = false;
-        w.f.profile[3] = speed;
-        let start = w.f.tick;
-        while !w.core.flurrying() && w.f.tick < start + 40 {
-            w.tick(None);
-        }
-        assert!(w.core.flurrying(), "speed {speed}: {}", w.core.reason);
-        assert_eq!(w.f.tick - 1 - start, delay, "speed {speed}");
-    }
-}
-
-#[test]
-fn judgement_moves_the_retreat_line_a_few_points() {
-    let mut w = World::new(vec![]);
-    w.f.profile[1] = 80;
-    assert_eq!(Core::retreat_hp(&w.f), d::AI_RETREAT_HP + 3);
-    w.f.profile[1] = 20;
-    assert_eq!(Core::retreat_hp(&w.f), d::AI_RETREAT_HP - 3);
-    // at 36% HP the good judge retreats and the poor one stays in
-    for (judgement, retreats) in [(80, true), (20, false)] {
-        let mut w = ai(vec![champ(FOE, 2, 440_000, 500_000), champ(ALLY, 1, 435_000, 500_000)]);
-        w.f.profile[1] = judgement;
-        w.f.hp = 360;
-        w.tick(None);
-        assert_eq!(w.core.reason.starts_with("Retreat"), retreats, "judgement {judgement}: {}", w.core.reason);
-    }
-}
-
-#[test]
-fn skill_accuracy_decides_whether_a_lone_champion_is_worth_shadow_link() {
-    for (accuracy, links) in [(80, false), (20, true)] {
-        let mut w = ai(vec![champ(FOE, 2, 440_000, 500_000), champ(ALLY, 1, 432_000, 500_000)]);
-        w.core.ult_at = 0;
-        w.f.profile[4] = accuracy;
-        w.tick(None);
-        assert_eq!(w.core.reason == "Hold: supported Shadow Link", links, "accuracy {accuracy}: {}", w.core.reason);
-    }
-}
-
-#[test]
-fn he_farms_a_calm_wave_with_shadow_flurry_but_never_trades_a_dodge_for_it() {
-    let creeps = || vec![creep(30, 420_000, 500_000, 600), creep(31, 425_000, 505_000, 600), creep(32, 418_000, 495_000, 600)];
-    let mut w = ai(creeps());
-    w.tick(None);
-    assert_eq!(w.core.reason, "Farm: Shadow Flurry");
-    assert!(w.core.flurrying());
-    let mut w = ai(creeps());
-    w.core.flurry_charges = 0;
-    w.core.flurry_charge_at = 10_000;
-    w.tick(None);
-    assert!(!w.core.flurrying() && w.core.charges == d::CHARGES_MAX, "{}", w.core.reason);
-}
-
-/// Reihan's balance guard, ported to 3.x: his own AI in a 1v2 for 20 s, both enemies within reach and one of them
-/// basic-attacking him every 0.9 s. His total damage (basics + every skill packet) against a plain champion's basic
-/// damage at the same Attack, and the share of enemy hits his dodges undo.
-fn fight_1v2(level: i64, profile: i64) -> (f64, f64) {
-    let rules: serde_json::Value = serde_json::from_str(include_str!("../../../rules/contender.json")).unwrap();
-    let attack = (rules["stat"]["attack"].as_i64().unwrap() + rules["growth"]["attack"].as_i64().unwrap() * (level - 1)) * (100 + d::MOD_POWER[0] as i64) / 100;
-    let mut w = ai(vec![champ(FOE, 2, 425_000, 500_000), champ(11, 2, 440_000, 510_000), champ(ALLY, 1, 410_000, 505_000)]);
-    for u in w.f.units.iter_mut().filter(|u| u.team == 2) {
-        u.hp = 1_000_000;
-        u.max_hp = 1_500;
-    }
-    w.core.ult_at = 0;
-    w.f.level = level;
-    w.f.attack = attack;
-    w.f.profile = [profile; 13];
-    let (mut speed, mut next, mut total, mut hits, mut dodged) = (0i64, 1u64, 0i64, 0, 0);
-    let start = w.f.tick;
-    while w.f.tick < start + 1_200 {
-        if w.f.tick >= next {
-            total += attack * (1_000 + w.core.vuln_permille(FOE, w.f.tick)) / 1_000;
-            w.f.basic_hits.push(FOE);
-            next = w.f.tick + (d::BASIC_COOLDOWN_TICKS * 100 / (100 + speed)) as u64;
-        }
-        let incoming = (w.f.tick - start + 1) % 54 == 0;
-        if incoming {
-            hits += 1;
-            w.f.incoming.push(IncomingHit { attacker: FOE, from: Point::new(425_000, 500_000), counter: false });
-        }
-        let tick = w.f.tick;
-        for e in w.tick(None) {
-            match e {
-                Effect::Damage { amount, .. } => total += amount,
-                Effect::Rhythm { attack_speed, .. } => speed = attack_speed,
-                _ => {}
-            }
-        }
-        if incoming && w.core.last_dodge == tick {
-            dodged += 1;
-        }
-        w.f.pos = Point::new(400_000, 500_000);
-    }
-    let plain = (1_200 / d::BASIC_COOLDOWN_TICKS + 1) * attack;
-    (total as f64 / plain as f64, dodged as f64 / hits as f64)
-}
-
-#[test]
-fn in_a_1v2_his_damage_and_dodges_stay_in_bounds_at_every_athlete_level() {
-    for level in [3, 9] {
-        for profile in [20, 50, 80] {
-            let (damage, dodges) = fight_1v2(level, profile);
-            println!("level {level}, athlete {profile}: {damage:.2}x, {:.0}% dodged", dodges * 100.0);
-            // contender-3.1.3 ships Codex's 3.1.2 balance (1.65x-1.79x, 14-18% dodged): these bounds stop it creeping
-            // further. 2.8/2.9 sat at about 1.3x; see docs/main-review-round-184.md.
-            assert!(damage <= 1.9, "level {level}, athlete {profile}: {damage:.2}x a plain champion's basics");
-            assert!(dodges <= 0.25, "level {level}, athlete {profile}: {:.0}% dodged", dodges * 100.0);
-        }
+fn his_slots_are_real_engine_skills_the_game_ai_can_cast() {
+    let data: serde_json::Value = serde_json::from_str(include_str!("../../../mods/tfm2_custom/champion/tfm2_custom_contender.data_champion")).unwrap();
+    for (slot, cooltime, effect) in [("skill", d::MERGE_COOLDOWN_TICKS, "contender_s1"), ("skill2", d::FLURRY_CAST_GAP_TICKS, "contender_s2"), ("ult", d::SHADOW_LINK_COOLDOWN_TICKS, "contender_ult")] {
+        let s = &data[slot];
+        assert_eq!(s["cooltime"].as_i64(), Some(cooltime), "{slot}");
+        assert!(s["range"].as_i64().unwrap() > 1_000, "{slot} has a real range");
+        assert_eq!(s["effect"]["type"], "Native", "{slot}");
+        assert_eq!(s["effect"]["effect_ref"], format!("tfm2_custom_ai:{effect}"), "{slot}");
     }
 }

@@ -40,7 +40,7 @@ text = {
         f"Every {sec(me['crossEveryTicks'])}, a cross hits within {me['crossRadius']} of his current position for "
         f"{me['crossBase']} + {me['crossAdRatio']}% Attack. Each enemy hit cuts {sec(me['crossRechargeCreditTicks'])} from Flurry recharge."),
     'skill2': (
-        f"Shadow Flurry (level 2): hold {fl['maxCharges']} charges and recover one every {sec(fl['rechargeTicks'])}. "
+        f"Shadow Flurry (level 3; the game AI decides when): hold {fl['maxCharges']} charges and recover one every {sec(fl['rechargeTicks'])}. "
         f"Each landed non-Flurry hit cuts {sec(fl['hitCreditTicks'])} from the next charge, or {sec(me['crossRechargeCreditTicks'])} for Shadow Cross. "
         f"When out of Flurry charges, he can spend one passive dodge on a safe Flurry. "
         f"Vanish for up to {sec(fl['ticks'])} and throw up to {fl['punches']} punches for {fl['base']} + {fl['adRatio']}% Attack each. "
@@ -62,6 +62,16 @@ champ['attack'].update(duration=b['duration'], cooltime=b['cooldownTicks'], star
                        effect={'type': 'Native', 'effect_ref': 'tfm2_custom_ai:contender_basic'})
 for slot in ['skill', 'skill2', 'ult']:
     champ[slot]['description'] = '#asset/base/text/champion?description.' + ID + '.' + slot
+# contender-3.2: the game's own AI casts his skills. Each slot is a real engine skill whose Native effect only drops a
+# cast marker; his passive runs the core order on its next update (Isliid's pattern). The core still enforces its own
+# timers, Flurry charges and level unlocks, so S2's slot only carries the short cast gap.
+mg, fl, link_r = rules['merge'], rules['flurry'], rules['shadowLink']
+for slot, cooltime, rng, target, ref in [
+        ('skill', mg['cooldownTicks'], rules['ai']['mergeRange'], 'EnemyWithoutTower', 'contender_s1'),
+        ('skill2', fl['castGapTicks'], fl['startRange'], 'EnemyWithoutTower', 'contender_s2'),
+        ('ult', link_r['cooldownTicks'], link_r['range'], 'EnemyChampion', 'contender_ult')]:
+    champ[slot].update(cooltime=cooltime, range=rng, casting_type='Targeting', casting_target=target, can_use_with_move=True,
+                       effect={'type': 'Native', 'effect_ref': 'tfm2_custom_ai:' + ref})
 champ['passive'] = {'passive_ref': 'tfm2_custom_ai:contender', 'params': {'shadow_art_v1': 1, 'shadow_directions_v1': 1, 'shadow_merge_art_v1': 1, 'shadow_rhythm_art_v1': 1, 'shadow_receipts_v1': 1}}
 champ['passive_ult'] = {'passive_ref': 'tfm2_custom_ai:ult_learned', 'params': {}}
 # his shadow effects arrive with Codex's art (`docs/contender-shadow-art-handoff.md`); until then every name he plays is

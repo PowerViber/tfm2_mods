@@ -58,36 +58,6 @@ fn unhurt(name: &str, ticks: u64, cc_immune: bool) -> BuffV1 {
     b
 }
 
-/// The move a steering buff asks for (read by the shared input AI).
-pub fn steer_of(name: &str) -> Option<(i64, i64)> {
-    let mut it = name.strip_prefix(GO_PREFIX)?.split(':').filter_map(|s| s.parse::<i64>().ok());
-    Some((it.next()?, it.next()?))
-}
-
-/// Adjust only an undecided order or a walk. The engine owns attacks and casts already chosen.
-pub(crate) fn shadow_input(sim: &StableSim<'_>, owner: usize, base: Option<mod_api_stable::InputV1>) -> Option<mod_api_stable::InputV1> {
-    use mod_api_stable::{InputKindV1, InputV1};
-    if base.is_some_and(|input| input.kind != InputKindV1::Move.code()) {
-        return None;
-    }
-    let me = sim.get_entity(owner)?;
-    let (x, y) = me.pos();
-    let movement = base?;
-    for buff in (0..me.buff_count()).filter_map(|i| me.buff_at(i)) {
-        if let Some(raw) = buff.name().strip_prefix(HOLD_PREFIX) {
-            let mut coords = raw.split(':').filter_map(|part| part.parse::<i64>().ok());
-            let (tx, ty, cx, cy) = (coords.next()?, coords.next()?, coords.next()?, coords.next()?);
-            let dx = movement.x as i64 - x as i64;
-            let dy = movement.y as i64 - y as i64;
-            let forward = i128::from(dx) * i128::from(tx - x as i64) + i128::from(dy) * i128::from(ty - y as i64);
-            if forward > 0 {
-                return Some(InputV1::move_to(cx.max(0) as u64, cy.max(0) as u64));
-            }
-        }
-    }
-    None
-}
-
 /// Warning circles other AIs can avoid using their normal movement rules.
 pub fn danger_zones(all: &[crate::Champ], me: &crate::Champ, tick: usize) -> Vec<(i64, i64, i64, usize, usize)> {
     let mut zones = vec![];
@@ -124,6 +94,74 @@ impl StableEffectType for BasicImpact {
         (s.attack, 0)
     }
 }
+/// contender-3.2: the game's own AI casts his skills. Each engine slot's `Native` effect only drops a short marker
+/// (`ct_cast:s1:<tick>`, `ct_cast:s2:<tick>`, `ct_cast:ult:<x>:<y>:<tick>`); his passive consumes it on its next update
+/// and runs the core's order (Isliid's pattern). The core still enforces its own timers, charges and level unlocks.
+pub const CAST_PREFIX: &str = "ct_cast:";
+
+fn cast_point(sim: &StableSim, input: InputTargetV1) -> Option<(i64, i64)> {
+    match input.kind {
+        1 => sim.get_entity(input.target_id).map(|e| { let p = e.pos(); (p.0 as i64, p.1 as i64) }),
+        3 => Some((input.x as i64, input.y as i64)),
+        _ => None,
+    }
+}
+
+/// S1 Shadow Merge, cast by the engine.
+pub struct CastMerge;
+impl StableEffectType for CastMerge {
+    fn apply(&self, sim: &mut StableSim, _: u64, caster: usize, _: InputTargetV1) {
+        let tick = sim.tick();
+        sim.add_buff(caster, &crate::timed(&format!("{CAST_PREFIX}s1:{tick}"), 5));
+    }
+    fn expected_damage(&self, s: &StatV1) -> (usize, usize) {
+        (s.attack / 2, 0)
+    }
+}
+
+/// S2 Shadow Flurry, cast by the engine (the core spends one of its 3 charges, or refuses with none).
+pub struct CastFlurry;
+impl StableEffectType for CastFlurry {
+    fn apply(&self, sim: &mut StableSim, _: u64, caster: usize, _: InputTargetV1) {
+        let tick = sim.tick();
+        sim.add_buff(caster, &crate::timed(&format!("{CAST_PREFIX}s2:{tick}"), 5));
+    }
+    fn expected_damage(&self, s: &StatV1) -> (usize, usize) {
+        (s.attack, 0)
+    }
+}
+
+/// Ult Shadow Link, cast by the engine at the target it chose.
+pub struct CastLink;
+impl StableEffectType for CastLink {
+    fn apply(&self, sim: &mut StableSim, _: u64, caster: usize, input: InputTargetV1) {
+        if let Some((x, y)) = cast_point(sim, input) {
+            let tick = sim.tick();
+            sim.add_buff(caster, &crate::timed(&format!("{CAST_PREFIX}ult:{x}:{y}:{tick}"), 5));
+        }
+    }
+    fn expected_damage(&self, s: &StatV1) -> (usize, usize) {
+        (s.attack, 0)
+    }
+}
+
+/// The order a cast marker asks for.
+pub fn cast_order(name: &str) -> Option<crate::contender_shadow_core::Order> {
+    use crate::contender_shadow_core::Order;
+    let rest = name.strip_prefix(CAST_PREFIX)?;
+    let mut it = rest.split(':');
+    match it.next()? {
+        "s1" => Some(Order::S1),
+        "s2" => Some(Order::S2),
+        "ult" => {
+            let x = it.next()?.parse().ok()?;
+            let y = it.next()?.parse().ok()?;
+            Some(Order::Ult { aim: Point::new(x, y) })
+        }
+        _ => None,
+    }
+}
+
 /// Old careers' `contender_ultimate` passive: the shared ult-learned marker.
 pub struct UltimateLearned;
 impl StablePassive for UltimateLearned {
@@ -534,7 +572,22 @@ impl StablePassive for Contender {
                 }
             }
         }
-        let f = self.frame(sim, id);
+        // contender-3.2: the engine's casts (one per update; the first marker wins, the rest are dropped)
+        let mut engine_order = None;
+        if let Some(entity) = sim.get_entity(id) {
+            let marks: Vec<String> = (0..entity.buff_count()).filter_map(|i| entity.buff_at(i))
+                .map(|b| b.name().to_owned()).filter(|n| n.starts_with(CAST_PREFIX)).collect();
+            for name in marks {
+                if engine_order.is_none() {
+                    engine_order = cast_order(&name);
+                }
+                sim.entity_remove_buff(id, &name);
+            }
+        }
+        let mut f = self.frame(sim, id);
+        // the game's AI owns casts and movement: the core only runs what the engine cast (its own `decide()` is Lab-only)
+        f.manual = true;
+        f.order = engine_order;
         let effects = self.core.step(&f);
         if self.merge_art {
             let cd = sim.get_player(player).and_then(|p| p.cooldowns()).map(|c| c.0);

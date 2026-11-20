@@ -483,7 +483,7 @@ pub(crate) fn set_snapshot_cache_for_test(on: bool) {
 /// A view effect at a point / on a unit (named `<champion id>_<tag>` in the data's view_effects).
 /// Round 91: the native version, written in the game log and the champions' logs (gundam_log.txt / isliid_log.txt) so a
 /// game shows which build ran.
-pub(crate) const VERSION: &str = "0.10.119";
+pub(crate) const VERSION: &str = "0.10.120";
 
 static LOGGED: std::sync::Mutex<Option<std::collections::HashSet<String>>> = std::sync::Mutex::new(None);
 
@@ -2119,6 +2119,9 @@ fn init(host: &StableHost) -> StableMod {
     decl.add_native_passive(format!("{MOD_ID}:contender"), contender::Contender::default());
     decl.add_native_passive(format!("{MOD_ID}:contender_ultimate"), contender::UltimateLearned);
     decl.add_native_effect(format!("{MOD_ID}:contender_basic"), contender::BasicImpact);
+    decl.add_native_effect(format!("{MOD_ID}:contender_s1"), contender::CastMerge);
+    decl.add_native_effect(format!("{MOD_ID}:contender_s2"), contender::CastFlurry);
+    decl.add_native_effect(format!("{MOD_ID}:contender_ult"), contender::CastLink);
     decl.set_server_extension(servers::Servers);
     decl.set_extension(game_sense_host::Panel);
     decl.add_native_passive(format!("{MOD_ID}:unified_ult"), unified_theory::UltimateLearned);
