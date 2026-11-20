@@ -51,17 +51,17 @@
     "action_name": "skill1",
     "cancelable": false,
     "growth_range": 0,
-    "can_use_with_move": false,
+    "can_use_with_move": true,
     "duration": 6,
-    "cooltime": 5184000,
+    "cooltime": 840,
     "start_timing": 3,
-    "range": 1,
+    "range": 60000,
     "casting_type": "Targeting",
-    "casting_target": "EnemyChampionInCC",
+    "casting_target": "EnemyWithoutTower",
     "attack_type": "Skill",
     "effect": {
-      "type": "Combine",
-      "effects": []
+      "type": "Native",
+      "effect_ref": "tfm2_custom_ai:contender_s1"
     },
     "description": "#asset/base/text/champion?description.tfm2_custom_contender.skill"
   },
@@ -69,17 +69,17 @@
     "action_name": "skill2",
     "cancelable": false,
     "growth_range": 0,
-    "can_use_with_move": false,
+    "can_use_with_move": true,
     "duration": 6,
-    "cooltime": 5184000,
+    "cooltime": 45,
     "start_timing": 3,
-    "range": 1,
+    "range": 50000,
     "casting_type": "Targeting",
-    "casting_target": "EnemyChampionInCC",
+    "casting_target": "EnemyWithoutTower",
     "attack_type": "Skill",
     "effect": {
-      "type": "Combine",
-      "effects": []
+      "type": "Native",
+      "effect_ref": "tfm2_custom_ai:contender_s2"
     },
     "description": "#asset/base/text/champion?description.tfm2_custom_contender.skill2"
   },
@@ -87,17 +87,17 @@
     "action_name": "ult",
     "cancelable": false,
     "growth_range": 0,
-    "can_use_with_move": false,
+    "can_use_with_move": true,
     "duration": 6,
-    "cooltime": 5184000,
+    "cooltime": 4500,
     "start_timing": 3,
-    "range": 1,
+    "range": 60000,
     "casting_type": "Targeting",
-    "casting_target": "EnemyChampionInCC",
+    "casting_target": "EnemyChampion",
     "attack_type": "Skill",
     "effect": {
-      "type": "Combine",
-      "effects": []
+      "type": "Native",
+      "effect_ref": "tfm2_custom_ai:contender_ult"
     },
     "description": "#asset/base/text/champion?description.tfm2_custom_contender.ult"
   },

@@ -4146,3 +4146,10 @@ Native 0.10.112 / custom 0.2.115, art basalt-art-6, gameplay remains basalt-1.4.
 - **Install:** close the game, Mod Manager -> 1 Update everything, then 2 Check (UP TO DATE); 4 Show logs must show native 0.10.119. Use a new career.
 - **Measured:** 1.65-1.79x a plain champion's basics in a 1v2 (2.9 was about 1.3x); 14-18% of hits dodged.
 - **Watch for:** Counterpunch, the S2 Flurry, and Shadow Link's pull and stun in real matches.
+
+## Nov 20: round 185 (native 0.10.120, tfm2_custom 0.2.123), `contender-3.2`: the game AI casts Contender
+- **AI:** round 184's custom AI changes are reverted. His S1 Merge, S2 Flurry and Shadow Link are now real engine skills, so the game's own AI decides when to cast them and moves him.
+- **Unchanged:** dodges, Counterpunch, Pact and Rhythm still run natively.
+- **Flurry:** unlocks at level 3.
+- **Install:** Mod Manager -> 1 Update everything -> 2 Check; log.log must show native 0.10.120. Use a new career.
+- **Watch for:** does the game AI cast Merge, Flurry and Shadow Link at sensible moments.

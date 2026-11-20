@@ -7,7 +7,7 @@
     "Melee",
     "CC"
   ],
-  "revision": "contender-3.1.3",
+  "revision": "contender-3.2",
   "stat": {
     "attack": 76,
     "magic_power": 0,
@@ -100,13 +100,7 @@
     "supportHp": 35,
     "supportRange": 40000,
     "threatRange": 70000,
-    "shadowStep": 12000,
-    "judgementLow": 35,
-    "judgementRetreatDivisor": 10,
-    "accuracyLow": 40,
-    "microHigh": 70,
-    "microLow": 40,
-    "reactionMaxTicks": 12
+    "shadowStep": 12000
   },
   "fxTokens": 16,
   "counter": {

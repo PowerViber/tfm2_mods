@@ -1,4 +1,4 @@
-# Contender, the Shadow Boxer (contender-3.1.3)
+# Contender, the Shadow Boxer (contender-3.2)
 
 Contender retaliates when his passive dodges a champion hit, stacks Rhythm with a
 short Flurry and sets up teammates with Shadow Link.
@@ -22,17 +22,20 @@ catch or a teammate peel. Manual Lab orders retain their own controls.
 
 [Contender 3.1 review and verification](contender-31-review.md)
 
-## AI and athlete stats (`contender-3.1.3`, round 184)
-- **Every skill is used.** The ult (Shadow Link) peels or holds a supported group. S2 Shadow Flurry commits when the fight is safe, or trades a dodge for a charge. S1 Merge goes in on supported approaches.
-- **Farming:** when calm, he farms with **S2 Shadow Flurry** (3+ creeps, or one big camp monster within 50,000, using real charges only, never a traded dodge) as well as with Merge.
-- **Athlete stats shape his play.** Each bounds an existing check and adds no power:
 
-| Stat | Effect |
-|---|---|
-| **Aggressive** | Commit HP and chase range (Codex, 3.0). |
-| **Judgement** | Retreat line ±3% around 35%. Below 35 Judgement, he accepts one more enemy than his support covers. |
-| **Skill Accuracy** | Below 40, Shadow Link goes on a single champion; otherwise it waits for two. |
-| **Micro** | Dodges kept before trading one for a Flurry charge: 0 (below 40), 1, or 2 (70 and up). |
-| **Control Speed** | Below 50, up to 12 ticks before committing S1 or S2 to a new target. |
+## Who decides his casts (`contender-3.2`, round 185)
+The **game's own AI** casts his skills, like a base champion's (Reihan: "revert back to the basics, since its own game already has an ai").
 
-- **Guard test:** his own AI in a 1v2 for 20 s at athlete 20/50/80 and levels 3 and 9 must stay at or below 1.9× a plain champion's basics and 25% dodged. It measures 1.59–1.79× and 14–18%.
+| Slot | Cooltime | Range | Targets | Native effect |
+|---|---|---|---|---|
+| S1 Shadow Merge | 840 ticks | 60,000 | any enemy but towers | `contender_s1` |
+| S2 Shadow Flurry | 45 ticks (the cast gap) | 50,000 | any enemy but towers | `contender_s2` |
+| Ult Shadow Link | 4,500 ticks | 60,000 | an enemy champion | `contender_ult` |
+
+- **How a cast runs:** each Native effect only drops a 5-tick marker (`ct_cast:s1` / `s2` / `ult:x:y`). His passive consumes it on its next update and runs the core's order, the same as a manual Lab order.
+- **What the core still enforces:** the Merge and Link timers, the **3 Flurry charges** (the engine may press S2 every 45 ticks, and the press is refused with no charge), and the level unlocks.
+- **Level unlocks:** the engine locks skill2 until level 3, so the Flurry unlocks at level 3.
+- **The dodge trade:** the game AI never trades a dodge for a Flurry charge. That's a manual Lab action only (Shift+E).
+- **Movement:** he has no native steering or hold hints. The engine moves him.
+- **Passives still run natively:** dodges, Counterpunch, Shadow Pact and Shadow Rhythm.
+- **The core's `decide()`:** it now runs only behind the Lab's "Lab AI (not used in game)" checkbox.
