@@ -9,7 +9,7 @@ import copy, json, re, sys
 ROOT = Path(__file__).resolve().parents[1]
 rules = json.loads((ROOT / 'rules/contender.json').read_text())
 ID = rules['id']
-GROUPS = ['basic', 'charges', 'counter', 'rhythm', 'shadowGrab', 'shadowborne', 'anchor', 'smother', 'cloneArmy', 'ai']
+GROUPS = ['basic', 'charges', 'counter', 'rhythm', 'shadowGrab', 'shadowborne', 'anchor', 'smother', 'cloneArmy', 'charged', 'overheal', 'ai']
 
 
 def snake(s):
@@ -25,7 +25,7 @@ for group in GROUPS:
 lines.append(f'pub const FX_TOKENS: usize = {rules["fxTokens"]};')
 rust = '\n'.join(lines) + '\n'
 
-b, ch, co, rh, grab, sb, an, sm, ca, _ = (rules[k] for k in GROUPS)
+b, ch, co, rh, grab, sb, an, sm, ca, cg, oh, _ = (rules[k] for k in GROUPS)
 sec = lambda n: f'{n / 60:g} s'
 dash = grab['range'] * grab['dashPermille'] // 1000
 text = {
@@ -37,6 +37,10 @@ text = {
         f"{co['base']} + {co['adRatio']}% Attack within {co['range']}. "
         f"Shadow Rhythm: his hits stack an enemy up to {rh['maxStacks']} times for {sec(rh['stackTicks'])}; it takes "
         f"{rh['vulnerabilityPermillePerStack'] / 10:g}% more damage from him per stack. "
+        f"Charged Punches: each of his hits (basics and skills) adds a charge, up to {cg['max']}, lasting {sec(cg['lingerTicks'])} after his last hit. "
+        f"At {cg['threshold']} or more he attacks {cg['attackSpeedPct']}% faster, and each hit adds {cg['stacksPerHit']} Rhythm stacks, pulls the target "
+        f"{cg['pull']} toward him and heals him {cg['lifestealPct']}% of its damage. "
+        f"Overflow: lifesteal past his max HP becomes a shield of up to {oh['capPermilleMaxHp'] / 10:g}% of his max HP (each layer lasts {sec(oh['shieldTicks'])}). "
         f"Shadowborne: every shadow flurry ({sb['punches']} punches over {sec(sb['ticks'])}, {sb['base']} + {sb['adRatio']}% Attack each) ends by "
         f"knocking up every enemy within {sb['knockRadius']} of its last target for {sec(sb['knockTicks'])}; if Contender threw it, he teleports "
         f"behind that enemy. "
@@ -52,11 +56,13 @@ text = {
     'skill2': (
         f"Shadow Anchor ({sec(an['cooldownTicks'])}): drop a shadow up to {an['range']} away. It fears enemies within {an['fearRadius']} for "
         f"{sec(an['fearTicks'])}, then throws a shadow flurry. It stays for {sec(an['lifeTicks'])}: cast again, or drop to {an['lowHpPct']}% HP, "
-        f"to teleport to it. The anchor mimics his Shadow Grab and Smother."),
+        f"to teleport to it: he heals {an['healPermille'] / 10:g}% of his max HP and gains {an['armourPct']}% Armour for {sec(an['armourTicks'])}. "
+        f"The anchor mimics his Shadow Grab and Smother."),
     'ult': (
         f"Clone Army (level 5, {sec(ca['cooldownTicks'])}): refill all shadows and send three shadow clones out, one {ca['ahead']} ahead and one "
-        f"{ca['side']} to each side of it; his anchor sends three more. For {sec(ca['lifeTicks'])} every clone mimics his Shadow Grab and Smother "
-        f"at {ca['mimicDamagePct']}% damage, with full crowd control. Shadow flurries never teleport him."),
+        f"{ca['side']} to each side of it; his anchor sends three more. For {sec(ca['lifeTicks'])} the clones run at the nearest enemy within "
+        f"{ca['seekRange']} and punch it ({ca['mimicDamagePct']}% of his Attack), and whenever he casts Shadow Grab or Smother every shadow casts it "
+        f"too from where it stands, at {ca['mimicDamagePct']}% damage with full crowd control. Shadow flurries never teleport him."),
 }
 
 champ = copy.deepcopy(json.loads((ROOT / 'tools/native-champion-template.json').read_text()))
@@ -106,10 +112,6 @@ grab_anims = json.loads((ROOT / 'mods/tfm2_custom/vfx/contender_grab#anim.fanim'
 champ['view_effects'] += [dict(type='Animation', name='ct_grab_' + tag, anim='asset/tfm2_custom/vfx/contender_grab',
                                tag=tag, z=6, is_follow=False) for tag in grab_anims]
 
-# round 192: Codex's approved Smother trail and contact and the Clone Army clone, baked by tools/build-contender-40-art.py
-c40_anims = json.loads((ROOT / 'mods/tfm2_custom/vfx/contender_40#anim.fanim').read_text())['anims']
-champ['view_effects'] += [dict(type='Animation', name='ct_40_' + tag, anim='asset/tfm2_custom/vfx/contender_40',
-                               tag=tag, z=5 if tag.startswith('clone') else 6, is_follow=False) for tag in c40_anims]
 
 data = json.dumps(champ, indent=2) + '\n'
 

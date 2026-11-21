@@ -16,5 +16,5 @@ Run `node tools/serve-contender-shadow-review.cjs 7320` from the repository root
 
 The browser passed 16 combinations of scene, facing and angle. The largest cast showed eight simultaneous Smother lanes. The miss had zero contacts, and both army scenes returned to zero clones after expiry. Game-pack integration is pending visual approval.
 
-## In the game (Claude)
-`tools/build-contender-40-art.py` packs this art into `mods/tfm2_custom/vfx/contender_40#sheet.png`; see `docs/main-review-round-192.md`. [Packed in-game check](packed-in-game-check.png).
+## Not used in the game
+Reihan chose to keep the shadow body he approved before ("lets not use the new art, but make the art as the shadow before"). The clones and Smother's front are drawn with the existing `ct_body_*` shadow poses, and the contact uses `ct_echo`. These files stay as Codex's preview record.

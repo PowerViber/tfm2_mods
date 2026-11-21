@@ -94,7 +94,10 @@
     "lifeTicks": 480,
     "fearRadius": 50000,
     "fearTicks": 60,
-    "lowHpPct": 30
+    "lowHpPct": 30,
+    "healPermille": 150,
+    "armourPct": 30,
+    "armourTicks": 180
   },
   "smother": {
     "cooldownTicks": 840,
@@ -117,11 +120,27 @@
   },
   "cloneArmy": {
     "cooldownTicks": 4800,
-    "range": 80000,
-    "ahead": 50000,
+    "range": 150000,
+    "ahead": 150000,
     "side": 30000,
     "lifeTicks": 360,
-    "mimicDamagePct": 50
+    "mimicDamagePct": 50,
+    "seekRange": 100000,
+    "moveSpeed": 1050,
+    "followRange": 40000
+  },
+  "charged": {
+    "threshold": 4,
+    "max": 10,
+    "lingerTicks": 180,
+    "attackSpeedPct": 100,
+    "stacksPerHit": 2,
+    "pull": 5000,
+    "lifestealPct": 15
+  },
+  "overheal": {
+    "capPermilleMaxHp": 150,
+    "shieldTicks": 240
   },
   "ai": {
     "towerRange": 85000
