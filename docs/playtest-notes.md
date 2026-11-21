@@ -4207,3 +4207,15 @@ Native 0.10.112 / custom 0.2.115, art basalt-art-6, gameplay remains basalt-1.4.
   - the dash and Haymaker land;
   - the shield appears when he's at full HP;
   - `log.log` shows 0.10.127.
+
+## Nov 21 · Round 192 · Contender 4.0, rebuilt (native 0.10.128, champion pack 0.2.131)
+- **Passives:** Shadows (10, one every 3 s, dodge + Counterpunch), Shadow Rhythm (up to 10 stacks) and **Shadowborne** (every shadow flurry ends with a 60k, 1 s knock-up; his own flurries teleport him behind the last enemy).
+- **S1 Shadow Grab:** as in 3.7, and a miss makes a shadow flurry.
+- **S2 Shadow Anchor:** drop (50k fear, then flurry); press again or drop to 30% HP to teleport there.
+- **S3 Smother:** self-cast at level 3. Silences, slows, shreds, hastes him, shields him and flurries.
+- **Clone Army:** a kunai fan of 3 clones (plus 3 around the anchor). For 6 s all shadows copy his grab and Smother.
+- **Check live:**
+  - the anchor's fear, flurry and teleport;
+  - Smother's silence and shield;
+  - the clones mimicking the grab;
+  - `log.log` shows 0.10.128.
