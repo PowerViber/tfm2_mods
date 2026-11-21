@@ -43,8 +43,9 @@ mod valorant_guns;
 mod raze;
 mod contender;
 pub(crate) mod unlocks;
-mod contender_merge;
+
 mod contender_rhythm;
+#[allow(dead_code)] // contender-4.0: the Merge presenter is gone; the art tool still generates this
 mod contender_merge_data;
 mod rally;
 mod grimhald;
@@ -483,7 +484,7 @@ pub(crate) fn set_snapshot_cache_for_test(on: bool) {
 /// A view effect at a point / on a unit (named `<champion id>_<tag>` in the data's view_effects).
 /// Round 91: the native version, written in the game log and the champions' logs (gundam_log.txt / isliid_log.txt) so a
 /// game shows which build ran.
-pub(crate) const VERSION: &str = "0.10.127";
+pub(crate) const VERSION: &str = "0.10.128";
 
 static LOGGED: std::sync::Mutex<Option<std::collections::HashSet<String>>> = std::sync::Mutex::new(None);
 
