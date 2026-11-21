@@ -973,6 +973,51 @@ fn contender_tower_guard(ctx: &mut StableAiContext<'_>, pid: usize, inp: &InputV
     Some(InputV1::move_to(x.max(0) as u64, y.max(0) as u64))
 }
 
+/// contender-4.0 (Reihan: "make him engage a bit farther, but [not] too much ... a lot of hp and not charging"): the enemy
+/// champion he should grab, if any. Only with HP at `AI_ENGAGE_HP_PCT`+ and his grab ready; the nearest visible enemy
+/// champion within `AI_ENGAGE_RANGE`, skipping one under an uncovered enemy tower or with `AI_ENGAGE_CROWD`+ enemy
+/// champions within `AI_ENGAGE_CROWD_RADIUS` of it. `foes` are (id, position); `towers` (position, covered).
+pub(crate) fn engage_pick(me: (i64, i64), hp_pct: i64, grab_ready: bool, foes: &[(usize, (i64, i64))], towers: &[((i64, i64), bool)]) -> Option<usize> {
+    use crate::contender_shadow_data as cd;
+    if !grab_ready || hp_pct < cd::AI_ENGAGE_HP_PCT {
+        return None;
+    }
+    foes.iter()
+        .filter(|(_, p)| d2(p.0, p.1, me.0, me.1) <= sq(cd::AI_ENGAGE_RANGE))
+        .filter(|(_, p)| !towers.iter().any(|(t, covered)| !covered && d2(t.0, t.1, p.0, p.1) <= sq(cd::AI_TOWER_RANGE)))
+        .filter(|(_, p)| (foes.iter().filter(|(_, q)| d2(q.0, q.1, p.0, p.1) <= sq(cd::AI_ENGAGE_CROWD_RADIUS)).count() as i64) < cd::AI_ENGAGE_CROWD)
+        .min_by_key(|(id, p)| (d2(p.0, p.1, me.0, me.1), *id))
+        .map(|(id, _)| *id)
+}
+
+/// A walk (or a basic on a creep) becomes his grab on the enemy champion `engage_pick` chooses.
+fn contender_engage(ctx: &mut StableAiContext<'_>, pid: usize, inp: &InputV1) -> Option<InputV1> {
+    let sim = ctx.sim()?;
+    let on_champion = inp.kind == InputKindV1::Attack.code() && inp.target.kind == mod_api_stable::InputTargetKindV1::Target.code()
+        && sim.get_entity(inp.target.target_id).is_some_and(|e| e.is_champion());
+    if !(inp.kind == InputKindV1::Move.code() || (inp.kind == InputKindV1::Attack.code() && !on_champion)) {
+        return None;
+    }
+    let me = sim.get_player(pid)?.champion()?;
+    let (team, (mx, my), (hp, max)) = (me.team(), me.pos(), me.hp());
+    let grab_ready = crate::press::get(sim.seed(), pid, sim.tick().checked_sub(1)?).is_some_and(|f| f & crate::press::S1 != 0);
+    let range = crate::contender_shadow_data::AI_TOWER_RANGE;
+    let entities: Vec<_> = (0..sim.entity_count()).filter_map(|i| sim.entity_at(i)).filter(|e| e.is_alive()).collect();
+    let foes: Vec<(usize, (i64, i64))> = entities.iter()
+        .filter(|e| e.is_champion() && e.team() != team && e.is_targetable() && sim.is_visible(team, e.id()))
+        .map(|e| { let (x, y) = e.pos(); (e.id(), (x as i64, y as i64)) }).collect();
+    let towers: Vec<_> = entities.iter().filter(|e| e.is_tower() && e.team() != team).map(|t| {
+        let (tx, ty) = t.pos();
+        let (tx, ty) = (tx as i64, ty as i64);
+        let covered = entities.iter().any(|m| m.team() == team && m.is_minion() && !m.is_champion()
+            && { let (x, y) = m.pos(); d2(x as i64, y as i64, tx, ty) <= sq(range) });
+        ((tx, ty), covered)
+    }).collect();
+    let hp_pct = hp as i64 * 100 / (max as i64).max(1);
+    let target = engage_pick((mx as i64, my as i64), hp_pct, grab_ready, &foes, &towers)?;
+    Some(InputV1::action(InputKindV1::Skill, mod_api_stable::InputTargetV1::target(target)))
+}
+
 fn press_swap(ctx: &mut StableAiContext<'_>, pid: usize, inp: &InputV1, reach: i64) -> Option<InputV1> {
     let need = if inp.kind == InputKindV1::Skill.code() { crate::press::S1 }
         else if inp.kind == InputKindV1::Skill2.code() { crate::press::S2 } else { return None };
@@ -1077,6 +1122,10 @@ impl StablePlayerAi for WallAi {
             let pid = ctx.player_id();
             if let Some(walk) = contender_tower_guard(ctx, pid, &inp) {
                 if ctx.is_valid_input(&walk) { return Some(walk); }
+            }
+            // contender-4.0: healthy with the grab up, he goes in (a bit farther than the game AI would)
+            if let Some(grab) = contender_engage(ctx, pid, &inp) {
+                if ctx.is_valid_input(&grab) { return Some(grab); }
             }
         }
         // round 88: Aegis Zero mid-ult and Isliid between plans turn presses they wouldn't use into basic attacks (and, since

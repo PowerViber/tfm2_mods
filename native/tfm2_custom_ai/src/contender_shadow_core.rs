@@ -111,6 +111,8 @@ pub enum HitSource {
     Smother,
     /// a Shadowborne flurry punch (not credited as a landed hit)
     ShadowFlurry,
+    /// a Clone Army clone's own punch (not credited)
+    Clone,
 }
 
 impl HitSource {
@@ -252,10 +254,7 @@ impl Frame {
 /// tools/build-contender-grab-art.py; a test checks these match the packed `.fanim`).
 pub const GRAB_LATCH_TICKS: u64 = 8;
 pub const GRAB_BURST_TICKS: u64 = 18;
-/// Round 192: how long Codex's Smother contact flash plays (baked by tools/build-contender-40-art.py)
-pub const SMOTHER_CONTACT_TICKS: u64 = 12;
-/// and how long a Clone Army clone fades in
-pub const CLONE_IN_TICKS: u64 = 8;
+
 /// his dash after the pull, 3/8 of the grab's range
 pub const GRAB_DASH: i64 = d::SHADOW_GRAB_RANGE * d::SHADOW_GRAB_DASH_PERMILLE / 1_000;
 /// where the pull leaves the target: one dash plus the Haymaker's reach away from the caster
@@ -284,6 +283,12 @@ pub enum Effect {
     Haste { attack_speed_pct: i64, move_pct: i64, ticks: u64 },
     /// a shield on him
     Shield { amount: i64, ticks: u64 },
+    /// Charged Punches: his attack speed bonus (`ticks` 1 ends it)
+    Charged { attack_speed_pct: i64, ticks: u64 },
+    /// lifesteal / healing for him; what overflows his max HP becomes the capped Overflow shield
+    Lifesteal { amount: i64 },
+    /// the anchor teleport's Armour
+    Armour { pct: i64, ticks: u64 },
     /// his shadows (for the pips)
     Charges { count: i64 },
     Fx {
@@ -312,6 +317,15 @@ pub struct Shadow {
     pub pos: Point,
     pub until: u64,
     pub anchor: bool,
+    /// a clone's own fight: running this tick, facing left, punching until, next punch
+    #[serde(default)]
+    pub moving: bool,
+    #[serde(default)]
+    pub left: bool,
+    #[serde(default)]
+    pub punch_until: u64,
+    #[serde(default)]
+    pub next_punch: u64,
 }
 
 /// Who throws a cast: Contender himself, or one of his shadows (by id).
@@ -390,6 +404,13 @@ pub struct Core {
     pub shadows: Vec<Shadow>,
     pub casts: Vec<Cast>,
     next_shadow: u32,
+    /// Charged Punches: his charges, and when they drop
+    #[serde(default)]
+    pub punch_charges: i64,
+    #[serde(default)]
+    pub punch_until: u64,
+    #[serde(default)]
+    charged_shown: u64,
     /// shield already granted by the current Smother (his cast and its copies share the cap)
     smother_shield: i64,
     pub charges_shown: i64,
@@ -414,6 +435,9 @@ impl Default for Core {
             shadows: vec![],
             casts: vec![],
             next_shadow: 1,
+            punch_charges: 0,
+            punch_until: 0,
+            charged_shown: 0,
             smother_shield: 0,
             charges_shown: -1,
             reason: String::new(),
@@ -428,6 +452,8 @@ impl Core {
         self.stacks.clear();
         self.shadows.clear();
         self.casts.clear();
+        self.punch_charges = 0;
+        self.punch_until = 0;
     }
 
     pub fn anchor(&self) -> Option<&Shadow> {
@@ -532,7 +558,8 @@ impl Core {
                 out.push(Effect::Damage { target: u.id, amount, source: HitSource::Counter });
                 out.push(Effect::Fx { name: "ct_cross".into(), at: u.pos, ticks: 18, heading: None });
                 out.push(Effect::Log { text: format!("Counterpunch: attacker #{}", u.id) });
-                self.add_stack(f, u);
+                let u = u.clone();
+                self.my_hit(f, &u, amount, out);
                 return;
             }
             None => "attacker missing",
@@ -558,10 +585,47 @@ impl Core {
     }
 
     /// a hit from one of his casts: Rhythm-scaled, shared by the cast's damage share, and it builds a stack
-    fn hit(&mut self, f: &Frame, u: &Unit, base: i64, share: i64, source: HitSource, out: &mut Vec<Effect>) {
+    fn hit(&mut self, f: &Frame, u: &Unit, base: i64, caster: Caster, share: i64, source: HitSource, out: &mut Vec<Effect>) {
         let amount = self.scaled_hit(f, u, base) * share / 100;
         out.push(Effect::Damage { target: u.id, amount, source });
-        self.add_stack(f, u);
+        if caster == Caster::Me {
+            self.my_hit(f, u, amount, out);
+        } else {
+            self.add_stack(f, u);
+        }
+    }
+
+    // -------------------------------------------------------------- Charged Punches
+
+    pub fn charged(&self, tick: u64) -> bool {
+        self.punch_charges >= d::CHARGED_THRESHOLD && tick < self.punch_until
+    }
+
+    /// One of his own hits (basics, Counterpunch, grab, Haymaker, Smother, his flurry punches): it adds a charge and,
+    /// while he's Charged, 2 Rhythm stacks, a short pull toward him and lifesteal. Below the threshold, 1 stack.
+    fn my_hit(&mut self, f: &Frame, u: &Unit, amount: i64, out: &mut Vec<Effect>) {
+        if f.tick >= self.punch_until {
+            self.punch_charges = 0;
+        }
+        self.punch_charges = (self.punch_charges + 1).min(d::CHARGED_MAX);
+        self.punch_until = f.tick + t(d::CHARGED_LINGER_TICKS);
+        if !self.charged(f.tick) {
+            self.add_stack(f, u);
+            return;
+        }
+        for _ in 0..d::CHARGED_STACKS_PER_HIT {
+            self.add_stack(f, u);
+        }
+        if f.link_target(u) && u.pos != f.pos {
+            let to = f.path_until(u.pos, u.pos.toward(f.pos, d::CHARGED_PULL), false);
+            if to != u.pos {
+                out.push(Effect::Drag { target: u.id, to });
+            }
+        }
+        let steal = amount * d::CHARGED_LIFESTEAL_PCT / 100;
+        if steal > 0 {
+            out.push(Effect::Lifesteal { amount: steal });
+        }
     }
 
     // -------------------------------------------------------------- the step
@@ -582,11 +646,15 @@ impl Core {
         self.slip(f, &mut out);
         for &id in &f.basic_hits {
             self.refund_shadows(f.tick, 1);
-            if let Some(u) = f.unit(id).filter(|u| !u.tower && u.team != f.team) {
-                self.add_stack(f, u);
+            if let Some(u) = f.unit(id).filter(|u| !u.tower && u.team != f.team).cloned() {
+                // the engine dealt the basic: his Attack, Rhythm-scaled, stands in for its damage
+                let amount = self.scaled_hit(f, &u, f.attack);
+                self.my_hit(f, &u, amount, &mut out);
             }
         }
         self.expire_shadows(f);
+        // clones fight before this tick's orders, so new clones appear exactly at their fan positions
+        self.run_clones(f, &mut out);
         let order = if f.manual { f.order } else { self.decide(f) };
         if let Some(order) = order {
             if f.stunned {
@@ -608,6 +676,15 @@ impl Core {
             self.teleport_to_anchor(f, &mut out);
         }
         self.run_casts(f, &mut out);
+        // Charged Punches: his attack speed doubles while he holds 4+ charges (renewed while it lasts)
+        let charged = self.charged(f.tick);
+        if charged && f.tick >= self.charged_shown {
+            self.charged_shown = f.tick + 30;
+            out.push(Effect::Charged { attack_speed_pct: d::CHARGED_ATTACK_SPEED_PCT, ticks: 40 });
+        } else if !charged && self.charged_shown > 0 {
+            self.charged_shown = 0;
+            out.push(Effect::Charged { attack_speed_pct: 0, ticks: 1 });
+        }
         if self.charges_shown != self.charges {
             self.charges_shown = self.charges;
             out.push(Effect::Charges { count: self.charges });
@@ -689,7 +766,7 @@ impl Core {
                 let next = Point::new(from.x + (at.x - from.x) * elapsed / total, from.y + (at.y - from.y) * elapsed / total);
                 let held = self.held();
                 if let Some(u) = Self::grab_victim(f, cursor, next, &held).cloned() {
-                    self.hit(f, &u, pct_of(d::SHADOW_GRAB_BASE, d::SHADOW_GRAB_AD_RATIO, f.attack), pct, HitSource::Grab, out);
+                    self.hit(f, &u, pct_of(d::SHADOW_GRAB_BASE, d::SHADOW_GRAB_AD_RATIO, f.attack), caster, pct, HitSource::Grab, out);
                     out.push(Effect::Fx { name: "ct_grab_latch".into(), at: u.pos, ticks: GRAB_LATCH_TICKS, heading: None });
                     out.push(Effect::Log { text: format!("Shadow Grab: #{}", u.id) });
                     if u.pos.dist(origin) > GRAB_MEET as f64 {
@@ -733,7 +810,7 @@ impl Core {
                     out.push(Effect::Log { text: format!("Haymaker: #{} out of reach", u.id) });
                     return false;
                 }
-                self.hit(f, &u, pct_of(d::SHADOW_GRAB_HAYMAKER_BASE, d::SHADOW_GRAB_HAYMAKER_AD_RATIO, f.attack), pct, HitSource::Grab, out);
+                self.hit(f, &u, pct_of(d::SHADOW_GRAB_HAYMAKER_BASE, d::SHADOW_GRAB_HAYMAKER_AD_RATIO, f.attack), caster, pct, HitSource::Grab, out);
                 let ticks = t(d::SHADOW_GRAB_HAYMAKER_KNOCK_TICKS);
                 out.push(Effect::Airborne { target, ticks });
                 out.push(Effect::Fx { name: "ct_grab_burst".into(), at: u.pos, ticks: GRAB_BURST_TICKS, heading: None });
@@ -764,6 +841,51 @@ impl Core {
         Grab::Dash { target: u.id, to, until: f.tick + ticks }
     }
 
+    // -------------------------------------------------------------- Clone Army clones fight on their own
+
+    /// Each Clone Army clone runs at the nearest enemy within `CLONE_ARMY_SEEK_RANGE` (champions first, never towers) and
+    /// punches it every basic cooldown for the mimic share of his Attack; with nobody near it returns to him. The anchor
+    /// stays where he dropped it. Shadows pass through walls.
+    fn run_clones(&mut self, f: &Frame, out: &mut Vec<Effect>) {
+        for i in 0..self.shadows.len() {
+            let s = self.shadows[i];
+            if s.anchor {
+                continue;
+            }
+            let target = f.units.iter()
+                .filter(|u| f.skill_target(u) && !f.separated.contains(&u.id) && u.pos.within(s.pos, d::CLONE_ARMY_SEEK_RANGE))
+                .min_by_key(|u| (!u.champion, u.pos.d2(s.pos), u.id)).cloned();
+            let mut next = s;
+            next.moving = false;
+            match target {
+                Some(u) if u.pos.within(s.pos, d::BASIC_RANGE + u.radius) => {
+                    next.left = u.pos.x < s.pos.x;
+                    if f.tick >= s.next_punch {
+                        next.next_punch = f.tick + t(d::BASIC_COOLDOWN_TICKS);
+                        next.punch_until = f.tick + t(d::BASIC_DURATION);
+                        self.shadows[i] = next;
+                        self.hit(f, &u, f.attack, Caster::Shadow { id: s.id }, d::CLONE_ARMY_MIMIC_DAMAGE_PCT, HitSource::Clone, out);
+                        out.push(Effect::Fx { name: "ct_cross".into(), at: u.pos, ticks: 10, heading: None });
+                        continue;
+                    }
+                }
+                Some(u) => {
+                    let stop = u.pos.toward(s.pos, d::BASIC_RANGE / 2 + u.radius);
+                    next.pos = s.pos.toward(stop, d::CLONE_ARMY_MOVE_SPEED).clamp_map();
+                    next.moving = next.pos != s.pos;
+                    next.left = u.pos.x < s.pos.x;
+                }
+                None if !s.pos.within(f.pos, d::CLONE_ARMY_FOLLOW_RANGE) => {
+                    next.pos = s.pos.toward(f.pos, d::CLONE_ARMY_MOVE_SPEED).clamp_map();
+                    next.moving = next.pos != s.pos;
+                    next.left = f.pos.x < s.pos.x;
+                }
+                None => {}
+            }
+            self.shadows[i] = next;
+        }
+    }
+
     // -------------------------------------------------------------- S2 Shadow Anchor
 
     fn drop_anchor(&mut self, f: &Frame, aim: Point, out: &mut Vec<Effect>) {
@@ -786,6 +908,9 @@ impl Core {
         let Some(a) = self.anchor().copied() else { return };
         out.push(Effect::Blink { to: a.pos });
         out.push(Effect::Fx { name: "ct_swap".into(), at: f.pos, ticks: 18, heading: None });
+        // the shadow mends him: a heal (spilling into Overflow) and Armour
+        out.push(Effect::Lifesteal { amount: f.max_hp * d::ANCHOR_HEAL_PERMILLE / 1_000 });
+        out.push(Effect::Armour { pct: d::ANCHOR_ARMOUR_PCT, ticks: t(d::ANCHOR_ARMOUR_TICKS) });
         self.shadows.retain(|s| !s.anchor);
         self.anchor_at = f.tick + t(d::ANCHOR_COOLDOWN_TICKS);
         out.push(Effect::Log { text: "Shadow Anchor: teleport".into() });
@@ -794,7 +919,7 @@ impl Core {
     fn new_shadow(&mut self, pos: Point, until: u64, anchor: bool) -> u32 {
         let id = self.next_shadow;
         self.next_shadow += 1;
-        self.shadows.push(Shadow { id, pos, until, anchor });
+        self.shadows.push(Shadow { id, pos, until, anchor, moving: false, left: false, punch_until: 0, next_punch: 0 });
         id
     }
 
@@ -833,14 +958,14 @@ impl Core {
             && !hit.contains(&u.id) && lane.contains(u.pos)).cloned().collect();
         for u in fresh {
             hit.push(u.id);
-            self.hit(f, &u, pct_of(d::SMOTHER_BASE, d::SMOTHER_AD_RATIO, f.attack), pct, HitSource::Smother, out);
+            self.hit(f, &u, pct_of(d::SMOTHER_BASE, d::SMOTHER_AD_RATIO, f.attack), caster, pct, HitSource::Smother, out);
             if !f.link_excluded.contains(&u.id) {
                 out.push(Effect::Silence { target: u.id, ticks: t(d::SMOTHER_SILENCE_TICKS) });
                 out.push(Effect::Slow { target: u.id, pct: d::SMOTHER_SLOW_PCT, ticks: t(d::SMOTHER_SLOW_TICKS) });
             }
             out.push(Effect::Smothered { target: u.id, armour_pct: d::SMOTHER_ARMOUR_SHRED_PCT,
                 attack_speed_pct: d::SMOTHER_ATTACK_SPEED_SHRED_PCT, ticks: t(d::SMOTHER_DEBUFF_TICKS) });
-            out.push(Effect::Fx { name: "ct_40_contact".into(), at: u.pos, ticks: SMOTHER_CONTACT_TICKS, heading: None });
+            out.push(Effect::Fx { name: "ct_echo".into(), at: u.pos, ticks: 12, heading: None });
             if u.champion {
                 let cap = f.max_hp * d::SMOTHER_SHIELD_CAP_PERMILLE / 1_000;
                 let add = (f.max_hp * d::SMOTHER_SHIELD_PERMILLE_PER_HIT / 1_000).min(cap - self.smother_shield);
@@ -921,7 +1046,7 @@ impl Core {
             };
             match victim.cloned() {
                 Some(u) => {
-                    self.hit(f, &u, pct_of(d::SHADOWBORNE_BASE, d::SHADOWBORNE_AD_RATIO, f.attack), pct, HitSource::ShadowFlurry, out);
+                    self.hit(f, &u, pct_of(d::SHADOWBORNE_BASE, d::SHADOWBORNE_AD_RATIO, f.attack), caster, pct, HitSource::ShadowFlurry, out);
                     out.push(Effect::Fx { name: "ct_flurry".into(), at: u.pos, ticks: 8, heading: Some(Self::flurry_heading(f.owner, *done)) });
                     *last = Some((u.id, u.pos));
                     *next = f.tick + t(d::SHADOWBORNE_GAP_TICKS);

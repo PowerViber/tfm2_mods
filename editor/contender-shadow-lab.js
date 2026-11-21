@@ -1,11 +1,9 @@
 const labLevel=()=>{let e=document.getElementById('labLevel');if(!e){const l=document.createElement('label');l.title='Champion level: Shadow Anchor at 2, Smother at 3, Clone Army at 5';l.innerHTML=' Level <input id="labLevel" type="number" min="1" max="18" value="18" style="width:46px"> ';const host=document.getElementById('ultLearned')?.closest('label')||document.querySelector('.row,.controls,header,h1')||document.body;host.after?host.after(l):document.body.prepend(l);e=document.getElementById('labLevel');}return Math.max(0,Math.min(18,+e.value||0));};
 // round 190: Codex's approved Shadow Grab art, the same packed sheet the game plays (tools/build-contender-grab-art.py)
-// round 192: Codex's approved Smother and Clone Army art (tools/build-contender-40-art.py), drawn the same way
 const packedSheet=name=>{const art={sheet:new Image(),anims:null};art.sheet.src=`../mods/tfm2_custom/vfx/${name}%23sheet.png`;fetch(`../mods/tfm2_custom/vfx/${name}%23anim.fanim`).then(r=>r.json()).then(j=>art.anims=j.anims).catch(()=>{});return art;};
-const grabArt=packedSheet('contender_grab'),c40Art=packedSheet('contender_40');
+const grabArt=packedSheet('contender_grab');
 function sheetDraw(art,tag,at,elapsed){const a=art.anims?.[tag];if(!a||!art.sheet.complete)return;let t=elapsed/60,f=a.frames[a.frames.length-1];for(const fr of a.frames){if(t<fr.duration){f=fr;break;}t-=fr.duration;}const d=f.data,p=P(at),w=W(d.w*1000),h=W(d.h*1000);ctx.drawImage(art.sheet,d.x,d.y,d.w,d.h,p.x-w/2,p.y-h/2,w,h);}
 const grabDraw=(tag,at,elapsed)=>sheetDraw(grabArt,tag,at,elapsed);
-function smotherTrail(from,front,shadow){const step=10000,gap=Math.round(dist(from,front));if(gap<step/2)return null;const bucket=Math.max(1,Math.min(Math.ceil(R.smother.range/step),Math.floor((gap+step/2)/step)));return{tag:`trail${shadow?'_s':''}_L${bucket}_d${grabHeading(from,front)}`,at:{x:(from.x+front.x)/2,y:(from.y+front.y)/2}};}
 const grabHeading=(a,b)=>{const dx=b.x-a.x,dy=b.y-a.y;return dx||dy?((Math.round(Math.atan2(dy,dx)*180/Math.PI/45)%8)+8)%8:0;};
 const toward=(a,b,len)=>{const d=dist(a,b);return d<1e-9?{...a}:{x:a.x+(b.x-a.x)*len/d,y:a.y+(b.y-a.y)*len/d};};
 function grabRibbon(me,them){const step=10000,lo=Math.floor(R.shadowGrab.pullStop/step),hi=Math.ceil(R.shadowGrab.range/step),bucket=Math.max(lo,Math.min(hi,Math.floor((Math.round(dist(me,them))+step/2)/step))),start=toward(me,them,10000);return{tag:`ribbon_L${bucket}_d${grabHeading(me,them)}`,at:{x:(start.x+them.x)/2,y:(start.y+them.y)/2-3000}};}
@@ -94,13 +92,16 @@ function apply(e){const u=actor(e.target);const cc=(ticks,key)=>{if(u&&!u.ccImmu
  case 'slow':if(u)u.slowUntil=tick+e.ticks;break;
  case 'smothered':if(u){u.smotheredUntil=tick+e.ticks;u.smothered=e;}break;
  case 'haste':flags.haste={until:tick+e.ticks,as:e.attack_speed_pct,ms:e.move_pct};break;
+ case 'charged':flags.charged=e.ticks>1?{until:tick+e.ticks,as:e.attack_speed_pct}:null;break;
+ case 'lifesteal':{const heal=Math.min(e.amount,me.max_hp-me.hp);me.hp+=heal;const cap=me.max_hp*R.overheal.capPermilleMaxHp/1000,room=cap-shieldOf(me),add=Math.min(e.amount-heal,room);if(add>0)me.shields=(me.shields||[]).concat([{amount:add,until:tick+R.overheal.shieldTicks}]);break;}
+ case 'armour':flags.armour={until:tick+e.ticks,pct:e.pct};break;
  case 'shield':me.shields=(me.shields||[]).concat([{amount:e.amount,until:tick+e.ticks}]);break;
  case 'drag':if(u){u.pos={...e.to};}break;
  case 'blink':me.pos={...e.to};glides.delete(1);break;
  case 'glide':glide(1,e.to,e.ticks);break;
  case 'charges':flags.charges=e.count;break;
  case 'log':lastCounter=e.text.replace(/#(\d+)/,(_,id)=>actor(+id)?.name||'#'+id);log(lastCounter);break;
- case 'fx':{if(e.name.startsWith('ct_grab_')){fx.push({art:grabArt,tag:e.name.slice(8),at:{...e.at},start:tick,until:tick+e.ticks});break;}if(e.name.startsWith('ct_40_')){fx.push({art:c40Art,tag:e.name.slice(6),at:{...e.at},start:tick,until:tick+e.ticks});break;}const tag=e.name==='ct_flurry'&&e.heading!==undefined?`flurry_d${e.heading%8}_t${e.ticks}`:e.name.replace('ct_','')+'_t'+e.ticks+(me.pos.x>e.at.x?'_l':'');if(!painter.data.effects.anims[tag])throw Error('Unbound cue '+tag);fx.push({group:'effects',tag,at:{...e.at},start:tick,until:tick+e.ticks});break;}
+ case 'fx':{if(e.name.startsWith('ct_grab_')){fx.push({art:grabArt,tag:e.name.slice(8),at:{...e.at},start:tick,until:tick+e.ticks});break;}const tag=e.name==='ct_flurry'&&e.heading!==undefined?`flurry_d${e.heading%8}_t${e.ticks}`:e.name.replace('ct_','')+'_t'+e.ticks+(me.pos.x>e.at.x?'_l':'');if(!painter.data.effects.anims[tag])throw Error('Unbound cue '+tag);fx.push({group:'effects',tag,at:{...e.at},start:tick,until:tick+e.ticks});break;}
 }}
 function stepWorld(order){
  scene.refreshVisibility(me,units);if(flags.haste&&tick>=flags.haste.until)flags.haste=null;
@@ -127,7 +128,7 @@ function stepWorld(order){
   if(target){
    me.attackStart=tick;me.attackUntil=tick+R.basic.duration;me.left=target.pos.x<me.pos.x;
    pendingBasic={at:tick+R.basic.startTiming,target:target.id};
-   nextBasic=tick+Math.round(R.basic.cooldownTicks*100/(110+(flags.haste?.as||0)));
+   nextBasic=tick+Math.round(R.basic.cooldownTicks*100/(110+(flags.haste?.as||0)+(flags.charged&&tick<flags.charged.until?flags.charged.as:0)));
   }
  }
  if($('fight').checked)scene.advance(tick,me,units,{hit:()=>{},hitOwner:e=>incomingAttack(actor(e.from),e.amount)});
@@ -169,16 +170,13 @@ function drawRhythmStacks(){
 function casterPos(c){return c?.by==='me'?me.pos:(state.shadows||[]).find(s=>s.id===c?.id)?.pos;}
 function drawShadow(){
  if(!$('showArt').checked)return;
- const foe=p=>units.filter(u=>u.team!==0&&u.champion&&u.hp>0).sort((a,b)=>dist(a.pos,p)-dist(b.pos,p))[0];
- for(const s of state.shadows||[]){if(s.anchor){painter.draw(ctx,'effects','body_idle0',s.pos,0,P,W);continue;}
-  const f=foe(s.pos),left=f?f.pos.x<s.pos.x:s.pos.x>me.pos.x,age=tick-(s.until-R.cloneArmy.lifeTicks);
-  sheetDraw(c40Art,(age<8?'clone_in':'clone')+(left?'_l':''),s.pos,Math.max(0,age));}
+ for(const s of state.shadows||[]){const f=s.left?'_l':'',pose=s.anchor?'body_idle0':tick<(s.punch_until||0)?'body_punch'+Math.floor(tick/6)%2+f:s.moving?'body_run'+Math.floor(tick/4)%6+f:'body_idle0'+f;painter.draw(ctx,'effects',pose,s.pos,0,P,W);}
  for(const c of state.casts||[]){
   if(c.type==='grab'&&c.grab.phase==='flight'){const g=c.grab,facing=g.at.x<g.from.x?'_l':'';painter.draw(ctx,'effects','body_run'+Math.floor(tick/4)%6+facing,g.cursor,0,P,W);
    let ahead=toward(g.cursor,g.at,14000);if(dist(ahead,g.cursor)<1)ahead=toward(g.cursor,{x:g.cursor.x+Math.sign(g.at.x-g.from.x||1),y:g.cursor.y},14000);
    grabDraw('hand_d'+grabHeading(g.from,g.at),{x:ahead.x,y:ahead.y-3000},0);}
   if(c.type==='grab'&&c.grab.phase==='pull'){const from=casterPos(c.caster),victim=actor(c.grab.target);if(from&&victim){const rb=grabRibbon(from,victim.pos);grabDraw(rb.tag,rb.at,0);}}
-  if(c.type==='smother'){const t=smotherTrail(c.from,c.cursor,c.caster?.by!=='me');if(t)sheetDraw(c40Art,t.tag,t.at,0);}
+  if(c.type==='smother'&&(c.cursor.x!==c.from.x||c.cursor.y!==c.from.y))painter.draw(ctx,'effects','body_run'+Math.floor(tick/4)%6+(c.to.x<c.from.x?'_l':''),c.cursor,0,P,W);
  }
 }
 function shadowReadout(){
@@ -206,7 +204,7 @@ function draw(){if(!me)return;if($('follow').checked)view={...me.pos};ctx.clearR
   'Tick '+tick+' · HP '+Math.round(me.hp)+'/'+me.max_hp,
   'Grab '+seconds(state.grab_at)+' s · Anchor '+seconds(state.anchor_at)+' s · Smother '+seconds(state.smother_at)+' s · Clone Army '+seconds(state.ult_at)+' s',
   'Shadows '+dodges+'/'+R.charges.max+' · next shadow '+seconds(state.charge_at)+' s · shield '+Math.round(shieldOf(me))+' · haste '+(flags.haste?'on':'off'),
-  'Rhythm '+Math.max(0,...(state.stacks||[]).map(s=>s.count)),
+  'Rhythm '+Math.max(0,...(state.stacks||[]).map(s=>s.count))+' · punch charges '+(tick<(state.punch_until||0)?state.punch_charges:0)+(flags.charged&&tick<flags.charged.until?' (Charged)':'')+' · anchor Armour '+(flags.armour&&tick<flags.armour.until?'+'+flags.armour.pct+'%':'—'),
   state.reason||'Manual controls',
   'Requested '+scene.metrics.requested+' · HP '+scene.metrics.hp_damage+' · shields '+scene.metrics.shield_damage,
   'Map '+world.geometry.registration.matching+'/900 cells · 1,000 units/pixel · FX alive '+fx.length

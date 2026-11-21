@@ -41,18 +41,38 @@ He designed the rest over the follow-ups:
 - **Builds:** the DLL contains 0.10.128, and the wasm is rebuilt.
 - **Live only:** how often the game AI presses the anchor twice; whether placing him (anchor, Shadowborne) looks clean in the engine; and Clone Army's 7 casters at once.
 
-## Codex's Smother and Clone Army art (in PR #112)
-Codex previewed the art in `docs/contender-40-art-preview/` and `editor/contender-40-review.html`. `tools/build-contender-40-art.py` (with `--check`) bakes the preview's Canvas moves into `mods/tfm2_custom/vfx/contender_40#sheet.png` and `#anim.fanim`, bound as `ct_40_*`.
+## Review changes on PR #112 (Reihan)
+> "the ult kinda sucks, make the shadow be able to run and BA but when contender skills, it mimics, also lets not use the new art, but make the art as the shadow before - ult spawn range much longer"
 
-| Effect | Baked as | Played |
-|---|---|---|
-| Smother trail | `trail_L{1..7}_d{0..7}`: stretched to every 10,000 up to the range, 20 px wide (2 × `smother.width`), in 8 headings; `trail_s_…` at a shadow's 0.7 alpha | every 2 ticks from the cast origin to the line's front (nearest length, heading, midpoint) |
-| Smother contact | `contact`: 24×20, fading 1 − 0.8 t over 12 ticks (`SMOTHER_CONTACT_TICKS`) | once on each enemy hit |
-| Clone | `clone_in` (0.55 → 0.8 alpha over 8 ticks) then `clone`, 30×44; `_l` faces left | every 4 ticks at each clone, facing the nearest enemy champion |
+> "add another passive where he charges his punches - at 4 punch and above he punches 2x faster and the stack goes 2 per punch (lingers), and does a little pull and lifesteal - apply with every skill and overheal is kept, and tp back from shadow heals and gives armor"
 
-- **The art checks** (`build-contender-40-art.py`, `build-contender-grab-art.py`, and the shared `tools/contender_art_pack.py`) now compare decoded pixels and animation data instead of PNG bytes, so they pass on Windows too (Codex saw a byte mismatch there).
-- **Visual check:** `docs/contender-40-art-preview/packed-in-game-check.png` renders the packed frames, placed as the bridge places them, over 4.0 WASM casts.
-- **Tests:**
-  - every trail the bridge can pick (32 directions × all lengths × Contender or shadow) is bound;
-  - the contact and fade-in lengths match the core;
-  - a host run plays clone fade-in → clone, his trail, the shadows' paler trails, the contact, and the anchor's shadow body.
+- **Clone Army clones fight on their own.**
+  - Each clone runs (1,050 a tick, through walls) at the nearest enemy within 100,000, champions first and never towers. It punches every basic cooldown for 50% of his Attack (Rhythm-scaled, adding a stack, `HitSource::Clone`).
+  - With nobody near, it returns to within 40,000 of him.
+  - When he casts S1 or S3, every clone (and the anchor) still casts it from where it stands now.
+  - The front clone now spawns **150,000** ahead (was 50,000), and the ult slot's range is 150,000.
+- **Charged Punches (new passive):**
+  - **Charges:** each of his own hits (basics, Counterpunch, grab, Haymaker, Smother, his flurry punches) adds a charge, up to 10. They last 3 s after his last hit. Shadows' hits don't count.
+  - **At 4 or more he's Charged:**
+    - +100% attack speed (a `ct_charged` buff);
+    - 2 Rhythm stacks per hit;
+    - a 5,000 pull toward him (never towers or CC-immune units);
+    - 15% lifesteal (for a basic, 15% of his Rhythm-scaled Attack).
+- **Overflow returns:** lifesteal past max HP becomes a shield of up to 15% of max HP, in 4 s layers. It covers Charged lifesteal and the anchor heal, plus item and buff vamp spill on his basics.
+- **Teleporting to the anchor** (the second press or 30% HP) heals 15% of max HP (spilling into Overflow) and gives **+30% Armour for 3 s** (`ct_anchor_guard`).
+- **Art:** back to the shadow body Reihan approved before.
+  - **Clones:** `ct_body_run`, `ct_body_punch` or `ct_body_idle0`, facing their way.
+  - **Smother:** the line's front is a running shadow, and the contact uses `ct_echo`.
+  - **Removed from the game:** Codex's 4.0 sheet, its packer and its bindings. His preview stays in `docs/contender-40-art-preview/`.
+  - **Kept:** the pixel-compare art check helper (`tools/contender_art_pack.py`), still used by the Grab art.
+
+## Engage assist (Reihan: "engage a bit farther, but [not] too much ... a lot of hp and not charging")
+- **Why he held back:** the game's own AI picks his fights, and nothing pushed him in when he was healthy.
+- **The assist:** `steve.rs` `contender_engage` turns the engine's walk (or a basic on a creep) into **his grab on the nearest visible enemy champion within 100,000** (`ai.engageRange`). The grab itself reaches 150,000.
+- **Only when:**
+  - his HP is at least 60% (`ai.engageHpPct`);
+  - his grab is ready (the core's S1 press flag);
+  - the target isn't under an uncovered enemy tower;
+  - the target doesn't have 3+ enemy champions within 60,000 (`ai.engageCrowd` / `engageCrowdRadius`).
+- **Never touched:** his attacks on champions, and his S2 or ult presses.
+- **Tested:** `engage_pick` is tested. The input rewrite has no AI-context test harness in this repo, so it needs a live check.

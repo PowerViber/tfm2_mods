@@ -435,31 +435,114 @@ fn every_shadow_grab_art_name_is_bound_and_the_ribbon_follows_the_target() {
 }
 
 #[test]
-fn every_smother_and_clone_art_name_is_bound_and_the_fades_match_the_core() {
-    // round 192: Codex's Smother trail and contact and the Clone Army clone, baked by tools/build-contender-40-art.py
-    use crate::contender::smother_trail;
+fn clones_and_smother_use_the_bound_shadow_body_art() {
+    // Reihan: "lets not use the new art, but make the art as the shadow before"
     let data: serde_json::Value = serde_json::from_str(include_str!("../../../mods/tfm2_custom/champion/tfm2_custom_contender.data_champion")).unwrap();
     let bound: std::collections::HashSet<String> = data["view_effects"].as_array().unwrap().iter()
         .map(|e| e["name"].as_str().unwrap().to_string()).collect();
-    let fanim: serde_json::Value = serde_json::from_str(include_str!("../../../mods/tfm2_custom/vfx/contender_40#anim.fanim")).unwrap();
-    let ticks = |tag: &str| fanim["anims"][tag]["frames"].as_array().unwrap().iter().map(|f| f["duration"].as_f64().unwrap()).sum::<f64>() * 60.0;
-    assert!((ticks("contact") - SMOTHER_CONTACT_TICKS as f64).abs() < 0.5, "the contact fade lasts the core's cue");
-    assert!((ticks("clone_in") - CLONE_IN_TICKS as f64).abs() < 0.5, "the clone fade-in lasts CLONE_IN_TICKS");
-    for name in ["ct_40_contact", "ct_40_clone", "ct_40_clone_l", "ct_40_clone_in", "ct_40_clone_in_l"] { assert!(bound.contains(name), "{name}"); }
-    let from = Point::new(400_000, 400_000);
-    assert!(smother_trail(from, from, false).is_none(), "nothing before the line moves");
-    for step in 0..32 {
-        let angle = step as f64 * std::f64::consts::TAU / 32.0;
-        for gap in (6_000..=d::SMOTHER_RANGE + 10_000).step_by(2_500) {
-            let front = Point::new(from.x + (angle.cos() * gap as f64) as i64, from.y + (angle.sin() * gap as f64) as i64);
-            for shadow in [false, true] {
-                let (name, mid) = smother_trail(from, front, shadow).unwrap();
-                assert!(bound.contains(&name), "{name}");
-                assert_eq!(name.contains("_s_"), shadow);
-                assert!(mid.within(from, gap) && mid.within(front, gap), "drawn between the origin and the front");
-            }
-        }
+    assert!(!bound.iter().any(|n| n.starts_with("ct_40_")), "Codex's 4.0 art is not in the game");
+    for facing in ["", "_l"] {
+        for n in 0..6 { assert!(bound.contains(&format!("ct_body_run{n}{facing}"))); }
+        for n in 0..2 { assert!(bound.contains(&format!("ct_body_punch{n}{facing}"))); }
+        assert!(bound.contains(&format!("ct_body_idle0{facing}")));
+        assert!(bound.contains(&format!("ct_cross_t10{facing}")) && bound.contains(&format!("ct_echo_t12{facing}")));
     }
+}
+
+// ---------------------------------------------------------------------------------------- Clone Army clones fight
+
+#[test]
+fn clone_army_spawns_far_ahead_and_the_clones_run_in_and_punch() {
+    // Reihan: "make the shadow be able to run and BA but when contender skills, it mimics ... ult spawn range much longer"
+    let foe_x = 400_000 + d::CLONE_ARMY_AHEAD + 60_000;
+    let mut w = World::new(vec![champ(FOE, 2, foe_x, 500_000), tower(20, 400_000 + d::CLONE_ARMY_AHEAD, 560_000)]).no_smother();
+    w.tick(Some(Order::Ult { aim: Point::new(foe_x, 500_000) }));
+    let front = w.core.shadows.iter().map(|s| s.pos.x).max().unwrap();
+    assert_eq!(front, 400_000 + d::CLONE_ARMY_AHEAD, "the front clone spawns CLONE_ARMY_AHEAD out");
+    let start: Vec<i64> = w.core.shadows.iter().map(|s| s.pos.dist(Point::new(foe_x, 500_000)) as i64).collect();
+    w.tick(None);
+    let now: Vec<i64> = w.core.shadows.iter().map(|s| s.pos.dist(Point::new(foe_x, 500_000)) as i64).collect();
+    assert!(start.iter().zip(&now).all(|(a, b)| b < a), "every clone runs at the enemy");
+    assert!(w.core.shadows.iter().any(|s| s.moving));
+    w.run(60);
+    let punch = (w.f.attack * d::CLONE_ARMY_MIMIC_DAMAGE_PCT / 100) as i64;
+    let punches: Vec<i64> = w.log.iter().filter_map(|(_, e)| if let Effect::Damage { target: FOE, amount, source: HitSource::Clone } = e { Some(*amount) } else { None }).collect();
+    assert!(punches.len() >= 3, "the clones punch ({})", punches.len());
+    assert!(punches.iter().all(|&a| a >= punch), "at least the mimic share of his Attack");
+    assert!(!w.seen(|e| matches!(e, Effect::Damage { target: 20, .. })), "never the tower");
+    // one clone's punches come a basic cooldown apart
+    let first = w.log.iter().find(|(_, e)| matches!(e, Effect::Damage { source: HitSource::Clone, .. })).unwrap().0;
+    let per_clone = w.core.shadows.iter().filter(|s| !s.anchor).count() as usize;
+    let by_tick = w.log.iter().filter(|(t, e)| *t < first + d::BASIC_COOLDOWN_TICKS as u64 && matches!(e, Effect::Damage { source: HitSource::Clone, .. })).count();
+    assert!(by_tick <= per_clone, "no clone punches twice inside its basic cooldown");
+}
+
+#[test]
+fn with_nobody_near_a_clone_returns_to_him_and_mimicry_casts_from_where_it_is_now() {
+    let mut w = World::new(vec![]).no_smother();
+    w.tick(Some(Order::Ult { aim: Point::new(600_000, 500_000) }));
+    let far = w.core.shadows[0].pos;
+    w.tick(None);
+    assert!(w.core.shadows[0].pos.dist(w.f.pos) < far.dist(w.f.pos), "it heads back to him");
+    let moved = w.core.shadows[0].pos;
+    w.tick(Some(Order::S1 { aim: Point::new(400_000, 300_000) }));
+    let from = w.core.casts.iter().find_map(|c| match c {
+        Cast::Grab { caster: Caster::Shadow { id }, grab: Grab::Flight { from, .. }, .. } if *id == w.core.shadows[0].id => Some(*from),
+        _ => None,
+    }).expect("the clone mimics the grab");
+    assert!(from.dist(moved) <= d::CLONE_ARMY_MOVE_SPEED as f64 + 1.0, "cast from its current position");
+}
+
+// ---------------------------------------------------------------------------------------- Charged Punches
+
+#[test]
+fn four_hits_charge_his_punches_for_double_stacks_a_pull_lifesteal_and_attack_speed() {
+    // Reihan: "at 4 punch and above he punches 2x faster and the stack goes 2 per punch (lingers), and does a little pull
+    // and lifesteal - apply with every skill and overheal is kept"
+    let mut w = World::new(vec![champ(FOE, 2, 420_000, 500_000)]).no_smother();
+    for _ in 0..d::CHARGED_THRESHOLD - 1 {
+        w.f.basic_hits.push(FOE);
+        w.tick(None);
+    }
+    assert!(!w.core.charged(w.f.tick) && !w.seen(|e| matches!(e, Effect::Lifesteal { .. } | Effect::Drag { .. })));
+    assert_eq!(w.core.stacks_on(FOE, w.f.tick), d::CHARGED_THRESHOLD - 1, "one stack per hit before he's Charged");
+    w.f.basic_hits.push(FOE);
+    let out = w.tick(None);
+    assert!(w.core.charged(w.f.tick));
+    assert!(out.iter().any(|e| matches!(e, Effect::Charged { attack_speed_pct, .. } if *attack_speed_pct == d::CHARGED_ATTACK_SPEED_PCT)));
+    assert_eq!(w.core.stacks_on(FOE, w.f.tick), d::CHARGED_THRESHOLD - 1 + d::CHARGED_STACKS_PER_HIT, "two stacks per Charged hit");
+    let pulled = out.iter().find_map(|e| if let Effect::Drag { target: FOE, to } = e { Some(*to) } else { None }).expect("a little pull");
+    assert_eq!(420_000 - pulled.x, d::CHARGED_PULL);
+    let basic = w.f.attack * (1_000 + (d::CHARGED_THRESHOLD - 1) * d::RHYTHM_VULNERABILITY_PERMILLE_PER_STACK) / 1_000;
+    assert!(out.contains(&Effect::Lifesteal { amount: basic * d::CHARGED_LIFESTEAL_PCT / 100 }));
+    // skills count too; shadows' hits don't
+    let charges = w.core.punch_charges;
+    w.tick(Some(Order::S1 { aim: Point::new(500_000, 500_000) }));
+    w.run(d::SHADOW_GRAB_FLIGHT_TICKS as u64);
+    assert!(w.core.punch_charges > charges, "the grab's hit charges him");
+    // after the linger with no hits, the charges reset and the speed buff ends
+    w.run(d::CHARGED_LINGER_TICKS as u64 + 40);
+    assert!(!w.core.charged(w.f.tick));
+    assert!(w.seen(|e| matches!(e, Effect::Charged { ticks: 1, .. })), "the attack speed buff ends");
+}
+
+#[test]
+fn a_charged_pull_never_moves_a_tower() {
+    let mut w = World::new(vec![tower(20, 420_000, 500_000)]).no_smother();
+    w.core.punch_charges = d::CHARGED_THRESHOLD;
+    w.core.punch_until = 1_000;
+    w.f.basic_hits.push(20);
+    w.tick(None);
+    assert!(!w.seen(|e| matches!(e, Effect::Drag { .. })));
+}
+
+#[test]
+fn teleporting_to_the_anchor_heals_him_and_gives_armour() {
+    let mut w = World::new(vec![]).no_smother();
+    w.tick(Some(Order::S2 { aim: Point::new(450_000, 500_000) }));
+    w.tick(Some(Order::S2 { aim: Point::new(450_000, 500_000) }));
+    assert!(w.seen(|e| matches!(e, Effect::Lifesteal { amount } if *amount == w.f.max_hp * d::ANCHOR_HEAL_PERMILLE / 1_000)));
+    assert!(w.seen(|e| matches!(e, Effect::Armour { pct, ticks } if *pct == d::ANCHOR_ARMOUR_PCT && *ticks == d::ANCHOR_ARMOUR_TICKS as u64)));
 }
 
 // ---------------------------------------------------------------------------------------- the game bridge
@@ -611,10 +694,10 @@ mod glue {
     }
 
     #[test]
-    fn clone_army_and_smother_play_codexs_clone_trail_and_contact_art() {
+    fn clones_run_and_punch_as_the_shadow_body_and_charged_and_overflow_reach_the_host() {
         let _guard = crate::walls::TEST_LOCK.lock();
         let (x, y) = open_spot(160_000);
-        let host = Host::new(vec![champ(0, (x, y), "tfm2_custom_contender"), champ(1, (x + 40_000, y), "fighter")]);
+        let host = Host::new(vec![champ(0, (x, y), "tfm2_custom_contender"), champ(1, (x + 60_000, y), "fighter")]);
         host.borrow_mut().record_view_effects = true;
         let mut c = Contender::default();
         c.configure(r#"{"shadow_art_v1":1,"shadow_directions_v1":1}"#);
@@ -622,24 +705,39 @@ mod glue {
         with_sim(&host, |sim| { sim.add_buff(0, &mod_api_stable::BuffV1::named(crate::ULT_LEARNED)); });
         c.core.smother_at = u64::MAX / 2;
         run(&host, &mut c, 100, 1);
-        // the anchor, then Clone Army
         host.borrow_mut().tick = 101;
-        with_sim(&host, |sim| crate::contender::CastFlurry.apply(sim, 0, 0, InputTargetV1::pos(x, y + 60_000)));
-        run(&host, &mut c, 101, 1);
-        host.borrow_mut().tick = 104;
         with_sim(&host, |sim| crate::contender::CastLink.apply(sim, 0, 0, InputTargetV1::target(1)));
-        run(&host, &mut c, 104, 20);
-        // then Smother, which every shadow mimics
-        c.core.smother_at = 0;
-        run(&host, &mut c, 124, d::SMOTHER_FLIGHT_TICKS as usize + 4);
+        run(&host, &mut c, 101, 80);
         let names: Vec<String> = host.borrow().view_effects.iter().map(|e| e.0.clone()).collect();
-        let first = |p: &str| names.iter().position(|n| n.starts_with(p)).unwrap_or_else(|| panic!("no {p}"));
-        let standing = names.iter().position(|n| n == "ct_40_clone" || n == "ct_40_clone_l").expect("standing clones");
-        assert!(first("ct_40_clone_in") < standing, "clones fade in, then stand");
-        assert!(names.iter().any(|n| n.starts_with("ct_40_trail_L")), "his own trail");
-        assert!(names.iter().any(|n| n.starts_with("ct_40_trail_s_L")), "the shadows' paler trails");
-        assert!(names.iter().any(|n| n == "ct_40_contact"), "the contact flash");
-        assert!(names.iter().any(|n| n == "ct_body_idle0"), "the anchor keeps the dark shadow body");
+        assert!(names.iter().any(|n| n.starts_with("ct_body_run")), "clones run as the shadow body");
+        assert!(names.iter().any(|n| n.starts_with("ct_body_punch")), "and punch");
+        assert!(!names.iter().any(|n| n.starts_with("ct_40_")), "no new art");
+        // Charged's attack speed and the anchor's Armour are host buffs; lifesteal at full HP becomes Overflow's shield
+        with_sim(&host, |sim| c.apply(sim, 0, vec![Effect::Charged { attack_speed_pct: d::CHARGED_ATTACK_SPEED_PCT, ticks: 40 },
+            Effect::Armour { pct: d::ANCHOR_ARMOUR_PCT, ticks: 180 }, Effect::Lifesteal { amount: 10_000 }]));
+        let g = host.borrow();
+        assert!(g.buffs[0].iter().any(|b| b.name() == "ct_charged" && b.attack_speed_mult == d::CHARGED_ATTACK_SPEED_PCT as i32));
+        assert!(g.buffs[0].iter().any(|b| b.name() == "ct_anchor_guard" && b.defence_mult == d::ANCHOR_ARMOUR_PCT as i32));
+        assert_eq!(g.shields.iter().map(|s| s.1 as i64).sum::<i64>(), 2_000 * d::OVERHEAL_CAP_PERMILLE_MAX_HP / 1_000, "capped at 15% max HP");
+    }
+
+    #[test]
+    fn healthy_with_the_grab_up_he_engages_the_nearest_champion_a_bit_farther_but_not_into_towers_or_crowds() {
+        // Reihan: "make him engage a bit farther, but [not] too much ... a lot of hp and not charging"
+        use crate::steve::engage_pick;
+        let me = (300_000, 500_000);
+        let near = (1, (me.0 + d::AI_ENGAGE_RANGE - 10_000, 500_000));
+        let nearer = (2, (me.0 + d::AI_ENGAGE_RANGE / 2, 520_000));
+        assert_eq!(engage_pick(me, 100, true, &[near, nearer], &[]), Some(2), "the nearest in range");
+        assert_eq!(engage_pick(me, d::AI_ENGAGE_HP_PCT, true, &[near], &[]), Some(1));
+        assert_eq!(engage_pick(me, d::AI_ENGAGE_HP_PCT - 1, true, &[near], &[]), None, "too hurt");
+        assert_eq!(engage_pick(me, 100, false, &[near], &[]), None, "the grab is cooling down");
+        assert_eq!(engage_pick(me, 100, true, &[(1, (me.0 + d::AI_ENGAGE_RANGE + 1_000, 500_000))], &[]), None, "too far");
+        let tower = ((near.1 .0 + 10_000, 500_000), false);
+        assert_eq!(engage_pick(me, 100, true, &[near], &[tower]), None, "under an uncovered tower");
+        assert_eq!(engage_pick(me, 100, true, &[near], &[(tower.0, true)]), Some(1), "his minions cover it");
+        let crowd: Vec<_> = (0..d::AI_ENGAGE_CROWD as usize).map(|i| (10 + i, (near.1 .0 + i as i64 * 5_000, 500_000))).collect();
+        assert_eq!(engage_pick(me, 100, true, &crowd, &[]), None, "never into a crowd of enemy champions");
     }
 
     #[test]

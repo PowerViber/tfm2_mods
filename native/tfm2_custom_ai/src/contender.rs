@@ -216,18 +216,33 @@ pub struct Contender {
     fx_tick: u64,
 }
 
-/// Round 192: the baked Smother trail from the line's origin to its front: the 10,000 length bucket nearest the
-/// distance so far (as tools/build-contender-40-art.py), the heading, the shadow's paler variant, and its midpoint.
-/// None before the line has moved.
-pub(crate) fn smother_trail(from: Point, front: Point, shadow: bool) -> Option<(String, Point)> {
-    const STEP: i64 = 10_000;
-    let gap = from.dist(front).round() as i64;
-    if gap < STEP / 2 {
-        return None;
+/// Overflow: heal him by `amount`; whatever his missing HP can't take becomes a shield, topped up to at most
+/// `OVERHEAL_CAP_PERMILLE_MAX_HP` of his max HP (counting the shield he already has).
+pub(crate) fn overflow_heal(sim: &mut StableSim, owner: usize, amount: i64) {
+    let Some(e) = sim.get_entity(owner) else { return };
+    let (hp, max) = e.hp();
+    let shield = e.shield() as i64;
+    let (hp, max) = (hp as i64, max as i64);
+    let healed = amount.min(max - hp).max(0);
+    if healed > 0 {
+        sim.heal(owner, owner, healed as usize);
     }
-    let bucket = ((gap + STEP / 2) / STEP).clamp(1, (d::SMOTHER_RANGE + STEP - 1) / STEP);
-    let mid = Point::new((from.x + front.x) / 2, (from.y + front.y) / 2);
-    Some((format!("ct_40_trail{}_L{bucket}_d{}", if shadow { "_s" } else { "" }, grab_heading(from, front)), mid))
+    overflow_shield(sim, owner, amount - healed, max, shield);
+}
+
+/// The part of a heal past max HP, as Overflow's capped shield.
+pub(crate) fn overflow_shield(sim: &mut StableSim, owner: usize, overflow: i64, max_hp: i64, shield: i64) {
+    let room = max_hp * d::OVERHEAL_CAP_PERMILLE_MAX_HP / 1_000 - shield;
+    let add = overflow.min(room);
+    if add > 0 {
+        sim.entity_add_shield(owner, add as usize, d::OVERHEAL_SHIELD_TICKS as usize);
+    }
+}
+
+/// His lifesteal % from items and buffs (the engine heals it; Overflow keeps what spills over).
+fn vamp_pct(sim: &StableSim, owner: usize) -> i64 {
+    let buffs = sim.get_entity(owner).map_or(0, |e| (0..e.buff_count()).filter_map(|i| e.buff_at(i)).map(|b| b.vamp as i64).sum());
+    crate::batch2::item_vamp(sim, owner) as i64 + buffs
 }
 
 impl Contender {
@@ -422,6 +437,17 @@ impl Contender {
                     b.move_speed_mult = move_pct as i32;
                     replace_buff(sim, owner, &b);
                 }
+                Effect::Charged { attack_speed_pct, ticks } => {
+                    let mut b = crate::timed("ct_charged", ticks as usize);
+                    b.attack_speed_mult = attack_speed_pct as i32;
+                    replace_buff(sim, owner, &b);
+                }
+                Effect::Lifesteal { amount } => overflow_heal(sim, owner, amount),
+                Effect::Armour { pct, ticks } => {
+                    let mut b = crate::timed("ct_anchor_guard", ticks as usize);
+                    b.defence_mult = pct as i32;
+                    replace_buff(sim, owner, &b);
+                }
                 Effect::Shield { amount, ticks } => {
                     sim.entity_add_shield(owner, amount.max(0) as usize, ticks as usize);
                 }
@@ -437,7 +463,7 @@ impl Contender {
                 Effect::Fx { name, at, ticks, heading } => {
                     if self.fx_ok(tick) {
                         // the Shadow Grab art carries its own names (no `_t`/`_l` variants)
-                        let visual = if name.starts_with("ct_grab_") || name.starts_with("ct_40_") {
+                        let visual = if name.starts_with("ct_grab_") {
                             name
                         } else if self.shadow_art && self.shadow_directions && name == "ct_flurry" && heading.is_some() {
                             format!("ct_flurry_d{}_t{ticks}", heading.unwrap_or(0) % 8)
@@ -468,22 +494,19 @@ impl Contender {
         };
         let mut draws: Vec<(String, Point, u64)> = vec![];
         if tick % 4 == 0 && !self.core.shadows.is_empty() {
-            // round 192 (Codex's art): clones fade in, then stand, facing the nearest enemy champion; the anchor keeps
-            // the dark shadow body
-            let team = sim.get_entity(owner).map(|e| e.team());
-            let foes: Vec<Point> = (0..sim.entity_count()).filter_map(|i| sim.entity_at(i))
-                .filter(|e| e.is_alive() && e.is_champion() && Some(e.team()) != team)
-                .map(|e| { let p = e.pos(); Point::new(p.0 as i64, p.1 as i64) }).collect();
+            // clones are the shadow body Reihan approved before: running, punching or standing, facing their way
             for s in &self.core.shadows {
-                if s.anchor {
-                    draws.push(("ct_body_idle0".into(), s.pos, 4));
-                    continue;
-                }
-                let toward = foes.iter().min_by_key(|p| p.d2(s.pos)).copied().unwrap_or(me);
-                let left = if toward == me { s.pos.x > me.x } else { toward.x < s.pos.x };
-                let born = s.until.saturating_sub(d::CLONE_ARMY_LIFE_TICKS as u64);
-                let fading = tick < born + crate::contender_shadow_core::CLONE_IN_TICKS;
-                draws.push((format!("ct_40_clone{}{}", if fading { "_in" } else { "" }, if left { "_l" } else { "" }), s.pos, 4));
+                let facing = if s.left { "_l" } else { "" };
+                let pose = if s.anchor {
+                    "ct_body_idle0".to_string()
+                } else if tick < s.punch_until {
+                    format!("ct_body_punch{}{facing}", (tick / 6) % 2)
+                } else if s.moving {
+                    format!("ct_body_run{}{facing}", (tick / 10) % 6)
+                } else {
+                    format!("ct_body_idle0{facing}")
+                };
+                draws.push((pose, s.pos, 4));
             }
         }
         for c in &self.core.casts {
@@ -501,10 +524,10 @@ impl Contender {
                         draws.push((name, mid, 2));
                     }
                 }
-                Cast::Smother { caster, from, cursor, .. } => {
-                    if let Some((name, mid)) = smother_trail(*from, *cursor, *caster != Caster::Me) {
-                        draws.push((name, mid, 2));
-                    }
+                Cast::Smother { from, to, cursor, .. } if tick % 4 == 0 && cursor != from => {
+                    // the line's front is a running shadow, as the grab's flight
+                    let facing = if to.x < from.x { "_l" } else { "" };
+                    draws.push((format!("ct_body_run{}{facing}", (tick / 10) % 6), *cursor, 4));
                 }
                 Cast::Flurry { caster: Caster::Me, at, start, .. } if tick >= *start && tick % 4 == 0 => {
                     draws.push(("ct_body_idle0".into(), *at, 4));
@@ -579,6 +602,17 @@ impl StablePassive for Contender {
         let vuln = self.core.vuln_permille(target, sim.tick() as u64);
         if vuln > 0 {
             *damage = (*damage as i64 * (1_000 + vuln) / 1_000).max(0) as usize;
+        }
+        // Overflow: the engine's item/buff lifesteal on this hit heals what fits; the spill becomes a shield
+        let vamp = vamp_pct(sim, id);
+        if vamp > 0 && *damage > 0 {
+            if let Some(e) = sim.get_entity(id) {
+                let ((hp, max), shield) = (e.hp(), e.shield() as i64);
+                let spill = *damage as i64 * vamp / 100 - (max as i64 - hp as i64);
+                if spill > 0 {
+                    overflow_shield(sim, id, spill, max as i64, shield);
+                }
+            }
         }
         // Embedded definitions can still have a stock Attack effect and no delivery receipt.
         if !self.receipt_basic && *damage > 0 && self.basic_hits.len() < 16
