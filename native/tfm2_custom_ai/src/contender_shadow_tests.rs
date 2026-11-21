@@ -722,6 +722,25 @@ mod glue {
     }
 
     #[test]
+    fn healthy_with_the_grab_up_he_engages_the_nearest_champion_a_bit_farther_but_not_into_towers_or_crowds() {
+        // Reihan: "make him engage a bit farther, but [not] too much ... a lot of hp and not charging"
+        use crate::steve::engage_pick;
+        let me = (300_000, 500_000);
+        let near = (1, (me.0 + d::AI_ENGAGE_RANGE - 10_000, 500_000));
+        let nearer = (2, (me.0 + d::AI_ENGAGE_RANGE / 2, 520_000));
+        assert_eq!(engage_pick(me, 100, true, &[near, nearer], &[]), Some(2), "the nearest in range");
+        assert_eq!(engage_pick(me, d::AI_ENGAGE_HP_PCT, true, &[near], &[]), Some(1));
+        assert_eq!(engage_pick(me, d::AI_ENGAGE_HP_PCT - 1, true, &[near], &[]), None, "too hurt");
+        assert_eq!(engage_pick(me, 100, false, &[near], &[]), None, "the grab is cooling down");
+        assert_eq!(engage_pick(me, 100, true, &[(1, (me.0 + d::AI_ENGAGE_RANGE + 1_000, 500_000))], &[]), None, "too far");
+        let tower = ((near.1 .0 + 10_000, 500_000), false);
+        assert_eq!(engage_pick(me, 100, true, &[near], &[tower]), None, "under an uncovered tower");
+        assert_eq!(engage_pick(me, 100, true, &[near], &[(tower.0, true)]), Some(1), "his minions cover it");
+        let crowd: Vec<_> = (0..d::AI_ENGAGE_CROWD as usize).map(|i| (10 + i, (near.1 .0 + i as i64 * 5_000, 500_000))).collect();
+        assert_eq!(engage_pick(me, 100, true, &crowd, &[]), None, "never into a crowd of enemy champions");
+    }
+
+    #[test]
     fn the_tower_guard_stops_him_outside_an_uncovered_enemy_tower() {
         use crate::steve::tower_guard;
         let r = d::AI_TOWER_RANGE;

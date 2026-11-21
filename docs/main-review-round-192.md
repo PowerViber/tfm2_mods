@@ -65,3 +65,14 @@ He designed the rest over the follow-ups:
   - **Smother:** the line's front is a running shadow, and the contact uses `ct_echo`.
   - **Removed from the game:** Codex's 4.0 sheet, its packer and its bindings. His preview stays in `docs/contender-40-art-preview/`.
   - **Kept:** the pixel-compare art check helper (`tools/contender_art_pack.py`), still used by the Grab art.
+
+## Engage assist (Reihan: "engage a bit farther, but [not] too much ... a lot of hp and not charging")
+- **Why he held back:** the game's own AI picks his fights, and nothing pushed him in when he was healthy.
+- **The assist:** `steve.rs` `contender_engage` turns the engine's walk (or a basic on a creep) into **his grab on the nearest visible enemy champion within 100,000** (`ai.engageRange`). The grab itself reaches 150,000.
+- **Only when:**
+  - his HP is at least 60% (`ai.engageHpPct`);
+  - his grab is ready (the core's S1 press flag);
+  - the target isn't under an uncovered enemy tower;
+  - the target doesn't have 3+ enemy champions within 60,000 (`ai.engageCrowd` / `engageCrowdRadius`).
+- **Never touched:** his attacks on champions, and his S2 or ult presses.
+- **Tested:** `engage_pick` is tested. The input rewrite has no AI-context test harness in this repo, so it needs a live check.

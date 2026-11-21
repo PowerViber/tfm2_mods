@@ -143,7 +143,11 @@
     "shieldTicks": 240
   },
   "ai": {
-    "towerRange": 85000
+    "towerRange": 85000,
+    "engageHpPct": 60,
+    "engageRange": 100000,
+    "engageCrowd": 3,
+    "engageCrowdRadius": 60000
   },
   "fxTokens": 16
 }
