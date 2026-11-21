@@ -53,26 +53,24 @@ fn contender_rejects_locked_orders_and_only_considers_unlocked_skills_at_level_o
         units: vec![foe.clone()], terrain: vec![false; (CELLS * CELLS) as usize], profile: [50; 13], manual: order.is_some(), order, level,
         ..Frame::default()
     };
-    // contender-4.0: S2 Shadow Anchor at level 2, S3 Smother (self-cast) at 3, Clone Army at 5
     let mut c = Core::default();
-    c.step(&base(1, 1, Some(Order::S2 { aim: foe.pos })));
+    c.step(&base(1, 1, Some(Order::S2)));
     assert_eq!(c.rejection, "s2: locked until level 2");
-    c.step(&base(2, 2, Some(Order::S2 { aim: foe.pos })));
-    assert!(c.anchor().is_some(), "the anchor unlocks in S2");
+    c.step(&base(2, 2, Some(Order::S2)));
+    assert!(c.flurrying(), "Flurry unlocks in S2");
     let mut c = Core::default();
     c.step(&base(4, 3, Some(Order::Ult { aim: foe.pos })));
-    assert!(c.shadows.is_empty(), "the ult waits for level 5 even off cooldown");
+    assert!(c.shadow_link.is_none(), "the ult waits for level 5 even off cooldown");
     c.step(&base(5, 4, Some(Order::Ult { aim: foe.pos })));
-    assert!(!c.shadows.is_empty());
-    // A level-two Contender never self-casts Smother; a level-one Lab AI only grabs.
+    assert!(c.shadow_link.is_some());
+    // A level-one AI cannot spend Flurry or the ultimate.
     let mut c = Core::default();
     for t in 1..400 {
         let mut f = base(1, t, None);
-        f.manual = false;
         f.units.push(Unit { id: 11, pos: Point::new(435_000, 505_000), ..foe.clone() });
         c.step(&f);
-        assert!(c.anchor().is_none() && c.shadows.is_empty());
-        assert!(!c.casts.iter().any(|k| matches!(k, Cast::Smother { .. })), "no Smother before level 3");
+        assert_eq!(c.charges, crate::contender_shadow_data::CHARGES_MAX);
+        assert!(c.shadow_link.is_none());
     }
 }
 

@@ -7,7 +7,7 @@ body{display:grid;grid-template-columns:270px minmax(360px,1fr) 300px;gap:14px;p
 <h1>Contender Lab <small id="revision"></small></h1>
 <p>Approved Shadow Boxer artwork on the extracted game map, with stock champions, minions, camps and towers. Skills and AI use the native Rust core; movement, attacks, mitigation and visibility are simulated host behaviour, not actual-game acceptance.</p>
 <p><a href="contender-shadow-review.html" style="color:#c6a7ff">Animation and effects review</a></p>
-
+<p id="mergePreviewNote" hidden style="color:#d9c0ff">Approved fused Merge animations are active in the Lab. Press Q to transform. <a href="contender-merge-review.html" style="color:#c6a7ff">Inspect normal / merged animations</a>. Actual-game acceptance remains separate.</p>
 <label>Mode / situation <select id="scenario"></select> <button id="loadScene">Load</button></label><p id="description"></p>
 <label><input id="follow" type="checkbox" checked> Follow Contender</label>
 <label><input id="showArt" type="checkbox" checked> Show approved artwork</label>
@@ -20,8 +20,8 @@ body{display:grid;grid-template-columns:270px minmax(360px,1fr) 300px;gap:14px;p
 <label title="contender-3.2: in the game, the game's own AI casts his skills; this Lab-only AI is never used in a match"><input type="checkbox" id="ai"> Lab AI (not used in game)</label>
 <label><input type="checkbox" id="fight" checked> Simulated opponents / waves / towers</label>
 <details><summary>Thirteen athlete values</summary><div id="athleteStats"></div></details>
-<div class="row"><button data-key="q">Q Shadow Grab</button><button data-key="e">E Shadow Anchor</button><button data-key="f">F Smother</button><button data-key="r">R Clone Army</button></div>
-<p>Click to aim. WASD moves Contender. Hold Space to basic attack. E twice teleports to the anchor; Smother also casts itself from level 3.</p>
+<div class="row"><button data-key="q">Q Shadow Merge</button><button data-key="e">E Shadow Flurry</button><button data-key="r">R Shadow Grab</button></div>
+<p>Click to aim Shadow Grab. WASD moves Contender. Hold Space to basic attack. Shadow Flurry reappears at Contender’s position.</p>
 <label>Incoming hit from <select id="counterAttacker"></select></label> <button id="simulateHit">Simulate hit</button>
 <pre id="shadowStatus" aria-label="Shadow Grab and Counterpunch"></pre>
 <small>Shadow Grab drags the first enemy in line to Contender and knocks it up. Shadow Break knocks up too (once every 5 s per enemy). The Lab simulates host movement and control.</small>
