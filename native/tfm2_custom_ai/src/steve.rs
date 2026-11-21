@@ -948,7 +948,8 @@ pub(crate) fn tower_guard(me: (i64, i64), dest: (i64, i64), towers: &[((i64, i64
 
 /// The engine order's destination and, when it walks him under an uncovered enemy tower, the walk that replaces it.
 fn contender_tower_guard(ctx: &mut StableAiContext<'_>, pid: usize, inp: &InputV1) -> Option<InputV1> {
-    let guarded = [InputKindV1::Move, InputKindV1::Attack, InputKindV1::Skill, InputKindV1::Skill2];
+    // contender-4.0: walks and basic attacks only; his grab and anchor are ranged and never blocked
+    let guarded = [InputKindV1::Move, InputKindV1::Attack];
     if !guarded.iter().any(|k| k.code() == inp.kind) { return None; }
     let sim = ctx.sim()?;
     let me = sim.get_player(pid)?.champion()?;
@@ -1071,7 +1072,7 @@ impl StablePlayerAi for WallAi {
                 return Some(swap);
             }
         }
-        // contender-3.7: no tower dives without minion cover (the grab, his ult, is never blocked)
+        // contender-3.7: no tower dives without minion cover (his ranged skills are never blocked)
         if let (true, Some(inp)) = (cname.as_deref().is_some_and(|n| n.ends_with("_contender")), base) {
             let pid = ctx.player_id();
             if let Some(walk) = contender_tower_guard(ctx, pid, &inp) {

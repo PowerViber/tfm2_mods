@@ -53,9 +53,9 @@
     "growth_range": 0,
     "can_use_with_move": true,
     "duration": 6,
-    "cooltime": 840,
+    "cooltime": 720,
     "start_timing": 3,
-    "range": 60000,
+    "range": 150000,
     "casting_type": "Targeting",
     "casting_target": "EnemyWithoutTower",
     "attack_type": "Skill",
@@ -71,9 +71,9 @@
     "growth_range": 0,
     "can_use_with_move": true,
     "duration": 6,
-    "cooltime": 1,
+    "cooltime": 30,
     "start_timing": 3,
-    "range": 50000,
+    "range": 80000,
     "casting_type": "Targeting",
     "casting_target": "EnemyWithoutTower",
     "attack_type": "Skill",
@@ -89,9 +89,9 @@
     "growth_range": 0,
     "can_use_with_move": true,
     "duration": 6,
-    "cooltime": 720,
+    "cooltime": 4800,
     "start_timing": 3,
-    "range": 150000,
+    "range": 80000,
     "casting_type": "Targeting",
     "casting_target": "EnemyChampion",
     "attack_type": "Skill",
@@ -106,7 +106,6 @@
     "params": {
       "shadow_art_v1": 1,
       "shadow_directions_v1": 1,
-      "shadow_merge_art_v1": 1,
       "shadow_rhythm_art_v1": 1,
       "shadow_receipts_v1": 1
     }
@@ -157,342 +156,6 @@
       "anim": "asset/tfm2_custom/vfx/contender_shadow",
       "tag": "charges5",
       "z": 6
-    },
-    {
-      "type": "Animated",
-      "name": "ct_mb_0",
-      "anim": "asset/tfm2_custom/champions/tfm2_custom_contender_merge",
-      "tag": "tile0",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "ct_mb_0_l",
-      "anim": "asset/tfm2_custom/champions/tfm2_custom_contender_merge",
-      "tag": "tile0_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "ct_mb_1",
-      "anim": "asset/tfm2_custom/champions/tfm2_custom_contender_merge",
-      "tag": "tile1",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "ct_mb_1_l",
-      "anim": "asset/tfm2_custom/champions/tfm2_custom_contender_merge",
-      "tag": "tile1_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "ct_mb_2",
-      "anim": "asset/tfm2_custom/champions/tfm2_custom_contender_merge",
-      "tag": "tile2",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "ct_mb_2_l",
-      "anim": "asset/tfm2_custom/champions/tfm2_custom_contender_merge",
-      "tag": "tile2_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "ct_mb_3",
-      "anim": "asset/tfm2_custom/champions/tfm2_custom_contender_merge",
-      "tag": "tile3",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "ct_mb_3_l",
-      "anim": "asset/tfm2_custom/champions/tfm2_custom_contender_merge",
-      "tag": "tile3_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "ct_mb_4",
-      "anim": "asset/tfm2_custom/champions/tfm2_custom_contender_merge",
-      "tag": "tile4",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "ct_mb_4_l",
-      "anim": "asset/tfm2_custom/champions/tfm2_custom_contender_merge",
-      "tag": "tile4_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "ct_mb_5",
-      "anim": "asset/tfm2_custom/champions/tfm2_custom_contender_merge",
-      "tag": "tile5",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "ct_mb_5_l",
-      "anim": "asset/tfm2_custom/champions/tfm2_custom_contender_merge",
-      "tag": "tile5_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "ct_mb_6",
-      "anim": "asset/tfm2_custom/champions/tfm2_custom_contender_merge",
-      "tag": "tile6",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "ct_mb_6_l",
-      "anim": "asset/tfm2_custom/champions/tfm2_custom_contender_merge",
-      "tag": "tile6_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "ct_mb_7",
-      "anim": "asset/tfm2_custom/champions/tfm2_custom_contender_merge",
-      "tag": "tile7",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "ct_mb_7_l",
-      "anim": "asset/tfm2_custom/champions/tfm2_custom_contender_merge",
-      "tag": "tile7_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "ct_mb_8",
-      "anim": "asset/tfm2_custom/champions/tfm2_custom_contender_merge",
-      "tag": "tile8",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "ct_mb_8_l",
-      "anim": "asset/tfm2_custom/champions/tfm2_custom_contender_merge",
-      "tag": "tile8_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "ct_mb_9",
-      "anim": "asset/tfm2_custom/champions/tfm2_custom_contender_merge",
-      "tag": "tile9",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "ct_mb_9_l",
-      "anim": "asset/tfm2_custom/champions/tfm2_custom_contender_merge",
-      "tag": "tile9_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "ct_mb_10",
-      "anim": "asset/tfm2_custom/champions/tfm2_custom_contender_merge",
-      "tag": "tile10",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "ct_mb_10_l",
-      "anim": "asset/tfm2_custom/champions/tfm2_custom_contender_merge",
-      "tag": "tile10_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "ct_mb_11",
-      "anim": "asset/tfm2_custom/champions/tfm2_custom_contender_merge",
-      "tag": "tile11",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "ct_mb_11_l",
-      "anim": "asset/tfm2_custom/champions/tfm2_custom_contender_merge",
-      "tag": "tile11_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "ct_mb_12",
-      "anim": "asset/tfm2_custom/champions/tfm2_custom_contender_merge",
-      "tag": "tile12",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "ct_mb_12_l",
-      "anim": "asset/tfm2_custom/champions/tfm2_custom_contender_merge",
-      "tag": "tile12_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "ct_mb_13",
-      "anim": "asset/tfm2_custom/champions/tfm2_custom_contender_merge",
-      "tag": "tile13",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "ct_mb_13_l",
-      "anim": "asset/tfm2_custom/champions/tfm2_custom_contender_merge",
-      "tag": "tile13_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "ct_mb_14",
-      "anim": "asset/tfm2_custom/champions/tfm2_custom_contender_merge",
-      "tag": "tile14",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "ct_mb_14_l",
-      "anim": "asset/tfm2_custom/champions/tfm2_custom_contender_merge",
-      "tag": "tile14_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "ct_mb_15",
-      "anim": "asset/tfm2_custom/champions/tfm2_custom_contender_merge",
-      "tag": "tile15",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "ct_mb_15_l",
-      "anim": "asset/tfm2_custom/champions/tfm2_custom_contender_merge",
-      "tag": "tile15_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "ct_mb_16",
-      "anim": "asset/tfm2_custom/champions/tfm2_custom_contender_merge",
-      "tag": "tile16",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "ct_mb_16_l",
-      "anim": "asset/tfm2_custom/champions/tfm2_custom_contender_merge",
-      "tag": "tile16_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "ct_mb_17",
-      "anim": "asset/tfm2_custom/champions/tfm2_custom_contender_merge",
-      "tag": "tile17",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "ct_mb_17_l",
-      "anim": "asset/tfm2_custom/champions/tfm2_custom_contender_merge",
-      "tag": "tile17_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "ct_mb_18",
-      "anim": "asset/tfm2_custom/champions/tfm2_custom_contender_merge",
-      "tag": "tile18",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "ct_mb_18_l",
-      "anim": "asset/tfm2_custom/champions/tfm2_custom_contender_merge",
-      "tag": "tile18_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "ct_mb_19",
-      "anim": "asset/tfm2_custom/champions/tfm2_custom_contender_merge",
-      "tag": "tile19",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "ct_mb_19_l",
-      "anim": "asset/tfm2_custom/champions/tfm2_custom_contender_merge",
-      "tag": "tile19_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "ct_mb_20",
-      "anim": "asset/tfm2_custom/champions/tfm2_custom_contender_merge",
-      "tag": "tile20",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "ct_mb_20_l",
-      "anim": "asset/tfm2_custom/champions/tfm2_custom_contender_merge",
-      "tag": "tile20_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "ct_mb_21",
-      "anim": "asset/tfm2_custom/champions/tfm2_custom_contender_merge",
-      "tag": "tile21",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "ct_mb_21_l",
-      "anim": "asset/tfm2_custom/champions/tfm2_custom_contender_merge",
-      "tag": "tile21_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "ct_mb_22",
-      "anim": "asset/tfm2_custom/champions/tfm2_custom_contender_merge",
-      "tag": "tile22",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "ct_mb_22_l",
-      "anim": "asset/tfm2_custom/champions/tfm2_custom_contender_merge",
-      "tag": "tile22_l",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "ct_mb_23",
-      "anim": "asset/tfm2_custom/champions/tfm2_custom_contender_merge",
-      "tag": "tile23",
-      "z": 4
-    },
-    {
-      "type": "Animated",
-      "name": "ct_mb_23_l",
-      "anim": "asset/tfm2_custom/champions/tfm2_custom_contender_merge",
-      "tag": "tile23_l",
-      "z": 4
     },
     {
       "type": "Animated",
