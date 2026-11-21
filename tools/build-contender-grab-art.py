@@ -14,18 +14,18 @@ Sizes, offsets and fades follow the review page (1 px = 1,000 units). Ranges com
 `--check` only verifies.
 """
 import argparse
-import io
 import json
 from pathlib import Path
 
 from PIL import Image
+
+from contender_art_pack import TICK, faded, heading, pack, write_or_check
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "docs/contender-grab-art-preview/shadow-grab-source.png"
 ASSET = ROOT / "mods/tfm2_custom/vfx"
 RULES = json.loads((ROOT / "rules/contender.json").read_bytes())
 GRAB = RULES["shadowGrab"]
-TICK = 1 / 60
 
 # the review page's crops and game sizes
 HAND = ((127, 239, 424, 215), (32, 16))
@@ -52,20 +52,6 @@ def cell(src, part, size=None):
     return src.crop((x, y, x + w, y + h)).resize(size or base, Image.NEAREST)
 
 
-def heading(img, h):
-    """Turn a right-facing sprite to heading h (clockwise eighth-turns from east, screen y down). Left headings are
-    mirrored first, like the review page's left facing, so the art is never upside down."""
-    theta = 45 * h
-    if 90 < theta < 270:
-        return img.transpose(Image.FLIP_LEFT_RIGHT).rotate(180 - theta, resample=Image.NEAREST, expand=True)
-    return img.rotate(-theta, resample=Image.NEAREST, expand=True)
-
-
-def faded(img, alpha):
-    r, g, b, a = img.split()
-    return Image.merge("RGBA", (r, g, b, a.point(lambda v: int(v * alpha + 0.5))))
-
-
 def build():
     src = Image.open(SOURCE).convert("RGBA")
     anims = {}       # tag -> [(image, duration)]
@@ -82,39 +68,12 @@ def build():
     burst = cell(src, BURST)
     anims["burst"] = [(faded(burst, 1 - t / BURST_FADE), 3 * TICK) for t in range(0, BURST_TICKS, 3)]
 
-    # shelf-pack every frame into one sheet
-    frames = [(tag, i, img, d) for tag, seq in anims.items() for i, (img, d) in enumerate(seq)]
-    width = 512
-    x = y = row = 0
-    placed = []
-    for tag, i, img, d in frames:
-        if x + img.width > width:
-            x, y, row = 0, y + row + 1, 0
-        placed.append((tag, img, d, x, y))
-        x += img.width + 1
-        row = max(row, img.height)
-    sheet = Image.new("RGBA", (width, y + row))
-    out = {}
-    for tag, img, d, px, py in placed:
-        sheet.paste(img, (px, py))
-        out.setdefault(tag, {"frames": []})["frames"].append(
-            {"duration": round(d, 4), "data": {"x": px, "y": py, "w": img.width, "h": img.height}})
-    buf = io.BytesIO()
-    sheet.save(buf, format="PNG", optimize=False)
-    return {
-        ASSET / "contender_grab#sheet.png": buf.getvalue(),
-        ASSET / "contender_grab#anim.fanim": (json.dumps({"anims": out}, indent=2) + "\n").encode(),
-    }
+    return pack(anims)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--check", action="store_true")
     args = parser.parse_args()
-    for file, data in build().items():
-        if args.check:
-            if not file.exists() or file.read_bytes() != data:
-                raise SystemExit(f"Shadow Grab asset is missing or stale: {file}")
-        else:
-            file.write_bytes(data)
-    print("Shadow Grab art is current" if args.check else "Shadow Grab art packed")
+    sheet, fanim = build()
+    write_or_check(ASSET / "contender_grab#sheet.png", ASSET / "contender_grab#anim.fanim", sheet, fanim, args.check, "Shadow Grab")

@@ -7,7 +7,7 @@
     "Melee",
     "CC"
   ],
-  "revision": "contender-3.7",
+  "revision": "contender-4.0",
   "stat": {
     "attack": 76,
     "magic_power": 0,
@@ -42,48 +42,22 @@
   },
   "charges": {
     "max": 10,
-    "rechargeTicks": 240,
+    "rechargeTicks": 180,
     "dodgeSlip": 8000,
     "dodgeSlipTicks": 8,
     "dodgeGapTicks": 24,
-    "flurryCost": 2,
     "pipShadows": 2,
     "hitRefundTicksPerMissing": 6
   },
-  "pact": {
-    "delayTicks": 60,
-    "pct": 3
+  "counter": {
+    "range": 45000,
+    "base": 20,
+    "adRatio": 30
   },
   "rhythm": {
-    "maxStacks": 20,
+    "maxStacks": 10,
     "stackTicks": 240,
-    "attackSpeedPermillePerStack": 15,
-    "attackPermillePerStack": 0,
-    "moveSpeedPermillePerStack": 5,
-    "vulnerabilityPermillePerStack": 15,
-    "carryStacks": 8,
-    "lingerTicks": 180,
-    "breakPermilleMaxHp": 40,
-    "breakAdRatio": 20,
-    "breakBuffTicks": 180,
-    "armourShredPermillePerStack": 15,
-    "breakKnockTicks": 60,
-    "breakKnockCooldownTicks": 300
-  },
-  "merge": {
-    "cooldownTicks": 840,
-    "ticks": 360,
-    "stacksPerHit": 1,
-    "moveSpeedPct": 20,
-    "crossRadius": 50000,
-    "crossBase": 12,
-    "crossAdRatio": 15,
-    "crossEveryTicks": 60,
-    "attackSpeedPct": 30,
-    "attackPct": 15,
-    "ccImmune": 1,
-    "attackerSlowPct": 30,
-    "attackerSlowTicks": 90
+    "vulnerabilityPermillePerStack": 15
   },
   "shadowGrab": {
     "cooldownTicks": 720,
@@ -97,47 +71,60 @@
     "dashPermille": 375,
     "haymakerReach": 15000,
     "dashTicks": 8,
-    "haymakerKnockTicks": 120
+    "haymakerKnockTicks": 120,
+    "haymakerBase": 15,
+    "haymakerAdRatio": 20
   },
-  "ai": {
-    "fightRange": 80000,
-    "awarenessRange": 160000,
-    "calmRange": 90000,
-    "towerRange": 85000,
-    "farmBigHp": 1000,
-    "mergeRange": 60000,
-    "commitHp": 55,
-    "aggressiveHpDivisor": 10,
-    "chaseRange": 60000,
-    "aggressiveChasePerPoint": 300,
-    "retreatHp": 35,
-    "supportHp": 35,
-    "supportRange": 40000,
-    "threatRange": 70000,
-    "shadowStep": 12000
-  },
-  "fxTokens": 16,
-  "counter": {
-    "range": 45000,
-    "base": 20,
-    "adRatio": 30
-  },
-  "flurry": {
-    "castGapTicks": 0,
-    "ticks": 90,
+  "shadowborne": {
     "punches": 30,
+    "ticks": 90,
     "gapTicks": 3,
     "startRange": 50000,
     "chainRange": 30000,
     "base": 2,
     "adRatio": 7,
-    "haymakerTicks": 120,
-    "haymakerBase": 15,
-    "haymakerAdRatio": 20,
-    "lifestealPct": 25
+    "knockRadius": 60000,
+    "knockTicks": 60,
+    "behind": 8000
   },
-  "overheal": {
-    "capPermilleMaxHp": 150,
-    "shieldTicks": 240
-  }
+  "anchor": {
+    "cooldownTicks": 840,
+    "slotTicks": 30,
+    "range": 80000,
+    "lifeTicks": 480,
+    "fearRadius": 50000,
+    "fearTicks": 60,
+    "lowHpPct": 30
+  },
+  "smother": {
+    "cooldownTicks": 840,
+    "range": 70000,
+    "width": 10000,
+    "flightTicks": 12,
+    "base": 20,
+    "adRatio": 40,
+    "silenceTicks": 90,
+    "slowPct": 30,
+    "slowTicks": 120,
+    "armourShredPct": 20,
+    "attackSpeedShredPct": 15,
+    "debuffTicks": 240,
+    "hasteAttackSpeedPct": 20,
+    "hasteMoveSpeedPct": 15,
+    "hasteTicks": 240,
+    "shieldPermillePerHit": 80,
+    "shieldCapPermille": 240
+  },
+  "cloneArmy": {
+    "cooldownTicks": 4800,
+    "range": 80000,
+    "ahead": 50000,
+    "side": 30000,
+    "lifeTicks": 360,
+    "mimicDamagePct": 50
+  },
+  "ai": {
+    "towerRange": 85000
+  },
+  "fxTokens": 16
 }

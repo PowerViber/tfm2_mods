@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Contender 4.0 · Smother and Clone Army</title>
+<style>
+:root { color-scheme: dark; background: #13111d; color: #f0eaf8; font: 16px system-ui, sans-serif; }
+body { max-width: 1040px; margin: auto; padding: 28px 20px; }
+h1 { margin: 0; font-size: clamp(1.9rem, 5vw, 3.3rem); }
+h2 { margin: 0 0 12px; font-size: 1.1rem; }
+p { color: #c9bedb; line-height: 1.45; }
+section { margin: 18px 0; padding: 15px; border: 1px solid #403454; border-radius: 9px; background: #211b2e; }
+.controls, .previews { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.previews { align-items: start; margin-top: 14px; }
+.previews > div { max-width: 100%; }
+canvas { display: block; image-rendering: pixelated; max-width: 100%; height: auto; border-radius: 4px; }
+button, select { font: inherit; color: inherit; background: #38294d; border: 1px solid #715a8f; border-radius: 4px; padding: 6px 9px; }
+label { display: flex; align-items: center; gap: 7px; }
+input { accent-color: #bd93ef; width: min(390px, 60vw); }
+output, small { color: #d7bdf4; font-variant-numeric: tabular-nums; }
+.legend { display: block; margin-bottom: 6px; }
+.time { margin-top: 14px; }
+#status { min-height: 1.5em; margin: 10px 0 0; }
+#error { color: #ffafc6; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Smother &amp; Clone Army</h1>
+  <p>Contender 4.0 · Artwork review</p>
+</header>
+<main>
+<section aria-labelledby="preview-title">
+  <h2 id="preview-title">Cast preview</h2>
+  <div class="controls">
+    <label>Scene <select id="scene" disabled><option value="hit">Smother hit</option><option value="miss">Smother miss</option><option value="army">Clone Army</option><option value="anchor">Army + Anchor</option></select></label>
+    <label>Facing <select id="facing" disabled><option value="1">Right</option><option value="-1">Left</option></select></label>
+    <label>Angle <select id="angle" disabled><option value="straight">Straight</option><option value="diagonal">Diagonal</option></select></label>
+    <label>Speed <select id="speed" disabled><option value=".25">¼×</option><option value="1">1×</option></select></label>
+    <button id="replay" disabled>Replay</button><button id="pause" disabled>Pause</button>
+  </div>
+  <div class="controls time"><label>Timeline <input id="timeline" type="range" min="0" value="0" disabled></label><output id="time">Loading</output></div>
+  <div class="previews">
+    <div><small class="legend">Game size · 1×</small><canvas id="small" width="244" height="194" aria-label="Game-size cast preview"></canvas></div>
+    <div><small class="legend">Detail · 3×</small><canvas id="large" width="732" height="582" aria-label="Enlarged cast preview"></canvas></div>
+  </div>
+  <p id="status">Loading Contender’s 4.0 cast.</p>
+  <p id="error" role="alert" hidden></p>
+</section>
+</main>
+<script src="contender-data.js"></script>
+<script src="contender-presentation.js"></script>
+<script src="contender-painter.js"></script>
+<script src="contender-40-review.js"></script>
+</body>
+</html>

@@ -37,13 +37,15 @@ fn valid(f: &Frame) -> bool {
         && (1..=100_000_000).contains(&f.max_hp)
         && (0..=f.max_hp).contains(&f.hp)
         && f.barriers.len() <= 128 && f.barriers.iter().all(|wall| point(wall.from) && point(wall.to) && (0..=32_000).contains(&wall.half_width))
-        && f.defences.len() <= 128 && f.defences.iter().all(|defence| (0..=1_000_000).contains(&defence.armour) && (0..=100_000_000).contains(&defence.shield))
-        && f.link_excluded.len() <= 128 && f.separated.len() <= 128 && f.link_airborne.len() <= 128
+        && f.link_excluded.len() <= 128 && f.separated.len() <= 128
         && f.basic_hits.len() <= 16
-        && u32::from(f.landed_hits) + u32::from(f.landed_merge_hits) <= 256
+        && f.landed_hits <= 256
         && f.incoming.len() <= 16
         && f.incoming.iter().all(|hit| hit.attacker != f.owner && point(hit.from))
-        && match f.order { Some(Order::Ult { aim }) => point(aim), _ => true }
+        && match f.order {
+            Some(Order::S1 { aim } | Order::S2 { aim } | Order::S3 { aim } | Order::Ult { aim }) => point(aim),
+            None => true,
+        }
         && f.units.iter().all(|u| u.id != f.owner && point(u.pos) && (1..=100_000_000).contains(&u.max_hp))
 }
 
@@ -110,19 +112,19 @@ mod transport_tests {
     fn every_order_reaches_the_core_and_every_effect_serializes() {
         let mut s = Session::default();
         for (t, o) in [
-            (1, json!({"kind":"s1"})),
-            (2, json!({"kind":"s2"})),
-            // the Flurry (cast at 2) lasts `FLURRY_TICKS`; the ult goes in once it's over
-            (94, serde_json::Value::Null),
-            (95, json!({"kind":"ult","aim":{"x":445000,"y":500000}})),
+            (1, json!({"kind":"s1","aim":{"x":440000,"y":500000}})),
+            (2, json!({"kind":"s2","aim":{"x":440000,"y":520000}})),
+            (3, json!({"kind":"ult","aim":{"x":445000,"y":500000}})),
+            (4, json!({"kind":"s3","aim":{"x":440000,"y":500000}})),
         ] {
             let mut i = input(t);
             i["frame"]["order"] = o;
             let out = run(&mut s, &i.to_string());
             assert!(!out.contains("\"error\""), "{out}");
         }
-        assert_eq!(s.core.charges, contender_shadow_data::CHARGES_MAX - contender_shadow_data::CHARGES_FLURRY_COST);
-        assert!(s.core.shadow_link.is_some());
+        assert!(s.core.anchor().is_some(), "S2 dropped the anchor");
+        assert_eq!(s.core.shadows.iter().filter(|x| !x.anchor).count(), 6, "Clone Army: three in front, three around the anchor");
+        assert!(s.core.casts.iter().any(|c| matches!(c, Cast::Grab { .. })) && s.core.casts.iter().any(|c| matches!(c, Cast::Smother { .. })));
     }
     #[test]
     fn stale_ticks_and_old_rules_are_refused() {

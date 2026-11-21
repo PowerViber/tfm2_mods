@@ -1,0 +1,35 @@
+{
+  "smother": {
+    "file": "smother-source.png",
+    "trail": [
+      102,
+      230,
+      1280,
+      279
+    ],
+    "contact": [
+      1695,
+      233,
+      344,
+      279
+    ],
+    "contactFrame": [
+      24,
+      20
+    ]
+  },
+  "clone": {
+    "file": "clone-source.png",
+    "crop": [
+      493,
+      162,
+      484,
+      725
+    ],
+    "frame": [
+      30,
+      44
+    ],
+    "alpha": 0.8
+  }
+}
