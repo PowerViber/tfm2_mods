@@ -4222,3 +4222,11 @@ Native 0.10.112 / custom 0.2.115, art basalt-art-6, gameplay remains basalt-1.4.
 
 ## Nov 21 · Contender 4.0 reopened for review (native 0.10.130, champion pack 0.2.133)
 - Same kit as round 192 (see `docs/main-review-round-192.md`), now as an **open PR** for Codex to read and analyse. Not merged until Reihan says so.
+
+## Nov 21 · Contender 4.0 review changes reach main (native 0.10.131, champion pack 0.2.134)
+- PR #112 was merged at Codex's art commit, before the review changes landed, so main had standing clones with Codex's art. This build carries the rest:
+  - **Clone Army clones** run at enemies and punch, mimic his S1 and S3, and spawn 150,000 ahead; they use the shadow-body art again.
+  - **Charged Punches:** at 4+ charges he attacks 2× faster, and each hit adds 2 stacks, pulls 5,000 and lifesteals 15%. **Overflow** is back.
+  - **Anchor teleport** heals 15% max HP and gives +30% Armour for 3 s.
+  - **Engage assist:** at HP ≥ 60% with the grab up, he grabs the nearest enemy champion within 100,000.
+- **Check live:** `log.log` shows 0.10.131, and the clones run and punch as shadows.
