@@ -1,0 +1,1624 @@
+{
+  "anims": {
+    "trail_L1_d0": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 0,
+            "y": 0,
+            "w": 10,
+            "h": 20
+          }
+        }
+      ]
+    },
+    "trail_s_L1_d0": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 11,
+            "y": 0,
+            "w": 10,
+            "h": 20
+          }
+        }
+      ]
+    },
+    "trail_L1_d1": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 22,
+            "y": 0,
+            "w": 22,
+            "h": 22
+          }
+        }
+      ]
+    },
+    "trail_s_L1_d1": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 45,
+            "y": 0,
+            "w": 22,
+            "h": 22
+          }
+        }
+      ]
+    },
+    "trail_L1_d2": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 68,
+            "y": 0,
+            "w": 20,
+            "h": 10
+          }
+        }
+      ]
+    },
+    "trail_s_L1_d2": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 89,
+            "y": 0,
+            "w": 20,
+            "h": 10
+          }
+        }
+      ]
+    },
+    "trail_L1_d3": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 110,
+            "y": 0,
+            "w": 22,
+            "h": 22
+          }
+        }
+      ]
+    },
+    "trail_s_L1_d3": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 133,
+            "y": 0,
+            "w": 22,
+            "h": 22
+          }
+        }
+      ]
+    },
+    "trail_L1_d4": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 156,
+            "y": 0,
+            "w": 10,
+            "h": 20
+          }
+        }
+      ]
+    },
+    "trail_s_L1_d4": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 167,
+            "y": 0,
+            "w": 10,
+            "h": 20
+          }
+        }
+      ]
+    },
+    "trail_L1_d5": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 178,
+            "y": 0,
+            "w": 22,
+            "h": 22
+          }
+        }
+      ]
+    },
+    "trail_s_L1_d5": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 201,
+            "y": 0,
+            "w": 22,
+            "h": 22
+          }
+        }
+      ]
+    },
+    "trail_L1_d6": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 224,
+            "y": 0,
+            "w": 20,
+            "h": 10
+          }
+        }
+      ]
+    },
+    "trail_s_L1_d6": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 245,
+            "y": 0,
+            "w": 20,
+            "h": 10
+          }
+        }
+      ]
+    },
+    "trail_L1_d7": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 266,
+            "y": 0,
+            "w": 22,
+            "h": 22
+          }
+        }
+      ]
+    },
+    "trail_s_L1_d7": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 289,
+            "y": 0,
+            "w": 22,
+            "h": 22
+          }
+        }
+      ]
+    },
+    "trail_L2_d0": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 312,
+            "y": 0,
+            "w": 20,
+            "h": 20
+          }
+        }
+      ]
+    },
+    "trail_s_L2_d0": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 333,
+            "y": 0,
+            "w": 20,
+            "h": 20
+          }
+        }
+      ]
+    },
+    "trail_L2_d1": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 354,
+            "y": 0,
+            "w": 30,
+            "h": 30
+          }
+        }
+      ]
+    },
+    "trail_s_L2_d1": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 385,
+            "y": 0,
+            "w": 30,
+            "h": 30
+          }
+        }
+      ]
+    },
+    "trail_L2_d2": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 416,
+            "y": 0,
+            "w": 20,
+            "h": 20
+          }
+        }
+      ]
+    },
+    "trail_s_L2_d2": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 437,
+            "y": 0,
+            "w": 20,
+            "h": 20
+          }
+        }
+      ]
+    },
+    "trail_L2_d3": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 458,
+            "y": 0,
+            "w": 30,
+            "h": 30
+          }
+        }
+      ]
+    },
+    "trail_s_L2_d3": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 0,
+            "y": 31,
+            "w": 30,
+            "h": 30
+          }
+        }
+      ]
+    },
+    "trail_L2_d4": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 31,
+            "y": 31,
+            "w": 20,
+            "h": 20
+          }
+        }
+      ]
+    },
+    "trail_s_L2_d4": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 52,
+            "y": 31,
+            "w": 20,
+            "h": 20
+          }
+        }
+      ]
+    },
+    "trail_L2_d5": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 73,
+            "y": 31,
+            "w": 30,
+            "h": 30
+          }
+        }
+      ]
+    },
+    "trail_s_L2_d5": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 104,
+            "y": 31,
+            "w": 30,
+            "h": 30
+          }
+        }
+      ]
+    },
+    "trail_L2_d6": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 135,
+            "y": 31,
+            "w": 20,
+            "h": 20
+          }
+        }
+      ]
+    },
+    "trail_s_L2_d6": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 156,
+            "y": 31,
+            "w": 20,
+            "h": 20
+          }
+        }
+      ]
+    },
+    "trail_L2_d7": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 177,
+            "y": 31,
+            "w": 30,
+            "h": 30
+          }
+        }
+      ]
+    },
+    "trail_s_L2_d7": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 208,
+            "y": 31,
+            "w": 30,
+            "h": 30
+          }
+        }
+      ]
+    },
+    "trail_L3_d0": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 239,
+            "y": 31,
+            "w": 30,
+            "h": 20
+          }
+        }
+      ]
+    },
+    "trail_s_L3_d0": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 270,
+            "y": 31,
+            "w": 30,
+            "h": 20
+          }
+        }
+      ]
+    },
+    "trail_L3_d1": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 301,
+            "y": 31,
+            "w": 36,
+            "h": 36
+          }
+        }
+      ]
+    },
+    "trail_s_L3_d1": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 338,
+            "y": 31,
+            "w": 36,
+            "h": 36
+          }
+        }
+      ]
+    },
+    "trail_L3_d2": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 375,
+            "y": 31,
+            "w": 20,
+            "h": 30
+          }
+        }
+      ]
+    },
+    "trail_s_L3_d2": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 396,
+            "y": 31,
+            "w": 20,
+            "h": 30
+          }
+        }
+      ]
+    },
+    "trail_L3_d3": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 417,
+            "y": 31,
+            "w": 36,
+            "h": 36
+          }
+        }
+      ]
+    },
+    "trail_s_L3_d3": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 454,
+            "y": 31,
+            "w": 36,
+            "h": 36
+          }
+        }
+      ]
+    },
+    "trail_L3_d4": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 0,
+            "y": 68,
+            "w": 30,
+            "h": 20
+          }
+        }
+      ]
+    },
+    "trail_s_L3_d4": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 31,
+            "y": 68,
+            "w": 30,
+            "h": 20
+          }
+        }
+      ]
+    },
+    "trail_L3_d5": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 62,
+            "y": 68,
+            "w": 36,
+            "h": 36
+          }
+        }
+      ]
+    },
+    "trail_s_L3_d5": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 99,
+            "y": 68,
+            "w": 36,
+            "h": 36
+          }
+        }
+      ]
+    },
+    "trail_L3_d6": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 136,
+            "y": 68,
+            "w": 20,
+            "h": 30
+          }
+        }
+      ]
+    },
+    "trail_s_L3_d6": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 157,
+            "y": 68,
+            "w": 20,
+            "h": 30
+          }
+        }
+      ]
+    },
+    "trail_L3_d7": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 178,
+            "y": 68,
+            "w": 36,
+            "h": 36
+          }
+        }
+      ]
+    },
+    "trail_s_L3_d7": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 215,
+            "y": 68,
+            "w": 36,
+            "h": 36
+          }
+        }
+      ]
+    },
+    "trail_L4_d0": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 252,
+            "y": 68,
+            "w": 40,
+            "h": 20
+          }
+        }
+      ]
+    },
+    "trail_s_L4_d0": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 293,
+            "y": 68,
+            "w": 40,
+            "h": 20
+          }
+        }
+      ]
+    },
+    "trail_L4_d1": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 334,
+            "y": 68,
+            "w": 44,
+            "h": 44
+          }
+        }
+      ]
+    },
+    "trail_s_L4_d1": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 379,
+            "y": 68,
+            "w": 44,
+            "h": 44
+          }
+        }
+      ]
+    },
+    "trail_L4_d2": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 424,
+            "y": 68,
+            "w": 20,
+            "h": 40
+          }
+        }
+      ]
+    },
+    "trail_s_L4_d2": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 445,
+            "y": 68,
+            "w": 20,
+            "h": 40
+          }
+        }
+      ]
+    },
+    "trail_L4_d3": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 466,
+            "y": 68,
+            "w": 44,
+            "h": 44
+          }
+        }
+      ]
+    },
+    "trail_s_L4_d3": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 0,
+            "y": 113,
+            "w": 44,
+            "h": 44
+          }
+        }
+      ]
+    },
+    "trail_L4_d4": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 45,
+            "y": 113,
+            "w": 40,
+            "h": 20
+          }
+        }
+      ]
+    },
+    "trail_s_L4_d4": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 86,
+            "y": 113,
+            "w": 40,
+            "h": 20
+          }
+        }
+      ]
+    },
+    "trail_L4_d5": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 127,
+            "y": 113,
+            "w": 44,
+            "h": 44
+          }
+        }
+      ]
+    },
+    "trail_s_L4_d5": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 172,
+            "y": 113,
+            "w": 44,
+            "h": 44
+          }
+        }
+      ]
+    },
+    "trail_L4_d6": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 217,
+            "y": 113,
+            "w": 20,
+            "h": 40
+          }
+        }
+      ]
+    },
+    "trail_s_L4_d6": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 238,
+            "y": 113,
+            "w": 20,
+            "h": 40
+          }
+        }
+      ]
+    },
+    "trail_L4_d7": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 259,
+            "y": 113,
+            "w": 44,
+            "h": 44
+          }
+        }
+      ]
+    },
+    "trail_s_L4_d7": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 304,
+            "y": 113,
+            "w": 44,
+            "h": 44
+          }
+        }
+      ]
+    },
+    "trail_L5_d0": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 349,
+            "y": 113,
+            "w": 50,
+            "h": 20
+          }
+        }
+      ]
+    },
+    "trail_s_L5_d0": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 400,
+            "y": 113,
+            "w": 50,
+            "h": 20
+          }
+        }
+      ]
+    },
+    "trail_L5_d1": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 451,
+            "y": 113,
+            "w": 50,
+            "h": 50
+          }
+        }
+      ]
+    },
+    "trail_s_L5_d1": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 0,
+            "y": 164,
+            "w": 50,
+            "h": 50
+          }
+        }
+      ]
+    },
+    "trail_L5_d2": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 51,
+            "y": 164,
+            "w": 20,
+            "h": 50
+          }
+        }
+      ]
+    },
+    "trail_s_L5_d2": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 72,
+            "y": 164,
+            "w": 20,
+            "h": 50
+          }
+        }
+      ]
+    },
+    "trail_L5_d3": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 93,
+            "y": 164,
+            "w": 50,
+            "h": 50
+          }
+        }
+      ]
+    },
+    "trail_s_L5_d3": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 144,
+            "y": 164,
+            "w": 50,
+            "h": 50
+          }
+        }
+      ]
+    },
+    "trail_L5_d4": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 195,
+            "y": 164,
+            "w": 50,
+            "h": 20
+          }
+        }
+      ]
+    },
+    "trail_s_L5_d4": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 246,
+            "y": 164,
+            "w": 50,
+            "h": 20
+          }
+        }
+      ]
+    },
+    "trail_L5_d5": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 297,
+            "y": 164,
+            "w": 50,
+            "h": 50
+          }
+        }
+      ]
+    },
+    "trail_s_L5_d5": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 348,
+            "y": 164,
+            "w": 50,
+            "h": 50
+          }
+        }
+      ]
+    },
+    "trail_L5_d6": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 399,
+            "y": 164,
+            "w": 20,
+            "h": 50
+          }
+        }
+      ]
+    },
+    "trail_s_L5_d6": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 420,
+            "y": 164,
+            "w": 20,
+            "h": 50
+          }
+        }
+      ]
+    },
+    "trail_L5_d7": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 441,
+            "y": 164,
+            "w": 50,
+            "h": 50
+          }
+        }
+      ]
+    },
+    "trail_s_L5_d7": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 0,
+            "y": 215,
+            "w": 50,
+            "h": 50
+          }
+        }
+      ]
+    },
+    "trail_L6_d0": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 51,
+            "y": 215,
+            "w": 60,
+            "h": 20
+          }
+        }
+      ]
+    },
+    "trail_s_L6_d0": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 112,
+            "y": 215,
+            "w": 60,
+            "h": 20
+          }
+        }
+      ]
+    },
+    "trail_L6_d1": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 173,
+            "y": 215,
+            "w": 58,
+            "h": 58
+          }
+        }
+      ]
+    },
+    "trail_s_L6_d1": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 232,
+            "y": 215,
+            "w": 58,
+            "h": 58
+          }
+        }
+      ]
+    },
+    "trail_L6_d2": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 291,
+            "y": 215,
+            "w": 20,
+            "h": 60
+          }
+        }
+      ]
+    },
+    "trail_s_L6_d2": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 312,
+            "y": 215,
+            "w": 20,
+            "h": 60
+          }
+        }
+      ]
+    },
+    "trail_L6_d3": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 333,
+            "y": 215,
+            "w": 58,
+            "h": 58
+          }
+        }
+      ]
+    },
+    "trail_s_L6_d3": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 392,
+            "y": 215,
+            "w": 58,
+            "h": 58
+          }
+        }
+      ]
+    },
+    "trail_L6_d4": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 451,
+            "y": 215,
+            "w": 60,
+            "h": 20
+          }
+        }
+      ]
+    },
+    "trail_s_L6_d4": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 0,
+            "y": 276,
+            "w": 60,
+            "h": 20
+          }
+        }
+      ]
+    },
+    "trail_L6_d5": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 61,
+            "y": 276,
+            "w": 58,
+            "h": 58
+          }
+        }
+      ]
+    },
+    "trail_s_L6_d5": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 120,
+            "y": 276,
+            "w": 58,
+            "h": 58
+          }
+        }
+      ]
+    },
+    "trail_L6_d6": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 179,
+            "y": 276,
+            "w": 20,
+            "h": 60
+          }
+        }
+      ]
+    },
+    "trail_s_L6_d6": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 200,
+            "y": 276,
+            "w": 20,
+            "h": 60
+          }
+        }
+      ]
+    },
+    "trail_L6_d7": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 221,
+            "y": 276,
+            "w": 58,
+            "h": 58
+          }
+        }
+      ]
+    },
+    "trail_s_L6_d7": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 280,
+            "y": 276,
+            "w": 58,
+            "h": 58
+          }
+        }
+      ]
+    },
+    "trail_L7_d0": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 339,
+            "y": 276,
+            "w": 70,
+            "h": 20
+          }
+        }
+      ]
+    },
+    "trail_s_L7_d0": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 410,
+            "y": 276,
+            "w": 70,
+            "h": 20
+          }
+        }
+      ]
+    },
+    "trail_L7_d1": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 0,
+            "y": 337,
+            "w": 64,
+            "h": 64
+          }
+        }
+      ]
+    },
+    "trail_s_L7_d1": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 65,
+            "y": 337,
+            "w": 64,
+            "h": 64
+          }
+        }
+      ]
+    },
+    "trail_L7_d2": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 130,
+            "y": 337,
+            "w": 20,
+            "h": 70
+          }
+        }
+      ]
+    },
+    "trail_s_L7_d2": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 151,
+            "y": 337,
+            "w": 20,
+            "h": 70
+          }
+        }
+      ]
+    },
+    "trail_L7_d3": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 172,
+            "y": 337,
+            "w": 64,
+            "h": 64
+          }
+        }
+      ]
+    },
+    "trail_s_L7_d3": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 237,
+            "y": 337,
+            "w": 64,
+            "h": 64
+          }
+        }
+      ]
+    },
+    "trail_L7_d4": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 302,
+            "y": 337,
+            "w": 70,
+            "h": 20
+          }
+        }
+      ]
+    },
+    "trail_s_L7_d4": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 373,
+            "y": 337,
+            "w": 70,
+            "h": 20
+          }
+        }
+      ]
+    },
+    "trail_L7_d5": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 444,
+            "y": 337,
+            "w": 64,
+            "h": 64
+          }
+        }
+      ]
+    },
+    "trail_s_L7_d5": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 0,
+            "y": 408,
+            "w": 64,
+            "h": 64
+          }
+        }
+      ]
+    },
+    "trail_L7_d6": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 65,
+            "y": 408,
+            "w": 20,
+            "h": 70
+          }
+        }
+      ]
+    },
+    "trail_s_L7_d6": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 86,
+            "y": 408,
+            "w": 20,
+            "h": 70
+          }
+        }
+      ]
+    },
+    "trail_L7_d7": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 107,
+            "y": 408,
+            "w": 64,
+            "h": 64
+          }
+        }
+      ]
+    },
+    "trail_s_L7_d7": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 172,
+            "y": 408,
+            "w": 64,
+            "h": 64
+          }
+        }
+      ]
+    },
+    "contact": {
+      "frames": [
+        {
+          "duration": 0.0333,
+          "data": {
+            "x": 237,
+            "y": 408,
+            "w": 24,
+            "h": 20
+          }
+        },
+        {
+          "duration": 0.0333,
+          "data": {
+            "x": 262,
+            "y": 408,
+            "w": 24,
+            "h": 20
+          }
+        },
+        {
+          "duration": 0.0333,
+          "data": {
+            "x": 287,
+            "y": 408,
+            "w": 24,
+            "h": 20
+          }
+        },
+        {
+          "duration": 0.0333,
+          "data": {
+            "x": 312,
+            "y": 408,
+            "w": 24,
+            "h": 20
+          }
+        },
+        {
+          "duration": 0.0333,
+          "data": {
+            "x": 337,
+            "y": 408,
+            "w": 24,
+            "h": 20
+          }
+        },
+        {
+          "duration": 0.0333,
+          "data": {
+            "x": 362,
+            "y": 408,
+            "w": 24,
+            "h": 20
+          }
+        }
+      ]
+    },
+    "clone_in": {
+      "frames": [
+        {
+          "duration": 0.0333,
+          "data": {
+            "x": 387,
+            "y": 408,
+            "w": 30,
+            "h": 44
+          }
+        },
+        {
+          "duration": 0.0333,
+          "data": {
+            "x": 418,
+            "y": 408,
+            "w": 30,
+            "h": 44
+          }
+        },
+        {
+          "duration": 0.0333,
+          "data": {
+            "x": 449,
+            "y": 408,
+            "w": 30,
+            "h": 44
+          }
+        },
+        {
+          "duration": 0.0333,
+          "data": {
+            "x": 480,
+            "y": 408,
+            "w": 30,
+            "h": 44
+          }
+        }
+      ]
+    },
+    "clone": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 0,
+            "y": 479,
+            "w": 30,
+            "h": 44
+          }
+        }
+      ]
+    },
+    "clone_in_l": {
+      "frames": [
+        {
+          "duration": 0.0333,
+          "data": {
+            "x": 31,
+            "y": 479,
+            "w": 30,
+            "h": 44
+          }
+        },
+        {
+          "duration": 0.0333,
+          "data": {
+            "x": 62,
+            "y": 479,
+            "w": 30,
+            "h": 44
+          }
+        },
+        {
+          "duration": 0.0333,
+          "data": {
+            "x": 93,
+            "y": 479,
+            "w": 30,
+            "h": 44
+          }
+        },
+        {
+          "duration": 0.0333,
+          "data": {
+            "x": 124,
+            "y": 479,
+            "w": 30,
+            "h": 44
+          }
+        }
+      ]
+    },
+    "clone_l": {
+      "frames": [
+        {
+          "duration": 0.1,
+          "data": {
+            "x": 155,
+            "y": 479,
+            "w": 30,
+            "h": 44
+          }
+        }
+      ]
+    }
+  }
+}

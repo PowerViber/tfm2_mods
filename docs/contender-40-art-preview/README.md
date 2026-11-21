@@ -15,3 +15,6 @@ The [animated review](../../editor/contender-40-review.html) runs the 4.0 Lab WA
 Run `node tools/serve-contender-shadow-review.cjs 7320` from the repository root and open [the local review](http://localhost:7320/editor/contender-40-review.html).
 
 The browser passed 16 combinations of scene, facing and angle. The largest cast showed eight simultaneous Smother lanes. The miss had zero contacts, and both army scenes returned to zero clones after expiry. Game-pack integration is pending visual approval.
+
+## In the game (Claude)
+`tools/build-contender-40-art.py` packs this art into `mods/tfm2_custom/vfx/contender_40#sheet.png`; see `docs/main-review-round-192.md`. [Packed in-game check](packed-in-game-check.png).

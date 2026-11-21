@@ -434,6 +434,34 @@ fn every_shadow_grab_art_name_is_bound_and_the_ribbon_follows_the_target() {
     assert_eq!([(1, 0), (0, 1), (-1, 0), (0, -1)].map(|(x, y)| grab_heading(me, Point::new(me.x + x * 10_000, me.y + y * 10_000))), [0, 2, 4, 6]);
 }
 
+#[test]
+fn every_smother_and_clone_art_name_is_bound_and_the_fades_match_the_core() {
+    // round 192: Codex's Smother trail and contact and the Clone Army clone, baked by tools/build-contender-40-art.py
+    use crate::contender::smother_trail;
+    let data: serde_json::Value = serde_json::from_str(include_str!("../../../mods/tfm2_custom/champion/tfm2_custom_contender.data_champion")).unwrap();
+    let bound: std::collections::HashSet<String> = data["view_effects"].as_array().unwrap().iter()
+        .map(|e| e["name"].as_str().unwrap().to_string()).collect();
+    let fanim: serde_json::Value = serde_json::from_str(include_str!("../../../mods/tfm2_custom/vfx/contender_40#anim.fanim")).unwrap();
+    let ticks = |tag: &str| fanim["anims"][tag]["frames"].as_array().unwrap().iter().map(|f| f["duration"].as_f64().unwrap()).sum::<f64>() * 60.0;
+    assert!((ticks("contact") - SMOTHER_CONTACT_TICKS as f64).abs() < 0.5, "the contact fade lasts the core's cue");
+    assert!((ticks("clone_in") - CLONE_IN_TICKS as f64).abs() < 0.5, "the clone fade-in lasts CLONE_IN_TICKS");
+    for name in ["ct_40_contact", "ct_40_clone", "ct_40_clone_l", "ct_40_clone_in", "ct_40_clone_in_l"] { assert!(bound.contains(name), "{name}"); }
+    let from = Point::new(400_000, 400_000);
+    assert!(smother_trail(from, from, false).is_none(), "nothing before the line moves");
+    for step in 0..32 {
+        let angle = step as f64 * std::f64::consts::TAU / 32.0;
+        for gap in (6_000..=d::SMOTHER_RANGE + 10_000).step_by(2_500) {
+            let front = Point::new(from.x + (angle.cos() * gap as f64) as i64, from.y + (angle.sin() * gap as f64) as i64);
+            for shadow in [false, true] {
+                let (name, mid) = smother_trail(from, front, shadow).unwrap();
+                assert!(bound.contains(&name), "{name}");
+                assert_eq!(name.contains("_s_"), shadow);
+                assert!(mid.within(from, gap) && mid.within(front, gap), "drawn between the origin and the front");
+            }
+        }
+    }
+}
+
 // ---------------------------------------------------------------------------------------- the game bridge
 
 mod glue {
@@ -580,6 +608,38 @@ mod glue {
         let (hand, latch, ribbon, burst) = (first("ct_grab_hand_d0"), first("ct_grab_latch"), first("ct_grab_ribbon_L"), first("ct_grab_burst"));
         assert!(hand < latch && latch < ribbon && ribbon < burst, "{names:?}");
         assert!(names.iter().filter(|n| n.starts_with("ct_grab_ribbon_L")).count() >= 2, "the ribbon is renewed during the pull");
+    }
+
+    #[test]
+    fn clone_army_and_smother_play_codexs_clone_trail_and_contact_art() {
+        let _guard = crate::walls::TEST_LOCK.lock();
+        let (x, y) = open_spot(160_000);
+        let host = Host::new(vec![champ(0, (x, y), "tfm2_custom_contender"), champ(1, (x + 40_000, y), "fighter")]);
+        host.borrow_mut().record_view_effects = true;
+        let mut c = Contender::default();
+        c.configure(r#"{"shadow_art_v1":1,"shadow_directions_v1":1}"#);
+        with_sim(&host, |sim| c.on_spawn(sim, 0, 0));
+        with_sim(&host, |sim| { sim.add_buff(0, &mod_api_stable::BuffV1::named(crate::ULT_LEARNED)); });
+        c.core.smother_at = u64::MAX / 2;
+        run(&host, &mut c, 100, 1);
+        // the anchor, then Clone Army
+        host.borrow_mut().tick = 101;
+        with_sim(&host, |sim| crate::contender::CastFlurry.apply(sim, 0, 0, InputTargetV1::pos(x, y + 60_000)));
+        run(&host, &mut c, 101, 1);
+        host.borrow_mut().tick = 104;
+        with_sim(&host, |sim| crate::contender::CastLink.apply(sim, 0, 0, InputTargetV1::target(1)));
+        run(&host, &mut c, 104, 20);
+        // then Smother, which every shadow mimics
+        c.core.smother_at = 0;
+        run(&host, &mut c, 124, d::SMOTHER_FLIGHT_TICKS as usize + 4);
+        let names: Vec<String> = host.borrow().view_effects.iter().map(|e| e.0.clone()).collect();
+        let first = |p: &str| names.iter().position(|n| n.starts_with(p)).unwrap_or_else(|| panic!("no {p}"));
+        let standing = names.iter().position(|n| n == "ct_40_clone" || n == "ct_40_clone_l").expect("standing clones");
+        assert!(first("ct_40_clone_in") < standing, "clones fade in, then stand");
+        assert!(names.iter().any(|n| n.starts_with("ct_40_trail_L")), "his own trail");
+        assert!(names.iter().any(|n| n.starts_with("ct_40_trail_s_L")), "the shadows' paler trails");
+        assert!(names.iter().any(|n| n == "ct_40_contact"), "the contact flash");
+        assert!(names.iter().any(|n| n == "ct_body_idle0"), "the anchor keeps the dark shadow body");
     }
 
     #[test]

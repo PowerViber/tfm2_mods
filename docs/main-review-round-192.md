@@ -29,7 +29,10 @@ He designed the rest over the follow-ups:
 - **Slots:** the game's AI presses S1, S2 and the ult through cast markers that carry the aim. S3 has no engine button, so the core casts it itself. The S2 slot is 30 ticks so it can be pressed twice; the core enforces the 14 s cooldown, and press gating turns an S2 press during the cooldown into a basic attack.
 - **Mimicry:** each enemy can be held by one grab at a time; a shadow's grab drags the target to that shadow, which steps in and Haymakers it.
 - **The anchor's flurry** reaches its fear radius farther (100,000) for its first punch, since feared enemies run.
-- **Art:** the anchor and clones use the shadow body, every grab uses Codex's hand, latch, ribbon and burst, and the flurries use the directional cues. **Smother has no art yet** (the Lab draws a line); this needs a Codex handoff.
+- **Art:**
+  - every grab uses Codex's hand, latch, ribbon and burst, and the flurries use the directional cues;
+  - the anchor keeps the dark shadow body;
+  - **Smother and Clone Army use Codex's art** (see below).
 
 ## Checks
 - **Native:** 1,400 passed, 18 ignored. The Contender suite was rewritten for 4.0 (84 tests), and every number comes from `d::`.
@@ -37,3 +40,19 @@ He designed the rest over the follow-ups:
 - **Generators:** `build-contender-grab-art`, `generate-contender`, `generate-roster`, `generate-lab-targets` and `build-contender-merge-art` pass `--check`.
 - **Builds:** the DLL contains 0.10.128, and the wasm is rebuilt.
 - **Live only:** how often the game AI presses the anchor twice; whether placing him (anchor, Shadowborne) looks clean in the engine; and Clone Army's 7 casters at once.
+
+## Codex's Smother and Clone Army art (in PR #112)
+Codex previewed the art in `docs/contender-40-art-preview/` and `editor/contender-40-review.html`. `tools/build-contender-40-art.py` (with `--check`) bakes the preview's Canvas moves into `mods/tfm2_custom/vfx/contender_40#sheet.png` and `#anim.fanim`, bound as `ct_40_*`.
+
+| Effect | Baked as | Played |
+|---|---|---|
+| Smother trail | `trail_L{1..7}_d{0..7}`: stretched to every 10,000 up to the range, 20 px wide (2 × `smother.width`), in 8 headings; `trail_s_…` at a shadow's 0.7 alpha | every 2 ticks from the cast origin to the line's front (nearest length, heading, midpoint) |
+| Smother contact | `contact`: 24×20, fading 1 − 0.8 t over 12 ticks (`SMOTHER_CONTACT_TICKS`) | once on each enemy hit |
+| Clone | `clone_in` (0.55 → 0.8 alpha over 8 ticks) then `clone`, 30×44; `_l` faces left | every 4 ticks at each clone, facing the nearest enemy champion |
+
+- **The art checks** (`build-contender-40-art.py`, `build-contender-grab-art.py`, and the shared `tools/contender_art_pack.py`) now compare decoded pixels and animation data instead of PNG bytes, so they pass on Windows too (Codex saw a byte mismatch there).
+- **Visual check:** `docs/contender-40-art-preview/packed-in-game-check.png` renders the packed frames, placed as the bridge places them, over 4.0 WASM casts.
+- **Tests:**
+  - every trail the bridge can pick (32 directions × all lengths × Contender or shadow) is bound;
+  - the contact and fade-in lengths match the core;
+  - a host run plays clone fade-in → clone, his trail, the shadows' paler trails, the contact, and the anchor's shadow body.

@@ -252,6 +252,10 @@ impl Frame {
 /// tools/build-contender-grab-art.py; a test checks these match the packed `.fanim`).
 pub const GRAB_LATCH_TICKS: u64 = 8;
 pub const GRAB_BURST_TICKS: u64 = 18;
+/// Round 192: how long Codex's Smother contact flash plays (baked by tools/build-contender-40-art.py)
+pub const SMOTHER_CONTACT_TICKS: u64 = 12;
+/// and how long a Clone Army clone fades in
+pub const CLONE_IN_TICKS: u64 = 8;
 /// his dash after the pull, 3/8 of the grab's range
 pub const GRAB_DASH: i64 = d::SHADOW_GRAB_RANGE * d::SHADOW_GRAB_DASH_PERMILLE / 1_000;
 /// where the pull leaves the target: one dash plus the Haymaker's reach away from the caster
@@ -836,7 +840,7 @@ impl Core {
             }
             out.push(Effect::Smothered { target: u.id, armour_pct: d::SMOTHER_ARMOUR_SHRED_PCT,
                 attack_speed_pct: d::SMOTHER_ATTACK_SPEED_SHRED_PCT, ticks: t(d::SMOTHER_DEBUFF_TICKS) });
-            out.push(Effect::Fx { name: "ct_echo".into(), at: u.pos, ticks: 12, heading: None });
+            out.push(Effect::Fx { name: "ct_40_contact".into(), at: u.pos, ticks: SMOTHER_CONTACT_TICKS, heading: None });
             if u.champion {
                 let cap = f.max_hp * d::SMOTHER_SHIELD_CAP_PERMILLE / 1_000;
                 let add = (f.max_hp * d::SMOTHER_SHIELD_PERMILLE_PER_HIT / 1_000).min(cap - self.smother_shield);

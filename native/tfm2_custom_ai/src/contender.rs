@@ -216,6 +216,20 @@ pub struct Contender {
     fx_tick: u64,
 }
 
+/// Round 192: the baked Smother trail from the line's origin to its front: the 10,000 length bucket nearest the
+/// distance so far (as tools/build-contender-40-art.py), the heading, the shadow's paler variant, and its midpoint.
+/// None before the line has moved.
+pub(crate) fn smother_trail(from: Point, front: Point, shadow: bool) -> Option<(String, Point)> {
+    const STEP: i64 = 10_000;
+    let gap = from.dist(front).round() as i64;
+    if gap < STEP / 2 {
+        return None;
+    }
+    let bucket = ((gap + STEP / 2) / STEP).clamp(1, (d::SMOTHER_RANGE + STEP - 1) / STEP);
+    let mid = Point::new((from.x + front.x) / 2, (from.y + front.y) / 2);
+    Some((format!("ct_40_trail{}_L{bucket}_d{}", if shadow { "_s" } else { "" }, grab_heading(from, front)), mid))
+}
+
 impl Contender {
     fn grid(&mut self, tick: u64) -> Vec<bool> {
         if let Some((t, g)) = &self.terrain {
@@ -423,7 +437,7 @@ impl Contender {
                 Effect::Fx { name, at, ticks, heading } => {
                     if self.fx_ok(tick) {
                         // the Shadow Grab art carries its own names (no `_t`/`_l` variants)
-                        let visual = if name.starts_with("ct_grab_") {
+                        let visual = if name.starts_with("ct_grab_") || name.starts_with("ct_40_") {
                             name
                         } else if self.shadow_art && self.shadow_directions && name == "ct_flurry" && heading.is_some() {
                             format!("ct_flurry_d{}_t{ticks}", heading.unwrap_or(0) % 8)
@@ -453,9 +467,23 @@ impl Contender {
             Caster::Shadow { id } => core.shadows.iter().find(|s| s.id == id).map(|s| s.pos),
         };
         let mut draws: Vec<(String, Point, u64)> = vec![];
-        if tick % 4 == 0 {
+        if tick % 4 == 0 && !self.core.shadows.is_empty() {
+            // round 192 (Codex's art): clones fade in, then stand, facing the nearest enemy champion; the anchor keeps
+            // the dark shadow body
+            let team = sim.get_entity(owner).map(|e| e.team());
+            let foes: Vec<Point> = (0..sim.entity_count()).filter_map(|i| sim.entity_at(i))
+                .filter(|e| e.is_alive() && e.is_champion() && Some(e.team()) != team)
+                .map(|e| { let p = e.pos(); Point::new(p.0 as i64, p.1 as i64) }).collect();
             for s in &self.core.shadows {
-                draws.push(("ct_body_idle0".into(), s.pos, 4));
+                if s.anchor {
+                    draws.push(("ct_body_idle0".into(), s.pos, 4));
+                    continue;
+                }
+                let toward = foes.iter().min_by_key(|p| p.d2(s.pos)).copied().unwrap_or(me);
+                let left = if toward == me { s.pos.x > me.x } else { toward.x < s.pos.x };
+                let born = s.until.saturating_sub(d::CLONE_ARMY_LIFE_TICKS as u64);
+                let fading = tick < born + crate::contender_shadow_core::CLONE_IN_TICKS;
+                draws.push((format!("ct_40_clone{}{}", if fading { "_in" } else { "" }, if left { "_l" } else { "" }), s.pos, 4));
             }
         }
         for c in &self.core.casts {
@@ -473,13 +501,18 @@ impl Contender {
                         draws.push((name, mid, 2));
                     }
                 }
+                Cast::Smother { caster, from, cursor, .. } => {
+                    if let Some((name, mid)) = smother_trail(*from, *cursor, *caster != Caster::Me) {
+                        draws.push((name, mid, 2));
+                    }
+                }
                 Cast::Flurry { caster: Caster::Me, at, start, .. } if tick >= *start && tick % 4 == 0 => {
                     draws.push(("ct_body_idle0".into(), *at, 4));
                 }
                 _ => {}
             }
         }
-        for (name, at, ticks) in draws.into_iter().take(12) {
+        for (name, at, ticks) in draws.into_iter().take(24) {
             crate::fx_point(sim, &name, owner, at.x, at.y, ticks);
         }
     }

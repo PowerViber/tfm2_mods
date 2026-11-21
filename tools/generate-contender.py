@@ -106,6 +106,11 @@ grab_anims = json.loads((ROOT / 'mods/tfm2_custom/vfx/contender_grab#anim.fanim'
 champ['view_effects'] += [dict(type='Animation', name='ct_grab_' + tag, anim='asset/tfm2_custom/vfx/contender_grab',
                                tag=tag, z=6, is_follow=False) for tag in grab_anims]
 
+# round 192: Codex's approved Smother trail and contact and the Clone Army clone, baked by tools/build-contender-40-art.py
+c40_anims = json.loads((ROOT / 'mods/tfm2_custom/vfx/contender_40#anim.fanim').read_text())['anims']
+champ['view_effects'] += [dict(type='Animation', name='ct_40_' + tag, anim='asset/tfm2_custom/vfx/contender_40',
+                               tag=tag, z=5 if tag.startswith('clone') else 6, is_follow=False) for tag in c40_anims]
+
 data = json.dumps(champ, indent=2) + '\n'
 
 roster = dict(id=ID, name=rules['name'], family='original', role='Fighter', native=True,
